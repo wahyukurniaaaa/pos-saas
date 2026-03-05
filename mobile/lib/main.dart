@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/screens/license_activation_screen.dart';
 import 'features/auth/screens/owner_setup_screen.dart';
@@ -8,8 +9,9 @@ import 'features/pos/screens/pos_dashboard_screen.dart';
 import 'features/auth/providers/auth_providers.dart';
 import 'features/auth/providers/owner_provider.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   runApp(const ProviderScope(child: PosifyApp()));
 }
 

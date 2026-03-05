@@ -89,126 +89,144 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [AppTheme.primaryDark, AppTheme.primaryColor],
-            stops: [0.0, 0.4],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              const Spacer(flex: 2),
-
-              // Logo
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(16),
+      backgroundColor: AppTheme.backgroundLight,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Header
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryColor.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.point_of_sale_rounded,
+                    size: 48,
+                    color: AppTheme.primaryColor,
+                  ),
                 ),
-                child: const Icon(
-                  Icons.point_of_sale_rounded,
-                  size: 34,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'POSify',
-                style: GoogleFonts.inter(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Masukkan PIN Anda',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  color: Colors.white.withValues(alpha: 0.75),
-                ),
-              ),
-              const SizedBox(height: 28),
-
-              // PIN Dots
-              AnimatedBuilder(
-                animation: _shakeAnimation,
-                builder: (context, child) {
-                  return Transform.translate(
-                    offset: Offset(
-                      _shakeAnimation.value *
-                          (_shakeController.value < 0.5 ? 1 : -1),
-                      0,
-                    ),
-                    child: child,
-                  );
-                },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(6, (index) {
-                    final isFilled = index < _pin.length;
-                    return AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      margin: const EdgeInsets.symmetric(horizontal: 8),
-                      width: isFilled ? 18 : 14,
-                      height: isFilled ? 18 : 14,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: _isError
-                            ? AppTheme.errorColor
-                            : isFilled
-                            ? Colors.white
-                            : Colors.white.withValues(alpha: 0.3),
-                        border: !isFilled
-                            ? Border.all(
-                                color: Colors.white.withValues(alpha: 0.5),
-                                width: 1.5,
-                              )
-                            : null,
-                      ),
-                    );
-                  }),
-                ),
-              ),
-
-              if (_isError) ...[
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 Text(
-                  'PIN salah, silakan coba lagi',
+                  'POSify',
                   style: GoogleFonts.inter(
-                    fontSize: 13,
-                    color: AppTheme.accentLight,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.primaryColor,
+                    letterSpacing: -1.0,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Cashier PIN Login & Shift Status',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    color: AppTheme.textSecondary,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-              ],
+                const SizedBox(height: 32),
 
-              const Spacer(flex: 1),
+                // Main Card (Design System Component Style)
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 32,
+                    horizontal: 24,
+                  ),
+                  constraints: const BoxConstraints(maxWidth: 400),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: AppTheme.primaryColor.withOpacity(0.05),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 16,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Enter your PIN',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
 
-              // Keypad
-              Container(
-                padding: const EdgeInsets.fromLTRB(40, 0, 40, 16),
-                child: Column(
-                  children: [
-                    _buildKeypadRow(['1', '2', '3']),
-                    const SizedBox(height: 12),
-                    _buildKeypadRow(['4', '5', '6']),
-                    const SizedBox(height: 12),
-                    _buildKeypadRow(['7', '8', '9']),
-                    const SizedBox(height: 12),
-                    _buildKeypadRow(['C', '0', '⌫']),
-                  ],
+                      // PIN Dots
+                      AnimatedBuilder(
+                        animation: _shakeAnimation,
+                        builder: (context, child) {
+                          return Transform.translate(
+                            offset: Offset(
+                              _shakeAnimation.value *
+                                  (_shakeController.value < 0.5 ? 1 : -1),
+                              0,
+                            ),
+                            child: child,
+                          );
+                        },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(6, (index) {
+                            final isFilled = index < _pin.length;
+                            return AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              margin: const EdgeInsets.symmetric(horizontal: 8),
+                              width: isFilled ? 16 : 12,
+                              height: isFilled ? 16 : 12,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: _isError
+                                    ? AppTheme.dangerColor
+                                    : isFilled
+                                    ? AppTheme.primaryColor
+                                    : AppTheme.borderColor,
+                              ),
+                            );
+                          }),
+                        ),
+                      ),
+                      if (_isError) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          'Incorrect PIN, try again',
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            color: AppTheme.dangerColor,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ] else ...[
+                        const SizedBox(height: 25), // keep spacing consistent
+                      ],
+
+                      const SizedBox(height: 32),
+
+                      // Keypad
+                      _buildKeypadRow(['1', '2', '3']),
+                      const SizedBox(height: 16),
+                      _buildKeypadRow(['4', '5', '6']),
+                      const SizedBox(height: 16),
+                      _buildKeypadRow(['7', '8', '9']),
+                      const SizedBox(height: 16),
+                      _buildKeypadRow(['C', '0', '⌫']),
+                    ],
+                  ),
                 ),
-              ),
-
-              const Spacer(flex: 1),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -229,12 +247,12 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen>
       width: 72,
       height: 72,
       child: Material(
-        color: isAction
-            ? Colors.white.withValues(alpha: 0.08)
-            : Colors.white.withValues(alpha: 0.12),
+        color: isAction ? AppTheme.backgroundLight : Colors.transparent,
         borderRadius: BorderRadius.circular(36),
         child: InkWell(
           borderRadius: BorderRadius.circular(36),
+          splashColor: AppTheme.primaryColor.withOpacity(0.1),
+          highlightColor: AppTheme.primaryColor.withOpacity(0.05),
           onTap: () {
             HapticFeedback.selectionClick();
             if (label == 'C') {
@@ -248,16 +266,18 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen>
           child: Center(
             child: label == '⌫'
                 ? const Icon(
-                    Icons.backspace_outlined,
-                    color: Colors.white,
+                    Icons.backspace_rounded,
+                    color: AppTheme.textPrimary,
                     size: 24,
                   )
                 : Text(
                     label,
                     style: GoogleFonts.inter(
-                      fontSize: label == 'C' ? 16 : 26,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.white,
+                      fontSize: label == 'C' ? 18 : 28,
+                      fontWeight: isAction ? FontWeight.w600 : FontWeight.w500,
+                      color: isAction
+                          ? AppTheme.textSecondary
+                          : AppTheme.textPrimary,
                     ),
                   ),
           ),

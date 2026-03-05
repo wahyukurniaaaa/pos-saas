@@ -47,14 +47,14 @@ class _LicenseActivationScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
               AppTheme.primaryDark,
               AppTheme.primaryColor,
-              AppTheme.primaryLight,
+              AppTheme.primaryColor.withValues(alpha: 0.8),
             ],
           ),
         ),

@@ -1,3 +1,5 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class AppConstants {
   AppConstants._();
 
@@ -6,8 +8,9 @@ class AppConstants {
   static const String packageName = 'com.posify.umkm';
 
   // API
-  static const String baseUrl = 'http://10.0.2.2:3000/api/v1'; // Android emulator -> localhost
-  static const String appClientKey = 'e3ccc142697425eb3aa9d059aee7db30d12f2d70cd60aea7';
+  static String get baseUrl =>
+      dotenv.get('BASE_URL', fallback: 'http://10.0.2.2:3000/api/v1');
+  static String get appClientKey => dotenv.get('APP_CLIENT_KEY', fallback: '');
 
   // PIN
   static const int pinLength = 6;

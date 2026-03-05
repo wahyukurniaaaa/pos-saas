@@ -3,7 +3,7 @@ import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 
 /// Provider for categories
-class CategoryNotifier extends AutoDisposeAsyncNotifier<List<Category>> {
+class CategoryNotifier extends AsyncNotifier<List<Category>> {
   @override
   Future<List<Category>> build() async {
     final db = ref.watch(databaseProvider);
@@ -12,12 +12,12 @@ class CategoryNotifier extends AutoDisposeAsyncNotifier<List<Category>> {
 }
 
 final categoryProvider =
-    AsyncNotifierProvider.autoDispose<CategoryNotifier, List<Category>>(
+    AsyncNotifierProvider<CategoryNotifier, List<Category>>(
       CategoryNotifier.new,
     );
 
 /// Provider for products
-class ProductNotifier extends AutoDisposeAsyncNotifier<List<Product>> {
+class ProductNotifier extends AsyncNotifier<List<Product>> {
   String? _searchQuery;
   int? _categoryId;
 
@@ -48,10 +48,9 @@ class ProductNotifier extends AutoDisposeAsyncNotifier<List<Product>> {
   }
 }
 
-final productProvider =
-    AsyncNotifierProvider.autoDispose<ProductNotifier, List<Product>>(
-      ProductNotifier.new,
-    );
+final productProvider = AsyncNotifierProvider<ProductNotifier, List<Product>>(
+  ProductNotifier.new,
+);
 
 /// Model for cart items
 class CartItem {
@@ -64,11 +63,11 @@ class CartItem {
     return CartItem(product: product, quantity: quantity ?? this.quantity);
   }
 
-  double get total => product.price * quantity;
+  double get total => (product.price * quantity).toDouble();
 }
 
 /// Provider for shopping cart
-class CartNotifier extends AutoDisposeNotifier<List<CartItem>> {
+class CartNotifier extends Notifier<List<CartItem>> {
   @override
   List<CartItem> build() => [];
 
@@ -112,6 +111,6 @@ class CartNotifier extends AutoDisposeNotifier<List<CartItem>> {
   double get subtotal => state.fold(0, (sum, item) => sum + item.total);
 }
 
-final cartProvider = NotifierProvider.autoDispose<CartNotifier, List<CartItem>>(
+final cartProvider = NotifierProvider<CartNotifier, List<CartItem>>(
   CartNotifier.new,
 );

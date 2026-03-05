@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:drift/drift.dart' hide Column;
 import 'package:posify_app/core/database/database.dart';
+import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:posify_app/features/auth/providers/owner_provider.dart';
 import '../providers/pos_providers.dart';
@@ -66,7 +68,7 @@ class _PosDashboardScreenState extends ConsumerState<PosDashboardScreen> {
     final cartNotifier = ref.read(cartProvider.notifier);
     final sessionAsync = ref.watch(sessionProvider);
 
-    final cashierName = sessionAsync.valueOrNull?.name ?? 'Kasir';
+    final cashierName = sessionAsync.value?.name ?? 'Kasir';
     final subtotal = cartNotifier.subtotal;
 
     return Column(
@@ -1120,15 +1122,25 @@ class _AddProductSheetState extends ConsumerState<_AddProductSheet> {
     setState(() => _isLoading = true);
 
     final db = ref.read(databaseProvider);
+    final cats = await db.getAllCategories();
+    final catId = cats.isNotEmpty ? cats.first.id : 1;
+
+    final enteredSku = _skuController.text.trim();
+    final sku = enteredSku.isNotEmpty
+        ? enteredSku
+        : 'SKU-${DateTime.now().millisecondsSinceEpoch}';
+
     await db.insertProduct(
       ProductsCompanion.insert(
+        categoryId: catId,
+        sku: sku,
         name: _nameController.text.trim(),
         price:
-            double.tryParse(
+            int.tryParse(
               _priceController.text.replaceAll('.', '').replaceAll(',', ''),
             ) ??
             0,
-        stock: int.tryParse(_stockController.text) ?? 0,
+        stock: Value(int.tryParse(_stockController.text) ?? 0),
       ),
     );
 

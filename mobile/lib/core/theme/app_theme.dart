@@ -4,26 +4,23 @@ import 'package:google_fonts/google_fonts.dart';
 class AppTheme {
   AppTheme._();
 
-  // Brand Colors
-  static const Color primaryColor = Color(0xFF1B6B4A);
-  static const Color primaryLight = Color(0xFF2E8B63);
-  static const Color primaryDark = Color(0xFF0D4F33);
-  static const Color accentColor = Color(0xFFF5A623);
-  static const Color accentLight = Color(0xFFFFD080);
+  // Brand Colors (Stitch Core Style Guide)
+  static const Color primaryColor = Color(0xFF1A237E);
+  static const Color successColor = Color(0xFF10B981);
+  static const Color dangerColor = Color(0xFFEF4444);
+  static const Color neutralSlate = Color(0xFF455A64);
 
-  // Semantic Colors
-  static const Color successColor = Color(0xFF27AE60);
-  static const Color errorColor = Color(0xFFE74C3C);
-  static const Color warningColor = Color(0xFFF39C12);
-  static const Color infoColor = Color(0xFF3498DB);
+  static const Color backgroundLight = Color(0xFFF6F6F8);
+  static const Color backgroundDark = Color(0xFF121320);
 
-  // Neutrals
-  static const Color scaffoldBg = Color(0xFFF5F7FA);
+  // Legacy compat mapping
+  static const Color primaryDark = Color(0xFF121858);
+  static const Color errorColor = dangerColor;
+  static const Color scaffoldBg = backgroundLight;
   static const Color cardBg = Colors.white;
-  static const Color textPrimary = Color(0xFF1A1A2E);
-  static const Color textSecondary = Color(0xFF6B7280);
-  static const Color dividerColor = Color(0xFFE5E7EB);
-  static const Color borderColor = Color(0xFFD1D5DB);
+  static const Color textPrimary = Color(0xFF0F172A); // slate-900
+  static const Color textSecondary = Color(0xFF64748B); // slate-500
+  static const Color borderColor = Color(0xFFE2E8F0); // slate-200
 
   static ThemeData get lightTheme {
     return ThemeData(
@@ -33,24 +30,26 @@ class AppTheme {
       scaffoldBackgroundColor: scaffoldBg,
       textTheme: GoogleFonts.interTextTheme(),
       appBarTheme: AppBarTheme(
-        backgroundColor: primaryColor,
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white,
+        foregroundColor: primaryColor,
         elevation: 0,
-        centerTitle: true,
+        centerTitle: false,
         titleTextStyle: GoogleFonts.inter(
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          color: primaryColor,
+          letterSpacing: -0.5,
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryColor,
           foregroundColor: Colors.white,
-          minimumSize: const Size(double.infinity, 52),
+          minimumSize: const Size(double.infinity, 48), // 48px from Components
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(8), // 8px (0.5rem lg)
           ),
+          elevation: 0,
           textStyle: GoogleFonts.inter(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -65,40 +64,51 @@ class AppTheme {
           vertical: 14,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: borderColor),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: borderColor),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: primaryColor, width: 2),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: errorColor),
         ),
-        labelStyle: GoogleFonts.inter(color: textSecondary),
-        hintStyle: GoogleFonts.inter(
-          color: textSecondary.withValues(alpha: 0.6),
+        labelStyle: GoogleFonts.inter(
+          color: textSecondary,
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
         ),
+        hintStyle: GoogleFonts.inter(color: textSecondary.withOpacity(0.5)),
       ),
       cardTheme: CardThemeData(
         color: cardBg,
-        elevation: 1,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        elevation: 0, // We use shadow-sm
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: primaryColor.withOpacity(0.05)),
+        ),
       ),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: Colors.white,
         selectedItemColor: primaryColor,
-        unselectedItemColor: textSecondary,
+        unselectedItemColor: Color(0xFF94A3B8), // slate-400
+        showUnselectedLabels: true,
         selectedLabelStyle: GoogleFonts.inter(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1.0,
         ),
-        unselectedLabelStyle: GoogleFonts.inter(fontSize: 12),
+        unselectedLabelStyle: GoogleFonts.inter(
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1.0,
+        ),
         type: BottomNavigationBarType.fixed,
       ),
     );
