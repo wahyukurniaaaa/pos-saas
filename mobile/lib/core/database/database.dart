@@ -84,6 +84,8 @@ class PosifyDatabase extends _$PosifyDatabase {
       into(categories).insert(entry);
 
   // ===== Product Queries =====
+  Future<List<Product>> getAllProducts() => select(products).get();
+
   Stream<List<Product>> watchAllProducts() => select(products).watch();
 
   Future<List<Product>> getProductsByCategory(int categoryId) =>
