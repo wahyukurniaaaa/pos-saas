@@ -1,0 +1,167 @@
+{
+    "info": {
+        "_postman_id": "c7a8b9f0-d1e2-4567-a8b9-c0d1e2f3a4b5",
+        "name": "POSify SaaS",
+        "description": "Koleksi API Endpoint untuk POSify SaaS (License Server) Backend Golang Fiber",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Health Check (Ping)",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{base_url}}/api/v1/ping",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "api",
+                        "v1",
+                        "ping"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "License",
+            "item": [
+                {
+                    "name": "Activate License",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "X-App-Client-Key",
+                                "value": "e3ccc142697425eb3aa9d059aee7db30d12f2d70cd60aea7",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"license_code\": \"POS-L1-A8F9K2-X1Y2Z3\",\n  \"device_fingerprint\": \"75c61239-0d2a-4467-b5de-8bb6d1a51167\",\n  \"device_model\": \"Samsung SM-T295\",\n  \"os_version\": \"Android 11\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/license/activate",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "license",
+                                "activate"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Verify License",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "X-App-Client-Key",
+                                "value": "e3ccc142697425eb3aa9d059aee7db30d12f2d70cd60aea7",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"license_code\": \"POS-L1-A8F9K2-X1Y2Z3\",\n  \"device_fingerprint\": \"75c61239-0d2a-4467-b5de-8bb6d1a51167\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/license/verify",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "license",
+                                "verify"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Generate License (Admin)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "X-Admin-Secret-Key",
+                                "value": "super_admin_secret_123",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"tier_level\": \"Tier 1 - Lifetime\",\n  \"max_devices\": 1\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/admin/license/generate",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "admin",
+                                "license",
+                                "generate"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        }
+    ],
+    "event": [
+        {
+            "listen": "prerequest",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        },
+        {
+            "listen": "test",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        }
+    ],
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:3000",
+            "type": "string"
+        }
+    ]
+}

@@ -13,10 +13,10 @@ Local      : http://localhost:3000/api/v1
 ```
 
 ## 🔒 Otentikasi
-API ini bersifat *Public* untuk *endpoint* aktivasi, namun diproteksi menggunakan **API Key** statis pada HTTP Header untuk mencegah serangan DDoS atau spamming dari luar aplikasi Mobile resmi.
+API ini bersifat *Public* untuk *endpoint* aktivasi, namun diproteksi menggunakan **API Key** statis pada HTTP Header untuk mencegah serangan DDoS atau spamming dari luar aplikasi Mobile resmi. *Endpoint* admin menggunakan *Admin Secret Key*.
 
 **Global Header Requirements:**
-- `X-App-Client-Key`: `string` (*Secret API Key tertanam di dalam APK Flutter*)
+- `X-App-Client-Key`: `string` (*Secret API Key tertanam di dalam APK Flutter*) atau `X-Admin-Secret-Key` (Untuk endpoint /admin)
 - `Content-Type`: `application/json`
 
 ---
@@ -116,6 +116,40 @@ Jika `device_fingerprint` yang datang tidak cocok dengan yang sudah direkam sebe
   "message": "Lisensi Aktif.",
   "data": {
     "is_active": true
+  }
+}
+```
+
+---
+
+## 📌 Endpoint: POST `/api/v1/admin/license/generate`
+
+**Deskripsi:**  
+(Admin Only) Men-*generate* kode lisensi baru yang bisa diberikan/dijual ke *Owner*. Route ini diproteksi oleh `X-Admin-Secret-Key`.
+
+### 📥 Request Body
+```json
+{
+  "tier_level": "Tier 1 - Lifetime",
+  "max_devices": 1
+}
+```
+
+| Parameter | Type | Keterangan | Validasi |
+| :--- | :--- | :--- | :--- |
+| `tier_level` | `string` | Tipe tier lisensi | Wajib |
+| `max_devices` | `int` | Jumlah maksimal perangkat. | Wajib, min 1 |
+
+### 📤 Response (201 Created)
+```json
+{
+  "status": "success",
+  "code": 201,
+  "message": "Lisensi berhasil dibuat.",
+  "data": {
+    "license_code": "POS-L1-4F2A1-9EB8C",
+    "tier_level": "Tier 1 - Lifetime",
+    "max_devices": 1
   }
 }
 ```

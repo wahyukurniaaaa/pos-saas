@@ -1,6 +1,6 @@
 # 🗄️ POSify - Database Schema (ERD)
 
-Dokumen ini memuat skema database relasional (SQLite) untuk mendukung semua fitur *Offline-First* sesuai dengan draf UI/UX.
+Dokumen ini memuat skema database relasional (SQLite via Drift ORM) untuk mendukung semua fitur *Offline-First* secara reaktif sesuai dengan draf UI/UX, dan dipersiapkan (*Future-Proof*) untuk sinkronisasi Tier 2 di masa mendatang.
 
 ---
 
@@ -124,9 +124,9 @@ erDiagram
 
 ---
 
-## 2. Struktur Tabel & Penjelasan (SQLite Data Types)
+## 2. Struktur Tabel & Penjelasan (SQLite Data Types - Drift ORM)
 
-Di dalam SQLite, tipe data utama yang dipakai adalah `TEXT` dan `INTEGER`. Tanggal kita simpan sebagai `TEXT` dengan format `ISO 8601` untuk standar lokalisasi.
+Di dalam SQLite (yang diatur via Drift ORM), tipe data utama yang dipakai adalah `TEXT` dan `INTEGER`. Tanggal dan UUID akan disesuaikan menjadi *class type-safe* di layer Dart dengan *fallback* fungsi penyimpanan secara `TEXT` berformat `ISO 8601` untuk standar lokalisasi dan sinkronisasi log di Tier 2 nanti.
 
 ### a) `licenses` (Otorisasi Perangkat)
 Satu perangkat SQLite hanya perlu `SELECT * FROM licenses LIMIT 1`. Jika perangkat terganti, *device fingerprint* tidak akan cocok dan aplikasi akan terkunci otomatis.

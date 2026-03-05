@@ -5,7 +5,7 @@
 Berdasarkan pedoman `mobile-design`:
 - **Thumb Zone:** Navigasi utama (Tab Bar / Bottom Nav) dan tombol aksi utama (CTA seperti "Bayar", "Simpan") ditempatkan di bagian bawah layar.
 - **Touch Target:** Semua tombol minimal 48dp x 48dp (standar Material Android / ideal touch).
-- **Offline Context:** Tidak ada indikator "Loading dari Server" yang memblokir UI saat transaksi (selalu optimistik lokal).
+- **Offline Context:** Tidak ada indikator "Loading dari Server" yang memblokir UI saat transaksi (selalu optimistik lokal). Layar akan responsif seketika (Reactive Stream via Drift ORM).
 - **Efisiensi Cepat:** Pencarian produk mendukung Barcode Scanner, dan interaksi kasir meminimalisir pindah-pindah layar (Vertical Feed untuk keranjang belanja).
 
 ---
@@ -112,9 +112,9 @@ Berdasarkan pedoman `mobile-design`:
 
 ---
 
-## 3. Ekstraksi Kebutuhan Tabel Database (SQLite Draft 1)
+## 3. Ekstraksi Kebutuhan Tabel Database (Drift ORM Draft 1)
 
-Dari flow UI di atas, kita membutuhkan struktur tabel relasional mandiri (offline):
+Dari flow UI di atas, kita membutuhkan struktur *Class List Table* di layer Drift ORM:
 
 1. **`licenses`** (Menyimpan status aktivasi & *device fingerprint*).
 2. **`employees`** (Menyimpan PIN 6 digit, Nama, Role level).

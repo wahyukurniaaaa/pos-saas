@@ -26,7 +26,7 @@ Aplikasi POSify adalah sistem Point of Sale (POS) yang dirancang khusus untuk UM
 | **Batas Karyawan** | **Tidak Terbatas (Lokal)** | Tidak Terbatas |
 | **Akses Peran** | Hierarki Kumulatif (L1, L2, L3) | Hierarki Kumulatif (L1, L2, L3) |
 | **Manajemen Stok** | Stok In/Out & Opname (Lokal) | Multi-Gudang & Sync Cloud |
-| **Penyimpanan** | Full Offline (SQLite) | Hybrid (SQLite \+ Supabase) |
+| **Penyimpanan** | Full Offline (SQLite via Drift ORM) | Hybrid (SQLite + Supabase via PowerSync) |
 | **Backup Data** | **Manual ke Google Drive/Lokal** | **Otomatis (Cloud Sync)** |
 | **Aktivasi** | Online License Key (1x) | Login Akun SaaS |
 
@@ -58,6 +58,12 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
 * **Manual Cloud Export:** Fitur pencadangan sekunder ke **Google Drive** pribadi pengusaha sebagai antisipasi jika perangkat fisik hilang atau rusak berat.
 * **Data Recovery:** Proses memulihkan dan memuat ulang data operasional dari titik *backup* lokal maupun *cloud* jika melakukan perpindahan atau *reset* perangkat.
 
+### **4.5. Arsitektur Reactive Offline-First (Local State)**
+
+*   **Database Engine:** Menggunakan **Drift ORM** di atas SQLite untuk memberikan lapisan keamanan pengetikan data (*Type-Safety*) penuh dan kehandalan struktur.
+*   **Reactive UI:** Setiap perubahan data stok, status transaksi, atau operasional shift dari SQLite divisualisasikan secara *Real-Time* menggunakan *Stream* Drift ke antarmuka aplikasi Kasir (Flutter) tanpa membebani perangkat secara aktif.
+*   **Tier 2 Readiness:** Struktur tabel dirancang agar sepenuhnya kompatibel dengan integrasi PowerSync (Server Sync) yang akan dihidupkan di iterasi bisnis mendatang dengan *coding overhaul* 0%.
+
 ## **5\. Aturan Validasi Data (Data Integrity)**
 
 | Entitas | Field | Aturan Validasi |
@@ -84,7 +90,7 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
 ## **6\. Arsitektur Teknis & Tech Stack**
 
 * **Backend:** **Go (Fiber)** untuk server generator & aktivasi lisensi.  
-* **Database App:** **SQLite** (Lokal) & **Supabase** (Master lisensi & akun owner).  
+* **Database App:** **SQLite (via Drift ORM)** (Lokal) & **Supabase** (Master lisensi & akun owner).  
 * **Mobile Framework:** **Flutter** (Target Android APK).  
 * **Integrasi:** Google Drive API (Backup) & ESC/POS (Printing).
 
