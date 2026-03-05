@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
+import '../providers/owner_provider.dart';
 
-class OwnerSetupScreen extends StatefulWidget {
+class OwnerSetupScreen extends ConsumerStatefulWidget {
   const OwnerSetupScreen({super.key});
 
   @override
-  State<OwnerSetupScreen> createState() => _OwnerSetupScreenState();
+  ConsumerState<OwnerSetupScreen> createState() => _OwnerSetupScreenState();
 }
 
-class _OwnerSetupScreenState extends State<OwnerSetupScreen> {
+class _OwnerSetupScreenState extends ConsumerState<OwnerSetupScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _storeNameController = TextEditingController();
@@ -17,6 +19,7 @@ class _OwnerSetupScreenState extends State<OwnerSetupScreen> {
   final _confirmPinController = TextEditingController();
   bool _obscurePin = true;
   bool _obscureConfirm = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -98,9 +101,11 @@ class _OwnerSetupScreenState extends State<OwnerSetupScreen> {
                             decoration: const InputDecoration(
                               hintText: 'Contoh: Bapak Budi',
                             ),
-                            validator: (v) => v == null || v.isEmpty
-                                ? 'Nama wajib diisi'
-                                : null,
+                            validator: (v) {
+                              if (v == null || v.isEmpty)
+                                return 'Nama wajib diisi';
+                              return null;
+                            },
                           ),
                           const SizedBox(height: 20),
 
@@ -112,9 +117,11 @@ class _OwnerSetupScreenState extends State<OwnerSetupScreen> {
                             decoration: const InputDecoration(
                               hintText: 'Contoh: Toko Budi Jaya',
                             ),
-                            validator: (v) => v == null || v.isEmpty
-                                ? 'Nama toko wajib diisi'
-                                : null,
+                            validator: (v) {
+                              if (v == null || v.isEmpty)
+                                return 'Nama toko wajib diisi';
+                              return null;
+                            },
                           ),
                           const SizedBox(height: 20),
 
@@ -190,13 +197,24 @@ class _OwnerSetupScreenState extends State<OwnerSetupScreen> {
                             width: double.infinity,
                             height: 52,
                             child: ElevatedButton.icon(
-                              onPressed: _saveOwnerSetup,
-                              icon: const Icon(
-                                Icons.rocket_launch_rounded,
-                                size: 20,
-                              ),
+                              onPressed: _isLoading ? null : _saveOwnerSetup,
+                              icon: _isLoading
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.rocket_launch_rounded,
+                                      size: 20,
+                                    ),
                               label: Text(
-                                'MULAI GUNAKAN POSIFY',
+                                _isLoading
+                                    ? 'MENYIMPAN...'
+                                    : 'MULAI GUNAKAN POSIFY',
                                 style: GoogleFonts.inter(
                                   fontWeight: FontWeight.w700,
                                   letterSpacing: 0.5,
@@ -244,9 +262,29 @@ class _OwnerSetupScreenState extends State<OwnerSetupScreen> {
   Future<void> _saveOwnerSetup() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // TODO: Save to Drift DB (employees + store_profile)
-    if (mounted) {
+    setState(() => _isLoading = true);
+
+    final success = await ref
+        .read(ownerProvider.notifier)
+        .setupOwner(
+          name: _nameController.text.trim(),
+          storeName: _storeNameController.text.trim(),
+          pin: _pinController.text,
+        );
+
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+
+    if (success) {
       Navigator.pushReplacementNamed(context, '/pin-login');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Gagal menyimpan data. Coba lagi.'),
+          backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 }

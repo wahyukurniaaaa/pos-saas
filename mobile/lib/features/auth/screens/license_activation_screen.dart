@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
+import '../providers/auth_providers.dart';
 
-class LicenseActivationScreen extends StatefulWidget {
+class LicenseActivationScreen extends ConsumerStatefulWidget {
   const LicenseActivationScreen({super.key});
 
   @override
-  State<LicenseActivationScreen> createState() =>
+  ConsumerState<LicenseActivationScreen> createState() =>
       _LicenseActivationScreenState();
 }
 
-class _LicenseActivationScreenState extends State<LicenseActivationScreen>
+class _LicenseActivationScreenState
+    extends ConsumerState<LicenseActivationScreen>
     with SingleTickerProviderStateMixin {
   final _licenseController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -276,14 +279,29 @@ class _LicenseActivationScreenState extends State<LicenseActivationScreen>
 
     setState(() => _isLoading = true);
 
-    // TODO: Implement actual API call via Dio to Go backend
-    await Future.delayed(const Duration(seconds: 2));
+    final success = await ref
+        .read(licenseProvider.notifier)
+        .activate(_licenseController.text.trim());
 
+    if (!mounted) return;
     setState(() => _isLoading = false);
 
-    if (mounted) {
-      // Navigate to Owner Setup
+    if (success) {
       Navigator.pushReplacementNamed(context, '/owner-setup');
+    } else {
+      final error = ref.read(licenseProvider);
+      final msg = error.maybeWhen(
+        error: (e, _) => e.toString(),
+        orElse: () => 'Aktivasi gagal. Periksa kode atau koneksi Anda.',
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(msg),
+          backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 }

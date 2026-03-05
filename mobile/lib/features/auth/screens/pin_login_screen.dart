@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
+import '../providers/owner_provider.dart';
 
-class PinLoginScreen extends StatefulWidget {
+class PinLoginScreen extends ConsumerStatefulWidget {
   const PinLoginScreen({super.key});
 
   @override
-  State<PinLoginScreen> createState() => _PinLoginScreenState();
+  ConsumerState<PinLoginScreen> createState() => _PinLoginScreenState();
 }
 
-class _PinLoginScreenState extends State<PinLoginScreen>
+class _PinLoginScreenState extends ConsumerState<PinLoginScreen>
     with SingleTickerProviderStateMixin {
   String _pin = '';
   bool _isError = false;
@@ -66,21 +68,21 @@ class _PinLoginScreenState extends State<PinLoginScreen>
   Future<void> _verifyPin() async {
     HapticFeedback.lightImpact();
 
-    // TODO: Verify PIN from Drift DB
-    await Future.delayed(const Duration(milliseconds: 300));
+    final employee = await ref
+        .read(sessionProvider.notifier)
+        .loginWithPin(_pin);
 
-    // Simulate: accept any 6-digit PIN for now
-    if (_pin == '123456') {
-      // Invalid PIN
+    if (!mounted) return;
+
+    if (employee != null) {
+      // Success – navigate to POS dashboard
+      Navigator.pushReplacementNamed(context, '/pos');
+    } else {
+      // Failed PIN
       _shakeController.forward(from: 0);
       setState(() => _isError = true);
       await Future.delayed(const Duration(milliseconds: 800));
       _clearPin();
-    } else {
-      // Success - navigate to POS
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/pos');
-      }
     }
   }
 
