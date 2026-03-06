@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#1a227f",
+              "background-light": "#f6f6f8",
+              "background-dark": "#121320",
+            },
+            fontFamily: {
+              "display": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<title>Penyesuaian Stok (Opname)</title>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+<header class="sticky top-0 z-10 flex items-center bg-background-light dark:bg-background-dark p-4 border-b border-slate-200 dark:border-slate-800 justify-between">
+<div class="text-slate-900 dark:text-slate-100 flex size-10 shrink-0 items-center justify-start cursor-pointer">
+<span class="material-symbols-outlined">arrow_back</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight flex-1 text-center">Penyesuaian Stok (Opname)</h2>
+<div class="flex w-10 items-center justify-end">
+<button class="text-primary text-base font-bold leading-normal tracking-tight hover:opacity-80">Simpan</button>
+</div>
+</header>
+<main class="flex-1 flex flex-col">
+<div class="px-4 py-4">
+<label class="flex flex-col min-w-40 h-12 w-full">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full overflow-hidden border border-slate-200 dark:border-slate-800 focus-within:border-primary">
+<div class="text-slate-400 flex bg-white dark:bg-slate-900 items-center justify-center pl-4">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden text-slate-900 dark:text-slate-100 focus:outline-0 focus:ring-0 border-none bg-white dark:bg-slate-900 h-full placeholder:text-slate-400 px-4 pl-2 text-base font-normal" placeholder="Cari Produk / SKU" value=""/>
+</div>
+</label>
+</div>
+<div class="flex flex-col divide-y divide-slate-100 dark:divide-slate-800">
+<div class="flex gap-4 bg-white dark:bg-slate-900/50 px-4 py-4 justify-between items-center">
+<div class="flex flex-1 flex-col justify-center">
+<p class="text-slate-900 dark:text-slate-100 text-base font-semibold leading-tight">Indomie Goreng Spesial</p>
+<p class="text-slate-500 text-xs font-medium mt-1">SKU: IND-GOR-SP</p>
+<div class="flex gap-3 mt-2">
+<p class="text-slate-500 text-xs">Sistem: <span class="text-slate-900 dark:text-slate-100 font-bold">24</span></p>
+<p class="text-red-600 dark:text-red-400 text-xs">Selisih: <span class="font-bold">-2</span></p>
+</div>
+</div>
+<div class="shrink-0">
+<div class="flex items-center gap-3 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+<button class="flex h-8 w-8 items-center justify-center rounded-md bg-white dark:bg-slate-700 text-primary shadow-sm hover:bg-slate-50">
+<span class="material-symbols-outlined text-lg">remove</span>
+</button>
+<input class="text-base font-bold leading-normal w-8 p-0 text-center bg-transparent focus:outline-0 focus:ring-0 border-none [appearance:textfield] [&amp;::-webkit-inner-spin-button]:appearance-none [&amp;::-webkit-outer-spin-button]:appearance-none" type="number" value="22"/>
+<button class="flex h-8 w-8 items-center justify-center rounded-md bg-white dark:bg-slate-700 text-primary shadow-sm hover:bg-slate-50">
+<span class="material-symbols-outlined text-lg">add</span>
+</button>
+</div>
+</div>
+</div>
+<div class="flex gap-4 bg-white dark:bg-slate-900/50 px-4 py-4 justify-between items-center">
+<div class="flex flex-1 flex-col justify-center">
+<p class="text-slate-900 dark:text-slate-100 text-base font-semibold leading-tight">Kopi Kapal Api Mix</p>
+<p class="text-slate-500 text-xs font-medium mt-1">SKU: KOP-KAP-MIX</p>
+<div class="flex gap-3 mt-2">
+<p class="text-slate-500 text-xs">Sistem: <span class="text-slate-900 dark:text-slate-100 font-bold">5</span></p>
+<p class="text-slate-500 text-xs">Selisih: <span class="font-bold">0</span></p>
+</div>
+</div>
+<div class="shrink-0">
+<div class="flex items-center gap-3 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+<button class="flex h-8 w-8 items-center justify-center rounded-md bg-white dark:bg-slate-700 text-primary shadow-sm hover:bg-slate-50">
+<span class="material-symbols-outlined text-lg">remove</span>
+</button>
+<input class="text-base font-bold leading-normal w-8 p-0 text-center bg-transparent focus:outline-0 focus:ring-0 border-none [appearance:textfield] [&amp;::-webkit-inner-spin-button]:appearance-none [&amp;::-webkit-outer-spin-button]:appearance-none" type="number" value="5"/>
+<button class="flex h-8 w-8 items-center justify-center rounded-md bg-white dark:bg-slate-700 text-primary shadow-sm hover:bg-slate-50">
+<span class="material-symbols-outlined text-lg">add</span>
+</button>
+</div>
+</div>
+</div>
+<div class="flex gap-4 bg-white dark:bg-slate-900/50 px-4 py-4 justify-between items-center">
+<div class="flex flex-1 flex-col justify-center">
+<p class="text-slate-900 dark:text-slate-100 text-base font-semibold leading-tight">Teh Pucuk Harum 350ml</p>
+<p class="text-slate-500 text-xs font-medium mt-1">SKU: TEH-PUC-350</p>
+<div class="flex gap-3 mt-2">
+<p class="text-slate-500 text-xs">Sistem: <span class="text-slate-900 dark:text-slate-100 font-bold">12</span></p>
+<p class="text-red-600 dark:text-red-400 text-xs">Selisih: <span class="font-bold">-2</span></p>
+</div>
+</div>
+<div class="shrink-0">
+<div class="flex items-center gap-3 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+<button class="flex h-8 w-8 items-center justify-center rounded-md bg-white dark:bg-slate-700 text-primary shadow-sm hover:bg-slate-50">
+<span class="material-symbols-outlined text-lg">remove</span>
+</button>
+<input class="text-base font-bold leading-normal w-8 p-0 text-center bg-transparent focus:outline-0 focus:ring-0 border-none [appearance:textfield] [&amp;::-webkit-inner-spin-button]:appearance-none [&amp;::-webkit-outer-spin-button]:appearance-none" type="number" value="10"/>
+<button class="flex h-8 w-8 items-center justify-center rounded-md bg-white dark:bg-slate-700 text-primary shadow-sm hover:bg-slate-50">
+<span class="material-symbols-outlined text-lg">add</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-auto p-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800">
+<label class="block mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">Alasan Perubahan (Untuk Log Audit)</label>
+<textarea class="form-textarea w-full rounded-lg border-slate-200 dark:border-slate-800 bg-background-light dark:bg-slate-950 focus:border-primary focus:ring-0 text-sm h-24 placeholder:text-slate-400" placeholder="Barang rusak/hilang"></textarea>
+<div class="mt-4 flex gap-4 items-center justify-between p-3 bg-primary/10 rounded-lg">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined">info</span>
+<span class="text-xs font-medium">Total 3 Item akan diperbarui</span>
+</div>
+<button class="bg-primary text-white px-6 py-2 rounded-lg font-bold text-sm shadow-md hover:opacity-90 active:scale-95 transition-transform">
+                        Simpan Perubahan
+                    </button>
+</div>
+</div>
+</main>
+<div class="h-8 bg-background-light dark:bg-background-dark"></div>
+</div>
+</body></html>

@@ -47,7 +47,7 @@ class AppBootstrap extends ConsumerWidget {
 
     return licenseAsync.when(
       loading: () => const _SplashScreen(),
-      error: (_, __) => const LicenseActivationScreen(),
+      error: (error, stackTrace) => const LicenseActivationScreen(),
       data: (license) {
         if (license == null) {
           return const LicenseActivationScreen();
@@ -55,7 +55,7 @@ class AppBootstrap extends ConsumerWidget {
 
         return ownerAsync.when(
           loading: () => const _SplashScreen(),
-          error: (_, __) => const OwnerSetupScreen(),
+          error: (error, stackTrace) => const OwnerSetupScreen(),
           data: (owner) {
             if (owner == null) {
               return const OwnerSetupScreen();

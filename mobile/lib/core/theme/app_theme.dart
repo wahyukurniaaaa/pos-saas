@@ -84,14 +84,16 @@ class AppTheme {
           fontSize: 14,
           fontWeight: FontWeight.w500,
         ),
-        hintStyle: GoogleFonts.inter(color: textSecondary.withOpacity(0.5)),
+        hintStyle: GoogleFonts.inter(
+          color: textSecondary.withValues(alpha: 0.5),
+        ),
       ),
       cardTheme: CardThemeData(
         color: cardBg,
         elevation: 0, // We use shadow-sm
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: primaryColor.withOpacity(0.05)),
+          side: BorderSide(color: primaryColor.withValues(alpha: 0.05)),
         ),
       ),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(

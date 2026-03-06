@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>POSify Login - Masukkan PIN</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1a227f",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#121320",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display min-h-screen flex flex-col items-center justify-between">
+<!-- Top Navigation / Branding -->
+<header class="w-full bg-white dark:bg-slate-900 border-b border-primary/10 px-6 py-4 flex items-center justify-between">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined text-3xl font-bold">storefront</span>
+<span class="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">POSify</span>
+</div>
+<div class="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-2xl">help_outline</span>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col items-center justify-center w-full max-w-md px-6">
+<div class="text-center mb-8">
+<div class="bg-primary/5 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+<span class="material-symbols-outlined text-primary text-4xl">lock_open</span>
+</div>
+<h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">Masukkan PIN Anda</h1>
+<p class="text-slate-500 dark:text-slate-400 mt-2">Gunakan 6 digit PIN kasir Anda</p>
+</div>
+<!-- Visual PIN Feedback (Dots) -->
+<div class="flex justify-center gap-4 mb-12">
+<!-- Active/Filled dots state mockup -->
+<div class="w-4 h-4 rounded-full bg-primary"></div>
+<div class="w-4 h-4 rounded-full bg-primary"></div>
+<div class="w-4 h-4 rounded-full bg-primary"></div>
+<div class="w-4 h-4 rounded-full bg-slate-300 dark:bg-slate-700"></div>
+<div class="w-4 h-4 rounded-full bg-slate-300 dark:bg-slate-700"></div>
+<div class="w-4 h-4 rounded-full bg-slate-300 dark:bg-slate-700"></div>
+</div>
+</main>
+<!-- Bottom Numpad Section -->
+<section class="w-full bg-white dark:bg-slate-900 rounded-t-[2.5rem] shadow-2xl p-8 pb-10 border-t border-primary/5">
+<div class="max-w-md mx-auto grid grid-cols-3 gap-4">
+<!-- Row 1 -->
+<button class="h-16 flex items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-800 text-2xl font-semibold text-slate-800 dark:text-slate-100 active:bg-primary active:text-white transition-colors">1</button>
+<button class="h-16 flex items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-800 text-2xl font-semibold text-slate-800 dark:text-slate-100 active:bg-primary active:text-white transition-colors">2</button>
+<button class="h-16 flex items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-800 text-2xl font-semibold text-slate-800 dark:text-slate-100 active:bg-primary active:text-white transition-colors">3</button>
+<!-- Row 2 -->
+<button class="h-16 flex items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-800 text-2xl font-semibold text-slate-800 dark:text-slate-100 active:bg-primary active:text-white transition-colors">4</button>
+<button class="h-16 flex items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-800 text-2xl font-semibold text-slate-800 dark:text-slate-100 active:bg-primary active:text-white transition-colors">5</button>
+<button class="h-16 flex items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-800 text-2xl font-semibold text-slate-800 dark:text-slate-100 active:bg-primary active:text-white transition-colors">6</button>
+<!-- Row 3 -->
+<button class="h-16 flex items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-800 text-2xl font-semibold text-slate-800 dark:text-slate-100 active:bg-primary active:text-white transition-colors">7</button>
+<button class="h-16 flex items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-800 text-2xl font-semibold text-slate-800 dark:text-slate-100 active:bg-primary active:text-white transition-colors">8</button>
+<button class="h-16 flex items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-800 text-2xl font-semibold text-slate-800 dark:text-slate-100 active:bg-primary active:text-white transition-colors">9</button>
+<!-- Row 4 -->
+<button class="h-16 flex items-center justify-center rounded-xl text-lg font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors uppercase tracking-wider">C</button>
+<button class="h-16 flex items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-800 text-2xl font-semibold text-slate-800 dark:text-slate-100 active:bg-primary active:text-white transition-colors">0</button>
+<button class="h-16 flex items-center justify-center rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-3xl">backspace</span>
+</button>
+</div>
+<div class="mt-8 text-center">
+<button class="text-primary font-semibold hover:underline decoration-2 underline-offset-4">
+                Lupa PIN Kasir?
+            </button>
+</div>
+</section>
+</body></html>

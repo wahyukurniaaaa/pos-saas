@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1a227f",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#121320",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+<!-- Top Navigation -->
+<header class="flex items-center px-4 py-4 bg-background-light dark:bg-background-dark sticky top-0 z-10">
+<button class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined text-primary" data-icon="ArrowLeft">arrow_back</span>
+</button>
+<h2 class="flex-1 text-center text-lg font-bold tracking-tight pr-10">Status Transaksi</h2>
+</header>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col items-center justify-center px-6 py-8">
+<!-- Success Icon -->
+<div class="mb-6 flex items-center justify-center bg-green-100 dark:bg-green-900/30 rounded-full w-24 h-24">
+<span aria-label="success" class="text-6xl" role="img">✅</span>
+</div>
+<!-- Success Message -->
+<div class="text-center space-y-2">
+<h3 class="text-2xl font-bold tracking-tight text-primary">TRANSAKSI BERHASIL</h3>
+<p class="text-slate-500 dark:text-slate-400 font-medium">Pesanan Anda telah diproses</p>
+</div>
+<!-- Transaction Details Card -->
+<div class="w-full max-w-sm mt-10 p-6 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
+<div class="flex flex-col items-center">
+<span class="text-slate-500 dark:text-slate-400 text-sm font-medium uppercase tracking-wider">Kembalian</span>
+<h1 class="text-3xl font-bold text-slate-900 dark:text-white mt-1">Rp 9.000</h1>
+</div>
+<div class="mt-6 pt-6 border-t border-dashed border-slate-300 dark:border-slate-600">
+<div class="flex justify-between text-sm py-1">
+<span class="text-slate-500">ID Transaksi</span>
+<span class="font-mono font-bold text-slate-700 dark:text-slate-300">#TX-992011</span>
+</div>
+<div class="flex justify-between text-sm py-1">
+<span class="text-slate-500">Waktu</span>
+<span class="font-medium text-slate-700 dark:text-slate-300">24 Okt 2023, 14:20</span>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer Actions -->
+<footer class="w-full max-w-sm mx-auto px-6 pb-10 space-y-3">
+<button class="w-full flex items-center justify-center gap-2 h-14 rounded-xl border-2 border-primary/20 bg-transparent text-primary text-base font-bold transition-all active:scale-95 hover:bg-primary/5">
+<span class="text-lg">🖨️</span>
+<span>CETAK ULANG STRUK</span>
+</button>
+<button class="w-full flex items-center justify-center h-14 rounded-xl bg-primary text-white text-base font-bold shadow-lg shadow-primary/20 transition-all active:scale-95">
+<span>LANJUT TRANSAKSI BARU</span>
+</button>
+</footer>
+<!-- Bottom Spacing -->
+<div class="h-4 bg-background-light dark:bg-background-dark"></div>
+</body></html>

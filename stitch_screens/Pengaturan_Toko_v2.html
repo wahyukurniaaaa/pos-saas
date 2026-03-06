@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1a227f",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#121320",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
+<div class="relative flex min-h-screen w-full flex-col max-w-md mx-auto bg-background-light dark:bg-background-dark shadow-xl overflow-x-hidden">
+<!-- Header -->
+<div class="flex items-center bg-white dark:bg-slate-900 p-4 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-10">
+<button class="text-primary flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight flex-1 text-center pr-10">Pengaturan Toko</h2>
+</div>
+<!-- User Profile Section -->
+<div class="p-6 @container bg-white dark:bg-slate-900 mb-2">
+<div class="flex w-full flex-col gap-4 @[320px]:flex-row @[320px]:items-center">
+<div class="flex gap-4 items-center">
+<div class="bg-primary/10 flex items-center justify-center rounded-full min-h-[72px] w-[72px] border-2 border-primary/20 overflow-hidden">
+<img alt="User Avatar" class="h-full w-full object-cover" data-alt="Professional male avatar photo for store owner profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGi-LVIP7_HXDbbjpkeWiimPA3K7Vo3uXszHEJ0gcpb2wV5PSFXX72T-_7LW9xlkjd4s4m_Q7-jIMR_xFFNOMhRC3rcg_XaCf8IaC9u2C8x5DGl0k3DqCo9fLaOytyB-m1jcYXGL18YadR115C_Vfo2uuoL1P0vwakSBPi7BDGh45EVG2BdxE4QwwutR1-bDpHATErH_xUd2RQj-kSesfsX4tc-7JHqmq5WgFzOoRuDnHT3PyoCkMGS6v8XCoG7Mhj8f1TlB3WuzE"/>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-slate-900 dark:text-white text-xl font-bold leading-tight">Budi (Owner)</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Toko Budi Jaya</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Menu Groups -->
+<div class="flex flex-col gap-2 pb-24">
+<!-- Group 1: Operational -->
+<div class="bg-white dark:bg-slate-900 py-2">
+<h3 class="text-slate-400 dark:text-slate-500 text-xs font-bold uppercase tracking-wider px-4 pb-2 pt-2">Operasional</h3>
+<div class="flex items-center gap-4 px-4 min-h-[56px] hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-10">
+<span class="material-symbols-outlined">group</span>
+</div>
+<p class="text-slate-900 dark:text-slate-100 text-base font-medium flex-1">Kelola Karyawan</p>
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</div>
+<div class="flex items-center gap-4 px-4 min-h-[56px] hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-10">
+<span class="material-symbols-outlined">inventory_2</span>
+</div>
+<p class="text-slate-900 dark:text-slate-100 text-base font-medium flex-1">Master Data (Kategori &amp; Produk)</p>
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</div>
+</div>
+<!-- Group 2: Analytics -->
+<div class="bg-white dark:bg-slate-900 py-2">
+<h3 class="text-slate-400 dark:text-slate-500 text-xs font-bold uppercase tracking-wider px-4 pb-2 pt-2">Laporan</h3>
+<div class="flex items-center gap-4 px-4 min-h-[56px] hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-10">
+<span class="material-symbols-outlined">analytics</span>
+</div>
+<p class="text-slate-900 dark:text-slate-100 text-base font-medium flex-1">Laporan Penjualan (Analytics)</p>
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</div><div class="flex items-center gap-4 px-4 min-h-[56px] hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-10">
+<span class="material-symbols-outlined">history</span>
+</div>
+<p class="text-slate-900 dark:text-slate-100 text-base font-medium flex-1">Daftar Riwayat Sesi Shift</p>
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</div>
+<div class="flex items-center gap-4 px-4 min-h-[56px] hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-10">
+<span class="material-symbols-outlined">receipt_long</span>
+</div>
+<p class="text-slate-900 dark:text-slate-100 text-base font-medium flex-1">Riwayat Transaksi (Nota &amp; Void)</p>
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</div>
+<div class="flex items-center gap-4 px-4 min-h-[56px] hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-10">
+<span class="material-symbols-outlined">print</span>
+</div>
+<p class="text-slate-900 dark:text-slate-100 text-base font-medium flex-1">Pengaturan Printer (Bluetooth)</p>
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</div></div>
+<!-- Group 3: Backup -->
+<div class="bg-white dark:bg-slate-900 py-2">
+<h3 class="text-slate-400 dark:text-slate-500 text-xs font-bold uppercase tracking-wider px-4 pb-2 pt-2">Data &amp; Keamanan</h3>
+<div class="flex items-center gap-4 px-4 min-h-[56px] hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-10">
+<span class="material-symbols-outlined">storage</span>
+</div>
+<p class="text-slate-900 dark:text-slate-100 text-base font-medium flex-1">Backup ke Storage Internal</p>
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</div>
+<div class="flex items-center gap-4 px-4 min-h-[56px] hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-10">
+<span class="material-symbols-outlined">cloud_upload</span>
+</div>
+<p class="text-slate-900 dark:text-slate-100 text-base font-medium flex-1">Pencadangan Google Drive</p>
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</div>
+</div>
+<!-- Bottom Action: Logout -->
+<div class="px-4 py-6">
+<button class="w-full flex items-center justify-center gap-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-bold py-4 rounded-xl border border-red-100 dark:border-red-900/30 hover:bg-red-100 transition-colors">
+<span class="material-symbols-outlined">logout</span>
+                    Logout Sistem
+                </button>
+</div>
+</div>
+<!-- Bottom Navigation Bar -->
+<div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md flex border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 pb-6 pt-3 z-20">
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400 dark:text-slate-500 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">storefront</span>
+<p class="text-xs font-medium leading-normal">POS</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400 dark:text-slate-500 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">inventory</span>
+<p class="text-xs font-medium leading-normal">Stok</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-primary" href="#">
+<div class="flex flex-col items-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">settings</span>
+<p class="text-xs font-bold leading-normal">Setting</p>
+</div>
+</a>
+</div>
+</div>
+</body></html>

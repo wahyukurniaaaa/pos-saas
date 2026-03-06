@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1a227f",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#121320",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<title>Inventaris Produk</title>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+<!-- Header -->
+<header class="sticky top-0 z-10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-primary/10">
+<div class="flex items-center p-4 justify-between">
+<div class="flex items-center gap-3">
+<div class="text-primary flex size-10 items-center justify-center bg-primary/10 rounded-lg">
+<span class="material-symbols-outlined">inventory_2</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight">Inventaris Produk</h2>
+</div>
+<div class="flex items-center gap-2">
+<button class="flex items-center justify-center rounded-lg h-10 w-10 bg-transparent text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Search Bar -->
+<div class="px-4 pb-4">
+<div class="flex gap-2">
+<label class="flex flex-col flex-1 h-12">
+<div class="flex w-full flex-1 items-stretch rounded-xl h-full overflow-hidden shadow-sm border border-primary/5">
+<div class="text-slate-400 flex bg-white dark:bg-slate-800 items-center justify-center pl-4">
+<span class="material-symbols-outlined text-xl">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 border-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-0 h-full placeholder:text-slate-400 px-3 text-base font-normal leading-normal" placeholder="Cari Produk / SKU..." value=""/>
+<div class="text-primary flex bg-white dark:bg-slate-800 items-center justify-center pr-4">
+<span class="material-symbols-outlined text-xl">barcode_scanner</span>
+</div>
+</div>
+</label>
+<button class="flex items-center justify-center rounded-xl h-12 w-12 bg-white dark:bg-slate-800 border border-primary/5 text-slate-600 shadow-sm">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto pb-64">
+<div class="flex flex-col divide-y divide-primary/5">
+<!-- Item 1 -->
+<div class="flex gap-4 bg-white dark:bg-slate-800/50 px-4 py-4 items-center">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-xl size-16 border border-primary/5" data-alt="Pack of instant noodles on white background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBmchIyFGZg9Dl_OYu3WBgYD9CCBSuppzD_TkGQvcX062VAILtXQmsP6VobGL0Uf5bpdjnFeEc9CCXPgkMihlQu8ydVnTm5kdiTNTYnR2Ac_w1kFg3GK7URoSvkoTIYtWAxVVJjXOxGG-fcTxPCTdrxq0L52AFfN2_vtVDgMvbCCOW23VItwQMkGjdWv2Sk2tQS52ZOJylB851fhj8PUzV1S3x3EBLPcVbH8LTW0bVCUgpgZFNaNBDCyLC-b5lM3RvLv1cRepqIoDM");'>
+</div>
+<div class="flex flex-1 flex-col justify-center">
+<div class="flex justify-between items-start">
+<p class="text-slate-900 dark:text-slate-100 text-base font-semibold leading-tight">Indomie Goreng Spesial</p>
+<button class="text-slate-400 hover:text-primary">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<p class="text-primary font-bold text-sm mt-1">Rp 3.500</p>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-slate-500 dark:text-slate-400 text-xs font-medium px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded">SKU: 899123456789</span>
+<span class="text-slate-500 dark:text-slate-400 text-xs font-medium px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded">Stok: 24</span>
+</div>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="flex gap-4 bg-white dark:bg-slate-800/50 px-4 py-4 items-center">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-xl size-16 border border-primary/5" data-alt="Small pack of instant coffee mix" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDE8YJQ8X6bX5apoA3UCkk2hngMla9si2FbavUx1l0tW4zlkAxKlKcBsdQ0YmawehE-qVirVokmVnRfb_L-HZ9SIeuvwbJslR4IqUTcAIyJFNZT-BTAt9eNTGQJTAYBZaKuDt28KL98tJ9ekIhK5EJ_QhJyR37-VZ_9xUElaRYfpicU4RdQbJ5TVPvabaCJEWtLuec_N8dGCnglxCVW2f3qkLT17ST5SGyS22eLUJZoY-PMNWxP-qpT-MTd4oldj4sVZ6zoSyrYroU");'>
+</div>
+<div class="flex flex-1 flex-col justify-center">
+<div class="flex justify-between items-start">
+<p class="text-slate-900 dark:text-slate-100 text-base font-semibold leading-tight">Kopi Kapal Api Mix</p>
+<button class="text-slate-400 hover:text-primary">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<p class="text-primary font-bold text-sm mt-1">Rp 1.500</p>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-slate-500 dark:text-slate-400 text-xs font-medium px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded">SKU: 899987654321</span>
+<div class="flex items-center gap-1 text-amber-600 dark:text-amber-400 text-xs font-bold px-2 py-0.5 bg-amber-50 dark:bg-amber-900/30 rounded">
+<span class="material-symbols-outlined text-xs">warning</span>
+                            Stok: 5
+                        </div>
+</div>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="flex gap-4 bg-white dark:bg-slate-800/50 px-4 py-4 items-center">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-xl size-16 border border-primary/5" data-alt="Bottled green tea drink with label" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCqJ2bRXuV3Cx9nYV6rXh0u0YT3WGTMUAsBeUzk2ib2w9GJIUZ_6Ibv503RT6lLYdbHkwBAK9Bkempz-cFBIh4o_kSB6qOClC5akv_RCv5zYFhVoPb2VXp4G8KnpcGTAKtx3WIuJltlcpjbbMAXBZ6QZPdhuesN3ZyvnHnMfV7vYFZ1SGHh2l2ep-23-BIDeXNSGK0aYFf9xlSMuNYW2wtAUDWCtIDaDRnuF5efrJT0a-rowL4j1pZ9sX1E0keXLNyUpHwvU9KMg6Q");'>
+</div>
+<div class="flex flex-1 flex-col justify-center">
+<div class="flex justify-between items-start">
+<p class="text-slate-900 dark:text-slate-100 text-base font-semibold leading-tight">Teh Pucuk Harum 350ml</p>
+<button class="text-slate-400 hover:text-primary">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<p class="text-primary font-bold text-sm mt-1">Rp 4.000</p>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-slate-500 dark:text-slate-400 text-xs font-medium px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded">SKU: 899345678901</span>
+<span class="text-slate-500 dark:text-slate-400 text-xs font-medium px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded">Stok: 12</span>
+</div>
+</div>
+</div>
+</div>
+</main><div class="fixed bottom-24 left-0 right-0 px-4 py-4 bg-gradient-to-t from-background-light dark:from-background-dark via-background-light/95 to-transparent z-20">
+<div class="flex flex-col gap-3 max-w-md mx-auto">
+<div class="flex gap-3">
+<button class="flex-1 flex items-center justify-center gap-2 h-12 rounded-xl bg-white dark:bg-slate-800 border border-primary/20 text-slate-700 dark:text-slate-200 font-semibold shadow-sm active:scale-[0.98] transition-transform">
+<span class="material-symbols-outlined text-xl">folder</span>
+<span>Import CSV</span>
+</button>
+<button class="flex-1 flex items-center justify-center gap-2 h-12 rounded-xl bg-white dark:bg-slate-800 border border-primary/20 text-slate-700 dark:text-slate-200 font-semibold shadow-sm active:scale-[0.98] transition-transform">
+<span class="material-symbols-outlined text-xl">description</span>
+<span>Opname</span>
+</button>
+</div>
+<button class="w-full flex items-center justify-center gap-2 h-14 rounded-xl bg-primary text-white font-bold text-lg shadow-lg shadow-primary/30 active:scale-[0.98] transition-transform">
+<span class="material-symbols-outlined text-2xl">add</span>
+<span>TAMBAH PRODUK</span>
+</button>
+</div>
+</div>
+<!-- FAB -->
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 w-full bg-white dark:bg-slate-900 border-t border-primary/10 px-4 pb-6 pt-2 z-10">
+<div class="flex items-center justify-around max-w-md mx-auto">
+<a class="flex flex-1 flex-col items-center gap-1 group" href="#">
+<div class="text-primary bg-primary/10 flex h-10 w-12 items-center justify-center rounded-xl" data-icon="Money">
+<span class="material-symbols-outlined fill-1">point_of_sale</span>
+</div>
+<p class="text-primary text-xs font-bold leading-normal">POS</p>
+</a>
+<a class="flex flex-1 flex-col items-center gap-1 group" href="#">
+<div class="text-slate-400 group-hover:text-primary flex h-10 w-12 items-center justify-center rounded-xl" data-icon="Package">
+<span class="material-symbols-outlined">inventory_2</span>
+</div>
+<p class="text-slate-400 group-hover:text-primary text-xs font-medium leading-normal">Stok</p>
+</a>
+<a class="flex flex-1 flex-col items-center gap-1 group" href="#">
+<div class="text-slate-400 group-hover:text-primary flex h-10 w-12 items-center justify-center rounded-xl" data-icon="Gear">
+<span class="material-symbols-outlined">settings</span>
+</div>
+<p class="text-slate-400 group-hover:text-primary text-xs font-medium leading-normal">Setting</p>
+</a>
+</div>
+</nav>
+</body></html>

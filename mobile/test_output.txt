@@ -1,0 +1,9 @@
+00:00 +0: loading c:/www/pos-umkm-saas/mobile/test/widget_test.dart
+00:00 +0 -1: loading c:/www/pos-umkm-saas/mobile/test/widget_test.dart [E]
+  Failed to load "c:/www/pos-umkm-saas/mobile/test/widget_test.dart":
+  Compilation failed for testPath=c:/www/pos-umkm-saas/mobile/test/widget_test.dart: lib/features/pos/screens/pos_tab.dart:813:1: Error: Directives must appear before any declarations.
+  Try moving the directive before any declarations.
+  import 'package:posify_app/features/pos/screens/payment/payment_modal.dart';
+  ^^^^^^
+  .
+00:00 +0 -1: Some tests failed.

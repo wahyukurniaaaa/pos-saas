@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Riwayat Transaksi - POSify</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1a227f",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#121320",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+<!-- Header -->
+<header class="sticky top-0 z-10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-primary/10 px-4 py-4">
+<div class="flex items-center gap-4">
+<button class="flex items-center justify-center size-10 rounded-full hover:bg-primary/10 transition-colors text-primary">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="text-xl font-bold tracking-tight">Riwayat Transaksi</h1>
+</div>
+</header>
+<!-- Filters Scrollable Area -->
+<div class="flex gap-3 p-4 overflow-x-auto no-scrollbar">
+<button class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium whitespace-nowrap">
+<span>Hari Ini</span>
+<span class="material-symbols-outlined text-sm">keyboard_arrow_down</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 text-primary text-sm font-medium whitespace-nowrap">
+<span>Metode Bayar</span>
+<span class="material-symbols-outlined text-sm">keyboard_arrow_down</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 text-primary text-sm font-medium whitespace-nowrap">
+<span>Status</span>
+<span class="material-symbols-outlined text-sm">keyboard_arrow_down</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 text-primary text-sm font-medium whitespace-nowrap">
+<span class="material-symbols-outlined text-sm">calendar_today</span>
+<span>Pilih Tanggal</span>
+</button>
+</div>
+<!-- Summary Stats (Optional but adds value) -->
+<div class="px-4 mb-2">
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-primary/5 flex justify-between items-center">
+<div>
+<p class="text-xs text-slate-500 uppercase tracking-wider font-semibold">Total Omzet Hari Ini</p>
+<p class="text-lg font-bold text-primary">Rp 1.450.000</p>
+</div>
+<div class="text-right">
+<p class="text-xs text-slate-500 uppercase tracking-wider font-semibold">Transaksi</p>
+<p class="text-lg font-bold text-primary">12</p>
+</div>
+</div>
+</div>
+<!-- Transaction List -->
+<main class="flex-1 px-4 py-2 space-y-4 pb-24">
+<!-- Transaction Card 1 -->
+<div class="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-primary/5">
+<div class="flex justify-between items-start mb-3">
+<div class="space-y-1">
+<p class="text-sm font-bold text-slate-900 dark:text-slate-100">POS-20260305-001</p>
+<p class="text-xs text-slate-500">14:20 • Tunai</p>
+</div>
+<span class="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-green-100 text-green-700">LUNAS</span>
+</div>
+<div class="flex justify-between items-end border-t border-slate-100 dark:border-slate-700 pt-3">
+<div>
+<p class="text-xs text-slate-500">Total Tagihan</p>
+<p class="text-base font-bold text-primary">Rp 150.000</p>
+</div>
+<button class="px-4 py-1.5 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary/90 transition-colors">
+                    Detail
+                </button>
+</div>
+</div>
+<!-- Transaction Card 2 -->
+<div class="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-primary/5">
+<div class="flex justify-between items-start mb-3">
+<div class="space-y-1">
+<p class="text-sm font-bold text-slate-900 dark:text-slate-100">POS-20260305-002</p>
+<p class="text-xs text-slate-500">14:45 • QRIS</p>
+</div>
+<span class="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-green-100 text-green-700">LUNAS</span>
+</div>
+<div class="flex justify-between items-end border-t border-slate-100 dark:border-slate-700 pt-3">
+<div>
+<p class="text-xs text-slate-500">Total Tagihan</p>
+<p class="text-base font-bold text-primary">Rp 75.000</p>
+</div>
+<button class="px-4 py-1.5 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary/90 transition-colors">
+                    Detail
+                </button>
+</div>
+</div>
+<!-- Transaction Card 3 (Voided) -->
+<div class="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-primary/5">
+<div class="flex justify-between items-start mb-3 opacity-70">
+<div class="space-y-1">
+<p class="text-sm font-bold text-slate-900 dark:text-slate-100 line-through">POS-20260305-003</p>
+<p class="text-xs text-slate-500">15:10 • Kartu Debit</p>
+</div>
+<span class="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-red-100 text-red-700">BATAL</span>
+</div>
+<div class="flex justify-between items-end border-t border-slate-100 dark:border-slate-700 pt-3">
+<div class="opacity-70">
+<p class="text-xs text-slate-500">Total Tagihan</p>
+<p class="text-base font-bold text-slate-400">Rp 210.000</p>
+</div>
+<button class="px-4 py-1.5 bg-primary/10 text-primary text-xs font-semibold rounded-lg hover:bg-primary/20 transition-colors">
+                    Detail
+                </button>
+</div>
+</div>
+<!-- Transaction Card 4 -->
+<div class="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-primary/5">
+<div class="flex justify-between items-start mb-3">
+<div class="space-y-1">
+<p class="text-sm font-bold text-slate-900 dark:text-slate-100">POS-20260305-004</p>
+<p class="text-xs text-slate-500">15:30 • Tunai</p>
+</div>
+<span class="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-green-100 text-green-700">LUNAS</span>
+</div>
+<div class="flex justify-between items-end border-t border-slate-100 dark:border-slate-700 pt-3">
+<div>
+<p class="text-xs text-slate-500">Total Tagihan</p>
+<p class="text-base font-bold text-primary">Rp 45.000</p>
+</div>
+<button class="px-4 py-1.5 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary/90 transition-colors">
+                    Detail
+                </button>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-primary/10 px-6 py-2 pb-6 flex justify-between items-center z-20">
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined fill-1">receipt_long</span>
+<span class="text-[10px] font-bold">POS</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="text-[10px] font-medium">Stok</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-medium">Setting</span>
+</a>
+</nav>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .fill-1 {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</body></html>

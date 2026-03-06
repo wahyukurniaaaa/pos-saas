@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1a227f",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#121320",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
+<div class="relative flex min-h-screen w-full flex-col max-w-md mx-auto bg-background-light dark:bg-background-dark shadow-xl overflow-x-hidden">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-primary/10">
+<div class="flex items-center p-4 justify-between gap-2">
+<div class="text-slate-900 dark:text-slate-100 flex size-10 shrink-0 items-center justify-center cursor-pointer hover:bg-primary/10 rounded-full transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight flex-1 text-center">Laporan Shift Berjalan</h2>
+<div class="flex w-10 items-center justify-end">
+<button class="flex size-10 cursor-pointer items-center justify-center rounded-full hover:bg-primary/10 text-slate-900 dark:text-slate-100 transition-colors">
+<span class="material-symbols-outlined">bar_chart</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Summary Section -->
+<div class="p-4">
+<div class="flex items-center gap-4 bg-white dark:bg-slate-800/50 p-4 rounded-xl border border-primary/5 shadow-sm">
+<div class="bg-primary/10 text-primary flex items-center justify-center rounded-full h-14 w-14 shrink-0">
+<span class="material-symbols-outlined text-3xl">account_circle</span>
+</div>
+<div class="flex flex-col justify-center overflow-hidden">
+<p class="text-slate-900 dark:text-white text-base font-bold leading-normal truncate">Siti (Level 3)</p>
+<div class="flex items-center gap-1.5 mt-1 text-primary/70 dark:text-primary/50">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<p class="text-sm font-medium leading-none">Mulai Shift: 08:00 WIB</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Details Section -->
+<div class="flex-1 px-4 pb-24">
+<h3 class="text-slate-900 dark:text-slate-100 text-base font-bold leading-tight px-1 pb-4 pt-2">Detail Transaksi</h3>
+<div class="bg-white dark:bg-slate-800/50 rounded-xl border border-primary/5 shadow-sm overflow-hidden">
+<!-- Row 1 -->
+<div class="flex items-center gap-4 px-4 py-4 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-10">
+<span class="material-symbols-outlined">payments</span>
+</div>
+<p class="text-slate-700 dark:text-slate-300 text-sm font-medium flex-1 truncate">Uang Kas Awal</p>
+<div class="shrink-0">
+<p class="text-slate-900 dark:text-white text-sm font-semibold">Rp 100.000</p>
+</div>
+</div>
+<div class="mx-4 border-t border-slate-100 dark:border-slate-700"></div>
+<!-- Row 2 -->
+<div class="flex items-center gap-4 px-4 py-4 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-10">
+<span class="material-symbols-outlined">trending_up</span>
+</div>
+<p class="text-slate-700 dark:text-slate-300 text-sm font-medium flex-1 truncate">Penjualan Tunai</p>
+<div class="shrink-0">
+<p class="text-slate-900 dark:text-white text-sm font-semibold">Rp 350.000</p>
+</div>
+</div>
+<div class="mx-4 border-t border-slate-100 dark:border-slate-700"></div>
+<!-- Row 3 -->
+<div class="flex items-center gap-4 px-4 py-4 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-10">
+<span class="material-symbols-outlined">qr_code_scanner</span>
+</div>
+<p class="text-slate-700 dark:text-slate-300 text-sm font-medium flex-1 truncate">Penjualan QRIS</p>
+<div class="shrink-0">
+<p class="text-slate-900 dark:text-white text-sm font-semibold">Rp 120.000</p>
+</div>
+</div>
+<div class="mx-4 border-t border-slate-100 dark:border-slate-700"></div>
+<!-- Row 4 -->
+<div class="flex items-center gap-4 px-4 py-4 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors">
+<div class="text-red-600 flex items-center justify-center rounded-lg bg-red-50 dark:bg-red-900/20 shrink-0 size-10">
+<span class="material-symbols-outlined">cancel</span>
+</div>
+<p class="text-slate-700 dark:text-slate-300 text-sm font-medium flex-1 truncate">Batal / Void (1)</p>
+<div class="shrink-0">
+<p class="text-red-600 dark:text-red-400 text-sm font-semibold">-Rp 15.000</p>
+</div>
+</div>
+<!-- Total Row -->
+<div class="bg-primary/5 dark:bg-primary/10 px-4 py-5 flex items-center justify-between">
+<div>
+<p class="text-primary dark:text-primary font-bold text-sm uppercase tracking-wider">Estimasi Uang Laci</p>
+<p class="text-slate-500 dark:text-slate-400 text-[10px] mt-0.5">Total pendapatan dikurangi pembatalan</p>
+</div>
+<div class="shrink-0">
+<p class="text-primary dark:text-primary text-xl font-bold">Rp 435.000</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Action -->
+<div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto p-4 bg-background-light dark:bg-background-dark border-t border-primary/10">
+<button class="w-full bg-primary hover:bg-primary/90 text-white flex items-center justify-center gap-3 py-4 rounded-xl font-bold text-base transition-all active:scale-[0.98] shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined">lock</span>
+                TUTUP SHIFT SEKARANG
+            </button>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1a227f",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#121320",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<title>Riwayat Sesi Shift</title>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
+<div class="relative flex min-h-screen w-full flex-col max-w-md mx-auto bg-white dark:bg-slate-900 shadow-xl overflow-hidden">
+<header class="sticky top-0 z-10 flex items-center bg-white dark:bg-slate-900 px-4 py-4 border-b border-slate-200 dark:border-slate-800 gap-4">
+<button class="flex items-center justify-center size-10 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-slate-700 dark:text-slate-300">arrow_back</span>
+</button>
+<h1 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Riwayat Sesi Shift</h1>
+</header>
+<div class="p-4 flex gap-3 overflow-x-auto no-scrollbar">
+<button class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary/10 px-4 text-primary border border-primary/20">
+<span class="text-sm font-semibold leading-normal">7 Hari Terakhir</span>
+<span class="material-symbols-outlined text-[20px]">expand_more</span>
+</button>
+<button class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-slate-100 dark:bg-slate-800 px-4 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+<span class="text-sm font-medium leading-normal">Semua Kasir</span>
+<span class="material-symbols-outlined text-[20px]">person</span>
+</button>
+</div>
+<main class="flex-1 flex flex-col gap-3 p-4">
+<div class="flex flex-col gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start">
+<div class="flex items-start gap-3">
+<div class="flex items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 size-12 shrink-0">
+<span class="material-symbols-outlined">schedule</span>
+</div>
+<div class="flex flex-col">
+<p class="text-base font-bold text-slate-900 dark:text-white leading-tight">Hari ini, 08:00 - 15:30</p>
+<p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Kasir: <span class="font-medium text-slate-700 dark:text-slate-200">Siti</span></p>
+</div>
+</div>
+<span class="px-2 py-1 rounded text-[10px] font-bold tracking-wider uppercase bg-emerald-100 text-emerald-700 border border-emerald-200">PAS</span>
+</div>
+<div class="flex flex-col gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+<p class="text-sm text-slate-500 dark:text-slate-400">Modal: <span class="text-slate-800 dark:text-slate-200 font-medium">Rp 100K</span> | Setor: <span class="text-slate-800 dark:text-slate-200 font-medium">Rp 450K</span></p>
+<div class="flex items-center justify-between mt-1">
+<p class="text-xs text-emerald-600 font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+                            Saldo sesuai laporan
+                        </p>
+<button class="flex items-center justify-center gap-1 rounded-lg bg-primary px-4 py-1.5 text-white text-xs font-semibold hover:bg-primary/90 transition-colors">
+                            Lihat
+                            <span class="material-symbols-outlined text-xs">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start">
+<div class="flex items-start gap-3">
+<div class="flex items-center justify-center rounded-lg bg-rose-100 text-rose-700 size-12 shrink-0">
+<span class="material-symbols-outlined">history</span>
+</div>
+<div class="flex flex-col">
+<p class="text-base font-bold text-slate-900 dark:text-white leading-tight">Kemarin, 15:30 - 23:00</p>
+<p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Kasir: <span class="font-medium text-slate-700 dark:text-slate-200">Budi</span></p>
+</div>
+</div>
+<span class="px-2 py-1 rounded text-[10px] font-bold tracking-wider uppercase bg-rose-100 text-rose-700 border border-rose-200">MINUS</span>
+</div>
+<div class="flex flex-col gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+<p class="text-sm text-slate-500 dark:text-slate-400">Modal: <span class="text-slate-800 dark:text-slate-200 font-medium">Rp 100K</span> | Setor: <span class="text-slate-800 dark:text-slate-200 font-medium">Rp 380K</span></p>
+<div class="flex items-center justify-between mt-1">
+<p class="text-xs text-rose-600 font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">error</span>
+                            Selisih: -Rp 20.000
+                        </p>
+<button class="flex items-center justify-center gap-1 rounded-lg bg-primary px-4 py-1.5 text-white text-xs font-semibold hover:bg-primary/90 transition-colors">
+                            Lihat
+                            <span class="material-symbols-outlined text-xs">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start">
+<div class="flex items-start gap-3">
+<div class="flex items-center justify-center rounded-lg bg-orange-100 text-orange-700 size-12 shrink-0">
+<span class="material-symbols-outlined">history</span>
+</div>
+<div class="flex flex-col">
+<p class="text-base font-bold text-slate-900 dark:text-white leading-tight">23 Jan, 08:00 - 15:30</p>
+<p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Kasir: <span class="font-medium text-slate-700 dark:text-slate-200">Andi</span></p>
+</div>
+</div>
+<span class="px-2 py-1 rounded text-[10px] font-bold tracking-wider uppercase bg-orange-100 text-orange-700 border border-orange-200">LEBIH</span>
+</div>
+<div class="flex flex-col gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+<p class="text-sm text-slate-500 dark:text-slate-400">Modal: <span class="text-slate-800 dark:text-slate-200 font-medium">Rp 100K</span> | Setor: <span class="text-slate-800 dark:text-slate-200 font-medium">Rp 550K</span></p>
+<div class="flex items-center justify-between mt-1">
+<p class="text-xs text-orange-600 font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">warning</span>
+                            Selisih: +Rp 15.000
+                        </p>
+<button class="flex items-center justify-center gap-1 rounded-lg bg-primary px-4 py-1.5 text-white text-xs font-semibold hover:bg-primary/90 transition-colors">
+                            Lihat
+                            <span class="material-symbols-outlined text-xs">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start">
+<div class="flex items-start gap-3">
+<div class="flex items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 size-12 shrink-0">
+<span class="material-symbols-outlined">history</span>
+</div>
+<div class="flex flex-col">
+<p class="text-base font-bold text-slate-900 dark:text-white leading-tight">22 Jan, 15:30 - 23:00</p>
+<p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Kasir: <span class="font-medium text-slate-700 dark:text-slate-200">Siti</span></p>
+</div>
+</div>
+<span class="px-2 py-1 rounded text-[10px] font-bold tracking-wider uppercase bg-emerald-100 text-emerald-700 border border-emerald-200">PAS</span>
+</div>
+<div class="flex flex-col gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+<p class="text-sm text-slate-500 dark:text-slate-400">Modal: <span class="text-slate-800 dark:text-slate-200 font-medium">Rp 100K</span> | Setor: <span class="text-slate-800 dark:text-slate-200 font-medium">Rp 420K</span></p>
+<div class="flex items-center justify-between mt-1">
+<p class="text-xs text-emerald-600 font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+                            Saldo sesuai laporan
+                        </p>
+<button class="flex items-center justify-center gap-1 rounded-lg bg-primary px-4 py-1.5 text-white text-xs font-semibold hover:bg-primary/90 transition-colors">
+                            Lihat
+                            <span class="material-symbols-outlined text-xs">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<nav class="sticky bottom-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex justify-around items-center py-2 px-4">
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined text-[24px]">point_of_sale</span>
+<span class="text-[10px] font-bold">POS</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined text-[24px]">inventory_2</span>
+<span class="text-[10px] font-medium">Stok</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined text-[24px]">settings</span>
+<span class="text-[10px] font-medium">Setting</span>
+</a>
+</nav>
+</div>
+</body></html>

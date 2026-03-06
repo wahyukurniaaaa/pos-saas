@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>POSify Component Library</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1a227f",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#121320",
+                        "success": "#10b981",
+                        "danger": "#ef4444",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-size: 20px; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display min-h-screen pb-20">
+<!-- Header Navigation -->
+<header class="sticky top-0 z-50 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-primary/10 px-6 py-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="bg-primary p-2 rounded-lg text-white">
+<span class="material-symbols-outlined">point_of_sale</span>
+</div>
+<h1 class="text-xl font-bold tracking-tight text-primary">POSify <span class="font-normal text-slate-500">Design System</span></h1>
+</div>
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-slate-400">search</span>
+<span class="material-symbols-outlined text-slate-400">notifications</span>
+</div>
+</header>
+<main class="max-w-5xl mx-auto p-6 space-y-12">
+<!-- Buttons Section -->
+<section>
+<h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">buttons_alt</span> Buttons
+            </h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8 bg-white dark:bg-slate-900 p-8 rounded-xl border border-primary/5 shadow-sm">
+<!-- Primary Column -->
+<div class="space-y-4">
+<p class="text-xs font-bold uppercase tracking-wider text-slate-400">Primary (Deep Blue)</p>
+<button class="w-full h-[48px] bg-primary hover:bg-primary/90 active:scale-[0.98] transition-all text-white font-semibold rounded-lg flex items-center justify-center gap-2">
+                        Complete Sale
+                    </button>
+<button class="w-full h-[48px] bg-primary/10 text-primary font-semibold rounded-lg flex items-center justify-center gap-2">
+                        Secondary Action
+                    </button>
+<button class="w-full h-[48px] bg-slate-200 text-slate-400 font-semibold rounded-lg cursor-not-allowed flex items-center justify-center gap-2" disabled="">
+                        Disabled State
+                    </button>
+</div>
+<!-- Danger Column -->
+<div class="space-y-4">
+<p class="text-xs font-bold uppercase tracking-wider text-slate-400">Danger (Red)</p>
+<button class="w-full h-[48px] border-2 border-danger text-danger hover:bg-danger/5 active:bg-danger/10 transition-all font-semibold rounded-lg flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">delete</span> Delete Order
+                    </button>
+<button class="w-full h-[48px] bg-danger text-white font-semibold rounded-lg flex items-center justify-center gap-2">
+                        Confirm Void
+                    </button>
+<button class="w-full h-[48px] border-2 border-slate-200 text-slate-300 font-semibold rounded-lg cursor-not-allowed flex items-center justify-center gap-2" disabled="">
+                        Unavailable
+                    </button>
+</div>
+<!-- Success Column -->
+<div class="space-y-4">
+<p class="text-xs font-bold uppercase tracking-wider text-slate-400">Success (Green)</p>
+<button class="w-full h-[48px] bg-success text-white hover:bg-success/90 active:scale-[0.98] transition-all font-semibold rounded-lg flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">check_circle</span> Payment Success
+                    </button>
+<button class="w-full h-[48px] bg-success/10 text-success font-semibold rounded-lg flex items-center justify-center gap-2">
+                        Print Receipt
+                    </button>
+<button class="w-full h-[48px] bg-slate-100 text-slate-400 font-semibold rounded-lg flex items-center justify-center gap-2">
+                        Transaction Filed
+                    </button>
+</div>
+</div>
+</section>
+<!-- Inputs & Selection Section -->
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+<!-- Input Fields -->
+<div class="space-y-6">
+<h2 class="text-2xl font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">text_fields</span> Input Fields
+                </h2>
+<div class="bg-white dark:bg-slate-900 p-8 rounded-xl border border-primary/5 shadow-sm space-y-6">
+<div class="space-y-2">
+<label class="text-sm font-medium text-slate-600">Product Name</label>
+<input class="w-full h-[48px] px-4 rounded-lg border border-slate-200 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" placeholder="Enter item name..." type="text"/>
+<p class="text-xs text-slate-400 italic">Default State</p>
+</div>
+<div class="space-y-2">
+<label class="text-sm font-medium text-primary">Focused State</label>
+<input class="w-full h-[48px] px-4 rounded-lg border-2 border-primary ring-4 ring-primary/10 outline-none transition-all" type="text" value="Premium Coffee Beans"/>
+</div>
+<div class="space-y-2">
+<label class="text-sm font-medium text-danger">Stock Level</label>
+<div class="relative">
+<input class="w-full h-[48px] px-4 rounded-lg border-2 border-danger outline-none transition-all" type="text" value="-5"/>
+<span class="material-symbols-outlined absolute right-4 top-3.5 text-danger">error</span>
+</div>
+<p class="text-xs text-danger">Error: Inventory cannot be negative</p>
+</div>
+</div>
+</div>
+<!-- Toggles & Checkboxes -->
+<div class="space-y-6">
+<h2 class="text-2xl font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">toggle_on</span> Selection Controls
+                </h2>
+<div class="bg-white dark:bg-slate-900 p-8 rounded-xl border border-primary/5 shadow-sm space-y-8">
+<div class="flex items-center justify-between">
+<div class="space-y-1">
+<p class="font-semibold">Cloud Sync</p>
+<p class="text-sm text-slate-500">Automatically backup sales data</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="flex items-center justify-between">
+<div class="space-y-1">
+<p class="font-semibold">Tax Inclusive</p>
+<p class="text-sm text-slate-500">Apply VAT to all prices</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<hr class="border-slate-100"/>
+<div class="grid grid-cols-2 gap-4">
+<label class="flex items-center gap-3 cursor-pointer group">
+<div class="w-6 h-6 rounded border-2 border-primary bg-primary flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-[18px]">check</span>
+</div>
+<span class="font-medium text-slate-700">Digital Receipt</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<div class="w-6 h-6 rounded border-2 border-slate-300 group-hover:border-primary transition-colors"></div>
+<span class="font-medium text-slate-700">Print Paper</span>
+</label>
+</div>
+</div>
+</div>
+</section>
+<!-- Cards Section -->
+<section class="space-y-6">
+<h2 class="text-2xl font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">dashboard</span> Sample Cards
+            </h2>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Product Card -->
+<div class="bg-white dark:bg-slate-900 rounded-lg overflow-hidden border border-primary/5 shadow-md hover:shadow-xl transition-shadow group">
+<div class="h-48 bg-slate-100 relative overflow-hidden">
+<img alt="Coffee cup" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="A close up of a artisanal latte coffee cup" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjUYZ0VPoG34-mU6oTDM5hFlkK2sx47BXGI_XLQpnSJuAO8Q-VezRWpLntwFr3Y9uzq7vA0ft0AtwOcB2fLJFYQB7dfiu5X8fF6K_hTkhWPk-8MXMxqPI1a4tlyD0SsKaEL1NizBh0xS_HJWxyv8gKva7C5xFiSlA9esVuLjOYKS4J9gK96ovhLWNO44zzHGYHVTTfQ_TNsBwp7ELIwB2RYbvDbH8w-Nu__wEcltTpnRp-6Nm52-9PyCxX9pdZ_7CkYV4IAS-pem0"/>
+<div class="absolute top-3 left-3 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-tighter">
+                            Popular
+                        </div>
+</div>
+<div class="p-5 space-y-3">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-bold text-lg">Espresso Roast</h3>
+<p class="text-sm text-slate-500 italic">Beverages</p>
+</div>
+<span class="text-primary font-bold text-xl">$4.50</span>
+</div>
+<button class="w-full h-10 bg-primary/5 hover:bg-primary hover:text-white text-primary font-bold rounded-lg transition-colors text-sm">
+                            Add to Cart
+                        </button>
+</div>
+</div>
+<!-- Info Card -->
+<div class="bg-white dark:bg-slate-900 rounded-lg p-6 border border-primary/5 shadow-md flex flex-col justify-between">
+<div class="space-y-4">
+<div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-size: 28px;">analytics</span>
+</div>
+<div>
+<h3 class="font-bold text-lg">Daily Revenue</h3>
+<p class="text-sm text-slate-500 leading-relaxed">Your total sales performance for the last 24 hours across all branches.</p>
+</div>
+</div>
+<div class="mt-8 pt-4 border-t border-slate-100">
+<div class="flex items-end gap-2">
+<span class="text-3xl font-bold">$12,450</span>
+<span class="text-success text-sm font-bold flex items-center mb-1">
+<span class="material-symbols-outlined text-[16px]">trending_up</span> 12%
+                            </span>
+</div>
+</div>
+</div>
+<!-- Action Card -->
+<div class="bg-primary rounded-lg p-6 shadow-xl relative overflow-hidden text-white flex flex-col justify-between">
+<div class="absolute -right-6 -top-6 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+<div class="relative z-10">
+<span class="material-symbols-outlined text-white/60 mb-4" style="font-size: 32px;">support_agent</span>
+<h3 class="text-xl font-bold mb-2">Need Assistance?</h3>
+<p class="text-white/80 text-sm leading-relaxed">Our POSify support team is available 24/7 to help you with hardware or software setup.</p>
+</div>
+<button class="relative z-10 w-full mt-6 h-10 bg-white text-primary font-bold rounded-lg text-sm hover:bg-slate-100 transition-colors">
+                        Contact Support
+                    </button>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Component -->
+<nav class="fixed bottom-0 left-0 right-0 bg-white dark:bg-background-dark border-t border-slate-200 dark:border-slate-800 px-6 py-2 flex justify-around items-center z-50">
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-bold uppercase tracking-widest">Dashboard</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="text-[10px] font-bold uppercase tracking-widest">Stock</span>
+</a>
+<div class="relative -top-6">
+<button class="w-14 h-14 bg-primary text-white rounded-full shadow-lg shadow-primary/40 flex items-center justify-center border-4 border-background-light dark:border-background-dark">
+<span class="material-symbols-outlined" style="font-size: 32px;">add</span>
+</button>
+</div>
+<a class="flex flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="text-[10px] font-bold uppercase tracking-widest">Orders</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-bold uppercase tracking-widest">Setup</span>
+</a>
+</nav>
+</body></html>

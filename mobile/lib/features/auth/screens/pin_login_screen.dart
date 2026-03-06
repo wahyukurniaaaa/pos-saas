@@ -100,7 +100,7 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen>
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryColor.withOpacity(0.1),
+                    color: AppTheme.primaryColor.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
@@ -142,11 +142,11 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen>
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: AppTheme.primaryColor.withOpacity(0.05),
+                      color: AppTheme.primaryColor.withValues(alpha: 0.05),
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
+                        color: Colors.black.withValues(alpha: 0.04),
                         blurRadius: 16,
                         offset: const Offset(0, 4),
                       ),
@@ -251,8 +251,8 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen>
         borderRadius: BorderRadius.circular(36),
         child: InkWell(
           borderRadius: BorderRadius.circular(36),
-          splashColor: AppTheme.primaryColor.withOpacity(0.1),
-          highlightColor: AppTheme.primaryColor.withOpacity(0.05),
+          splashColor: AppTheme.primaryColor.withValues(alpha: 0.1),
+          highlightColor: AppTheme.primaryColor.withValues(alpha: 0.05),
           onTap: () {
             HapticFeedback.selectionClick();
             if (label == 'C') {

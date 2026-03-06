@@ -99,6 +99,8 @@ class PosifyDatabase extends _$PosifyDatabase {
 
   Future<bool> updateProduct(Product entry) => update(products).replace(entry);
 
+  Future<int> deleteProduct(Product entry) => delete(products).delete(entry);
+
   // ===== Shift Queries =====
   Future<Shift?> getOpenShift() =>
       (select(shifts)..where((s) => s.status.equals('open'))).getSingleOrNull();
@@ -133,6 +135,30 @@ class PosifyDatabase extends _$PosifyDatabase {
   // ===== Stock Adjustments =====
   Future<int> insertStockAdjustment(StockAdjustmentsCompanion entry) =>
       into(stockAdjustments).insert(entry);
+
+  // ===== Additional Transaction Queries =====
+  Future<List<Transaction>> getAllTransactions() => (select(
+    transactions,
+  )..orderBy([(t) => OrderingTerm.desc(t.createdAt)])).get();
+
+  Stream<List<Transaction>> watchAllTransactions() => (select(
+    transactions,
+  )..orderBy([(t) => OrderingTerm.desc(t.createdAt)])).watch();
+
+  // ===== All Shifts =====
+  Future<List<Shift>> getAllShifts() =>
+      (select(shifts)..orderBy([(s) => OrderingTerm.desc(s.startTime)])).get();
+
+  Stream<List<Shift>> watchAllShifts() => (select(
+    shifts,
+  )..orderBy([(s) => OrderingTerm.desc(s.startTime)])).watch();
+
+  // ===== Category Management =====
+  Future<bool> updateCategory(Category entry) =>
+      update(categories).replace(entry);
+
+  Future<int> deleteCategory(Category entry) =>
+      delete(categories).delete(entry);
 }
 
 LazyDatabase _openConnection() {

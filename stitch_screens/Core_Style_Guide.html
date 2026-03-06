@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1a227f",
+                        "success": "#2e7d32",
+                        "danger": "#c62828",
+                        "neutral-slate": "#455a64",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#121320",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<title>POSify Design System</title>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+<!-- Header / Top Bar -->
+<header class="sticky top-0 z-50 w-full bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+<div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="bg-primary p-2 rounded-lg">
+<span class="material-symbols-outlined text-white">point_of_sale</span>
+</div>
+<h1 class="text-xl font-bold tracking-tight text-primary">POSify <span class="text-slate-400 font-normal ml-2">Design System</span></h1>
+</div>
+<div class="flex items-center gap-4">
+<span class="text-xs font-medium px-2 py-1 bg-primary/10 text-primary rounded-full">v1.0.4</span>
+</div>
+</div>
+</header>
+<main class="max-w-5xl mx-auto px-4 py-10 space-y-16 pb-32">
+<!-- Introduction -->
+<section>
+<h2 class="text-3xl font-bold mb-4">Core Philosophy</h2>
+<p class="text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed">
+                POSify is built on the principles of efficiency, clarity, and reliability. This style guide ensures consistent user experiences across all retail touchpoints, from handheld inventory scanners to large-format desktop registers.
+            </p>
+</section>
+<!-- 1. Typography -->
+<section class="space-y-6">
+<div class="flex items-center gap-3 border-b border-slate-200 pb-4">
+<span class="material-symbols-outlined text-primary">format_size</span>
+<h2 class="text-2xl font-bold">1. Typography</h2>
+</div>
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+<div class="p-6 space-y-8">
+<div>
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Heading 1</span>
+<span class="text-xs text-slate-400">Inter Bold / 24px</span>
+</div>
+<h1 class="text-[24px] font-bold leading-tight">The quick brown fox jumps over the lazy dog</h1>
+</div>
+<hr class="border-slate-100 dark:border-slate-800"/>
+<div>
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Heading 2</span>
+<span class="text-xs text-slate-400">Inter Semi-Bold / 18px</span>
+</div>
+<h2 class="text-[18px] font-semibold leading-tight">The quick brown fox jumps over the lazy dog</h2>
+</div>
+<hr class="border-slate-100 dark:border-slate-800"/>
+<div>
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Body Large</span>
+<span class="text-xs text-slate-400">Inter Regular / 16px</span>
+</div>
+<p class="text-[16px] font-normal leading-normal">The quick brown fox jumps over the lazy dog. POSify streamlines your retail operations with a modern interface designed for high-speed transactions.</p>
+</div>
+<hr class="border-slate-100 dark:border-slate-800"/>
+<div>
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Body Small</span>
+<span class="text-xs text-slate-400">Inter Regular / 14px</span>
+</div>
+<p class="text-[14px] font-normal leading-normal text-slate-600 dark:text-slate-400">The quick brown fox jumps over the lazy dog. This size is ideal for secondary descriptions, tooltips, and detailed data tables.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- 2. Color Palette -->
+<section class="space-y-6">
+<div class="flex items-center gap-3 border-b border-slate-200 pb-4">
+<span class="material-symbols-outlined text-primary">palette</span>
+<h2 class="text-2xl font-bold">2. Color Palette</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- Primary -->
+<div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="h-24 w-full bg-primary rounded-lg mb-4"></div>
+<h3 class="font-bold">Primary</h3>
+<p class="text-xs text-slate-500 mb-2">Brand Identity &amp; Main Actions</p>
+<code class="text-xs bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">#1A237E</code>
+</div>
+<!-- Success -->
+<div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="h-24 w-full bg-success rounded-lg mb-4"></div>
+<h3 class="font-bold">Success</h3>
+<p class="text-xs text-slate-500 mb-2">Completed &amp; Positive states</p>
+<code class="text-xs bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">#2E7D32</code>
+</div>
+<!-- Danger -->
+<div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="h-24 w-full bg-danger rounded-lg mb-4"></div>
+<h3 class="font-bold">Danger</h3>
+<p class="text-xs text-slate-500 mb-2">Alerts, Errors &amp; Deletions</p>
+<code class="text-xs bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">#C62828</code>
+</div>
+<!-- Neutral -->
+<div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="h-24 w-full bg-neutral-slate rounded-lg mb-4"></div>
+<h3 class="font-bold">Neutral</h3>
+<p class="text-xs text-slate-500 mb-2">Secondary text &amp; Borders</p>
+<code class="text-xs bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">#455A64</code>
+</div>
+</div>
+</section>
+<!-- 3. Grid & Spacing -->
+<section class="space-y-6">
+<div class="flex items-center gap-3 border-b border-slate-200 pb-4">
+<span class="material-symbols-outlined text-primary">grid_on</span>
+<h2 class="text-2xl font-bold">3. Grid &amp; Spacing</h2>
+</div>
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+<div class="space-y-4">
+<p class="leading-relaxed text-slate-600 dark:text-slate-400">
+                            Our layout is built on a consistent <span class="text-primary font-bold">8-point grid system</span>. This ensures that all components align perfectly and maintain a rhythmic balance across the UI.
+                        </p>
+<ul class="space-y-3">
+<li class="flex items-center gap-3 text-sm">
+<span class="w-8 h-8 bg-primary/20 flex items-center justify-center rounded text-primary font-bold">16</span>
+<span><strong>Global Margin:</strong> 16dp minimum page padding</span>
+</li>
+<li class="flex items-center gap-3 text-sm">
+<span class="w-8 h-8 bg-primary/20 flex items-center justify-center rounded text-primary font-bold">12</span>
+<span><strong>Gutter Width:</strong> 12dp spacing between cards</span>
+</li>
+</ul>
+</div>
+<div class="relative bg-slate-50 dark:bg-slate-950 p-8 rounded-lg border border-dashed border-slate-300 dark:border-slate-700 overflow-hidden">
+<!-- Mock Grid Visualizer -->
+<div class="grid grid-cols-4 gap-3">
+<div class="h-32 bg-primary/10 border border-primary/20 rounded-md flex flex-col items-center justify-end p-2">
+<span class="text-[10px] text-primary">12dp gutter</span>
+</div>
+<div class="h-32 bg-primary/10 border border-primary/20 rounded-md"></div>
+<div class="h-32 bg-primary/10 border border-primary/20 rounded-md"></div>
+<div class="h-32 bg-primary/10 border border-primary/20 rounded-md"></div>
+</div>
+<div class="absolute inset-y-0 left-0 w-4 bg-red-400/10 border-r border-red-400/30 flex items-center justify-center">
+<span class="rotate-90 text-[10px] text-red-600 font-bold whitespace-nowrap">16dp margin</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 4. Iconography -->
+<section class="space-y-6">
+<div class="flex items-center gap-3 border-b border-slate-200 pb-4">
+<span class="material-symbols-outlined text-primary">token</span>
+<h2 class="text-2xl font-bold">4. Iconography</h2>
+</div>
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-8">
+<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8">
+<div class="flex flex-col items-center gap-3">
+<div class="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center text-primary border border-slate-100 dark:border-slate-700">
+<span class="material-symbols-outlined text-3xl">home</span>
+</div>
+<span class="text-xs font-medium">Home</span>
+</div>
+<div class="flex flex-col items-center gap-3">
+<div class="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center text-primary border border-slate-100 dark:border-slate-700">
+<span class="material-symbols-outlined text-3xl">inventory_2</span>
+</div>
+<span class="text-xs font-medium">Box</span>
+</div>
+<div class="flex flex-col items-center gap-3">
+<div class="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center text-primary border border-slate-100 dark:border-slate-700">
+<span class="material-symbols-outlined text-3xl">search</span>
+</div>
+<span class="text-xs font-medium">Search</span>
+</div>
+<div class="flex flex-col items-center gap-3">
+<div class="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center text-primary border border-slate-100 dark:border-slate-700">
+<span class="material-symbols-outlined text-3xl">person</span>
+</div>
+<span class="text-xs font-medium">User</span>
+</div>
+<div class="flex flex-col items-center gap-3">
+<div class="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center text-primary border border-slate-100 dark:border-slate-700">
+<span class="material-symbols-outlined text-3xl">settings</span>
+</div>
+<span class="text-xs font-medium">Settings</span>
+</div>
+</div>
+<div class="mt-10 p-4 bg-primary/5 rounded-lg text-sm text-primary/80 text-center italic">
+                    All icons are rendered at 24px default with a 1.5px stroke weight for maximum legibility on various screen resolutions.
+                </div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar (Design Element Example) -->
+<div class="fixed bottom-0 left-0 right-0 z-50 flex h-auto flex-col border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-background-dark/95 backdrop-blur-sm px-4 pb-6 pt-2">
+<div class="flex gap-2 max-w-lg mx-auto w-full">
+<a class="flex flex-1 flex-col items-center justify-center gap-1 rounded-xl py-2 text-primary bg-primary/10" href="#">
+<span class="material-symbols-outlined text-[24px]">home</span>
+<p class="text-[10px] font-bold uppercase tracking-widest">Home</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400 hover:text-primary transition-colors py-2" href="#">
+<span class="material-symbols-outlined text-[24px]">inventory_2</span>
+<p class="text-[10px] font-bold uppercase tracking-widest">Box</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400 hover:text-primary transition-colors py-2" href="#">
+<span class="material-symbols-outlined text-[24px]">search</span>
+<p class="text-[10px] font-bold uppercase tracking-widest">Search</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400 hover:text-primary transition-colors py-2" href="#">
+<span class="material-symbols-outlined text-[24px]">person</span>
+<p class="text-[10px] font-bold uppercase tracking-widest">User</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400 hover:text-primary transition-colors py-2" href="#">
+<span class="material-symbols-outlined text-[24px]">settings</span>
+<p class="text-[10px] font-bold uppercase tracking-widest">Settings</p>
+</a>
+</div>
+</div>
+</body></html>

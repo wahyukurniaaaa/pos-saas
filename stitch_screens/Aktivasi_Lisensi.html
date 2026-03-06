@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1a227f",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#121320",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display min-h-screen">
+<div class="relative flex h-screen w-full flex-col max-w-md mx-auto overflow-x-hidden shadow-2xl bg-white dark:bg-background-dark">
+<!-- Top App Bar -->
+<div class="flex items-center p-4 pb-2 justify-between">
+<div class="text-slate-900 dark:text-slate-100 flex size-12 shrink-0 items-center justify-center cursor-pointer">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">Aktivasi Lisensi</h2>
+</div>
+<!-- Hero / Logo Section -->
+<div class="flex-1 flex flex-col items-center justify-center px-6">
+<div class="w-full @container">
+<div class="@[480px]:px-4 @[480px]:py-3 flex flex-col items-center">
+<div class="w-24 h-24 mb-6 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-white text-5xl">point_of_sale</span>
+</div>
+<div class="text-center mb-8">
+<h1 class="text-primary text-4xl font-black tracking-tight mb-1">POSify</h1>
+<p class="text-slate-500 dark:text-slate-400 font-medium">Business Management System</p>
+</div>
+<div class="w-full bg-primary/5 dark:bg-primary/10 rounded-xl p-6 border border-primary/10 mb-8">
+<h3 class="text-slate-900 dark:text-slate-100 tracking-light text-2xl font-bold leading-tight text-center pb-2">Lisensi Seumur Hidup</h3>
+<p class="text-slate-600 dark:text-slate-400 text-sm text-center">Nikmati semua fitur premium selamanya tanpa biaya berlangganan bulanan.</p>
+</div>
+</div>
+</div>
+<!-- Input Section -->
+<div class="w-full space-y-4">
+<div class="flex flex-col gap-2">
+<label class="text-slate-900 dark:text-slate-100 text-sm font-semibold leading-normal">Kode Lisensi</label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-4 text-slate-400">key</span>
+<input class="form-input flex w-full min-w-0 flex-1 rounded-xl text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 focus:border-primary focus:ring-2 focus:ring-primary/20 h-14 pl-12 pr-4 text-base font-mono tracking-widest placeholder:text-slate-400 placeholder:font-sans placeholder:tracking-normal outline-none transition-all" placeholder="XXXX-YYYY-ZZZZ-WWWW" type="text"/>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Action Section -->
+<div class="p-6 space-y-4">
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 px-6 rounded-xl transition-colors shadow-lg shadow-primary/30 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">verified</span>
+                AKTIFKAN PERANGKAT INI
+            </button>
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium leading-normal text-center italic">
+                *Membutuhkan koneksi internet 1x untuk verifikasi sistem
+            </p>
+<div class="h-4"></div>
+</div>
+</div>
+</body></html>

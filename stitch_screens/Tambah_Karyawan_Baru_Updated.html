@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1a227f",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#121320",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%231a227f' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.75rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased text-slate-900 dark:text-slate-100 selection:bg-primary/10">
+<div class="relative flex min-h-screen w-full max-w-md mx-auto flex-col bg-background-light dark:bg-background-dark shadow-xl overflow-x-hidden">
+<!-- Header -->
+<div class="sticky top-0 z-10 flex items-center bg-white dark:bg-slate-900 border-b border-primary/10 p-4 justify-between">
+<button class="text-primary flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight flex-1 ml-2">Tambah Karyawan Baru</h2>
+<div class="size-10"></div> <!-- Spacer for symmetry -->
+</div>
+<div class="flex flex-col flex-1 p-4 gap-6">
+<!-- Information Card -->
+<div class="bg-primary/5 border border-primary/10 p-4 rounded-xl flex items-start gap-3">
+<span class="material-symbols-outlined text-primary">info</span>
+<p class="text-sm text-slate-600 dark:text-slate-400">Pastikan data yang dimasukkan sesuai dengan identitas resmi karyawan untuk keperluan administrasi.</p>
+</div>
+<!-- Form Fields -->
+<div class="space-y-5"><!-- Photo Upload Section -->
+<div class="flex flex-col items-center justify-center gap-3 py-4">
+<div class="relative group">
+<div class="size-24 rounded-full bg-primary/5 border-2 border-dashed border-primary/20 flex flex-col items-center justify-center cursor-pointer hover:bg-primary/10 hover:border-primary/40 transition-all overflow-hidden">
+<span class="material-symbols-outlined text-primary text-3xl">add_a_photo</span>
+</div>
+<div class="absolute bottom-0 right-0 bg-primary text-white size-8 rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900 shadow-sm">
+<span class="material-symbols-outlined text-sm">add</span>
+</div>
+</div>
+<p class="text-xs font-semibold text-primary/60 uppercase tracking-wider">Unggah Foto</p>
+</div>
+<!-- Nama Karyawan -->
+<div class="flex flex-col gap-2">
+<label class="text-slate-700 dark:text-slate-300 text-sm font-semibold leading-normal ml-1">Nama Lengkap Karyawan</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-primary/60">person</span>
+<input class="flex w-full rounded-xl border border-primary/20 bg-white dark:bg-slate-800 h-14 pl-12 pr-4 text-slate-900 dark:text-slate-100 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none placeholder:text-slate-400" placeholder="Contoh: Budi Santoso" type="text"/>
+</div>
+</div>
+<!-- Role Dropdown -->
+<div class="flex flex-col gap-2">
+<label class="text-slate-700 dark:text-slate-300 text-sm font-semibold leading-normal ml-1">Level Akses (Role)</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-primary/60">badge</span>
+<select class="flex w-full rounded-xl border border-primary/20 bg-white dark:bg-slate-800 h-14 pl-12 pr-4 text-slate-900 dark:text-slate-100 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none">
+<option disabled="" selected="" value="">Pilih Level Akses</option>
+<option value="manager">Manager</option>
+<option value="supervisor">Supervisor</option>
+<option value="cashier">Kasir</option>
+<option value="inventory">Gudang</option>
+</select>
+</div>
+</div>
+<!-- PIN Login -->
+<div class="flex flex-col gap-2">
+<label class="text-slate-700 dark:text-slate-300 text-sm font-semibold leading-normal ml-1">PIN Login (6 Digit)</label>
+<div class="relative flex">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-primary/60">lock</span>
+<input class="flex w-full rounded-xl border border-primary/20 bg-white dark:bg-slate-800 h-14 pl-12 pr-12 text-slate-900 dark:text-slate-100 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none placeholder:text-slate-400" inputmode="numeric" maxlength="6" pattern="\d*" placeholder="••••••" type="password"/>
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors" type="button">
+<span class="material-symbols-outlined">visibility_off</span>
+</button>
+</div>
+<p class="text-xs text-slate-500 ml-1">Gunakan kombinasi angka yang aman namun mudah diingat.</p>
+</div>
+<!-- Status Akun -->
+<div class="flex flex-col gap-2">
+<label class="text-slate-700 dark:text-slate-300 text-sm font-semibold leading-normal ml-1">Status Akun</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-primary/60">toggle_on</span>
+<select class="flex w-full rounded-xl border border-primary/20 bg-white dark:bg-slate-800 h-14 pl-12 pr-4 text-slate-900 dark:text-slate-100 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none">
+<option value="aktif">Aktif</option>
+<option value="nonaktif">Nonaktif</option>
+</select>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer / Action Button -->
+<div class="mt-auto p-4 bg-white dark:bg-slate-900 border-t border-primary/10">
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-bold h-14 rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2 active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined">save</span>
+                SIMPAN KARYAWAN
+            </button>
+</div>
+</div>
+</body></html>

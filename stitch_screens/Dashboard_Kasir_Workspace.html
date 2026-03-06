@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Cashier Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#1a227f",
+              "background-light": "#f6f6f8",
+              "background-dark": "#121320",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display min-h-screen flex flex-col">
+<!-- Header -->
+<header class="flex items-center justify-between p-4 bg-white dark:bg-slate-800 shadow-sm z-10 sticky top-0">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-cover bg-center border-2 border-primary/20" data-alt="Profile picture of cashier Siti" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBncv8mAzk9vSLs733_Vw7OyY5Umz6vwUPXJJJcVhIu_-5Desl_yO9mkcD08VRCs55Ymt-LpTsKePyn0uUm_1FKvffxX61FbsFr1t_U_oZx2x2JqC2_wPwXljKck2UZ3oqAlxdK-ln-_jaAZJ8Gq58skvkNJoSAsAdzdIYSCznKooJof2q7poNUH4x8-VCVb_ENeUsY-HqCqEfpUDnDtqissnA03RpEsj_rRz7YyczDQIRlJUG6pJ6GRxhw4mNvsjKI42f-Ymg2xaM');"></div>
+<h1 class="text-lg font-bold">Siti (Kasir)</h1>
+</div>
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 font-medium text-sm border border-green-200 dark:border-green-800">
+<span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+            Shift Buka
+        </div>
+</header>
+<!-- Search Bar -->
+<div class="px-4 py-3 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+<div class="relative flex items-center w-full h-12 bg-slate-100 dark:bg-slate-900 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
+<span class="material-symbols-outlined text-slate-400 pl-3">search</span>
+<input class="w-full bg-transparent border-none focus:ring-0 text-slate-900 dark:text-slate-100 placeholder-slate-400 px-3 h-full outline-none" placeholder="Search products or scan barcode..." type="text"/>
+<button class="pr-3 text-slate-400 hover:text-primary transition-colors focus:outline-none">
+<span class="material-symbols-outlined">barcode_scanner</span>
+</button>
+</div>
+</div>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col md:flex-row overflow-hidden h-[calc(100vh-180px)]">
+<!-- Left Column (Products) -->
+<section class="flex-1 overflow-y-auto p-4 bg-background-light dark:bg-background-dark border-r border-slate-200 dark:border-slate-700">
+<h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+<span class="text-yellow-500">⭐</span> Populer
+            </h2>
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+<!-- Product Card 1 -->
+<div class="bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-primary/50 cursor-pointer transition-all hover:shadow-md group">
+<div class="w-full aspect-square bg-slate-100 dark:bg-slate-900 rounded-lg mb-3 bg-cover bg-center overflow-hidden" data-alt="Package of instant noodles" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuARu4f5sBy3XShq0HauGJdg8Tg6keATlHc3sgIbQbg9BowTbchZQPzmHAtXeRAhxCzBh9qxYVEuQfu4G4o4QAZ9MeNHrN19sY1l-2nLPPK_JHqYidl_QCzjao8qLr7U1jHvpMRqpAdoSMgqIttB7sjQzcGka4o9XHlggxdPe4OZatwfU_btgnEZIxxmGL1YKg1cwT9kQA6peD7iG-XGwIY9Q8p8X6Ef35L0dCdpHHyxmc1x6wvQ0ZsS7_UxTUcIu746ZO_4faOLO1M');">
+<div class="w-full h-full bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined text-white opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 transition-all text-3xl drop-shadow-md">add_circle</span>
+</div>
+</div>
+<div>
+<h3 class="font-semibold text-slate-900 dark:text-slate-100 line-clamp-1">Noodles</h3>
+<p class="text-primary font-medium mt-1">Rp 3.500</p>
+</div>
+</div>
+<!-- Product Card 2 -->
+<div class="bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-primary/50 cursor-pointer transition-all hover:shadow-md group">
+<div class="w-full aspect-square bg-slate-100 dark:bg-slate-900 rounded-lg mb-3 bg-cover bg-center overflow-hidden" data-alt="Cup of hot coffee" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAxsxr_ar_S47O882RamEvaS7IyPdTgZiColK5bsL92DFHNeGeFuspDpZZJAr5GuzST6ugIunMmTyZ8ITVSf7gn9qve8h9nf_nrfJg6wIy1pwEcsQ_GRIF7pqmZX550Fs41Xyw-ngcuVLn2XzZftMLoemRhIHHHgesY1X9co5eK9v7yEAMcpNDhiYzyjUWPXeX5YvT6K8QZwgEJeWCt5OnIFMg9vk7ebAkawgwzUia3MKomNtnA3QJ5GsK-pXKYnxVuHV3OauBBdm0');">
+<div class="w-full h-full bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined text-white opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 transition-all text-3xl drop-shadow-md">add_circle</span>
+</div>
+</div>
+<div>
+<h3 class="font-semibold text-slate-900 dark:text-slate-100 line-clamp-1">Coffee</h3>
+<p class="text-primary font-medium mt-1">Rp 5.000</p>
+</div>
+</div>
+<!-- Product Card 3 -->
+<div class="bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-primary/50 cursor-pointer transition-all hover:shadow-md group">
+<div class="w-full aspect-square bg-slate-100 dark:bg-slate-900 rounded-lg mb-3 bg-cover bg-center overflow-hidden" data-alt="Can of cold soda" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA2_RiQEOkF7QUycuYFtwWtJtizInOjO489Eymq5W0FvwKtiQ6c_k6wI9Of2CHpat2tuBLTW-oMYfkC5ELDTpYIsXCvylj5cGkjz7od0cHBBNxSl6s7HLz4ti2ny2aWFn5W8WRE4Db18ip43-RQb2OCLMdY-SLJcMS8rps-WTZOBE4y8hUfswzt-yWCowqWRd47maMcDxh-xlfMcg4w8mqCSXxLU2sGozwXUMpQqt1RI0A_Oq8u4XgQerwBkROqA6pmc1M9uDDkE4o');">
+<div class="w-full h-full bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined text-white opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 transition-all text-3xl drop-shadow-md">add_circle</span>
+</div>
+</div>
+<div>
+<h3 class="font-semibold text-slate-900 dark:text-slate-100 line-clamp-1">Soda</h3>
+<p class="text-primary font-medium mt-1">Rp 6.000</p>
+</div>
+</div>
+<!-- Product Card 4 -->
+<div class="bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-primary/50 cursor-pointer transition-all hover:shadow-md group">
+<div class="w-full aspect-square bg-slate-100 dark:bg-slate-900 rounded-lg mb-3 bg-cover bg-center overflow-hidden" data-alt="Loaf of fresh bread" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC6K_hc-nbgUc_mMFnnLi9s-yyFkuaJu-6mLx-9sPmZioZT6QRmAxCkFSoG8KuiGQ3n-Z9iTuPs2bpJ_HN4bnjkscf7Z6FaiPwI6AkaHFiHu3z6-FQhPgkVrI1KQZIjM-hG7fICdPQuGeOg-XSFYquVgsERewOxeak7hkZyoRI9BvRMLEZLoPZzTAe18wRCQLFd3olMYPg4GE7XKpssww8U_U9jrSw7i174oRgZZeReqHTtFwlUJLXmoPCFgZT-5Ugk2KdmS1qySo4');">
+<div class="w-full h-full bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined text-white opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 transition-all text-3xl drop-shadow-md">add_circle</span>
+</div>
+</div>
+<div>
+<h3 class="font-semibold text-slate-900 dark:text-slate-100 line-clamp-1">Bread</h3>
+<p class="text-primary font-medium mt-1">Rp 8.000</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Column (Cart) -->
+<section class="w-full md:w-80 lg:w-96 flex flex-col bg-white dark:bg-slate-800 shadow-[-4px_0_15px_-3px_rgba(0,0,0,0.05)] z-10 flex-shrink-0 border-l border-slate-200 dark:border-slate-700">
+<div class="p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+<h2 class="text-lg font-bold flex items-center gap-2 text-slate-800 dark:text-slate-200">
+<span class="text-xl">🛒</span> Keranjang
+                </h2>
+<button class="text-sm text-red-500 hover:text-red-700 font-medium">Clear All</button>
+</div>
+<div class="flex-1 overflow-y-auto p-4 space-y-4">
+<!-- Cart Item 1 -->
+<div class="flex justify-between items-start group">
+<div class="flex-1">
+<h4 class="font-medium text-slate-900 dark:text-slate-100">Indomie Grg</h4>
+<div class="text-sm text-slate-500 mt-1">Rp 3.500</div>
+</div>
+<div class="flex flex-col items-end gap-2">
+<div class="font-semibold text-slate-900 dark:text-slate-100">Rp 7.000</div>
+<div class="flex items-center gap-2 bg-slate-100 dark:bg-slate-700 rounded-md px-2 py-1">
+<button class="w-6 h-6 flex items-center justify-center text-slate-500 hover:text-primary rounded hover:bg-slate-200 dark:hover:bg-slate-600">
+<span class="material-symbols-outlined text-[20px]">remove</span>
+</button>
+<span class="w-4 text-center text-sm font-medium">2</span>
+<button class="w-6 h-6 flex items-center justify-center text-slate-500 hover:text-primary rounded hover:bg-slate-200 dark:hover:bg-slate-600">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Cart Item 2 -->
+<div class="flex justify-between items-start group">
+<div class="flex-1">
+<h4 class="font-medium text-slate-900 dark:text-slate-100">Teh Pucuk</h4>
+<div class="text-sm text-slate-500 mt-1">Rp 4.000</div>
+</div>
+<div class="flex flex-col items-end gap-2">
+<div class="font-semibold text-slate-900 dark:text-slate-100">Rp 4.000</div>
+<div class="flex items-center gap-2 bg-slate-100 dark:bg-slate-700 rounded-md px-2 py-1">
+<button class="w-6 h-6 flex items-center justify-center text-slate-500 hover:text-primary rounded hover:bg-slate-200 dark:hover:bg-slate-600">
+<span class="material-symbols-outlined text-[20px]">remove</span>
+</button>
+<span class="w-4 text-center text-sm font-medium">1</span>
+<button class="w-6 h-6 flex items-center justify-center text-slate-500 hover:text-primary rounded hover:bg-slate-200 dark:hover:bg-slate-600">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="p-4 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700">
+<div class="flex justify-between items-center mb-4">
+<span class="text-slate-600 dark:text-slate-400 font-medium">Subtotal</span>
+<span class="text-slate-900 dark:text-slate-100 font-semibold">Rp 11.000</span>
+</div>
+<div class="flex justify-between items-center mb-4 pb-4 border-b border-slate-200 dark:border-slate-700">
+<span class="text-slate-600 dark:text-slate-400 font-medium">Pajak (0%)</span>
+<span class="text-slate-900 dark:text-slate-100 font-semibold">Rp 0</span>
+</div>
+<div class="flex justify-between items-end mb-4">
+<span class="text-lg text-slate-800 dark:text-slate-200 font-bold">Total:</span>
+<span class="text-2xl text-primary font-bold">Rp 11.000</span>
+</div>
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-primary/30 transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined">payments</span>
+                    BAYAR - Rp 11.000
+                </button>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="mt-auto bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex justify-around p-2 pb-safe z-20 md:hidden relative">
+<a class="flex flex-col items-center justify-center w-full py-2 text-primary" href="#">
+<span class="material-symbols-outlined text-2xl mb-1" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="text-xs font-semibold">POS</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full py-2 text-slate-500 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl mb-1">inventory_2</span>
+<span class="text-xs font-medium">Stok</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full py-2 text-slate-500 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl mb-1">settings</span>
+<span class="text-xs font-medium">Setting</span>
+</a>
+</nav>
+<!-- Desktop Side Nav Overlay for responsive consistency -->
+<nav class="hidden md:flex flex-col w-20 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 absolute left-0 top-[73px] bottom-0 z-20">
+<a class="flex flex-col items-center justify-center py-6 text-primary border-r-2 border-primary bg-primary/5" href="#">
+<span class="material-symbols-outlined text-2xl mb-1" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="text-[10px] font-semibold">POS</span>
+</a>
+<a class="flex flex-col items-center justify-center py-6 text-slate-500 hover:text-primary hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl mb-1">inventory_2</span>
+<span class="text-[10px] font-medium">Stok</span>
+</a>
+<a class="flex flex-col items-center justify-center py-6 text-slate-500 hover:text-primary hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors mt-auto mb-4" href="#">
+<span class="material-symbols-outlined text-2xl mb-1">settings</span>
+<span class="text-[10px] font-medium">Setting</span>
+</a>
+</nav>
+<!-- Adjust main content margin for desktop nav -->
+<style>
+        @media (min-width: 768px) {
+            main {
+                margin-left: 5rem;
+                width: calc(100% - 5rem);
+            }
+            header, .px-4.py-3.bg-white {
+                padding-left: calc(1rem + 5rem);
+            }
+        }
+    </style>
+</body></html>

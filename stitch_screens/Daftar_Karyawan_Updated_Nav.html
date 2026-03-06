@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>POSify - Daftar Karyawan</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1a227f",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#121320",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background-light font-display text-slate-900 antialiased">
+<div class="relative flex min-h-screen w-full flex-col max-w-md mx-auto bg-white shadow-xl overflow-x-hidden">
+<!-- Header -->
+<header class="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-slate-200">
+<div class="flex items-center p-4 gap-4">
+<button class="flex items-center justify-center p-2 rounded-full hover:bg-primary/10 transition-colors text-primary">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="text-xl font-bold tracking-tight text-slate-900">Daftar Karyawan</h1>
+</div>
+<!-- Search Bar -->
+<div class="px-4 pb-4">
+<label class="relative flex items-center w-full">
+<span class="material-symbols-outlined absolute left-3 text-slate-400">search</span>
+<input class="w-full h-11 pl-10 pr-4 bg-slate-100 border-none rounded-xl text-slate-900 placeholder:text-slate-500 focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all outline-none" placeholder="Cari nama karyawan..." type="text"/>
+</label>
+</div>
+</header>
+<!-- Employee List Content -->
+<main class="flex-1 overflow-y-auto pb-24">
+<!-- List Section Header -->
+<div class="px-4 py-3 bg-slate-50 border-b border-slate-100">
+<p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Karyawan Aktif (5)</p>
+</div>
+<!-- Employee Items -->
+<div class="divide-y divide-slate-100">
+<!-- Item 1 -->
+<div class="flex items-center gap-4 px-4 py-4 hover:bg-slate-50 transition-colors">
+<div class="relative shrink-0">
+<div class="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg overflow-hidden">
+<img class="h-full w-full object-cover" data-alt="Profile photo of Andi Wijaya" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMl6pcsZBn-dPKiGTGu1tzoKiDOr8gVEEIO2JixnRx-Hwi_TIpD8nbaxFIBZ40UZp40CwT2_1OtX_gwMcn9IffLwipFBkzFbHqOAv-6Px0jdbQaZGCBqGC9S2qOtN_rLm_hOFAw-DoplHnEjRX0Dur6ACGUXkiDsKmt6OEeee5GMoguZwe7yVzbEXxuDAwWW-jxCkE-8aApGIs_iwJeflRIu_4KkwTI5X2S7ucYYFpujEKoiZP_zKWDwmuY-EBWQlSzyzzsA-lhAo"/>
+</div>
+<div class="absolute bottom-0 right-0 h-3.5 w-3.5 bg-green-500 border-2 border-white rounded-full"></div>
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<p class="text-base font-semibold text-slate-900 truncate">Andi Wijaya</p>
+<span class="inline-flex items-center text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full w-fit">
+                            Owner
+                        </span>
+</div>
+<button class="shrink-0 flex items-center justify-center h-9 px-4 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold hover:bg-slate-200 transition-colors">
+                        Edit
+                    </button>
+</div>
+<!-- Item 2 -->
+<div class="flex items-center gap-4 px-4 py-4 hover:bg-slate-50 transition-colors">
+<div class="shrink-0">
+<div class="h-14 w-14 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 overflow-hidden">
+<img class="h-full w-full object-cover" data-alt="Profile photo of Siti Aminah" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBSTRyfYYDwActxGb6P0ci7sNsfvk8SpnspgStfEYWNJ95yZ6GkF2q1zDIJfK7wIBQ5f01F3YhXhNVDIDP142OiFDmVRr_Srkjt8epnjCuqVjxkVfEkVdX1UOFP1-PfhSHHwzkGxqhB86Ppewl9AHlt_wdZGiSHY_FLRElNcVylE72PRoVjWcNbAIaPfJmDNpMHD0DOHymgxUbcoB4EgRu3nFadnD6fE7y8Az_gNt2oJyKeF_E0zbWVhJszPFEMq8TvwIIZdi5oIGo"/>
+</div>
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<p class="text-base font-semibold text-slate-900 truncate">Siti Aminah</p>
+<span class="inline-flex items-center text-xs font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full w-fit">
+                            Level 2 (Manager)
+                        </span>
+</div>
+<button class="shrink-0 flex items-center justify-center h-9 px-4 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold hover:bg-slate-200 transition-colors">
+                        Edit
+                    </button>
+</div>
+<!-- Item 3 -->
+<div class="flex items-center gap-4 px-4 py-4 hover:bg-slate-50 transition-colors">
+<div class="shrink-0">
+<div class="h-14 w-14 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 overflow-hidden">
+<img class="h-full w-full object-cover" data-alt="Profile photo of Budi Santoso" src="https://lh3.googleusercontent.com/aida-public/AB6AXuABwH86N4_h0iYbnUoh8dUfqrOmbFekJBqwRkctIuB2uJqXoOHLO6hP6A7G5lwlpMwCBPkLYLHZgAVV9IPTW14LXD_2GbRbCeaXv--E-2WRUFs2WpqBpdteMQ0wVPMsVbpBIbZk29MNRlUwYkKVN2bLDDRhxMH3G946ZSPpH5bQEgkcchC7fsDkYB327zAKW1NcvGDw8G_G2EAvH1WacfMkb-v-vLfG4N7cUnL-EEJZ4pv1c1i_AOHwxe4ad5jl7fDBKRtspha567Y"/>
+</div>
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<p class="text-base font-semibold text-slate-900 truncate">Budi Santoso</p>
+<span class="inline-flex items-center text-xs font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full w-fit">
+                            Level 3 (Staff)
+                        </span>
+</div>
+<button class="shrink-0 flex items-center justify-center h-9 px-4 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold hover:bg-slate-200 transition-colors">
+                        Edit
+                    </button>
+</div>
+<!-- Item 4 -->
+<div class="flex items-center gap-4 px-4 py-4 hover:bg-slate-50 transition-colors">
+<div class="shrink-0">
+<div class="h-14 w-14 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 overflow-hidden">
+<img class="h-full w-full object-cover" data-alt="Profile photo of Dewi Lestari" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuaBhIHxF2T1Zx7DOzh6MYtnaxczqs5YXQFoG8HN7ExnAswBKIu30FIv-awSd6HXSApj9tsgF4aa2xn2f9QP-lLqpw2LkEpw1T6gopJbJxLdYTnOQRCZgcNUY93JlkYCxgrit89C_iowsmss66g_SdDG7CPcMrdJ4yqnRwW_GTP3EdYhhK-wf8EzFpxhRFbvNuD-KqjosknqxqHpGcuFEhT5hEWlEzxaOUZbuTD-d8mt_WZWBggGEw4DNWbcRjRkVN7HqWnyCMZoM"/>
+</div>
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<p class="text-base font-semibold text-slate-900 truncate">Dewi Lestari</p>
+<span class="inline-flex items-center text-xs font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full w-fit">
+                            Level 3 (Staff)
+                        </span>
+</div>
+<button class="shrink-0 flex items-center justify-center h-9 px-4 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold hover:bg-slate-200 transition-colors">
+                        Edit
+                    </button>
+</div>
+<!-- Item 5 -->
+<div class="flex items-center gap-4 px-4 py-4 hover:bg-slate-50 transition-colors">
+<div class="shrink-0">
+<div class="h-14 w-14 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 overflow-hidden">
+<img class="h-full w-full object-cover" data-alt="Profile photo of Eko Prasetyo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_ZbwkD2AbQ3cNfqvXeUrhgCr1O4TdobMTIH0mALBED9qGYJ9tBfOO6GJY0heAj1q6m-8mw40bfEnhnY1wDSx9MDhw_ZBobLyfqY1zh1xA353WP2DhdDpU42pHN8JDLnqRpgj-7JNFGEaFfFZKsMuQOYsD2cv9fv3iE8kS_G7rbh2YLqAEGa0p2ZQwhkSbCJYTyBVBNneL7VIcU88Lst7ogooTmEJXZ80e380NZBzIdvtZ5cDzjM3RuoqgDGVMcRbvKe4GncseROI"/>
+</div>
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<p class="text-base font-semibold text-slate-900 truncate">Eko Prasetyo</p>
+<span class="inline-flex items-center text-xs font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full w-fit">
+                            Level 2 (Supervisor)
+                        </span>
+</div>
+<button class="shrink-0 flex items-center justify-center h-9 px-4 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold hover:bg-slate-200 transition-colors">
+                        Edit
+                    </button>
+</div>
+</div>
+</main>
+<!-- Floating Action Button -->
+<button class="absolute bottom-24 right-6 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-xl hover:bg-primary/90 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-2xl">add</span>
+</button>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md border-t border-slate-100 bg-white px-2 pb-6 pt-2 flex items-center justify-between z-20">
+<a class="flex flex-1 flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">point_of_sale</span>
+<p class="text-[10px] font-medium leading-none">POS</p>
+</a>
+<a class="flex flex-1 flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<p class="text-[10px] font-medium leading-none">Stok</p>
+</a>
+<a class="flex flex-1 flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings</span>
+<p class="text-[10px] font-bold leading-none">Setting</p>
+</a>
+</nav>
+</div>
+</body></html>

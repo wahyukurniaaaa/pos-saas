@@ -102,8 +102,9 @@ class _OwnerSetupScreenState extends ConsumerState<OwnerSetupScreen> {
                               hintText: 'Contoh: Bapak Budi',
                             ),
                             validator: (v) {
-                              if (v == null || v.isEmpty)
+                              if (v == null || v.isEmpty) {
                                 return 'Nama wajib diisi';
+                              }
                               return null;
                             },
                           ),
@@ -118,8 +119,9 @@ class _OwnerSetupScreenState extends ConsumerState<OwnerSetupScreen> {
                               hintText: 'Contoh: Toko Budi Jaya',
                             ),
                             validator: (v) {
-                              if (v == null || v.isEmpty)
+                              if (v == null || v.isEmpty) {
                                 return 'Nama toko wajib diisi';
+                              }
                               return null;
                             },
                           ),
@@ -150,8 +152,9 @@ class _OwnerSetupScreenState extends ConsumerState<OwnerSetupScreen> {
                               ),
                             ),
                             validator: (v) {
-                              if (v == null || v.length != 6)
+                              if (v == null || v.length != 6) {
                                 return 'PIN harus 6 digit';
+                              }
                               if (v == '123456' || v == '000000') {
                                 return 'Pola PIN terlalu umum';
                               }
@@ -186,8 +189,9 @@ class _OwnerSetupScreenState extends ConsumerState<OwnerSetupScreen> {
                               ),
                             ),
                             validator: (v) {
-                              if (v != _pinController.text)
+                              if (v != _pinController.text) {
                                 return 'PIN tidak cocok';
+                              }
                               return null;
                             },
                           ),
