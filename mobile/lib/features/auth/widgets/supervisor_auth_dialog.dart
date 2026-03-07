@@ -9,17 +9,17 @@ class SupervisorAuthDialog extends ConsumerStatefulWidget {
 
   const SupervisorAuthDialog({super.key, required this.actionDescription});
 
-  static Future<bool> show(
+  static Future<int?> show(
     BuildContext context, {
     required String actionDescription,
   }) async {
-    final result = await showDialog<bool>(
+    final result = await showDialog<int?>(
       context: context,
       barrierDismissible: false,
       builder: (context) =>
           SupervisorAuthDialog(actionDescription: actionDescription),
     );
-    return result ?? false;
+    return result;
   }
 
   @override
@@ -76,7 +76,7 @@ class _SupervisorAuthDialogState extends ConsumerState<SupervisorAuthDialog> {
       return;
     }
 
-    Navigator.of(context).pop(true);
+    Navigator.of(context).pop(employee.id);
   }
 
   @override

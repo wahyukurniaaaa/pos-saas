@@ -46,6 +46,7 @@ dependencies:
   path: ^1.9.1
   flutter_dotenv: ^5.2.1
   blue_thermal_printer: ^1.2.3
+  fl_chart: ^0.68.0
 
 dev_dependencies:
   flutter_test:

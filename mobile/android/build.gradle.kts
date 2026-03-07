@@ -17,6 +17,30 @@ subprojects {
 }
 subprojects {
     project.evaluationDependsOn(":app")
+    
+    fun applyNamespaceWorkaround(p: Project) {
+        if (p.hasProperty("android")) {
+            val android = p.extensions.getByName("android")
+            try {
+                val getNamespace = android.javaClass.getMethod("getNamespace")
+                if (getNamespace.invoke(android) == null) {
+                    val setNamespace = android.javaClass.getMethod("setNamespace", String::class.java)
+                    val defaultNamespace = if (p.group.toString().isNotEmpty()) {
+                        p.group.toString()
+                    } else {
+                        "com.posify.${p.name.replace("-", "_")}"
+                    }
+                    setNamespace.invoke(android, defaultNamespace)
+                }
+            } catch (e: Exception) {}
+        }
+    }
+
+    if (project.state.executed) {
+        applyNamespaceWorkaround(project)
+    } else {
+        project.afterEvaluate { applyNamespaceWorkaround(project) }
+    }
 }
 
 tasks.register<Delete>("clean") {

@@ -3,6 +3,7 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'package:intl/intl.dart';
 
 import 'tables/licenses_table.dart';
 import 'tables/employees_table.dart';
@@ -159,6 +160,154 @@ class PosifyDatabase extends _$PosifyDatabase {
 
   Future<int> deleteCategory(Category entry) =>
       delete(categories).delete(entry);
+
+  // ===== Detail & Void Transaction =====
+  Future<TransactionWithItems?> getTransactionWithItems(
+    int transactionId,
+  ) async {
+    final transaction = await (select(
+      transactions,
+    )..where((t) => t.id.equals(transactionId))).getSingleOrNull();
+    if (transaction == null) return null;
+
+    final itemsQuery = select(transactionItems).join([
+      innerJoin(products, products.id.equalsExp(transactionItems.productId)),
+    ])..where(transactionItems.transactionId.equals(transactionId));
+
+    final itemsResult = await itemsQuery.get();
+    final itemsList = itemsResult.map((row) {
+      return TransactionItemWithProduct(
+        item: row.readTable(transactionItems),
+        product: row.readTable(products),
+      );
+    }).toList();
+
+    return TransactionWithItems(transaction: transaction, items: itemsList);
+  }
+
+  Future<bool> voidTransaction(int transactionId, int supervisorId) async {
+    return transaction(() async {
+      // 1. Get transaction
+      final t = await (select(
+        transactions,
+      )..where((tbl) => tbl.id.equals(transactionId))).getSingleOrNull();
+      if (t == null || t.paymentStatus == 'void') return false;
+
+      // 2. Update status and voidBy
+      await (update(
+        transactions,
+      )..where((tbl) => tbl.id.equals(transactionId))).write(
+        TransactionsCompanion(
+          paymentStatus: const Value('void'),
+          voidBy: Value(supervisorId),
+        ),
+      );
+
+      // 3. Restore stock
+      final items = await (select(
+        transactionItems,
+      )..where((tbl) => tbl.transactionId.equals(transactionId))).get();
+      for (final item in items) {
+        final product = await (select(
+          products,
+        )..where((p) => p.id.equals(item.productId))).getSingleOrNull();
+        if (product != null) {
+          await (update(products)..where((p) => p.id.equals(product.id))).write(
+            ProductsCompanion(stock: Value(product.stock + item.quantity)),
+          );
+        }
+      }
+
+      return true;
+    });
+  }
+
+  // ===== Sales Analytics =====
+  Future<int> getTotalRevenue(DateTime start, DateTime end) async {
+    final query = selectOnly(transactions)
+      ..addColumns([transactions.totalAmount.sum()])
+      ..where(transactions.createdAt.isBetweenValues(start, end))
+      ..where(transactions.paymentStatus.equals('paid'));
+
+    final result = await query.getSingle();
+    final total = result.read(transactions.totalAmount.sum());
+    return total ?? 0;
+  }
+
+  Future<List<ProductSales>> getTopProducts(
+    DateTime start,
+    DateTime end,
+  ) async {
+    final amountExp = transactionItems.quantity.sum();
+    final query =
+        selectOnly(transactionItems).join([
+            innerJoin(
+              products,
+              products.id.equalsExp(transactionItems.productId),
+            ),
+            innerJoin(
+              transactions,
+              transactions.id.equalsExp(transactionItems.transactionId),
+            ),
+          ])
+          ..addColumns([products.name, amountExp])
+          ..where(transactions.createdAt.isBetweenValues(start, end))
+          ..where(transactions.paymentStatus.equals('paid'))
+          ..groupBy([products.id])
+          ..orderBy([
+            OrderingTerm(expression: amountExp, mode: OrderingMode.desc),
+          ])
+          ..limit(5);
+
+    final result = await query.get();
+    return result.map((row) {
+      return ProductSales(
+        row.read(products.name) ?? 'Unknown',
+        row.read(amountExp) ?? 0,
+      );
+    }).toList();
+  }
+
+  Future<List<DailySales>> getDailySales(DateTime start, DateTime end) async {
+    final list =
+        await (select(transactions)
+              ..where((t) => t.createdAt.isBetweenValues(start, end))
+              ..where((t) => t.paymentStatus.equals('paid'))
+              ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
+            .get();
+
+    final Map<String, int> grouped = {};
+    for (final t in list) {
+      final dateStr = DateFormat('yyyy-MM-dd').format(t.createdAt);
+      grouped[dateStr] = (grouped[dateStr] ?? 0) + t.totalAmount;
+    }
+
+    return grouped.entries.map((e) => DailySales(e.key, e.value)).toList();
+  }
+}
+
+class ProductSales {
+  final String productName;
+  final int totalQuantity;
+  ProductSales(this.productName, this.totalQuantity);
+}
+
+class DailySales {
+  final String dateStr;
+  final int totalAmount;
+  DailySales(this.dateStr, this.totalAmount);
+}
+
+class TransactionWithItems {
+  final Transaction transaction;
+  final List<TransactionItemWithProduct> items;
+  TransactionWithItems({required this.transaction, required this.items});
+}
+
+class TransactionItemWithProduct {
+  final TransactionItem item;
+  final Product product;
+  TransactionItemWithProduct({required this.item, required this.product});
 }
 
 LazyDatabase _openConnection() {

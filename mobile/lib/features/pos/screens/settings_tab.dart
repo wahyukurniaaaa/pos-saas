@@ -7,6 +7,7 @@ import 'package:posify_app/features/pos/screens/settings/printer_settings_screen
 import 'package:posify_app/features/settings/screens/employee_list_screen.dart';
 import 'package:posify_app/features/settings/screens/transaction_history_screen.dart';
 import 'package:posify_app/features/settings/screens/shift_history_screen.dart';
+import 'package:posify_app/features/reports/screens/sales_analytics_screen.dart';
 import 'package:posify_app/features/settings/screens/category_management_screen.dart';
 
 class SettingsTab extends ConsumerWidget {
@@ -47,6 +48,12 @@ class SettingsTab extends ConsumerWidget {
           const Divider(height: 32),
 
           // Riwayat & Laporan
+          _buildSettingsTile(
+            Icons.analytics_rounded,
+            'Analitik Penjualan',
+            'Dashboard dan tren penjualan',
+            onTap: () => _navigate(context, const SalesAnalyticsScreen()),
+          ),
           _buildSettingsTile(
             Icons.receipt_long_rounded,
             'Riwayat Transaksi',

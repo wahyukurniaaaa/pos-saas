@@ -5,6 +5,7 @@ import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:intl/intl.dart';
+import 'receipt_detail_screen.dart';
 
 class TransactionHistoryScreen extends ConsumerWidget {
   const TransactionHistoryScreen({super.key});
@@ -143,7 +144,12 @@ class TransactionHistoryScreen extends ConsumerWidget {
                   ),
                   trailing: TextButton(
                     onPressed: () {
-                      // TODO: Navigate to receipt detail
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              ReceiptDetailScreen(transactionId: txn.id),
+                        ),
+                      );
                     },
                     child: Text(
                       'Detail',
