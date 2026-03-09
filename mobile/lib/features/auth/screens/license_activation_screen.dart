@@ -3,6 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
+import 'package:posify_app/core/services/backup_service.dart';
+import 'package:file_picker/file_picker.dart';
+import 'dart:io';
 import '../providers/auth_providers.dart';
 
 class LicenseActivationScreen extends ConsumerStatefulWidget {
@@ -243,23 +246,54 @@ class _LicenseActivationScreenState
                         ),
                       ),
                     ),
+                    const SizedBox(height: 24),
+
+                    // Restore Option
+                    TextButton.icon(
+                      onPressed: _isLoading ? null : _handleRestore,
+                      icon: const Icon(Icons.settings_backup_restore_rounded),
+                      label: const Text('Sudah punya backup? Pulihkan di sini'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
+                        backgroundColor: Colors.white.withValues(alpha: 0.1),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
                     const SizedBox(height: 20),
 
                     // Info Text
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    Column(
                       children: [
-                        Icon(
-                          Icons.wifi_rounded,
-                          size: 16,
-                          color: Colors.white.withValues(alpha: 0.7),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.wifi_rounded,
+                              size: 16,
+                              color: Colors.white.withValues(alpha: 0.7),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Butuh internet saat Aktivasi & Verifikasi (7 hari)',
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                color: Colors.white.withValues(alpha: 0.7),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 6),
+                        const SizedBox(height: 4),
                         Text(
-                          'Membutuhkan koneksi internet 1x saja',
+                          'Maksimal offline 7 hari sebelum verifikasi ulang',
                           style: GoogleFonts.inter(
-                            fontSize: 12,
-                            color: Colors.white.withValues(alpha: 0.7),
+                            fontSize: 10,
+                            color: Colors.white.withValues(alpha: 0.5),
                           ),
                         ),
                       ],
@@ -302,6 +336,91 @@ class _LicenseActivationScreenState
           behavior: SnackBarBehavior.floating,
         ),
       );
+    }
+  }
+
+  Future<void> _handleRestore() async {
+    final result = await FilePicker.platform.pickFiles(type: FileType.any);
+
+    if (result == null || result.files.single.path == null) return;
+
+    final file = File(result.files.single.path!);
+    final keyController = TextEditingController();
+
+    if (!mounted) return;
+
+    final recoveryKey = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Konfirmasi Restore Data'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Masukkan Kunci Pemulihan (Recovery Key) dari HP lama untuk membuka file backup ini.',
+              style: TextStyle(fontSize: 13),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: keyController,
+              decoration: const InputDecoration(
+                labelText: 'Recovery Key',
+                border: OutlineInputBorder(),
+                hintText: 'Masukkan kunci base64...',
+              ),
+              style: GoogleFonts.robotoMono(fontSize: 14),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, keyController.text),
+            child: const Text('Mulai Restore'),
+          ),
+        ],
+      ),
+    );
+
+    if (recoveryKey == null || recoveryKey.isEmpty) return;
+
+    setState(() => _isLoading = true);
+    try {
+      await BackupService().importAndRestore(file, recoveryKey);
+
+      if (!mounted) return;
+
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: const Text('Data Berhasil Dipulihkan'),
+          content: const Text(
+            'Data dari HP lama berhasil masuk. Aplikasi akan ditutup. Silakan buka kembali untuk me-load data Anda.',
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () => exit(0),
+              child: const Text('Tutup Aplikasi'),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal: Pastikan Kunci Pemulihan benar.'),
+          backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 }

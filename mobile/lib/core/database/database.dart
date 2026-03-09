@@ -39,7 +39,22 @@ class PosifyDatabase extends _$PosifyDatabase {
   PosifyDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration {
+    return MigrationStrategy(
+      onCreate: (m) async {
+        await m.createAll();
+      },
+      onUpgrade: (m, from, to) async {
+        if (from < 2) {
+          // Add lastVerified column to licenses table
+          await m.addColumn(licenses, licenses.lastVerified);
+        }
+      },
+    );
+  }
 
   // ===== License Queries =====
   Future<License?> getLocalLicense() =>
@@ -47,6 +62,12 @@ class PosifyDatabase extends _$PosifyDatabase {
 
   Future<int> insertLicense(LicensesCompanion entry) =>
       into(licenses).insert(entry);
+
+  Future<void> updateLicenseVerification(String code) {
+    return (update(licenses)..where((t) => t.licenseCode.equals(code))).write(
+      LicensesCompanion(lastVerified: Value(DateTime.now())),
+    );
+  }
 
   // ===== Employee Queries =====
   Future<List<Employee>> getAllEmployees() => select(employees).get();
@@ -320,6 +341,10 @@ class PosifyDatabase extends _$PosifyDatabase {
     }
 
     return grouped.entries.map((e) => DailySales(e.key, e.value)).toList();
+  }
+
+  Future<int> deleteLicense(String code) {
+    return (delete(licenses)..where((t) => t.licenseCode.equals(code))).go();
   }
 }
 

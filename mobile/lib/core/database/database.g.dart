@@ -57,6 +57,17 @@ class $LicensesTable extends Licenses with TableInfo<$LicensesTable, License> {
         type: DriftSqlType.dateTime,
         requiredDuringInsert: false,
       );
+  static const VerificationMeta _lastVerifiedMeta = const VerificationMeta(
+    'lastVerified',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastVerified = GeneratedColumn<DateTime>(
+    'last_verified',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _statusMeta = const VerificationMeta('status');
   @override
   late final GeneratedColumn<String> status = GeneratedColumn<String>(
@@ -73,6 +84,7 @@ class $LicensesTable extends Licenses with TableInfo<$LicensesTable, License> {
     licenseCode,
     deviceFingerprint,
     activationDate,
+    lastVerified,
     status,
   ];
   @override
@@ -119,6 +131,15 @@ class $LicensesTable extends Licenses with TableInfo<$LicensesTable, License> {
         ),
       );
     }
+    if (data.containsKey('last_verified')) {
+      context.handle(
+        _lastVerifiedMeta,
+        lastVerified.isAcceptableOrUnknown(
+          data['last_verified']!,
+          _lastVerifiedMeta,
+        ),
+      );
+    }
     if (data.containsKey('status')) {
       context.handle(
         _statusMeta,
@@ -150,6 +171,10 @@ class $LicensesTable extends Licenses with TableInfo<$LicensesTable, License> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}activation_date'],
       ),
+      lastVerified: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_verified'],
+      ),
       status: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}status'],
@@ -168,12 +193,14 @@ class License extends DataClass implements Insertable<License> {
   final String licenseCode;
   final String? deviceFingerprint;
   final DateTime? activationDate;
+  final DateTime? lastVerified;
   final String status;
   const License({
     required this.id,
     required this.licenseCode,
     this.deviceFingerprint,
     this.activationDate,
+    this.lastVerified,
     required this.status,
   });
   @override
@@ -186,6 +213,9 @@ class License extends DataClass implements Insertable<License> {
     }
     if (!nullToAbsent || activationDate != null) {
       map['activation_date'] = Variable<DateTime>(activationDate);
+    }
+    if (!nullToAbsent || lastVerified != null) {
+      map['last_verified'] = Variable<DateTime>(lastVerified);
     }
     map['status'] = Variable<String>(status);
     return map;
@@ -201,6 +231,9 @@ class License extends DataClass implements Insertable<License> {
       activationDate: activationDate == null && nullToAbsent
           ? const Value.absent()
           : Value(activationDate),
+      lastVerified: lastVerified == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastVerified),
       status: Value(status),
     );
   }
@@ -217,6 +250,7 @@ class License extends DataClass implements Insertable<License> {
         json['deviceFingerprint'],
       ),
       activationDate: serializer.fromJson<DateTime?>(json['activationDate']),
+      lastVerified: serializer.fromJson<DateTime?>(json['lastVerified']),
       status: serializer.fromJson<String>(json['status']),
     );
   }
@@ -228,6 +262,7 @@ class License extends DataClass implements Insertable<License> {
       'licenseCode': serializer.toJson<String>(licenseCode),
       'deviceFingerprint': serializer.toJson<String?>(deviceFingerprint),
       'activationDate': serializer.toJson<DateTime?>(activationDate),
+      'lastVerified': serializer.toJson<DateTime?>(lastVerified),
       'status': serializer.toJson<String>(status),
     };
   }
@@ -237,6 +272,7 @@ class License extends DataClass implements Insertable<License> {
     String? licenseCode,
     Value<String?> deviceFingerprint = const Value.absent(),
     Value<DateTime?> activationDate = const Value.absent(),
+    Value<DateTime?> lastVerified = const Value.absent(),
     String? status,
   }) => License(
     id: id ?? this.id,
@@ -247,6 +283,7 @@ class License extends DataClass implements Insertable<License> {
     activationDate: activationDate.present
         ? activationDate.value
         : this.activationDate,
+    lastVerified: lastVerified.present ? lastVerified.value : this.lastVerified,
     status: status ?? this.status,
   );
   License copyWithCompanion(LicensesCompanion data) {
@@ -261,6 +298,9 @@ class License extends DataClass implements Insertable<License> {
       activationDate: data.activationDate.present
           ? data.activationDate.value
           : this.activationDate,
+      lastVerified: data.lastVerified.present
+          ? data.lastVerified.value
+          : this.lastVerified,
       status: data.status.present ? data.status.value : this.status,
     );
   }
@@ -272,14 +312,21 @@ class License extends DataClass implements Insertable<License> {
           ..write('licenseCode: $licenseCode, ')
           ..write('deviceFingerprint: $deviceFingerprint, ')
           ..write('activationDate: $activationDate, ')
+          ..write('lastVerified: $lastVerified, ')
           ..write('status: $status')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, licenseCode, deviceFingerprint, activationDate, status);
+  int get hashCode => Object.hash(
+    id,
+    licenseCode,
+    deviceFingerprint,
+    activationDate,
+    lastVerified,
+    status,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -288,6 +335,7 @@ class License extends DataClass implements Insertable<License> {
           other.licenseCode == this.licenseCode &&
           other.deviceFingerprint == this.deviceFingerprint &&
           other.activationDate == this.activationDate &&
+          other.lastVerified == this.lastVerified &&
           other.status == this.status);
 }
 
@@ -296,12 +344,14 @@ class LicensesCompanion extends UpdateCompanion<License> {
   final Value<String> licenseCode;
   final Value<String?> deviceFingerprint;
   final Value<DateTime?> activationDate;
+  final Value<DateTime?> lastVerified;
   final Value<String> status;
   const LicensesCompanion({
     this.id = const Value.absent(),
     this.licenseCode = const Value.absent(),
     this.deviceFingerprint = const Value.absent(),
     this.activationDate = const Value.absent(),
+    this.lastVerified = const Value.absent(),
     this.status = const Value.absent(),
   });
   LicensesCompanion.insert({
@@ -309,6 +359,7 @@ class LicensesCompanion extends UpdateCompanion<License> {
     required String licenseCode,
     this.deviceFingerprint = const Value.absent(),
     this.activationDate = const Value.absent(),
+    this.lastVerified = const Value.absent(),
     this.status = const Value.absent(),
   }) : licenseCode = Value(licenseCode);
   static Insertable<License> custom({
@@ -316,6 +367,7 @@ class LicensesCompanion extends UpdateCompanion<License> {
     Expression<String>? licenseCode,
     Expression<String>? deviceFingerprint,
     Expression<DateTime>? activationDate,
+    Expression<DateTime>? lastVerified,
     Expression<String>? status,
   }) {
     return RawValuesInsertable({
@@ -323,6 +375,7 @@ class LicensesCompanion extends UpdateCompanion<License> {
       if (licenseCode != null) 'license_code': licenseCode,
       if (deviceFingerprint != null) 'device_fingerprint': deviceFingerprint,
       if (activationDate != null) 'activation_date': activationDate,
+      if (lastVerified != null) 'last_verified': lastVerified,
       if (status != null) 'status': status,
     });
   }
@@ -332,6 +385,7 @@ class LicensesCompanion extends UpdateCompanion<License> {
     Value<String>? licenseCode,
     Value<String?>? deviceFingerprint,
     Value<DateTime?>? activationDate,
+    Value<DateTime?>? lastVerified,
     Value<String>? status,
   }) {
     return LicensesCompanion(
@@ -339,6 +393,7 @@ class LicensesCompanion extends UpdateCompanion<License> {
       licenseCode: licenseCode ?? this.licenseCode,
       deviceFingerprint: deviceFingerprint ?? this.deviceFingerprint,
       activationDate: activationDate ?? this.activationDate,
+      lastVerified: lastVerified ?? this.lastVerified,
       status: status ?? this.status,
     );
   }
@@ -358,6 +413,9 @@ class LicensesCompanion extends UpdateCompanion<License> {
     if (activationDate.present) {
       map['activation_date'] = Variable<DateTime>(activationDate.value);
     }
+    if (lastVerified.present) {
+      map['last_verified'] = Variable<DateTime>(lastVerified.value);
+    }
     if (status.present) {
       map['status'] = Variable<String>(status.value);
     }
@@ -371,6 +429,7 @@ class LicensesCompanion extends UpdateCompanion<License> {
           ..write('licenseCode: $licenseCode, ')
           ..write('deviceFingerprint: $deviceFingerprint, ')
           ..write('activationDate: $activationDate, ')
+          ..write('lastVerified: $lastVerified, ')
           ..write('status: $status')
           ..write(')'))
         .toString();
@@ -4667,6 +4726,7 @@ typedef $$LicensesTableCreateCompanionBuilder =
       required String licenseCode,
       Value<String?> deviceFingerprint,
       Value<DateTime?> activationDate,
+      Value<DateTime?> lastVerified,
       Value<String> status,
     });
 typedef $$LicensesTableUpdateCompanionBuilder =
@@ -4675,6 +4735,7 @@ typedef $$LicensesTableUpdateCompanionBuilder =
       Value<String> licenseCode,
       Value<String?> deviceFingerprint,
       Value<DateTime?> activationDate,
+      Value<DateTime?> lastVerified,
       Value<String> status,
     });
 
@@ -4704,6 +4765,11 @@ class $$LicensesTableFilterComposer
 
   ColumnFilters<DateTime> get activationDate => $composableBuilder(
     column: $table.activationDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastVerified => $composableBuilder(
+    column: $table.lastVerified,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4742,6 +4808,11 @@ class $$LicensesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get lastVerified => $composableBuilder(
+    column: $table.lastVerified,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get status => $composableBuilder(
     column: $table.status,
     builder: (column) => ColumnOrderings(column),
@@ -4772,6 +4843,11 @@ class $$LicensesTableAnnotationComposer
 
   GeneratedColumn<DateTime> get activationDate => $composableBuilder(
     column: $table.activationDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get lastVerified => $composableBuilder(
+    column: $table.lastVerified,
     builder: (column) => column,
   );
 
@@ -4811,12 +4887,14 @@ class $$LicensesTableTableManager
                 Value<String> licenseCode = const Value.absent(),
                 Value<String?> deviceFingerprint = const Value.absent(),
                 Value<DateTime?> activationDate = const Value.absent(),
+                Value<DateTime?> lastVerified = const Value.absent(),
                 Value<String> status = const Value.absent(),
               }) => LicensesCompanion(
                 id: id,
                 licenseCode: licenseCode,
                 deviceFingerprint: deviceFingerprint,
                 activationDate: activationDate,
+                lastVerified: lastVerified,
                 status: status,
               ),
           createCompanionCallback:
@@ -4825,12 +4903,14 @@ class $$LicensesTableTableManager
                 required String licenseCode,
                 Value<String?> deviceFingerprint = const Value.absent(),
                 Value<DateTime?> activationDate = const Value.absent(),
+                Value<DateTime?> lastVerified = const Value.absent(),
                 Value<String> status = const Value.absent(),
               }) => LicensesCompanion.insert(
                 id: id,
                 licenseCode: licenseCode,
                 deviceFingerprint: deviceFingerprint,
                 activationDate: activationDate,
+                lastVerified: lastVerified,
                 status: status,
               ),
           withReferenceMapper: (p0) => p0

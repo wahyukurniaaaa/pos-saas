@@ -5,5 +5,6 @@ class Licenses extends Table {
   TextColumn get licenseCode => text().unique()();
   TextColumn get deviceFingerprint => text().nullable()();
   DateTimeColumn get activationDate => dateTime().nullable()();
+  DateTimeColumn get lastVerified => dateTime().nullable()();
   TextColumn get status => text().withDefault(const Constant('active'))();
 }

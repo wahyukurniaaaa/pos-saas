@@ -24,8 +24,16 @@ class BackupService {
     return key;
   }
 
-  Future<void> encryptFile(File sourceFile, String targetPath) async {
-    final keyString = await _getOrCreateKey();
+  Future<String> getRecoveryKey() async {
+    return await _getOrCreateKey();
+  }
+
+  Future<void> encryptFile(
+    File sourceFile,
+    String targetPath, {
+    String? customKey,
+  }) async {
+    final keyString = customKey ?? await _getOrCreateKey();
     final key = encrypt.Key.fromBase64(keyString);
     final iv = encrypt.IV.fromSecureRandom(16);
     final encrypter = encrypt.Encrypter(encrypt.AES(key));
@@ -42,13 +50,17 @@ class BackupService {
     await targetFile.writeAsBytes(result);
   }
 
-  Future<void> decryptFile(File encryptedFile, String targetPath) async {
-    final keyString = await _getOrCreateKey();
+  Future<void> decryptFile(
+    File encryptedFile,
+    String targetPath, {
+    String? customKey,
+  }) async {
+    final keyString = customKey ?? await _getOrCreateKey();
     final key = encrypt.Key.fromBase64(keyString);
     final encrypter = encrypt.Encrypter(encrypt.AES(key));
 
     final contents = await encryptedFile.readAsBytes();
-    if (contents.length < 16) throw Exception('Invalid backup file');
+    if (contents.length < 16) throw Exception('Format file backup tidak valid');
 
     final iv = encrypt.IV(contents.sublist(0, 16));
     final encryptedData = contents.sublist(16);
@@ -106,14 +118,14 @@ class BackupService {
     return files;
   }
 
-  Future<void> restoreBackup(File encryptedFile) async {
+  Future<void> restoreBackup(File encryptedFile, {String? recoveryKey}) async {
     final dbFolder = await getApplicationDocumentsDirectory();
     final dbPath = p.join(dbFolder.path, 'posify.db');
 
     // Safety: Delete current DB first might be risky,
     // better decrypt to temp then rename
     final tempPath = '$dbPath.tmp';
-    await decryptFile(encryptedFile, tempPath);
+    await decryptFile(encryptedFile, tempPath, customKey: recoveryKey);
 
     final dbFile = File(dbPath);
     if (await dbFile.exists()) {
@@ -121,5 +133,22 @@ class BackupService {
     }
 
     await File(tempPath).rename(dbPath);
+  }
+
+  Future<void> importAndRestore(File externalFile, String recoveryKey) async {
+    // 1. Copy to internal backups directory for record
+    final appSupportDir = await getApplicationSupportDirectory();
+    final backupsDir = Directory(p.join(appSupportDir.path, 'backups'));
+    if (!await backupsDir.exists()) await backupsDir.create(recursive: true);
+
+    final timestamp = DateFormat('yyyyMMdd_HHmm').format(DateTime.now());
+    final internalPath = p.join(
+      backupsDir.path,
+      'imported_backup_$timestamp.enc',
+    );
+    await externalFile.copy(internalPath);
+
+    // 2. Perform restore with the provided recovery key
+    await restoreBackup(File(internalPath), recoveryKey: recoveryKey);
   }
 }

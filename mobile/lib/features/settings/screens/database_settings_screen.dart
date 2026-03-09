@@ -1,8 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:posify_app/core/services/backup_service.dart';
 import 'package:path/path.dart' as p;
@@ -109,6 +112,144 @@ class _DatabaseSettingsScreenState
     }
   }
 
+  Future<void> _showRecoveryKey() async {
+    final key = await BackupService().getRecoveryKey();
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Kunci Pemulihan (Recovery Key)'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Gunakan kunci ini untuk memulihkan data jika Anda pindah ke HP baru. JANGAN BERIKAN KUNCI INI KEPADA SIAPAPUN!',
+              style: TextStyle(fontSize: 12, color: AppTheme.dangerColor),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey[300]!),
+              ),
+              child: SelectableText(
+                key,
+                style: GoogleFonts.robotoMono(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: key));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Kunci disalin ke clipboard')),
+              );
+            },
+            child: const Text('Salin Kunci'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Tutup'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _handleImport() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.any, // .enc files are treated as any or binary
+    );
+
+    if (result == null || result.files.single.path == null) return;
+
+    final file = File(result.files.single.path!);
+    final keyController = TextEditingController();
+
+    if (!mounted) return;
+
+    final recoveryKey = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Masukkan Kunci Pemulihan'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Masukkan Kunci Pemulihan dari HP lama untuk membuka file ini.',
+              style: TextStyle(fontSize: 13),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: keyController,
+              decoration: const InputDecoration(
+                labelText: 'Recovery Key',
+                border: OutlineInputBorder(),
+                hintText: 'Masukkan kunci base64...',
+              ),
+              style: GoogleFonts.robotoMono(fontSize: 14),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, keyController.text),
+            child: const Text('Lanjutkan Restore'),
+          ),
+        ],
+      ),
+    );
+
+    if (recoveryKey == null || recoveryKey.isEmpty) return;
+
+    setState(() => _isLoading = true);
+    try {
+      await BackupService().importAndRestore(file, recoveryKey);
+
+      if (!mounted) return;
+
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: const Text('Import & Restore Berhasil'),
+          content: const Text(
+            'Data dari HP lama berhasil dipulihkan. Silakan buka ulang aplikasi. \n\nCatatan: Anda mungkin perlu melakukan Aktivasi Ulang lisensi di HP baru ini.',
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () => exit(0),
+              child: const Text('Tutup Aplikasi'),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Import gagal. Pastikan Recovery Key benar. Error: $e'),
+          backgroundColor: AppTheme.dangerColor,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -134,11 +275,25 @@ class _DatabaseSettingsScreenState
                 ),
               ],
             ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _handleBackup,
-        label: const Text('Backup Sekarang'),
-        icon: const Icon(Icons.backup_rounded),
-        backgroundColor: AppTheme.primaryColor,
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton.extended(
+            heroTag: 'import',
+            onPressed: _handleImport,
+            label: const Text('Import dari HP Lain'),
+            icon: const Icon(Icons.file_download_rounded),
+            backgroundColor: Colors.orange[700],
+          ),
+          const SizedBox(height: 16),
+          FloatingActionButton.extended(
+            heroTag: 'backup',
+            onPressed: _handleBackup,
+            label: const Text('Backup Sekarang'),
+            icon: const Icon(Icons.backup_rounded),
+            backgroundColor: AppTheme.primaryColor,
+          ),
+        ],
       ),
     );
   }
@@ -162,7 +317,58 @@ class _DatabaseSettingsScreenState
               fontSize: 14,
             ),
           ),
+          const SizedBox(height: 16),
+          _buildRecoveryKeyButton(),
         ],
+      ),
+    );
+  }
+
+  Widget _buildRecoveryKeyButton() {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF3E5F5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.purple.withValues(alpha: 0.2)),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: _showRecoveryKey,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                const Icon(Icons.vignette_rounded, color: Colors.purple),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Kunci Pemulihan (Recovery Key)',
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.purple[900],
+                        ),
+                      ),
+                      Text(
+                        'Penting untuk pindah ke HP baru',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: Colors.purple[700],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.chevron_right_rounded, color: Colors.purple),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -234,6 +440,16 @@ class _DatabaseSettingsScreenState
                   ),
                 ),
                 const PopupMenuItem(
+                  value: 'share',
+                  child: Row(
+                    children: [
+                      Icon(Icons.share_rounded, size: 20),
+                      SizedBox(width: 8),
+                      Text('Bagikan/Kirim File'),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem(
                   value: 'delete',
                   child: Row(
                     children: [
@@ -253,6 +469,11 @@ class _DatabaseSettingsScreenState
               ],
               onSelected: (val) {
                 if (val == 'restore') _handleRestore(file);
+                if (val == 'share') {
+                  Share.shareXFiles([
+                    XFile(file.path),
+                  ], text: 'Backup Database Posify');
+                }
                 if (val == 'delete') {
                   file.deleteSync();
                   _loadBackups();

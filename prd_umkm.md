@@ -2,13 +2,13 @@
 
 **Produk:** Aplikasi Sistem Kasir (POS) SaaS Offline-First
 
-**Versi:** 1.8 (Konsolidasi Total & Final MVP)
+**Versi:** 1.9 (Enhanced Security & Barcode System)
 
-**Status:** Siap Pengembangan
+**Status:** Implementasi Selesai (Tier 1)
 
 ## **1\. Ringkasan Eksekutif**
 
-Aplikasi POSify adalah sistem Point of Sale (POS) yang dirancang khusus untuk UMKM dengan pendekatan *offline-first*. Fokus utama produk ini adalah memberikan alternatif yang terjangkau melalui model **Lifetime License (Sekali Bayar)** pada Tier 1, menghilangkan beban langganan bulanan bagi pengusaha kecil. Aplikasi berjalan penuh pada database lokal (SQLite) yang terenkripsi dan hanya membutuhkan koneksi internet satu kali untuk aktivasi lisensi awal serta proses pencadangan data manual.
+Aplikasi POSify adalah sistem Point of Sale (POS) yang dirancang khusus untuk UMKM dengan pendekatan *offline-first*. Fokus utama produk ini adalah memberikan alternatif yang terjangkau melalui model **Lifetime License (Sekali Bayar)** pada Tier 1. Keamanan data dijamin melalui enkripsi AES-256 pada setiap backup, dan lisensi diamankan dengan sistem *24-hour heartbeat* serta *device fingerprinting*.
 
 ## **2\. Target Pengguna**
 
@@ -22,20 +22,22 @@ Aplikasi POSify adalah sistem Point of Sale (POS) yang dirancang khusus untuk UM
 | :---- | :---- | :---- |
 | **Model Biaya** | **Sekali Bayar (Lifetime)** | Langganan Bulanan/Tahunan |
 | **Batas Outlet** | 1 Outlet (Terkunci pada Perangkat) | Hingga 3 Outlet |
-| **Batas Perangkat** | 1 Perangkat Utama | Multi-perangkat (Sync Cloud) |
+| **Ubah Perangkat** | Mendukung Migrasi (via Recovery Key) | Multi-perangkat (Sync Cloud) |
 | **Batas Karyawan** | **Tidak Terbatas (Lokal)** | Tidak Terbatas |
 | **Akses Peran** | Hierarki Kumulatif (L1, L2, L3) | Hierarki Kumulatif (L1, L2, L3) |
 | **Manajemen Stok** | Stok In/Out & Opname (Lokal) | Multi-Gudang & Sync Cloud |
 | **Penyimpanan** | Full Offline (SQLite via Drift ORM) | Hybrid (SQLite + Supabase via PowerSync) |
-| **Backup Data** | **Manual ke Google Drive/Lokal** | **Otomatis (Cloud Sync)** |
-| **Aktivasi** | Online License Key (1x) | Login Akun SaaS |
+| **Backup Data** | **Manual/Auto Encrypted (AES-256)** | **Otomatis (Cloud Sync)** |
+| **Aktivasi** | Online License Key & Heartbeat 24j | Login Akun SaaS |
 
 ## **4\. Fitur Utama (Functional Requirements)**
 
 ### **4.1. Modul Lisensi & Aktivasi**
 
-* **Sistem Aktivasi:** Pengguna memasukkan kode lisensi dari email. Aplikasi melakukan validasi ke server Golang satu kali untuk mencatat *Device Fingerprint*.  
-* **Offline Mode:** Setelah aktivasi, seluruh fungsi kasir dan manajemen stok bekerja 100% tanpa internet.
+* **Sistem Aktivasi:** Pengguna memasukkan kode lisensi dari email. Aplikasi melakukan validasi ke server Golang untuk mencatat *Device Fingerprint*.  
+* **Verification Heartbeat:** Sistem melakukan verifikasi berkala ke server setiap 24 jam untuk memastikan lisensi tidak dipindah-tangankan secara ilegal ke perangkat lain.
+* **Offline Limit:** Aplikasi mendukung penggunaan offline penuh maksimal **7 hari**. Jika dalam 7 hari perangkat tidak pernah terhubung ke internet untuk verifikasi, aplikasi akan terkunci otomatis (Hard Block) hingga verifikasi ulang berhasil dilakukan.
+* **Offline Mode:** Seluruh fungsi kasir dan manajemen stok tetap bekerja 100% tanpa internet selama masa berlaku *heartbeat* (cache) masih aktif.
 
 ### **4.2. Manajemen Role & Hierarki (Kumulatif)**
 
@@ -48,15 +50,19 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
 ### **4.3. Modul Kasir & Inventaris (Offline)**
 
 * **Manajemen Produk:** Input manual satu-per-satu atau impor massal via file Excel/CSV secara offline.  
+* **Barcode Scanning System:** 
+    * **Continuous Scanning:** Scanner tetap terbuka untuk input keranjang belanja yang cepat di menu POS.
+    * **Inventory Input:** Integrasi scanner pada form tambah/edit produk untuk mengisi SKU secara otomatis.
 * **Manajemen Stok Lokal:** Pencatatan stok masuk, stok keluar, dan penyesuaian (*stock opname*).  
 * **Pencatatan Pembayaran (Recording Only):** Memilih status pembayaran (**Tunai, QRIS, Debit, Kredit, Piutang/Bon**). Tidak ada integrasi gateway API untuk menghindari biaya MDR.  
 * **Print Engine:** Cetak struk via Bluetooth/USB Thermal (Protokol ESC/POS).
 
 ### **4.4. Modul Backup & Restore (Tier 1)**
 
-* **Auto-Local Backup (Failsafe):** Sistem secara otomatis mencadangkan file database (dengan ekstensi khusus, terenkripsi) ke folder penyimpanan perangkat (misal: `/Documents/POSify`) pada titik krusial (seperti saat *Tutup Shift*). Ini mencegah kehilangan data akibat *human error* kelupaan *backup*.
-* **Manual Cloud Export:** Fitur pencadangan sekunder ke **Google Drive** pribadi pengusaha sebagai antisipasi jika perangkat fisik hilang atau rusak berat.
-* **Data Recovery:** Proses memulihkan dan memuat ulang data operasional dari titik *backup* lokal maupun *cloud* jika melakukan perpindahan atau *reset* perangkat.
+* **Auto-Local Backup (Failsafe):** Sistem secara otomatis mencadangkan database terenkripsi (AES-256) ke penyimpanan internal pada saat *Tutup Shift*.
+* **Backup Export & Share:** Pengguna dapat membagikan file backup (.enc) ke email, WhatsApp, atau cloud storage secara manual.
+* **Recovery Key Management:** Setiap perangkat memiliki Kunci Pemulihan unik yang diperlukan untuk mendekripsi file backup saat dipindahkan ke perangkat lain.
+* **Data Migration:** Mendukung pemindahan data penuh antar perangkat dengan validasi ulang lisensi di perangkat tujuan.
 
 ### **4.5. Arsitektur Reactive Offline-First (Local State)**
 
@@ -184,4 +190,8 @@ Masuk Setting (Master Data) \-\> Tambah Produk / Import CSV \-\> Input Nama, SKU
 ### **14.6. Alur Penutupan Sesi (End-of-Day Kasir)**
 
 Tekan Ikon Laporan (Header) \-\> Cek Laporan Shift Berjalan (Current Shift Analytics & Prediksi Laci) \-\> Tekan "Tutup Shift" \-\> Input Aktual Uang Fisik laci \-\> Simpan Selisih (+/-) \-\> Auto-Local Backup berjalan \-\> Logout.
+
+### **14.7. Alur Migrasi Perangkat (Device Migration)**
+
+Generate Recovery Key (HP Lama) \-\> Export File Backup \-\> Kirim/Pindah File \-\> Install App (HP Baru) \-\> Import Backup \-\> Input Recovery Key \-\> Database Terpulihkan \-\> Validasi Ulang Lisensi (Online) \-\> Aktivasi Selesai.
 
