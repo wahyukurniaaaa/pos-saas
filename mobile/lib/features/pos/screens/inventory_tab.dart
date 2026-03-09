@@ -426,7 +426,7 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
                 .watch(categoryProvider)
                 .when(
                   data: (categories) => DropdownButtonFormField<int>(
-                    value: _selectedCategoryId,
+                    initialValue: _selectedCategoryId,
                     decoration: const InputDecoration(labelText: 'Kategori'),
                     items: categories.map((c) {
                       return DropdownMenuItem(value: c.id, child: Text(c.name));

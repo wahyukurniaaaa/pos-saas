@@ -1,4 +1,0 @@
-[info] 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre (C:\www\pos-umkm-saas\mobile\lib\features\pos\screens\inventory_tab.dart:428:21)
-[info] Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check (C:\www\pos-umkm-saas\mobile\lib\features\pos\screens\shift\shift_report_modal.dart:345:31)
-[info] Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check (C:\www\pos-umkm-saas\mobile\lib\features\pos\screens\shift\shift_report_modal.dart:346:38)
-[info] Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check (C:\www\pos-umkm-saas\mobile\lib\features\pos\screens\shift\shift_report_modal.dart:357:38)
