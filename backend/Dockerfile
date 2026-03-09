@@ -26,4 +26,4 @@ COPY --from=builder /app/main .
 # Port exposed by Fiber
 EXPOSE 8080
 
-CMD ["./main"]
+CMD ["./main"] 
