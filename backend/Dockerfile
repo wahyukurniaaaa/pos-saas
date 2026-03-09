@@ -22,7 +22,6 @@ WORKDIR /root/
 
 # Copy the binary from the builder stage
 COPY --from=builder /app/main .
-COPY .env .
 
 # Port exposed by Fiber
 EXPOSE 8080
