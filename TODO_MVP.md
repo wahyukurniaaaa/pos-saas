@@ -39,25 +39,35 @@ Fitur ini mempermudah merchant yang memiliki ratusan produk untuk langsung melak
 
 ## 3. Detail Struk Pembelian / Cetak Ulang (Receipt Detail)
 **Deskripsi:**
-Pada layar "Riwayat Transaksi" (`transaction_history_screen.dart`), ketika sebuah transaksi di-tap, seharusnya membuka layar detail transaksi lengkap beserta daftar item yang dibeli.
+### Features to Implement
 
-**Kebutuhan Tambahan:**
-- Query join antara tabel `transactions` dan tabel `transaction_items` menggunakan `transaction_id`.
-
-**Scope of Work (SoW):**
-- [ ] Buat UI `receipt_detail_screen.dart` / modal yang visualnya mirip dengan struk/nota.
-- [ ] Buat fungsi untuk mem-fetch relasi item transaksi dari Drift. (Inner join ke tabel `products` untuk ambil nama produk & SKU).
-- [ ] Tambahkan tombol **Cetak Ulang (Reprint)**, yang memanggil kembali fungsi cetak dari package Bluetooth printer.
-- [ ] Tambahkan tombol **Batal/VOID** pada riwayat ini.
-
----
-
-## 4. Logical Workflow: VOID Transaksi dengan Otorisasi
-**Deskripsi:**
-Menghubungkan layar keamanan `SupervisorAuthDialog` dengan aksi sesungguhnya di database lokal Drift saat transaksi dibatalkan.
-
-**Scope of Work (SoW):**
-- [ ] Hubungkan tombol **VOID** (dari Detail Struk di poin 3) agar memunculkan `SupervisorAuthDialog`.
-- [ ] Apabila PIN Owner/Supervisor benar dan disahkan, update status transaksi di database lokal Drift menjadi "VOID".
-- [ ] **(KRITIKAL)**: Saat transaksi di-VOID, buat fungsi pengembalian *stok produk/restock* (berdasarkan `transaction_items`) ke tabel utama `products`.
-- [ ] Perbarui visual pada `transaction_history_screen` (tulisan tercoret merah / berlabel "Batal") menggunakan state Riverpod secara reaktif ketika pembaruan database selesai.
+- [x] **Sales Analytics**
+    - [x] Dashboard report (Daily/Weekly/Monthly)
+    - [x] Chart for sales trends (fl_chart)
+    - [x] Top-selling products list
+- [x] **Transaction History & Receipt Detail**
+    - [x] List of past transactions
+    - [x] Detailed receipt view with items
+    - [x] Printing receipt functionality (blue_thermal_printer)
+- [x] **VOID Transaction (Cancellation)**
+    - [x] VOID button with supervisor authorization (PIN)
+    - [x] Return stock automatically when VOIDed
+- [x] **Import Product via CSV**
+    - [x] Choose file (Picker)
+    - [x] Parsing CSV logic
+    - [x] Batch insert to database
+- [ ] **Shift Closing Report**
+    - [ ] Summary of shift sales
+    - [ ] Cash on hand reconciliation
+    - [ ] Print shift report
+- [ ] **Employee Management**
+    - [ ] List of employees
+    - [ ] Add/Edit employee
+    - [ ] Role-based access (Owner/Supervisor/Cashier)
+- [ ] **Category Management**
+    - [ ] List of categories
+    - [ ] Add/Edit/Delete categories
+- [ ] **Stock Opname**
+    - [x] UI for stock adjustment
+    - [x] Saving adjustment records
+    - [ ] Stock history audit log

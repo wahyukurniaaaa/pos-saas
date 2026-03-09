@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:drift/drift.dart' as drift;
 import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 
@@ -109,6 +110,60 @@ class CartNotifier extends Notifier<List<CartItem>> {
   }
 
   double get subtotal => state.fold(0, (sum, item) => sum + item.total);
+
+  Future<bool> checkout({
+    required int shiftId,
+    required String paymentMethod,
+    required double taxAmount,
+    required double serviceCharge,
+    int? voidBy,
+  }) async {
+    try {
+      if (state.isEmpty) return false;
+
+      final db = ref.read(databaseProvider);
+
+      // Generate receipt number (POS-YYYYMMDD-HHMMSS)
+      final now = DateTime.now();
+      final receiptNumber =
+          'POS-${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}-${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}${now.second.toString().padLeft(2, '0')}';
+
+      final total = subtotal + taxAmount + serviceCharge;
+
+      final transactionEntry = TransactionsCompanion.insert(
+        receiptNumber: receiptNumber,
+        shiftId: shiftId,
+        subtotal: subtotal.toInt(),
+        taxAmount: drift.Value(taxAmount.toInt()),
+        serviceChargeAmount: drift.Value(serviceCharge.toInt()),
+        totalAmount: total.toInt(),
+        paymentMethod: paymentMethod,
+      );
+
+      final itemsParams = state.map((item) {
+        return TransactionItemsCompanion.insert(
+          transactionId: 0, // Will be overridden in processCheckout
+          productId: item.product.id,
+          quantity: item.quantity,
+          priceAtTransaction: item.product.price,
+          subtotal: item.total.toInt(),
+        );
+      }).toList();
+
+      await db.processCheckout(
+        transactionEntry: transactionEntry,
+        itemsParams: itemsParams,
+      );
+
+      ref.invalidate(productProvider);
+      clearCart();
+      return true;
+    } catch (e) {
+      // ignore: avoid_print
+      print('Checkout error: $e');
+      return false;
+    }
+  }
 }
 
 final cartProvider = NotifierProvider<CartNotifier, List<CartItem>>(

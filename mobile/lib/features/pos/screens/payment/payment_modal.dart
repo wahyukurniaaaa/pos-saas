@@ -479,18 +479,52 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
     );
   }
 
-  void _processPayment() {
-    final changeAmount = _selectedMethod == 'Tunai' ? _change.toInt() : 0;
+  bool _isProcessing = false;
 
-    // 1. Clear Cart
-    ref.read(cartProvider.notifier).clearCart();
+  Future<void> _processPayment() async {
+    if (_isProcessing) return;
 
-    // 2. Tampilkan Layar Sukses (Replace modal dengan screen sukses)
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PaymentSuccessScreen(changeAmount: changeAmount),
-      ),
-    );
+    setState(() => _isProcessing = true);
+
+    try {
+      final changeAmount = _selectedMethod == 'Tunai' ? _change.toInt() : 0;
+      final shiftId =
+          1; // TODO: Get actual active shift ID from auth/shift provider
+
+      final subtotal = ref.read(cartProvider.notifier).subtotal;
+      final taxAmount = subtotal * 0.11;
+      final serviceCharge = 0.0; // Assume 0 for now or fetch from settings
+
+      // 1. Process Checkout in Database
+      final success = await ref
+          .read(cartProvider.notifier)
+          .checkout(
+            shiftId: shiftId,
+            paymentMethod: _selectedMethod.toLowerCase(),
+            taxAmount: taxAmount,
+            serviceCharge: serviceCharge,
+          );
+
+      if (!mounted) return;
+
+      if (success) {
+        // 2. Tampilkan Layar Sukses (Replace modal dengan screen sukses)
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                PaymentSuccessScreen(changeAmount: changeAmount),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Gagal memproses pembayaran.')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+      }
+    }
   }
 }

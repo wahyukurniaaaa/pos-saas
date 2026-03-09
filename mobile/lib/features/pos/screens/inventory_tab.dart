@@ -8,6 +8,7 @@ import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
 import '../providers/pos_providers.dart';
 import 'inventory/stock_opname_screen.dart';
+import 'inventory/import_product_screen.dart';
 
 final _currency = NumberFormat.currency(
   locale: 'id_ID',
@@ -195,17 +196,17 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                   ],
                 ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Row(
                       children: [
                         Expanded(
                           child: OutlinedButton.icon(
                             onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Import CSV akan segera hadir'),
-                                  behavior: SnackBarBehavior.floating,
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const ImportProductScreen(),
                                 ),
                               );
                             },
@@ -342,7 +343,20 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
   final _priceController = TextEditingController();
   final _stockController = TextEditingController();
   final _skuController = TextEditingController();
+  int? _selectedCategoryId;
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.product != null) {
+      _nameController.text = widget.product!.name;
+      _priceController.text = widget.product!.price.toString();
+      _stockController.text = widget.product!.stock.toString();
+      _skuController.text = widget.product!.sku;
+      _selectedCategoryId = widget.product!.categoryId;
+    }
+  }
 
   @override
   void dispose() {
@@ -407,6 +421,23 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
               ],
             ),
             const SizedBox(height: 12),
+            ref
+                .watch(categoryProvider)
+                .when(
+                  data: (categories) => DropdownButtonFormField<int>(
+                    value: _selectedCategoryId,
+                    decoration: const InputDecoration(labelText: 'Kategori'),
+                    items: categories.map((c) {
+                      return DropdownMenuItem(value: c.id, child: Text(c.name));
+                    }).toList(),
+                    onChanged: (val) =>
+                        setState(() => _selectedCategoryId = val),
+                    validator: (v) => v == null ? 'Wajib diisi' : null,
+                  ),
+                  loading: () => const LinearProgressIndicator(),
+                  error: (err, stack) => const Text('Gagal memuat kategori'),
+                ),
+            const SizedBox(height: 12),
             TextFormField(
               controller: _skuController,
               decoration: const InputDecoration(labelText: 'SKU (Opsional)'),
@@ -451,8 +482,12 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
     setState(() => _isLoading = true);
 
     final db = ref.read(databaseProvider);
-    final cats = await db.getAllCategories();
-    final catId = cats.isNotEmpty ? cats.first.id : 1;
+    final catId = _selectedCategoryId;
+
+    if (catId == null) {
+      setState(() => _isLoading = false);
+      return;
+    }
 
     final enteredSku = _skuController.text.trim();
     final sku = enteredSku.isNotEmpty
@@ -483,6 +518,7 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
           name: _nameController.text.trim(),
           price: priceVal,
           stock: stockVal,
+          categoryId: catId,
         ),
       );
     }

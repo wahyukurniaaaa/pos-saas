@@ -84,23 +84,19 @@ class PosifyDatabase extends _$PosifyDatabase {
   Future<int> insertCategory(CategoriesCompanion entry) =>
       into(categories).insert(entry);
 
-  // ===== Product Queries =====
+  // ===== Product Management =====
   Future<List<Product>> getAllProducts() => select(products).get();
-
   Stream<List<Product>> watchAllProducts() => select(products).watch();
-
-  Future<List<Product>> getProductsByCategory(int categoryId) =>
-      (select(products)..where((p) => p.categoryId.equals(categoryId))).get();
-
-  Future<Product?> getProductBySku(String sku) =>
-      (select(products)..where((p) => p.sku.equals(sku))).getSingleOrNull();
-
   Future<int> insertProduct(ProductsCompanion entry) =>
       into(products).insert(entry);
-
   Future<bool> updateProduct(Product entry) => update(products).replace(entry);
-
   Future<int> deleteProduct(Product entry) => delete(products).delete(entry);
+
+  Future<void> insertMultipleProducts(List<ProductsCompanion> entries) async {
+    await batch((batch) {
+      batch.insertAll(products, entries, mode: InsertMode.insertOrReplace);
+    });
+  }
 
   // ===== Shift Queries =====
   Future<Shift?> getOpenShift() =>
@@ -136,6 +132,38 @@ class PosifyDatabase extends _$PosifyDatabase {
   // ===== Stock Adjustments =====
   Future<int> insertStockAdjustment(StockAdjustmentsCompanion entry) =>
       into(stockAdjustments).insert(entry);
+
+  // ===== Checkout Process =====
+  Future<int> processCheckout({
+    required TransactionsCompanion transactionEntry,
+    required List<TransactionItemsCompanion> itemsParams,
+  }) async {
+    return transaction(() async {
+      // 1. Insert Transaction
+      final txId = await into(transactions).insert(transactionEntry);
+
+      // 2. Insert Items & 3. Update Stocks
+      for (final itemParam in itemsParams) {
+        // Set the transaction ID for the item
+        final finalItem = itemParam.copyWith(transactionId: Value(txId));
+        await into(transactionItems).insert(finalItem);
+
+        // Update product stock
+        final productId = itemParam.productId.value;
+        final qty = itemParam.quantity.value;
+
+        final product = await (select(
+          products,
+        )..where((p) => p.id.equals(productId))).getSingleOrNull();
+        if (product != null) {
+          final newStock = product.stock - qty;
+          await update(products).replace(product.copyWith(stock: newStock));
+        }
+      }
+
+      return txId;
+    });
+  }
 
   // ===== Additional Transaction Queries =====
   Future<List<Transaction>> getAllTransactions() => (select(
