@@ -8,9 +8,11 @@ import 'features/auth/screens/pin_login_screen.dart';
 import 'features/pos/screens/pos_dashboard_screen.dart';
 import 'features/auth/providers/auth_providers.dart';
 import 'features/auth/providers/owner_provider.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('id_ID', null);
   await dotenv.load(fileName: ".env");
   runApp(const ProviderScope(child: PosifyApp()));
 }

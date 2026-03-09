@@ -1,8 +1,4 @@
-Analyzing mobile...                                             
-
-  error - The name 'CsvToListConverter' isn't a class - lib\features\pos\providers\import_product_provider.dart:57:28 - creation_with_non_type
-   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\pos\screens\inventory\import_product_screen.dart:90:50 - deprecated_member_use
-   info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre - lib\features\pos\screens\inventory_tab.dart:428:21 - deprecated_member_use
-   info - Unnecessary use of multiple underscores - lib\features\pos\screens\inventory_tab.dart:438:30 - unnecessary_underscores
-
-4 issues found. (ran in 2.3s)
+[info] 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre (C:\www\pos-umkm-saas\mobile\lib\features\pos\screens\inventory_tab.dart:428:21)
+[info] Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check (C:\www\pos-umkm-saas\mobile\lib\features\pos\screens\shift\shift_report_modal.dart:345:31)
+[info] Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check (C:\www\pos-umkm-saas\mobile\lib\features\pos\screens\shift\shift_report_modal.dart:346:38)
+[info] Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check (C:\www\pos-umkm-saas\mobile\lib\features\pos\screens\shift\shift_report_modal.dart:357:38)

@@ -9,6 +9,7 @@ import 'package:posify_app/features/pos/screens/payment/payment_modal.dart';
 import 'package:posify_app/features/pos/screens/shift/shift_report_modal.dart';
 import 'package:posify_app/features/pos/providers/shift_provider.dart';
 import 'package:posify_app/features/pos/screens/shift/shift_opening_modal.dart';
+import 'package:posify_app/features/pos/screens/barcode_scanner_modal.dart';
 import '../providers/pos_providers.dart';
 
 final _currency = NumberFormat.currency(
@@ -268,10 +269,13 @@ class _PosTabState extends ConsumerState<PosTab> {
                     ref.read(productProvider.notifier).setSearch(null);
                   },
                 )
-              : const Icon(
-                  Icons.qr_code_scanner_rounded,
-                  size: 20,
-                  color: AppTheme.textSecondary,
+              : IconButton(
+                  icon: const Icon(
+                    Icons.qr_code_scanner_rounded,
+                    size: 20,
+                    color: AppTheme.textSecondary,
+                  ),
+                  onPressed: () => BarcodeScannerModal.show(context),
                 ),
           filled: true,
           fillColor: Colors.white,

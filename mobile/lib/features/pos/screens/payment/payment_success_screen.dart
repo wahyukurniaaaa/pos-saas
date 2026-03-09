@@ -4,9 +4,18 @@ import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:intl/intl.dart';
 
 class PaymentSuccessScreen extends StatelessWidget {
-  final int changeAmount;
+  final double totalAmount;
+  final double cashReceived;
+  final double changeAmount;
+  final String paymentMethod;
 
-  const PaymentSuccessScreen({super.key, required this.changeAmount});
+  const PaymentSuccessScreen({
+    super.key,
+    required this.totalAmount,
+    required this.cashReceived,
+    required this.changeAmount,
+    required this.paymentMethod,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -52,29 +61,33 @@ class PaymentSuccessScreen extends StatelessWidget {
                   color: AppTheme.textPrimary,
                 ),
               ),
-              const SizedBox(height: 16),
-
-              // Change Amount (if any)
-              if (changeAmount >= 0) ...[
-                Text(
-                  'Kembalian:',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    color: AppTheme.textSecondary,
-                  ),
+              const SizedBox(height: 32),
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: AppTheme.backgroundLight,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey.shade200),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  formatCurrency.format(changeAmount),
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.primaryColor,
-                  ),
+                child: Column(
+                  children: [
+                    _buildDataRow(
+                      'Total Belanja',
+                      formatCurrency.format(totalAmount),
+                    ),
+                    _buildDataRow(
+                      'Dibayar (${paymentMethod.toUpperCase()})',
+                      formatCurrency.format(cashReceived),
+                    ),
+                    const Divider(height: 24),
+                    _buildDataRow(
+                      'Kembalian',
+                      formatCurrency.format(changeAmount),
+                      isTotal: true,
+                    ),
+                  ],
                 ),
-              ],
+              ),
 
               const Spacer(),
 
@@ -132,6 +145,33 @@ class PaymentSuccessScreen extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildDataRow(String label, String value, {bool isTotal = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: isTotal ? 16 : 14,
+              color: isTotal ? AppTheme.textPrimary : AppTheme.textSecondary,
+              fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
+            ),
+          ),
+          Text(
+            value,
+            style: GoogleFonts.inter(
+              fontSize: isTotal ? 20 : 14,
+              color: isTotal ? AppTheme.primaryColor : AppTheme.textPrimary,
+              fontWeight: isTotal ? FontWeight.w800 : FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }

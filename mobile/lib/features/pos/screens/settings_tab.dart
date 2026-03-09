@@ -9,6 +9,8 @@ import 'package:posify_app/features/settings/screens/transaction_history_screen.
 import 'package:posify_app/features/settings/screens/shift_history_screen.dart';
 import 'package:posify_app/features/reports/screens/sales_analytics_screen.dart';
 import 'package:posify_app/features/settings/screens/category_management_screen.dart';
+import 'package:posify_app/features/settings/screens/tax_service_settings_screen.dart';
+import 'package:posify_app/features/settings/screens/database_settings_screen.dart';
 
 class SettingsTab extends ConsumerWidget {
   const SettingsTab({super.key});
@@ -76,6 +78,13 @@ class SettingsTab extends ConsumerWidget {
             Icons.calculate_rounded,
             'Pajak & Service Charge',
             'PPN, service, diskon default',
+            onTap: () => _navigate(context, const TaxServiceSettingsScreen()),
+          ),
+          _buildSettingsTile(
+            Icons.storage_rounded,
+            'Manajemen Database',
+            'Backup & Restore data (AES-256)',
+            onTap: () => _navigate(context, const DatabaseSettingsScreen()),
           ),
           const Divider(height: 32),
 

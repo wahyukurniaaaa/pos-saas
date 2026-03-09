@@ -70,6 +70,9 @@ class PosifyDatabase extends _$PosifyDatabase {
   Future<StoreProfileData?> getStoreProfile() =>
       (select(storeProfile)..limit(1)).getSingleOrNull();
 
+  Stream<StoreProfileData?> watchStoreProfile() =>
+      (select(storeProfile)..limit(1)).watchSingleOrNull();
+
   Future<int> insertStoreProfile(StoreProfileCompanion entry) =>
       into(storeProfile).insert(entry);
 
@@ -99,6 +102,12 @@ class PosifyDatabase extends _$PosifyDatabase {
   }
 
   // ===== Shift Queries =====
+  Future<Product?> getProduct(int id) =>
+      (select(products)..where((p) => p.id.equals(id))).getSingleOrNull();
+
+  Future<Product?> getProductBySku(String sku) =>
+      (select(products)..where((p) => p.sku.equals(sku))).getSingleOrNull();
+
   Future<Shift?> getOpenShift() =>
       (select(shifts)..where((s) => s.status.equals('open'))).getSingleOrNull();
 

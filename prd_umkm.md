@@ -81,9 +81,9 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
 |  | Foto Profil | Path ke Image Device lokal, opsional. |
 | **Profil Toko** | Nama Toko | String, max 50 karakter. Wajib diisi. (Untuk Struk). |
 |  | Telp / Alamat | String. Telp Format numerik (opsional). Alamat (opsional). |
-|  | Tax & Service | Numeric (0-100%). Enum tipe pajak {inclusive, exclusive}. |
-| **Transaksi** | Nomor Nota | Format: POS-\[TGL\]-\[UNIK\]. Otomatis. |
-|  | Nilai Transaksi | Integrasi Subtotal, Tax Amount, Service Amount, dan Total Akhir (Numeric). |
+|  | Tax & Service | Numeric (0-100%). Enum tipe pajak {inclusive, exclusive}. Perhitungan Service Charge menggunakan persentase (%) dari subtotal. |
+| **Transaksi** | Nomor Nota | Format: POS-YYYYMMDD-HHMMSS (Unik berbasis waktu). |
+|  | Nilai Transaksi | Integrasi Subtotal, Tax Amount, Service Amount, dan Total Akhir (Nilai Integer/Pembulatan Rupiah). |
 |  | Status Bayar | Enum: {Tunai, QRIS, Debit, Kredit, Piutang, **Void/Batal**}. |
 |  | Void By | Jika status Void, field ini wajib terisi oleh PIN Supervisor/Owner (L2/L1). |
 
@@ -109,7 +109,7 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
 * **Aktivasi Offline:** Saya ingin menginput lisensi dari email agar aplikasi aktif selamanya tanpa perlu internet lagi.  
 * **Manajemen Produk:** Saya ingin menambah produk secara manual (dengan fitur lampiran foto/gambar) atau **Impor via Excell/CSV** agar katalog cepat tersedia.  
 * **Manajemen Karyawan:** Saya ingin menambah banyak akun Kasir/Supervisor, melampirkan foto profil mereka (opsional), mengatur PIN 6-digit yang berbeda tanpa biaya tambahan, dan memantau akun yang terkunci akibat salah PIN 5x.
-* **Konfigurasi Biaya:** Saya ingin mengatur besaran persentase Pajak (PPN/PB1) secara *inclusive* atau *exclusive*, serta menetapkan *Service Charge* agar sistem otomatis menghitungnya ke total belanjaan pelanggan.
+* **Konfigurasi Biaya:** Saya ingin mengatur besaran persentase Pajak (PPN/PB1) secara *inclusive* atau *exclusive*, serta menetapkan *Service Charge* (%) agar sistem otomatis menghitungnya ke total belanjaan pelanggan. Perhitungan pajak bersifat dinamis dan akan di-record nilainya (nominal) pada setiap nota.
 * **Monitoring Lengkap:** Sebagai Owner, saya ingin melihat menu analitik (Laporan Penjualan bulanan, tren penjualan, & riwayat Sesi Buka/Tutup Kasir) demi evaluasi dan pelacakan *fraud* kasir.  
 * **Data Safety:** Sebagai Owner, saya ingin mencadangkan data ke Google Drive secara manual, atau *Auto-Local Backup* (otomatis) di *storage internal* untuk keamanan.
 
@@ -133,6 +133,7 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
 * **Reliabilitas:** Aplikasi harus stabil tanpa *crash* saat internet mati total.  
 * **Performa:** Waktu inisiasi pencarian produk dan *checkout* harus di bawah 1 detik.  
 * **Keamanan & Device Management:** Lisensi terkunci permanen pada *Device Fingerprint*. Kasus pengecualian (seperti perangkat rusak/hilang) memerlukan pengajuan *reset* lisensi manual yang dikelola oleh Admin *SaaS* lewat *Support Dashboard*.
+* **Lokalisasi:** Antarmuka dan format data (Tanggal, Mata Uang Rp, Angka) harus mengikuti standar `id_ID` (Indonesian Locale) secara konsisten.
 
 ## **10\. Batasan Ruang Lingkup (Out of Scope)**
 
@@ -166,7 +167,7 @@ Input Kode Lisensi \-\> Validasi Backend Go \-\> Generate Device Fingerprint \-\
 
 ### **14.2. Alur Transaksi Kasir**
 
-PIN Login Karyawan (L3/L2/L1) \-\> Dashboard Utama \-\> [Opsional] Buka Shift & Input Saldo Kas Awal \-\> Scan Barcode/Input Keranjang \-\> Tekan Tombol BAYAR \-\> Pilih Metode Bayar di Modal \-\> Update Stok SQLite \-\> Tampil Animasi Sukses (Haptic Feedback) & Info Kembalian \-\> Print Struk.
+PIN Login Karyawan (L3/L2/L1) \-\> Dashboard Utama \-\> [Opsional] Buka Shift & Input Saldo Kas Awal \-\> Scan Barcode/Input Keranjang \-\> Tekan Tombol BAYAR \-\> Pilih Metode Bayar & Input Nominal (dengan fitur Quick Cash Buttons) \-\> Update Stok SQLite \-\> Tampil Animasi Sukses (Haptic Feedback) & Info Kembalian \-\> Print Struk.
 
 ### **14.3. Alur Stock Opname (Penyesuaian Stok)**
 

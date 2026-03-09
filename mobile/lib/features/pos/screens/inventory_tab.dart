@@ -7,6 +7,7 @@ import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
 import '../providers/pos_providers.dart';
+import 'package:posify_app/features/pos/screens/barcode_scanner_modal.dart';
 import 'inventory/stock_opname_screen.dart';
 import 'inventory/import_product_screen.dart';
 
@@ -438,9 +439,33 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
                   error: (err, stack) => const Text('Gagal memuat kategori'),
                 ),
             const SizedBox(height: 12),
-            TextFormField(
-              controller: _skuController,
-              decoration: const InputDecoration(labelText: 'SKU (Opsional)'),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: _skuController,
+                    decoration: const InputDecoration(
+                      labelText: 'SKU (Opsional)',
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  onPressed: () async {
+                    final res = await BarcodeScannerModal.show(
+                      context,
+                      returnResult: true,
+                    );
+                    if (res != null) {
+                      _skuController.text = res;
+                    }
+                  },
+                  icon: const Icon(Icons.qr_code_scanner_rounded),
+                  color: AppTheme.primaryColor,
+                  tooltip: 'Scan Barcode',
+                ),
+              ],
             ),
             const SizedBox(height: 20),
             SizedBox(

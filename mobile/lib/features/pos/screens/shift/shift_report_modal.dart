@@ -5,6 +5,7 @@ import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:posify_app/features/pos/providers/shift_provider.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
+import 'package:posify_app/core/services/backup_service.dart';
 
 final shiftTransactionsProvider = StreamProvider.family<List, int>((
   ref,
@@ -337,6 +338,11 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
               final success = await ref
                   .read(shiftControllerProvider.notifier)
                   .closeShift(shiftId, expectedCash);
+
+              if (success) {
+                // Trigger auto-backup after successful close shift
+                await BackupService().performAutoBackup();
+              }
 
               if (!mounted) return;
               setState(() => _isSubmitting = false);
