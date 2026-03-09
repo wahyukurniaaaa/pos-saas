@@ -52,12 +52,17 @@ func (h *Handler) Activate(c *fiber.Ctx) error {
 	}
 
 	resData := LicenseResponseData{
-		LicenseCode:    lic.LicenseCode,
-		TierLevel:      lic.TierLevel,
-		MaxDevices:     lic.MaxDevices,
+		LicenseCode: lic.LicenseCode,
+		TierLevel:   lic.TierLevel,
+		MaxDevices:  lic.MaxDevices,
 	}
-	if lic.ActivationDate != nil {
-		resData.ActivationDate = lic.ActivationDate.Format("2006-01-02T15:04:05Z")
+
+	// Find the activation date of the current device from the list
+	for _, dev := range lic.Devices {
+		if dev.DeviceFingerprint == req.DeviceFingerprint {
+			resData.ActivationDate = dev.ActivationDate.Format("2006-01-02T15:04:05Z")
+			break
+		}
 	}
 
 	return response.Success(c, fiber.StatusOK, "Lisensi berhasil diaktifkan untuk perangkat ini.", resData)

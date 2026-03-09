@@ -24,12 +24,14 @@ type VerifyResponseData struct {
 }
 
 type GenerateRequest struct {
-	TierLevel  string `json:"tier_level" validate:"required"`
-	MaxDevices int    `json:"max_devices" validate:"required,min=1"`
+	TierLevel     string `json:"tier_level" validate:"required"`
+	MaxDevices    int    `json:"max_devices" validate:"required,min=1"`
+	CustomerEmail string `json:"customer_email" validate:"required,email"`
 }
 
 type GenerateResponseData struct {
-	LicenseCode string `json:"license_code"`
-	TierLevel   string `json:"tier_level"`
-	MaxDevices  int    `json:"max_devices"`
+	LicenseCode   string `json:"license_code"`
+	TierLevel     string `json:"tier_level"`
+	MaxDevices    int    `json:"max_devices"`
+	CustomerEmail string `json:"customer_email"`
 }

@@ -82,7 +82,7 @@ project-name/
 | AUTH_SECRET | Replaces NEXTAUTH_SECRET (Auth.js v6) |
 | STRIPE_SECRET_KEY | Payments (Server-side) |
 | STRIPE_WEBHOOK_SECRET | Webhook verification |
-| RESEND_API_KEY | Email sending |
+|  | Email sending |
 | NEXT_PUBLIC_APP_URL | Application Canonical URL |
 
 ---

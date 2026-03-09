@@ -5,8 +5,8 @@ import (
 	"os"
 	"posify-backend/internal/license"
 	"posify-backend/internal/middleware"
-	"posify-backend/internal/models"
 	"posify-backend/pkg/database"
+	"posify-backend/pkg/mailer"
 	"posify-backend/pkg/response"
 	"time"
 
@@ -37,9 +37,9 @@ func main() {
 
 	// Setup Database
 	db := database.Connect()
-	if err := db.AutoMigrate(&models.License{}); err != nil {
-		log.Fatal("Failed to run migrations:", err)
-	}
+	// if err := db.AutoMigrate(&models.License{}, &models.LicenseDevice{}); err != nil {
+	// 	log.Fatal("Failed to run migrations:", err)
+	// }
 
 	// Rate Limiting settings specific for the Auth routes
 	limiterConf := limiter.New(limiter.Config{
@@ -54,8 +54,9 @@ func main() {
 	})
 
 	// Dependency Injection
+	resendSvc := mailer.NewMailer()
 	licenseRepo := license.NewRepository(db)
-	licenseSvc := license.NewService(licenseRepo)
+	licenseSvc := license.NewService(licenseRepo, resendSvc)
 	licenseHandler := license.NewHandler(licenseSvc)
 
 	// Protected Routes (Uses X-App-Client-Key and Limiter)
@@ -65,7 +66,6 @@ func main() {
 	// Admin Routes (Uses X-Admin-Secret-Key)
 	adminRoutes := api.Group("/admin/license", middleware.RequireAdminSecretKey, limiterConf)
 	licenseHandler.RegisterAdminRoutes(adminRoutes)
-
 
 	// Health Check / Ping Endpoint
 	api.Get("/ping", func(c *fiber.Ctx) error {

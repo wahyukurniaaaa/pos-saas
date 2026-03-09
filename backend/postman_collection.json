@@ -1,0 +1,186 @@
+{
+    "info": {
+        "_postman_id": "posify-license-api",
+        "name": "POSify License API",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Public",
+            "item": [
+                {
+                    "name": "Ping",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/ping",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "ping"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Client (Mobile)",
+            "item": [
+                {
+                    "name": "Activate License",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "X-App-Client-Key",
+                                "value": "{{app_client_key}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"license_code\": \"VALID-LICENSE-CODE\",\n    \"device_fingerprint\": \"device-unique-id-123\",\n    \"device_model\": \"Samsung S24\",\n    \"os_version\": \"Android 14\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/license/activate",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "license",
+                                "activate"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Verify License",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "X-App-Client-Key",
+                                "value": "{{app_client_key}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"license_code\": \"VALID-LICENSE-CODE\",\n    \"device_fingerprint\": \"device-unique-id-123\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/license/verify",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "license",
+                                "verify"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Admin",
+            "item": [
+                {
+                    "name": "Generate License",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "X-Admin-Secret-Key",
+                                "value": "{{admin_secret_key}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"tier_level\": \"Premium\",\n    \"max_devices\": 5,\n    \"customer_email\": \"consumer@example.com\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/admin/license/generate",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "admin",
+                                "license",
+                                "generate"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        }
+    ],
+    "event": [
+        {
+            "listen": "prerequest",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        },
+        {
+            "listen": "test",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        }
+    ],
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:3000",
+            "type": "string"
+        },
+        {
+            "key": "app_client_key",
+            "value": "LPFrrQcWTAh716Bmt9NYKXbg",
+            "type": "string"
+        },
+        {
+            "key": "admin_secret_key",
+            "value": "lspMqZSFl2XfkVEdacO4Z3Ny",
+            "type": "string"
+        }
+    ]
+}

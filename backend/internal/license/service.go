@@ -9,11 +9,12 @@ import (
 	"time"
 
 	"posify-backend/internal/models"
+	"posify-backend/pkg/mailer"
 )
 
 var (
 	ErrLicenseNotFound = errors.New("Kode lisensi tidak ditemukan atau format salah.")
-	ErrLicenseUsed     = errors.New("Lisensi ini sudah diaktifkan di perangkat lain. Silakan hubungi CS untuk reset perangkat.")
+	ErrLicenseUsed     = errors.New("Batas maksimum perangkat untuk lisensi ini telah tercapai. Silakan hubungi CS untuk reset.")
 	ErrLicenseBanned   = errors.New("Lisensi telah diblokir/disuspend.")
 )
 
@@ -24,11 +25,12 @@ type Service interface {
 }
 
 type service struct {
-	repo Repository
+	repo   Repository
+	mailer *mailer.Mailer
 }
 
-func NewService(repo Repository) Service {
-	return &service{repo: repo}
+func NewService(repo Repository, mailer *mailer.Mailer) Service {
+	return &service{repo: repo, mailer: mailer}
 }
 
 func (s *service) Activate(req ActivateRequest) (*models.License, error) {
@@ -46,24 +48,46 @@ func (s *service) Activate(req ActivateRequest) (*models.License, error) {
 		return nil, ErrLicenseBanned
 	}
 
-	// 3. Check Fingerprint Logic
-	if lic.DeviceFingerprint != nil {
-		// Already activated by someone. Is it the same device trying to re-activate (e.g., cleared app data)?
-		if *lic.DeviceFingerprint != req.DeviceFingerprint {
-			return nil, ErrLicenseUsed
+	// 3. Check Multi-Device Logic
+	now := time.Now()
+	var associatedDevice *models.LicenseDevice
+	for i := range lic.Devices {
+		if lic.Devices[i].DeviceFingerprint == req.DeviceFingerprint {
+			associatedDevice = &lic.Devices[i]
+			break
 		}
-		// If same fingerprint, just return success (idempotent)
+	}
+
+	if associatedDevice != nil {
+		// Already activated by THIS device. Update LastVerifiedAt and return.
+		associatedDevice.LastVerifiedAt = now
+		associatedDevice.DeviceModel = req.DeviceModel
+		associatedDevice.OsVersion = req.OsVersion
+		if err := s.repo.UpdateDevice(associatedDevice); err != nil {
+			return nil, err
+		}
 		return lic, nil
 	}
 
-	// 4. First time activation! Bind it.
-	now := time.Now()
-	lic.DeviceFingerprint = &req.DeviceFingerprint
-	lic.DeviceModel = &req.DeviceModel
-	lic.OsVersion = &req.OsVersion
-	lic.ActivationDate = &now
+	// 4. New device is trying to activate. Check limit.
+	if len(lic.Devices) >= lic.MaxDevices {
+		return nil, ErrLicenseUsed
+	}
 
-	// 5. Save to DB
+	// 5. Add new device
+	newDevice := models.LicenseDevice{
+		LicenseID:         lic.ID,
+		DeviceFingerprint: req.DeviceFingerprint,
+		DeviceModel:       req.DeviceModel,
+		OsVersion:         req.OsVersion,
+		ActivationDate:    now,
+		LastVerifiedAt:    now,
+	}
+
+	// In GORM, adding to slice and updating parent works if configured,
+	// but we'll use UpdateDevice or just save the parent if it cascades.
+	// Since we preloaded, adding to the slice and saving the parent is usually standard.
+	lic.Devices = append(lic.Devices, newDevice)
 	if err := s.repo.Update(lic); err != nil {
 		return nil, err
 	}
@@ -76,13 +100,31 @@ func (s *service) Verify(req VerifyRequest) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	// Must exactly match
-	if lic == nil || lic.DeviceFingerprint == nil || *lic.DeviceFingerprint != req.DeviceFingerprint {
+	if lic == nil {
 		return false, ErrLicenseNotFound
 	}
-	
+
 	if !lic.IsActive {
 		return false, ErrLicenseBanned
+	}
+
+	// Find the device
+	var associatedDevice *models.LicenseDevice
+	for i := range lic.Devices {
+		if lic.Devices[i].DeviceFingerprint == req.DeviceFingerprint {
+			associatedDevice = &lic.Devices[i]
+			break
+		}
+	}
+
+	if associatedDevice == nil {
+		return false, ErrLicenseNotFound // Device not registered for this license
+	}
+
+	// Update verification timestamp
+	associatedDevice.LastVerifiedAt = time.Now()
+	if err := s.repo.UpdateDevice(associatedDevice); err != nil {
+		return false, err
 	}
 
 	return true, nil
@@ -96,25 +138,33 @@ func (s *service) Generate(req GenerateRequest) (*models.License, error) {
 		return nil, err
 	}
 	part1 := strings.ToUpper(hex.EncodeToString(bytes))
-	
+
 	bytes2 := make([]byte, 5)
 	if _, err := rand.Read(bytes2); err != nil {
 		return nil, err
 	}
 	part2 := strings.ToUpper(hex.EncodeToString(bytes2))
-	
+
 	code := fmt.Sprintf("POS-L1-%s-%s", part1, part2)
 
 	license := &models.License{
-		LicenseCode: code,
-		TierLevel:   req.TierLevel,
-		MaxDevices:  req.MaxDevices,
-		IsActive:    true,
+		LicenseCode:   code,
+		TierLevel:     req.TierLevel,
+		MaxDevices:    req.MaxDevices,
+		CustomerEmail: req.CustomerEmail,
+		IsActive:      true,
 	}
 
 	if err := s.repo.Create(license); err != nil {
 		return nil, err
 	}
+
+	// Send Email Async
+	go func() {
+		if err := s.mailer.SendLicenseEmail(req.CustomerEmail, code, req.TierLevel, req.MaxDevices); err != nil {
+			fmt.Printf("Email error for %s: %v\n", req.CustomerEmail, err)
+		}
+	}()
 
 	return license, nil
 }

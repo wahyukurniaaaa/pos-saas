@@ -34,6 +34,11 @@ func (m *MockRepository) Create(lic *models.License) error {
 	return args.Error(0)
 }
 
+func (m *MockRepository) UpdateDevice(device *models.LicenseDevice) error {
+	args := m.Called(device)
+	return args.Error(0)
+}
+
 func TestActivate_SuccessFirstTime(t *testing.T) {
 	mockRepo := new(MockRepository)
 	svc := license.NewService(mockRepo)
@@ -41,13 +46,17 @@ func TestActivate_SuccessFirstTime(t *testing.T) {
 	req := license.ActivateRequest{
 		LicenseCode:       "VALID-CODE",
 		DeviceFingerprint: "device-123",
+		DeviceModel:       "Samsung S24",
+		OsVersion:         "Android 14",
 	}
 
 	// Given an unused license
 	mockLicense := &models.License{
-		LicenseCode:       "VALID-CODE",
-		DeviceFingerprint: nil,
-		IsActive:          true,
+		ID:          1,
+		LicenseCode: "VALID-CODE",
+		IsActive:    true,
+		MaxDevices:  1,
+		Devices:     []models.LicenseDevice{},
 	}
 
 	mockRepo.On("FindByCode", "VALID-CODE").Return(mockLicense, nil)
@@ -59,8 +68,8 @@ func TestActivate_SuccessFirstTime(t *testing.T) {
 	// Assert
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
-	assert.Equal(t, "device-123", *result.DeviceFingerprint)
-	assert.NotNil(t, result.ActivationDate)
+	assert.Equal(t, 1, len(result.Devices))
+	assert.Equal(t, "device-123", result.Devices[0].DeviceFingerprint)
 	mockRepo.AssertExpectations(t)
 }
 
@@ -87,11 +96,14 @@ func TestActivate_FailUsedByOtherDevice(t *testing.T) {
 		DeviceFingerprint: "new-device-hacker",
 	}
 
-	oldFingerprint := "old-device-owner"
 	mockLicense := &models.License{
-		LicenseCode:       "USED-CODE",
-		DeviceFingerprint: &oldFingerprint,
-		IsActive:          true,
+		ID:          1,
+		LicenseCode: "USED-CODE",
+		IsActive:    true,
+		MaxDevices:  1,
+		Devices: []models.LicenseDevice{
+			{DeviceFingerprint: "old-device-owner"},
+		},
 	}
 
 	mockRepo.On("FindByCode", "USED-CODE").Return(mockLicense, nil)
@@ -111,23 +123,25 @@ func TestActivate_SuccessSameDeviceRetry(t *testing.T) {
 		DeviceFingerprint: "my-device-123",
 	}
 
-	fp := "my-device-123"
-	now := time.Now()
 	mockLicense := &models.License{
-		LicenseCode:       "USED-CODE",
-		DeviceFingerprint: &fp,
-		ActivationDate:    &now,
-		IsActive:          true,
+		ID:          1,
+		LicenseCode: "USED-CODE",
+		IsActive:    true,
+		MaxDevices:  1,
+		Devices: []models.LicenseDevice{
+			{DeviceFingerprint: "my-device-123", LastVerifiedAt: time.Now().Add(-48 * time.Hour)},
+		},
 	}
 
 	mockRepo.On("FindByCode", "USED-CODE").Return(mockLicense, nil)
+	mockRepo.On("UpdateDevice", mock.Anything).Return(nil)
 
-	// Should NOT call Update
+	// Action
 	result, err := svc.Activate(req)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
-	mockRepo.AssertNotCalled(t, "Update")
+	mockRepo.AssertCalled(t, "UpdateDevice", mock.Anything)
 }
 
 func TestVerify_FailBanned(t *testing.T) {
@@ -139,11 +153,13 @@ func TestVerify_FailBanned(t *testing.T) {
 		DeviceFingerprint: "my-device-123",
 	}
 
-	fp := "my-device-123"
 	mockLicense := &models.License{
-		LicenseCode:       "BANNED-CODE",
-		DeviceFingerprint: &fp,
-		IsActive:          false, // Key point
+		ID:          1,
+		LicenseCode: "BANNED-CODE",
+		IsActive:    false, // Key point
+		Devices: []models.LicenseDevice{
+			{DeviceFingerprint: "my-device-123"},
+		},
 	}
 
 	mockRepo.On("FindByCode", "BANNED-CODE").Return(mockLicense, nil)

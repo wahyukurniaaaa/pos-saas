@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  posify-backend:
+    build: .
+    container_name: posify-backend
+    restart: always
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      - DB_SSLMODE=require
