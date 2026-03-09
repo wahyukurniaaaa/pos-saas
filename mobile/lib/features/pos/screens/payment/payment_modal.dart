@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
+import 'package:posify_app/features/pos/providers/shift_provider.dart';
 import '../../providers/pos_providers.dart';
 import 'payment_success_screen.dart';
 
@@ -488,9 +489,16 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
 
     try {
       final changeAmount = _selectedMethod == 'Tunai' ? _change.toInt() : 0;
-      final shiftId =
-          1; // TODO: Get actual active shift ID from auth/shift provider
-
+      final shiftOpt = ref.read(openShiftProvider).value;
+      if (shiftOpt == null) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Tidak ada shift yang terbuka!')),
+        );
+        setState(() => _isProcessing = false);
+        return;
+      }
+      final shiftId = shiftOpt.id;
       final subtotal = ref.read(cartProvider.notifier).subtotal;
       final taxAmount = subtotal * 0.11;
       final serviceCharge = 0.0; // Assume 0 for now or fetch from settings

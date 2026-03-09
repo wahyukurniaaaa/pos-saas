@@ -56,18 +56,19 @@ Fitur ini mempermudah merchant yang memiliki ratusan produk untuk langsung melak
     - [x] Choose file (Picker)
     - [x] Parsing CSV logic
     - [x] Batch insert to database
-- [ ] **Shift Closing Report**
-    - [ ] Summary of shift sales
-    - [ ] Cash on hand reconciliation
-    - [ ] Print shift report
-- [ ] **Employee Management**
-    - [ ] List of employees
-    - [ ] Add/Edit employee
-    - [ ] Role-based access (Owner/Supervisor/Cashier)
-- [ ] **Category Management**
-    - [ ] List of categories
-    - [ ] Add/Edit/Delete categories
-- [ ] **Stock Opname**
+- [x] **Shift Management (Buka/Tutup Kasir)**
+    - [x] Opening Shift (Set starting cash/modal awal)
+    - [x] Closing Shift (Summary of shift sales)
+    - [x] Cash on hand reconciliation (Setor tunai)
+    - [x] Print shift report
+- [x] **Employee Management**
+    - [x] List of employees
+    - [x] Add/Edit employee
+    - [x] Role-based access (Owner/Supervisor/Cashier)
+- [x] **Category Management**
+    - [x] List of categories
+    - [x] Add/Edit/Delete categories
+- [x] **Stock Opname**
     - [x] UI for stock adjustment
     - [x] Saving adjustment records
-    - [ ] Stock history audit log
+    - [x] Stock history audit log

@@ -2,6 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:posify_app/features/pos/providers/shift_provider.dart';
+import 'package:posify_app/core/providers/database_provider.dart';
+
+final shiftTransactionsProvider = StreamProvider.family<List, int>((
+  ref,
+  shiftId,
+) {
+  final db = ref.watch(databaseProvider);
+  return db.watchTransactionsByShift(shiftId);
+});
 
 final _currency = NumberFormat.currency(
   locale: 'id_ID',
@@ -9,22 +20,54 @@ final _currency = NumberFormat.currency(
   decimalDigits: 0,
 );
 
-class ShiftReportModal extends StatelessWidget {
+class ShiftReportModal extends ConsumerStatefulWidget {
   final String cashierName;
 
   const ShiftReportModal({super.key, required this.cashierName});
+
+  @override
+  ConsumerState<ShiftReportModal> createState() => _ShiftReportModalState();
+}
+
+class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
+  bool _isSubmitting = false;
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final isDesktop = size.width > 800;
 
-    // Hardcoded demo values based on wireframe constraints
-    final double startCash = 50000;
-    final double cashSales = 120000;
-    final double qrisSales = 30000;
-    final double expectedDrawer =
-        startCash + cashSales; // only cash sales go into the drawer
+    final shiftAsync = ref.watch(openShiftProvider);
+    final activeShift = shiftAsync.value;
+
+    if (activeShift == null) {
+      return const SizedBox.shrink();
+    }
+
+    final transactionsAsync = ref.watch(
+      shiftTransactionsProvider(activeShift.id),
+    );
+
+    double startCash = activeShift.startingCash.toDouble();
+    double cashSales = 0;
+    double qrisSales = 0;
+    double voidSales = 0;
+
+    if (transactionsAsync.hasValue) {
+      for (final t in transactionsAsync.value!) {
+        if (t.paymentStatus == 'paid') {
+          if (t.paymentMethod == 'tunai') {
+            cashSales += t.totalAmount;
+          } else {
+            qrisSales += t.totalAmount;
+          }
+        } else if (t.paymentStatus == 'void') {
+          voidSales += t.totalAmount;
+        }
+      }
+    }
+
+    final double expectedDrawer = startCash + cashSales;
 
     return Container(
       constraints: BoxConstraints(
@@ -57,7 +100,7 @@ class ShiftReportModal extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Kasir: $cashierName',
+                      'Kasir: ${widget.cashierName}',
                       style: GoogleFonts.inter(
                         color: AppTheme.textSecondary,
                         fontSize: 14,
@@ -135,7 +178,11 @@ class ShiftReportModal extends StatelessWidget {
                     child: Divider(),
                   ),
 
-                  _buildDetailRow('Void/Pengembalian', 0, isNegative: true),
+                  _buildDetailRow(
+                    'Void/Pengembalian',
+                    voidSales,
+                    isNegative: true,
+                  ),
 
                   const SizedBox(height: 24),
 
@@ -175,9 +222,11 @@ class ShiftReportModal extends StatelessWidget {
                           width: double.infinity,
                           child: ElevatedButton(
                             onPressed: () {
-                              Navigator.pop(context);
-                              // Show confirmation or End shift logic
-                              _showEndShiftConfirmation(context);
+                              _showEndShiftConfirmation(
+                                context,
+                                activeShift.id,
+                                expectedDrawer.toInt(),
+                              );
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppTheme.dangerColor,
@@ -255,7 +304,11 @@ class ShiftReportModal extends StatelessWidget {
     );
   }
 
-  void _showEndShiftConfirmation(BuildContext context) {
+  void _showEndShiftConfirmation(
+    BuildContext context,
+    int shiftId,
+    int expectedCash,
+  ) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -277,23 +330,54 @@ class ShiftReportModal extends StatelessWidget {
             ),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    'Shift Ditutup, laporan tercetak! ✅',
-                    style: GoogleFonts.inter(fontWeight: FontWeight.w500),
+              setState(() => _isSubmitting = true);
+
+              final success = await ref
+                  .read(shiftControllerProvider.notifier)
+                  .closeShift(shiftId, expectedCash);
+
+              if (!mounted) return;
+              setState(() => _isSubmitting = false);
+
+              if (success) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Shift Ditutup, laporan tercetak! ✅',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.w500),
+                    ),
+                    backgroundColor: AppTheme.successColor,
+                    behavior: SnackBarBehavior.floating,
                   ),
-                  backgroundColor: AppTheme.successColor,
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Gagal menutup shift. Silakan coba lagi.',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.w500),
+                    ),
+                    backgroundColor: AppTheme.dangerColor,
+                  ),
+                );
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.dangerColor,
             ),
-            child: const Text('Ya, Tutup Shift'),
+            child: _isSubmitting
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  )
+                : const Text('Ya, Tutup Shift'),
           ),
         ],
       ),

@@ -7,6 +7,8 @@ import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:posify_app/features/auth/providers/owner_provider.dart';
 import 'package:posify_app/features/pos/screens/payment/payment_modal.dart';
 import 'package:posify_app/features/pos/screens/shift/shift_report_modal.dart';
+import 'package:posify_app/features/pos/providers/shift_provider.dart';
+import 'package:posify_app/features/pos/screens/shift/shift_opening_modal.dart';
 import '../providers/pos_providers.dart';
 
 final _currency = NumberFormat.currency(
@@ -37,13 +39,18 @@ class _PosTabState extends ConsumerState<PosTab> {
     final sessionAsync = ref.watch(sessionProvider);
     final cashierName = sessionAsync.value?.name ?? 'Kasir';
 
+    final shiftAsync = ref.watch(openShiftProvider);
+    final hasOpenShift = shiftAsync.value != null;
+
     final isDesktop = MediaQuery.of(context).size.width >= 800;
 
     return Column(
       children: [
-        _buildAppBar(cashierName),
+        _buildAppBar(cashierName, hasOpenShift),
         Expanded(
-          child: isDesktop ? _buildDesktopLayout() : _buildMobileLayout(),
+          child: hasOpenShift
+              ? (isDesktop ? _buildDesktopLayout() : _buildMobileLayout())
+              : _buildClosedShiftLayout(),
         ),
       ],
     );
@@ -87,7 +94,59 @@ class _PosTabState extends ConsumerState<PosTab> {
     );
   }
 
-  Widget _buildAppBar(String cashierName) {
+  Widget _buildClosedShiftLayout() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.lock_outline, size: 64, color: Colors.grey.shade400),
+          const SizedBox(height: 16),
+          Text(
+            'Kasir Belum Buka',
+            style: GoogleFonts.inter(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Silakan buka shift untuk mulai bertransaksi',
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              color: AppTheme.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => const ShiftOpeningModal(),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryColor,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(
+              'Buka Kasir',
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAppBar(String cashierName, bool hasOpenShift) {
     return Container(
       color: AppTheme.primaryColor,
       child: SafeArea(
@@ -122,7 +181,16 @@ class _PosTabState extends ConsumerState<PosTab> {
               Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: () => _showShiftReport(context, cashierName),
+                  onTap: () {
+                    if (hasOpenShift) {
+                      _showShiftReport(context, cashierName);
+                    } else {
+                      showDialog(
+                        context: context,
+                        builder: (context) => const ShiftOpeningModal(),
+                      );
+                    }
+                  },
                   borderRadius: BorderRadius.circular(20),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
@@ -130,10 +198,14 @@ class _PosTabState extends ConsumerState<PosTab> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: AppTheme.successColor.withValues(alpha: 0.2),
+                      color: hasOpenShift
+                          ? AppTheme.successColor.withValues(alpha: 0.2)
+                          : AppTheme.errorColor.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: AppTheme.successColor.withValues(alpha: 0.5),
+                        color: hasOpenShift
+                            ? AppTheme.successColor.withValues(alpha: 0.5)
+                            : AppTheme.errorColor.withValues(alpha: 0.5),
                       ),
                     ),
                     child: Row(
@@ -142,14 +214,16 @@ class _PosTabState extends ConsumerState<PosTab> {
                         Container(
                           width: 6,
                           height: 6,
-                          decoration: const BoxDecoration(
-                            color: AppTheme.successColor,
+                          decoration: BoxDecoration(
+                            color: hasOpenShift
+                                ? AppTheme.successColor
+                                : AppTheme.errorColor,
                             shape: BoxShape.circle,
                           ),
                         ),
                         const SizedBox(width: 5),
                         Text(
-                          'Shift Buka',
+                          hasOpenShift ? 'Shift Buka' : 'Shift Tutup',
                           style: GoogleFonts.inter(
                             fontSize: 11,
                             color: Colors.white,
