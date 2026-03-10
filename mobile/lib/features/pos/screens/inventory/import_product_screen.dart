@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
 import '../../providers/import_product_provider.dart';
+import 'package:posify_app/core/widgets/responsive_layout.dart';
 
 class ImportProductScreen extends ConsumerWidget {
   const ImportProductScreen({super.key});
@@ -20,7 +21,7 @@ class ImportProductScreen extends ConsumerWidget {
         backgroundColor: AppTheme.primaryColor,
         foregroundColor: Colors.white,
       ),
-      body: Padding(
+      body: ResponsiveCenter(child: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -103,7 +104,7 @@ class ImportProductScreen extends ConsumerWidget {
             ],
           ],
         ),
-      ),
+      )),
     );
   }
 }

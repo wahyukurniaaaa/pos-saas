@@ -7,20 +7,36 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/core/providers/dio_provider.dart';
 import 'package:posify_app/core/database/database.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
 
 /// Notifier for license activation and status check.
 class LicenseNotifier extends AsyncNotifier<License?> {
   final _deviceInfo = DeviceInfoPlugin();
+  final _storage = const FlutterSecureStorage();
+  static const String _deviceIdKey = 'posify_device_id_stable';
 
   Future<String> _getDeviceId() async {
+    // 1. Check persistent cache (Secure Storage)
+    final cachedId = await _storage.read(key: _deviceIdKey);
+    if (cachedId != null) return cachedId;
+
+    // 2. If not exist, generate a stable-ish ID based on hardware info
+    String baseId = 'posify';
     if (Platform.isAndroid) {
       final androidInfo = await _deviceInfo.androidInfo;
-      return androidInfo.id; // Unique ID for Android
+      // Using combination of several hardware IDs to be more persistent
+      baseId = '${androidInfo.brand}-${androidInfo.model}-${androidInfo.id}';
     } else if (Platform.isIOS) {
       final iosInfo = await _deviceInfo.iosInfo;
-      return iosInfo.identifierForVendor ?? 'UNKNOWN-IOS';
+      baseId = iosInfo.identifierForVendor ?? 'IOS-UNKNOWN';
     }
-    return 'UNKNOWN-DEVICE';
+
+    // Hash it to make it uniform + adding some salt
+    final hashedId = sha256.convert(utf8.encode('salt_$baseId')).toString();
+    await _storage.write(key: _deviceIdKey, value: hashedId);
+    return hashedId;
   }
 
   Future<String> _getDeviceModel() async {
@@ -42,26 +58,28 @@ class LicenseNotifier extends AsyncNotifier<License?> {
     if (license != null) {
       final currentDeviceId = await _getDeviceId();
 
-      // 1. Local Fingerprint Validation (Migration Check)
+      // 1. Lazy Fingerprint Validation
+      // If mismatch, we STILL allow entry but trigger background verification.
+      // This solves the 'kicked out' issue if Build.ID changes slightly.
       if (license.deviceFingerprint != currentDeviceId) {
-        // Device mismatch detected. Verification required.
-        // Since it's a new device, we don't allow access until activated/verified.
-        return null;
+        _verifyWithServer(license.licenseCode, currentDeviceId);
+        // We don't return null here yet. Let the user use the app.
+        // If server says NO later, then we'll invalidate state.
       }
 
-      // 2. 7-Day Hard Offline Block
+      // 2. 7-Day Hard Offline Block - This is a business rule, we keep it.
       final now = DateTime.now();
       final lastCheck = license.lastVerified ?? license.activationDate ?? now;
       final diff = now.difference(lastCheck);
 
       if (diff.inDays >= 7) {
-        // 7 days without any successful verification. Hard block access.
-        // Returning null triggers the activation screen (Lock Mode).
+        // Return null triggers the activation screen (Lock Mode) if expired.
+        // Background verification must update lastVerified to reset this.
+        _verifyWithServer(license.licenseCode, currentDeviceId);
         return null;
       }
 
-      // 3. 24-Hour Heartbeat Validation (Background check if online)
-      // If 24 hours have passed, trigger a background verification
+      // 3. Heartbeat Validation (Every 24h background check)
       if (diff.inHours >= 24) {
         _verifyWithServer(license.licenseCode, currentDeviceId);
       }
@@ -104,7 +122,6 @@ class LicenseNotifier extends AsyncNotifier<License?> {
       final deviceId = await _getDeviceId();
       final model = await _getDeviceModel();
 
-
       // 1. Call Backend Go API
       final response = await dio.post(
         '/license/activate',
@@ -115,7 +132,6 @@ class LicenseNotifier extends AsyncNotifier<License?> {
           'os_version': Platform.operatingSystemVersion,
         },
       );
-
 
       if (!ref.mounted) return false;
 

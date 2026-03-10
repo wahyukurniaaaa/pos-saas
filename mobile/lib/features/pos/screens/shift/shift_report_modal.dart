@@ -36,7 +36,7 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final isDesktop = size.width > 800;
+    final isDesktop = size.width > 768;
 
     final shiftAsync = ref.watch(openShiftProvider);
     final activeShift = shiftAsync.value;

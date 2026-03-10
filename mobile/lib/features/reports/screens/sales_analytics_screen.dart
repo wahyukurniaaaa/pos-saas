@@ -6,6 +6,7 @@ import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:posify_app/core/widgets/responsive_layout.dart';
 
 class SalesAnalyticsScreen extends ConsumerStatefulWidget {
   const SalesAnalyticsScreen({super.key});
@@ -91,7 +92,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
         foregroundColor: Colors.white,
       ),
       backgroundColor: AppTheme.backgroundLight,
-      body: Column(
+      body: ResponsiveCenter(child: Column(
         children: [
           _buildFilterChips(),
           Expanded(
@@ -112,7 +113,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                   ),
           ),
         ],
-      ),
+      )),
     );
   }
 

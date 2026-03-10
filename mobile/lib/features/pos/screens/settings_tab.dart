@@ -11,6 +11,7 @@ import 'package:posify_app/features/reports/screens/sales_analytics_screen.dart'
 import 'package:posify_app/features/settings/screens/category_management_screen.dart';
 import 'package:posify_app/features/settings/screens/tax_service_settings_screen.dart';
 import 'package:posify_app/features/settings/screens/database_settings_screen.dart';
+import 'package:posify_app/core/widgets/responsive_layout.dart';
 
 class SettingsTab extends ConsumerWidget {
   const SettingsTab({super.key});
@@ -31,80 +32,82 @@ class SettingsTab extends ConsumerWidget {
         foregroundColor: Colors.white,
         elevation: 0,
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // Toko & Karyawan
-          _buildSettingsTile(
-            Icons.people_rounded,
-            'Kelola Karyawan',
-            'Tambah & kelola akses karyawan',
-            onTap: () => _navigate(context, const EmployeeListScreen()),
-          ),
-          _buildSettingsTile(
-            Icons.label_rounded,
-            'Kelola Kategori Produk',
-            'Tambah, edit, hapus kategori',
-            onTap: () => _navigate(context, const CategoryManagementScreen()),
-          ),
-          const Divider(height: 32),
+      body: ResponsiveCenter(
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            // Toko & Karyawan
+            _buildSettingsTile(
+              Icons.people_rounded,
+              'Kelola Karyawan',
+              'Tambah & kelola akses karyawan',
+              onTap: () => _navigate(context, const EmployeeListScreen()),
+            ),
+            _buildSettingsTile(
+              Icons.label_rounded,
+              'Kelola Kategori Produk',
+              'Tambah, edit, hapus kategori',
+              onTap: () => _navigate(context, const CategoryManagementScreen()),
+            ),
+            const Divider(height: 32),
 
-          // Riwayat & Laporan
-          _buildSettingsTile(
-            Icons.analytics_rounded,
-            'Analitik Penjualan',
-            'Dashboard dan tren penjualan',
-            onTap: () => _navigate(context, const SalesAnalyticsScreen()),
-          ),
-          _buildSettingsTile(
-            Icons.receipt_long_rounded,
-            'Riwayat Transaksi',
-            'Nota & void transaksi',
-            onTap: () => _navigate(context, const TransactionHistoryScreen()),
-          ),
-          _buildSettingsTile(
-            Icons.access_time_rounded,
-            'Riwayat Sesi Shift',
-            'Daftar shift karyawan',
-            onTap: () => _navigate(context, const ShiftHistoryScreen()),
-          ),
-          _buildSettingsTile(
-            Icons.print_rounded,
-            'Pengaturan Printer',
-            'Bluetooth thermal printer',
-            onTap: () => _navigate(context, const PrinterSettingsScreen()),
-          ),
-          _buildSettingsTile(
-            Icons.calculate_rounded,
-            'Pajak & Service Charge',
-            'PPN, service, diskon default',
-            onTap: () => _navigate(context, const TaxServiceSettingsScreen()),
-          ),
-          _buildSettingsTile(
-            Icons.storage_rounded,
-            'Manajemen Database',
-            'Backup & Restore data (AES-256)',
-            onTap: () => _navigate(context, const DatabaseSettingsScreen()),
-          ),
-          const Divider(height: 32),
+            // Riwayat & Laporan
+            _buildSettingsTile(
+              Icons.analytics_rounded,
+              'Analitik Penjualan',
+              'Dashboard dan tren penjualan',
+              onTap: () => _navigate(context, const SalesAnalyticsScreen()),
+            ),
+            _buildSettingsTile(
+              Icons.receipt_long_rounded,
+              'Riwayat Transaksi',
+              'Nota & void transaksi',
+              onTap: () => _navigate(context, const TransactionHistoryScreen()),
+            ),
+            _buildSettingsTile(
+              Icons.access_time_rounded,
+              'Riwayat Sesi Shift',
+              'Daftar shift karyawan',
+              onTap: () => _navigate(context, const ShiftHistoryScreen()),
+            ),
+            _buildSettingsTile(
+              Icons.print_rounded,
+              'Pengaturan Printer',
+              'Bluetooth thermal printer',
+              onTap: () => _navigate(context, const PrinterSettingsScreen()),
+            ),
+            _buildSettingsTile(
+              Icons.calculate_rounded,
+              'Pajak & Service Charge',
+              'PPN, service, diskon default',
+              onTap: () => _navigate(context, const TaxServiceSettingsScreen()),
+            ),
+            _buildSettingsTile(
+              Icons.storage_rounded,
+              'Manajemen Database',
+              'Backup & Restore data (AES-256)',
+              onTap: () => _navigate(context, const DatabaseSettingsScreen()),
+            ),
+            const Divider(height: 32),
 
-          // Akun
-          _buildSettingsTile(
-            Icons.lock_rounded,
-            'Ganti PIN',
-            'Ubah PIN owner atau karyawan',
-          ),
-          _buildSettingsTile(
-            Icons.logout_rounded,
-            'Keluar / Ganti User',
-            'Kembali ke halaman login PIN',
-            isDestructive: true,
-            onTap: () {
-              ref.read(sessionProvider.notifier).logout();
-              Navigator.pushReplacementNamed(context, '/pin-login');
-            },
-          ),
-        ],
+            // Akun
+            _buildSettingsTile(
+              Icons.lock_rounded,
+              'Ganti PIN',
+              'Ubah PIN owner atau karyawan',
+            ),
+            _buildSettingsTile(
+              Icons.logout_rounded,
+              'Keluar / Ganti User',
+              'Kembali ke halaman login PIN',
+              isDestructive: true,
+              onTap: () {
+                ref.read(sessionProvider.notifier).logout();
+                Navigator.pushReplacementNamed(context, '/pin-login');
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

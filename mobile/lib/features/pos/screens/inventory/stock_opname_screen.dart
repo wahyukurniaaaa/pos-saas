@@ -5,6 +5,7 @@ import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/features/pos/providers/pos_providers.dart';
+import 'package:posify_app/core/widgets/responsive_layout.dart';
 
 class StockOpnameScreen extends ConsumerStatefulWidget {
   const StockOpnameScreen({super.key});
@@ -108,7 +109,7 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
           ),
         ],
       ),
-      body: Column(
+      body: ResponsiveCenter(child: Column(
         children: [
           Container(
             padding: const EdgeInsets.all(16),
@@ -338,7 +339,7 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
             ),
           ),
         ],
-      ),
+      )),
     );
   }
 }

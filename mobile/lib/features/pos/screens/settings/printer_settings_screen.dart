@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
+import 'package:posify_app/core/widgets/responsive_layout.dart';
 
 class PrinterSettingsScreen extends ConsumerStatefulWidget {
   const PrinterSettingsScreen({super.key});
@@ -159,7 +160,7 @@ class _PrinterSettingsScreenState extends ConsumerState<PrinterSettingsScreen> {
         foregroundColor: Colors.white,
         elevation: 0,
       ),
-      body: Column(
+      body: ResponsiveCenter(child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Container(
@@ -329,7 +330,7 @@ class _PrinterSettingsScreenState extends ConsumerState<PrinterSettingsScreen> {
             ),
           ),
         ],
-      ),
+      )),
     );
   }
 }

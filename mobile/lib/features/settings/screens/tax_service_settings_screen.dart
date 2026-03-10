@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
 import '../providers/store_provider.dart';
+import 'package:posify_app/core/widgets/responsive_layout.dart';
 
 class TaxServiceSettingsScreen extends ConsumerStatefulWidget {
   const TaxServiceSettingsScreen({super.key});
@@ -65,7 +66,7 @@ class _TaxServiceSettingsScreenState
         backgroundColor: AppTheme.primaryColor,
         foregroundColor: Colors.white,
       ),
-      body: storeAsync.when(
+      body: ResponsiveCenter(child: storeAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, st) => Center(child: Text('Error: $e')),
         data: (profile) {
@@ -163,7 +164,7 @@ class _TaxServiceSettingsScreenState
             ],
           );
         },
-      ),
+      )),
     );
   }
 

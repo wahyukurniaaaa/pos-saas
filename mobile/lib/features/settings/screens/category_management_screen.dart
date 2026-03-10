@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
+import 'package:posify_app/core/widgets/responsive_layout.dart';
 
 class CategoryManagementScreen extends ConsumerStatefulWidget {
   const CategoryManagementScreen({super.key});
@@ -152,7 +153,7 @@ class _CategoryManagementScreenState
         foregroundColor: Colors.white,
         elevation: 0,
       ),
-      body: StreamBuilder<List<Category>>(
+      body: ResponsiveCenter(child: StreamBuilder<List<Category>>(
         stream: db.watchAllCategories(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -235,7 +236,7 @@ class _CategoryManagementScreenState
             },
           );
         },
-      ),
+      )),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddCategoryDialog(),
         backgroundColor: AppTheme.primaryColor,

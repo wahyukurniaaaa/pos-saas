@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
 import '../providers/owner_provider.dart';
+import 'package:posify_app/core/widgets/responsive_layout.dart';
 
 class PinLoginScreen extends ConsumerStatefulWidget {
   const PinLoginScreen({super.key});
@@ -90,7 +91,7 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
-      body: SafeArea(
+      body: ResponsiveCenter(child: SafeArea(
         child: Center(
           child: SingleChildScrollView(
             child: Column(
@@ -229,7 +230,7 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen>
             ),
           ),
         ),
-      ),
+      )),
     );
   }
 

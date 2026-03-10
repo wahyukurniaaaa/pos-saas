@@ -43,7 +43,7 @@ class _PosTabState extends ConsumerState<PosTab> {
     final shiftAsync = ref.watch(openShiftProvider);
     final hasOpenShift = shiftAsync.value != null;
 
-    final isDesktop = MediaQuery.of(context).size.width >= 800;
+    final isDesktop = MediaQuery.of(context).size.width >= 768;
 
     return Column(
       children: [
@@ -349,7 +349,7 @@ class _PosTabState extends ConsumerState<PosTab> {
 
   Widget _buildProductGrid() {
     final productsAsync = ref.watch(productProvider);
-    final isDesktop = MediaQuery.of(context).size.width >= 800;
+    final isDesktop = MediaQuery.of(context).size.width >= 768;
 
     return productsAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),

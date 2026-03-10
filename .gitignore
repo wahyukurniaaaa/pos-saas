@@ -1,0 +1,4 @@
+.agent/
+.DS_Store
+*.sqlite
+mobile/wrap_screens.py

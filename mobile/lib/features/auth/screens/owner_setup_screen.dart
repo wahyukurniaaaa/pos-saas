@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
 import '../providers/owner_provider.dart';
+import 'package:posify_app/core/widgets/responsive_layout.dart';
 
 class OwnerSetupScreen extends ConsumerStatefulWidget {
   const OwnerSetupScreen({super.key});
@@ -33,7 +34,7 @@ class _OwnerSetupScreenState extends ConsumerState<OwnerSetupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
+      body: ResponsiveCenter(child: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -242,7 +243,7 @@ class _OwnerSetupScreenState extends ConsumerState<OwnerSetupScreen> {
             ],
           ),
         ),
-      ),
+      )),
     );
   }
 

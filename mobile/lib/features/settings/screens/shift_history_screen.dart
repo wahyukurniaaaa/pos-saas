@@ -5,6 +5,7 @@ import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:intl/intl.dart';
+import 'package:posify_app/core/widgets/responsive_layout.dart';
 
 class ShiftHistoryScreen extends ConsumerWidget {
   const ShiftHistoryScreen({super.key});
@@ -29,7 +30,7 @@ class ShiftHistoryScreen extends ConsumerWidget {
         foregroundColor: Colors.white,
         elevation: 0,
       ),
-      body: StreamBuilder<List<Shift>>(
+      body: ResponsiveCenter(child: StreamBuilder<List<Shift>>(
         stream: db.watchAllShifts(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -179,7 +180,7 @@ class ShiftHistoryScreen extends ConsumerWidget {
             },
           );
         },
-      ),
+      )),
     );
   }
 

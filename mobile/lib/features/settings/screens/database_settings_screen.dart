@@ -9,6 +9,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:posify_app/core/services/backup_service.dart';
 import 'package:path/path.dart' as p;
+import 'package:posify_app/core/widgets/responsive_layout.dart';
 
 class DatabaseSettingsScreen extends ConsumerStatefulWidget {
   const DatabaseSettingsScreen({super.key});
@@ -263,7 +264,7 @@ class _DatabaseSettingsScreenState
         backgroundColor: Colors.white,
         foregroundColor: AppTheme.textPrimary,
       ),
-      body: _isLoading
+      body: ResponsiveCenter(child: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
@@ -274,7 +275,7 @@ class _DatabaseSettingsScreenState
                       : _buildBackupList(),
                 ),
               ],
-            ),
+            )),
       floatingActionButton: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

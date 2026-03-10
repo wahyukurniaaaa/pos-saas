@@ -5,6 +5,7 @@ import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:drift/drift.dart' hide Column;
+import 'package:posify_app/core/widgets/responsive_layout.dart';
 
 class EmployeeFormScreen extends ConsumerStatefulWidget {
   final Employee? employee;
@@ -115,7 +116,7 @@ class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
         foregroundColor: Colors.white,
         elevation: 0,
       ),
-      body: Form(
+      body: ResponsiveCenter(child: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(20),
@@ -248,7 +249,7 @@ class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
             ),
           ],
         ),
-      ),
+      )),
     );
   }
 

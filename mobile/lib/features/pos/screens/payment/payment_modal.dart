@@ -149,7 +149,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
         return Container(
           constraints: BoxConstraints(
             maxHeight: MediaQuery.of(context).size.height * 0.9,
-            maxWidth: MediaQuery.of(context).size.width > 800
+            maxWidth: MediaQuery.of(context).size.width > 768
                 ? 600
                 : double.infinity,
           ),

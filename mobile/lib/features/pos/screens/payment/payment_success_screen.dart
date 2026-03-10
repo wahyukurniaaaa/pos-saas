@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:intl/intl.dart';
+import 'package:posify_app/core/widgets/responsive_layout.dart';
 
 class PaymentSuccessScreen extends StatelessWidget {
   final double totalAmount;
@@ -27,7 +28,7 @@ class PaymentSuccessScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
+      body: ResponsiveCenter(child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
@@ -145,7 +146,7 @@ class PaymentSuccessScreen extends StatelessWidget {
             ],
           ),
         ),
-      ),
+      )),
     );
   }
 
