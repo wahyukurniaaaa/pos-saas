@@ -10,4 +10,5 @@ class StoreProfile extends Table {
       text().withDefault(const Constant('exclusive'))(); // inclusive, exclusive
   IntColumn get serviceChargePercentage =>
       integer().withDefault(const Constant(0))();
+  TextColumn get logoUri => text().nullable()();
 }

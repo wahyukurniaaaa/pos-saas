@@ -52,6 +52,7 @@ erDiagram
         TEXT name "Nama Toko"
         TEXT address "Alamat Toko (Opsional)"
         TEXT phone "Standar (+62) Opsional"
+        TEXT logo_uri "Opsional, Path URI gambar logo"
         INTEGER tax_percentage "Persentase Pajak (0-100)"
         TEXT tax_type "inclusive/exclusive"
         INTEGER service_charge_percentage "Persen Service (0-100)"

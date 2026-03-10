@@ -1129,6 +1129,17 @@ class $StoreProfileTable extends StoreProfile
         requiredDuringInsert: false,
         defaultValue: const Constant(0),
       );
+  static const VerificationMeta _logoUriMeta = const VerificationMeta(
+    'logoUri',
+  );
+  @override
+  late final GeneratedColumn<String> logoUri = GeneratedColumn<String>(
+    'logo_uri',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1138,6 +1149,7 @@ class $StoreProfileTable extends StoreProfile
     taxPercentage,
     taxType,
     serviceChargePercentage,
+    logoUri,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1198,6 +1210,12 @@ class $StoreProfileTable extends StoreProfile
         ),
       );
     }
+    if (data.containsKey('logo_uri')) {
+      context.handle(
+        _logoUriMeta,
+        logoUri.isAcceptableOrUnknown(data['logo_uri']!, _logoUriMeta),
+      );
+    }
     return context;
   }
 
@@ -1235,6 +1253,10 @@ class $StoreProfileTable extends StoreProfile
         DriftSqlType.int,
         data['${effectivePrefix}service_charge_percentage'],
       )!,
+      logoUri: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}logo_uri'],
+      ),
     );
   }
 
@@ -1253,6 +1275,7 @@ class StoreProfileData extends DataClass
   final int taxPercentage;
   final String taxType;
   final int serviceChargePercentage;
+  final String? logoUri;
   const StoreProfileData({
     required this.id,
     required this.name,
@@ -1261,6 +1284,7 @@ class StoreProfileData extends DataClass
     required this.taxPercentage,
     required this.taxType,
     required this.serviceChargePercentage,
+    this.logoUri,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1276,6 +1300,9 @@ class StoreProfileData extends DataClass
     map['tax_percentage'] = Variable<int>(taxPercentage);
     map['tax_type'] = Variable<String>(taxType);
     map['service_charge_percentage'] = Variable<int>(serviceChargePercentage);
+    if (!nullToAbsent || logoUri != null) {
+      map['logo_uri'] = Variable<String>(logoUri);
+    }
     return map;
   }
 
@@ -1292,6 +1319,9 @@ class StoreProfileData extends DataClass
       taxPercentage: Value(taxPercentage),
       taxType: Value(taxType),
       serviceChargePercentage: Value(serviceChargePercentage),
+      logoUri: logoUri == null && nullToAbsent
+          ? const Value.absent()
+          : Value(logoUri),
     );
   }
 
@@ -1310,6 +1340,7 @@ class StoreProfileData extends DataClass
       serviceChargePercentage: serializer.fromJson<int>(
         json['serviceChargePercentage'],
       ),
+      logoUri: serializer.fromJson<String?>(json['logoUri']),
     );
   }
   @override
@@ -1325,6 +1356,7 @@ class StoreProfileData extends DataClass
       'serviceChargePercentage': serializer.toJson<int>(
         serviceChargePercentage,
       ),
+      'logoUri': serializer.toJson<String?>(logoUri),
     };
   }
 
@@ -1336,6 +1368,7 @@ class StoreProfileData extends DataClass
     int? taxPercentage,
     String? taxType,
     int? serviceChargePercentage,
+    Value<String?> logoUri = const Value.absent(),
   }) => StoreProfileData(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -1345,6 +1378,7 @@ class StoreProfileData extends DataClass
     taxType: taxType ?? this.taxType,
     serviceChargePercentage:
         serviceChargePercentage ?? this.serviceChargePercentage,
+    logoUri: logoUri.present ? logoUri.value : this.logoUri,
   );
   StoreProfileData copyWithCompanion(StoreProfileCompanion data) {
     return StoreProfileData(
@@ -1359,6 +1393,7 @@ class StoreProfileData extends DataClass
       serviceChargePercentage: data.serviceChargePercentage.present
           ? data.serviceChargePercentage.value
           : this.serviceChargePercentage,
+      logoUri: data.logoUri.present ? data.logoUri.value : this.logoUri,
     );
   }
 
@@ -1371,7 +1406,8 @@ class StoreProfileData extends DataClass
           ..write('phone: $phone, ')
           ..write('taxPercentage: $taxPercentage, ')
           ..write('taxType: $taxType, ')
-          ..write('serviceChargePercentage: $serviceChargePercentage')
+          ..write('serviceChargePercentage: $serviceChargePercentage, ')
+          ..write('logoUri: $logoUri')
           ..write(')'))
         .toString();
   }
@@ -1385,6 +1421,7 @@ class StoreProfileData extends DataClass
     taxPercentage,
     taxType,
     serviceChargePercentage,
+    logoUri,
   );
   @override
   bool operator ==(Object other) =>
@@ -1396,7 +1433,8 @@ class StoreProfileData extends DataClass
           other.phone == this.phone &&
           other.taxPercentage == this.taxPercentage &&
           other.taxType == this.taxType &&
-          other.serviceChargePercentage == this.serviceChargePercentage);
+          other.serviceChargePercentage == this.serviceChargePercentage &&
+          other.logoUri == this.logoUri);
 }
 
 class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
@@ -1407,6 +1445,7 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
   final Value<int> taxPercentage;
   final Value<String> taxType;
   final Value<int> serviceChargePercentage;
+  final Value<String?> logoUri;
   const StoreProfileCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
@@ -1415,6 +1454,7 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
     this.taxPercentage = const Value.absent(),
     this.taxType = const Value.absent(),
     this.serviceChargePercentage = const Value.absent(),
+    this.logoUri = const Value.absent(),
   });
   StoreProfileCompanion.insert({
     this.id = const Value.absent(),
@@ -1424,6 +1464,7 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
     this.taxPercentage = const Value.absent(),
     this.taxType = const Value.absent(),
     this.serviceChargePercentage = const Value.absent(),
+    this.logoUri = const Value.absent(),
   }) : name = Value(name);
   static Insertable<StoreProfileData> custom({
     Expression<int>? id,
@@ -1433,6 +1474,7 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
     Expression<int>? taxPercentage,
     Expression<String>? taxType,
     Expression<int>? serviceChargePercentage,
+    Expression<String>? logoUri,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1443,6 +1485,7 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
       if (taxType != null) 'tax_type': taxType,
       if (serviceChargePercentage != null)
         'service_charge_percentage': serviceChargePercentage,
+      if (logoUri != null) 'logo_uri': logoUri,
     });
   }
 
@@ -1454,6 +1497,7 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
     Value<int>? taxPercentage,
     Value<String>? taxType,
     Value<int>? serviceChargePercentage,
+    Value<String?>? logoUri,
   }) {
     return StoreProfileCompanion(
       id: id ?? this.id,
@@ -1464,6 +1508,7 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
       taxType: taxType ?? this.taxType,
       serviceChargePercentage:
           serviceChargePercentage ?? this.serviceChargePercentage,
+      logoUri: logoUri ?? this.logoUri,
     );
   }
 
@@ -1493,6 +1538,9 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
         serviceChargePercentage.value,
       );
     }
+    if (logoUri.present) {
+      map['logo_uri'] = Variable<String>(logoUri.value);
+    }
     return map;
   }
 
@@ -1505,7 +1553,8 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
           ..write('phone: $phone, ')
           ..write('taxPercentage: $taxPercentage, ')
           ..write('taxType: $taxType, ')
-          ..write('serviceChargePercentage: $serviceChargePercentage')
+          ..write('serviceChargePercentage: $serviceChargePercentage, ')
+          ..write('logoUri: $logoUri')
           ..write(')'))
         .toString();
   }
@@ -5542,6 +5591,7 @@ typedef $$StoreProfileTableCreateCompanionBuilder =
       Value<int> taxPercentage,
       Value<String> taxType,
       Value<int> serviceChargePercentage,
+      Value<String?> logoUri,
     });
 typedef $$StoreProfileTableUpdateCompanionBuilder =
     StoreProfileCompanion Function({
@@ -5552,6 +5602,7 @@ typedef $$StoreProfileTableUpdateCompanionBuilder =
       Value<int> taxPercentage,
       Value<String> taxType,
       Value<int> serviceChargePercentage,
+      Value<String?> logoUri,
     });
 
 class $$StoreProfileTableFilterComposer
@@ -5595,6 +5646,11 @@ class $$StoreProfileTableFilterComposer
 
   ColumnFilters<int> get serviceChargePercentage => $composableBuilder(
     column: $table.serviceChargePercentage,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get logoUri => $composableBuilder(
+    column: $table.logoUri,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -5642,6 +5698,11 @@ class $$StoreProfileTableOrderingComposer
     column: $table.serviceChargePercentage,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get logoUri => $composableBuilder(
+    column: $table.logoUri,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$StoreProfileTableAnnotationComposer
@@ -5677,6 +5738,9 @@ class $$StoreProfileTableAnnotationComposer
     column: $table.serviceChargePercentage,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get logoUri =>
+      $composableBuilder(column: $table.logoUri, builder: (column) => column);
 }
 
 class $$StoreProfileTableTableManager
@@ -5721,6 +5785,7 @@ class $$StoreProfileTableTableManager
                 Value<int> taxPercentage = const Value.absent(),
                 Value<String> taxType = const Value.absent(),
                 Value<int> serviceChargePercentage = const Value.absent(),
+                Value<String?> logoUri = const Value.absent(),
               }) => StoreProfileCompanion(
                 id: id,
                 name: name,
@@ -5729,6 +5794,7 @@ class $$StoreProfileTableTableManager
                 taxPercentage: taxPercentage,
                 taxType: taxType,
                 serviceChargePercentage: serviceChargePercentage,
+                logoUri: logoUri,
               ),
           createCompanionCallback:
               ({
@@ -5739,6 +5805,7 @@ class $$StoreProfileTableTableManager
                 Value<int> taxPercentage = const Value.absent(),
                 Value<String> taxType = const Value.absent(),
                 Value<int> serviceChargePercentage = const Value.absent(),
+                Value<String?> logoUri = const Value.absent(),
               }) => StoreProfileCompanion.insert(
                 id: id,
                 name: name,
@@ -5747,6 +5814,7 @@ class $$StoreProfileTableTableManager
                 taxPercentage: taxPercentage,
                 taxType: taxType,
                 serviceChargePercentage: serviceChargePercentage,
+                logoUri: logoUri,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

@@ -5,6 +5,7 @@ import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:posify_app/features/auth/providers/owner_provider.dart';
 import 'package:posify_app/features/pos/screens/settings/printer_settings_screen.dart';
 import 'package:posify_app/features/settings/screens/employee_list_screen.dart';
+import 'package:posify_app/features/settings/screens/store_profile_screen.dart';
 import 'package:posify_app/features/settings/screens/transaction_history_screen.dart';
 import 'package:posify_app/features/settings/screens/shift_history_screen.dart';
 import 'package:posify_app/features/reports/screens/sales_analytics_screen.dart';
@@ -44,13 +45,20 @@ class SettingsTab extends ConsumerWidget {
               padding: const EdgeInsets.all(16),
               children: [
                 // Toko & Karyawan
-                if (isOwner)
+                if (isOwner) ...[
+                  _buildSettingsTile(
+                    Icons.store_mall_directory_rounded,
+                    'Profil Toko',
+                    'Nama toko, alamat, logo & struk',
+                    onTap: () => _navigate(context, const StoreProfileScreen()),
+                  ),
                   _buildSettingsTile(
                     Icons.people_rounded,
                     'Kelola Karyawan',
                     'Tambah & kelola akses karyawan',
                     onTap: () => _navigate(context, const EmployeeListScreen()),
                   ),
+                ],
                 _buildSettingsTile(
                   Icons.label_rounded,
                   'Kelola Kategori Produk',
