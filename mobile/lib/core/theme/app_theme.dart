@@ -5,16 +5,16 @@ class AppTheme {
   AppTheme._();
 
   // Brand Colors (Stitch Core Style Guide)
-  static const Color primaryColor = Color(0xFF1A237E);
+  static const Color primaryColor = Color(0xFF0F766E); // Tosca Green (Teal 700)
   static const Color successColor = Color(0xFF10B981);
   static const Color dangerColor = Color(0xFFEF4444);
-  static const Color neutralSlate = Color(0xFF455A64);
+  static const Color neutralSlate = Color(0xFF334155); // Slate 700
 
-  static const Color backgroundLight = Color(0xFFF6F6F8);
+  static const Color backgroundLight = Color(0xFFF8FAFC); // Slate 50
   static const Color backgroundDark = Color(0xFF121320);
 
   // Legacy compat mapping
-  static const Color primaryDark = Color(0xFF121858);
+  static const Color primaryDark = Color(0xFF115E59); // Teal 800
   static const Color errorColor = dangerColor;
   static const Color scaffoldBg = backgroundLight;
   static const Color cardBg = Colors.white;
