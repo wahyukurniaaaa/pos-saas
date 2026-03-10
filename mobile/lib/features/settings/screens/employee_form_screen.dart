@@ -116,140 +116,147 @@ class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
         foregroundColor: Colors.white,
         elevation: 0,
       ),
-      body: ResponsiveCenter(child: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(20),
-          children: [
-            // Photo placeholder
-            Center(
-              child: Stack(
-                children: [
-                  CircleAvatar(
-                    radius: 50,
-                    backgroundColor: AppTheme.primaryColor.withValues(
-                      alpha: 0.1,
-                    ),
-                    child: const Icon(
-                      Icons.person,
-                      size: 50,
-                      color: AppTheme.primaryColor,
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: const BoxDecoration(
-                        color: AppTheme.primaryColor,
-                        shape: BoxShape.circle,
+      body: ResponsiveCenter(
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            padding: const EdgeInsets.all(20),
+            children: [
+              // Photo placeholder
+              Center(
+                child: Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: 50,
+                      backgroundColor: AppTheme.primaryColor.withValues(
+                        alpha: 0.1,
                       ),
                       child: const Icon(
-                        Icons.camera_alt,
-                        color: Colors.white,
-                        size: 16,
+                        Icons.person,
+                        size: 50,
+                        color: AppTheme.primaryColor,
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-
-            // Name
-            _buildLabel('👤 Nama Karyawan'),
-            const SizedBox(height: 8),
-            TextFormField(
-              controller: _nameController,
-              decoration: _inputDecoration('Masukkan nama karyawan'),
-              validator: (v) =>
-                  (v == null || v.trim().isEmpty) ? 'Nama wajib diisi' : null,
-            ),
-            const SizedBox(height: 20),
-
-            // Role
-            _buildLabel('🎖️ Level Akses (Role)'),
-            const SizedBox(height: 8),
-            DropdownButtonFormField<String>(
-              initialValue: _selectedRole,
-              decoration: _inputDecoration(''),
-              items: _roles.map((r) {
-                return DropdownMenuItem(
-                  value: r['value'],
-                  child: Text(r['label']!, style: GoogleFonts.inter()),
-                );
-              }).toList(),
-              onChanged: (v) => setState(() => _selectedRole = v!),
-            ),
-            const SizedBox(height: 20),
-
-            // PIN
-            _buildLabel('🔐 PIN Login (6 Digit)'),
-            const SizedBox(height: 8),
-            TextFormField(
-              controller: _pinController,
-              obscureText: true,
-              keyboardType: TextInputType.number,
-              maxLength: 6,
-              decoration: _inputDecoration('Masukkan 6 digit PIN'),
-              validator: (v) {
-                if (v == null || v.trim().isEmpty) return 'PIN wajib diisi';
-                if (v.length != 6) return 'PIN harus 6 digit';
-                if (int.tryParse(v) == null) return 'PIN harus berupa angka';
-                return null;
-              },
-            ),
-            const SizedBox(height: 20),
-
-            // Status
-            _buildLabel('🛑 Status Akun'),
-            const SizedBox(height: 8),
-            DropdownButtonFormField<String>(
-              initialValue: _selectedStatus,
-              decoration: _inputDecoration(''),
-              items: _statuses.map((s) {
-                return DropdownMenuItem(
-                  value: s['value'],
-                  child: Text(s['label']!, style: GoogleFonts.inter()),
-                );
-              }).toList(),
-              onChanged: (v) => setState(() => _selectedStatus = v!),
-            ),
-            const SizedBox(height: 40),
-
-            // Save button
-            ElevatedButton(
-              onPressed: _isLoading ? null : _saveEmployee,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryColor,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: const BoxDecoration(
+                          color: AppTheme.primaryColor,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.camera_alt,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                elevation: 0,
               ),
-              child: _isLoading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
+              const SizedBox(height: 32),
+
+              // Name
+              _buildLabel('👤 Nama Karyawan'),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _nameController,
+                decoration: _inputDecoration('Masukkan nama karyawan'),
+                validator: (v) =>
+                    (v == null || v.trim().isEmpty) ? 'Nama wajib diisi' : null,
+              ),
+              const SizedBox(height: 20),
+
+              // Role
+              _buildLabel('🎖️ Level Akses (Role)'),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<String>(
+                initialValue: _selectedRole,
+                decoration: _inputDecoration(''),
+                items: _roles.map((r) {
+                  return DropdownMenuItem(
+                    value: r['value'],
+                    child: Text(r['label']!, style: GoogleFonts.inter()),
+                  );
+                }).toList(),
+                onChanged: (v) => setState(() => _selectedRole = v!),
+              ),
+              const SizedBox(height: 20),
+
+              // PIN
+              _buildLabel('🔐 PIN Login (6 Digit)'),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _pinController,
+                obscureText: true,
+                keyboardType: TextInputType.number,
+                maxLength: 6,
+                decoration: _inputDecoration('Masukkan 6 digit PIN'),
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return 'PIN wajib diisi';
+                  final pin = v.trim();
+                  if (pin.length != 6) {
+                    return 'PIN harus tepat 6 digit';
+                  }
+                  if (int.tryParse(pin) == null) {
+                    return 'PIN harus berupa angka';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 20),
+
+              // Status
+              _buildLabel('🛑 Status Akun'),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<String>(
+                initialValue: _selectedStatus,
+                decoration: _inputDecoration(''),
+                items: _statuses.map((s) {
+                  return DropdownMenuItem(
+                    value: s['value'],
+                    child: Text(s['label']!, style: GoogleFonts.inter()),
+                  );
+                }).toList(),
+                onChanged: (v) => setState(() => _selectedStatus = v!),
+              ),
+              const SizedBox(height: 40),
+
+              // Save button
+              ElevatedButton(
+                onPressed: _isLoading ? null : _saveEmployee,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 0,
+                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        '💾 SIMPAN KARYAWAN',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    )
-                  : Text(
-                      '💾 SIMPAN KARYAWAN',
-                      style: GoogleFonts.inter(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
-      )),
+      ),
     );
   }
 

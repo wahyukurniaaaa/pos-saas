@@ -33,80 +33,103 @@ class SettingsTab extends ConsumerWidget {
         elevation: 0,
       ),
       body: ResponsiveCenter(
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            // Toko & Karyawan
-            _buildSettingsTile(
-              Icons.people_rounded,
-              'Kelola Karyawan',
-              'Tambah & kelola akses karyawan',
-              onTap: () => _navigate(context, const EmployeeListScreen()),
-            ),
-            _buildSettingsTile(
-              Icons.label_rounded,
-              'Kelola Kategori Produk',
-              'Tambah, edit, hapus kategori',
-              onTap: () => _navigate(context, const CategoryManagementScreen()),
-            ),
-            const Divider(height: 32),
+        child: Consumer(
+          builder: (context, ref, child) {
+            final session = ref.watch(sessionProvider).value;
+            final isOwner = session?.role == 'owner';
+            final isSupervisor = session?.role == 'supervisor';
+            final isAtLeastSupervisor = isOwner || isSupervisor;
 
-            // Riwayat & Laporan
-            _buildSettingsTile(
-              Icons.analytics_rounded,
-              'Analitik Penjualan',
-              'Dashboard dan tren penjualan',
-              onTap: () => _navigate(context, const SalesAnalyticsScreen()),
-            ),
-            _buildSettingsTile(
-              Icons.receipt_long_rounded,
-              'Riwayat Transaksi',
-              'Nota & void transaksi',
-              onTap: () => _navigate(context, const TransactionHistoryScreen()),
-            ),
-            _buildSettingsTile(
-              Icons.access_time_rounded,
-              'Riwayat Sesi Shift',
-              'Daftar shift karyawan',
-              onTap: () => _navigate(context, const ShiftHistoryScreen()),
-            ),
-            _buildSettingsTile(
-              Icons.print_rounded,
-              'Pengaturan Printer',
-              'Bluetooth thermal printer',
-              onTap: () => _navigate(context, const PrinterSettingsScreen()),
-            ),
-            _buildSettingsTile(
-              Icons.calculate_rounded,
-              'Pajak & Service Charge',
-              'PPN, service, diskon default',
-              onTap: () => _navigate(context, const TaxServiceSettingsScreen()),
-            ),
-            _buildSettingsTile(
-              Icons.storage_rounded,
-              'Manajemen Database',
-              'Backup & Restore data (AES-256)',
-              onTap: () => _navigate(context, const DatabaseSettingsScreen()),
-            ),
-            const Divider(height: 32),
+            return ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                // Toko & Karyawan
+                if (isOwner)
+                  _buildSettingsTile(
+                    Icons.people_rounded,
+                    'Kelola Karyawan',
+                    'Tambah & kelola akses karyawan',
+                    onTap: () => _navigate(context, const EmployeeListScreen()),
+                  ),
+                _buildSettingsTile(
+                  Icons.label_rounded,
+                  'Kelola Kategori Produk',
+                  'Tambah, edit, hapus kategori',
+                  onTap: isAtLeastSupervisor
+                      ? () =>
+                            _navigate(context, const CategoryManagementScreen())
+                      : null,
+                  isEnabled: isAtLeastSupervisor,
+                ),
+                const Divider(height: 32),
 
-            // Akun
-            _buildSettingsTile(
-              Icons.lock_rounded,
-              'Ganti PIN',
-              'Ubah PIN owner atau karyawan',
-            ),
-            _buildSettingsTile(
-              Icons.logout_rounded,
-              'Keluar / Ganti User',
-              'Kembali ke halaman login PIN',
-              isDestructive: true,
-              onTap: () {
-                ref.read(sessionProvider.notifier).logout();
-                Navigator.pushReplacementNamed(context, '/pin-login');
-              },
-            ),
-          ],
+                // Riwayat & Laporan
+                if (isAtLeastSupervisor)
+                  _buildSettingsTile(
+                    Icons.analytics_rounded,
+                    'Analitik Penjualan',
+                    'Dashboard dan tren penjualan',
+                    onTap: () =>
+                        _navigate(context, const SalesAnalyticsScreen()),
+                  ),
+
+                _buildSettingsTile(
+                  Icons.receipt_long_rounded,
+                  'Riwayat Transaksi',
+                  'Nota & void transaksi',
+                  onTap: () =>
+                      _navigate(context, const TransactionHistoryScreen()),
+                ),
+                _buildSettingsTile(
+                  Icons.access_time_rounded,
+                  'Riwayat Sesi Shift',
+                  'Daftar shift karyawan',
+                  onTap: () => _navigate(context, const ShiftHistoryScreen()),
+                ),
+                _buildSettingsTile(
+                  Icons.print_rounded,
+                  'Pengaturan Printer',
+                  'Bluetooth thermal printer',
+                  onTap: () =>
+                      _navigate(context, const PrinterSettingsScreen()),
+                ),
+                if (isAtLeastSupervisor)
+                  _buildSettingsTile(
+                    Icons.calculate_rounded,
+                    'Pajak & Service Charge',
+                    'PPN, service, diskon default',
+                    onTap: () =>
+                        _navigate(context, const TaxServiceSettingsScreen()),
+                  ),
+                if (isOwner)
+                  _buildSettingsTile(
+                    Icons.storage_rounded,
+                    'Manajemen Database',
+                    'Backup & Restore data (AES-256)',
+                    onTap: () =>
+                        _navigate(context, const DatabaseSettingsScreen()),
+                  ),
+                const Divider(height: 32),
+
+                // Akun
+                _buildSettingsTile(
+                  Icons.lock_rounded,
+                  'Ganti PIN',
+                  'Ubah PIN owner atau karyawan',
+                ),
+                _buildSettingsTile(
+                  Icons.logout_rounded,
+                  'Keluar / Ganti User',
+                  'Kembali ke halaman login PIN',
+                  isDestructive: true,
+                  onTap: () {
+                    ref.read(sessionProvider.notifier).logout();
+                    Navigator.pushReplacementNamed(context, '/pin-login');
+                  },
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -117,6 +140,7 @@ class SettingsTab extends ConsumerWidget {
     String title,
     String subtitle, {
     bool isDestructive = false,
+    bool isEnabled = true,
     VoidCallback? onTap,
   }) {
     return Card(
@@ -124,14 +148,19 @@ class SettingsTab extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 8),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey.shade200),
+        side: BorderSide(
+          color: isEnabled ? Colors.grey.shade200 : Colors.grey.shade100,
+        ),
       ),
       child: ListTile(
+        enabled: isEnabled,
         leading: Container(
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: isDestructive
+            color: !isEnabled
+                ? Colors.grey.shade100
+                : isDestructive
                 ? AppTheme.errorColor.withValues(alpha: 0.1)
                 : AppTheme.primaryColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
@@ -139,7 +168,11 @@ class SettingsTab extends ConsumerWidget {
           child: Icon(
             icon,
             size: 20,
-            color: isDestructive ? AppTheme.errorColor : AppTheme.primaryColor,
+            color: !isEnabled
+                ? Colors.grey.shade300
+                : isDestructive
+                ? AppTheme.errorColor
+                : AppTheme.primaryColor,
           ),
         ),
         title: Text(
@@ -147,18 +180,25 @@ class SettingsTab extends ConsumerWidget {
           style: GoogleFonts.inter(
             fontWeight: FontWeight.w600,
             fontSize: 14,
-            color: isDestructive ? AppTheme.errorColor : AppTheme.textPrimary,
+            color: !isEnabled
+                ? Colors.grey.shade400
+                : isDestructive
+                ? AppTheme.errorColor
+                : AppTheme.textPrimary,
           ),
         ),
         subtitle: Text(
           subtitle,
-          style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary),
+          style: GoogleFonts.inter(
+            fontSize: 12,
+            color: isEnabled ? AppTheme.textSecondary : Colors.grey.shade300,
+          ),
         ),
         trailing: Icon(
           Icons.chevron_right_rounded,
-          color: Colors.grey.shade400,
+          color: isEnabled ? Colors.grey.shade400 : Colors.grey.shade200,
         ),
-        onTap: onTap,
+        onTap: isEnabled ? onTap : null,
       ),
     );
   }

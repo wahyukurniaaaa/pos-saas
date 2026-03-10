@@ -30,6 +30,7 @@ erDiagram
         TEXT license_code "Unik (Dari Email)"
         TEXT device_fingerprint "Unik UUID"
         TEXT activation_date "ISO 8601"
+        TEXT last_verified "ISO 8601, Nullable"
         TEXT status "active/suspended"
     }
 
@@ -42,6 +43,8 @@ erDiagram
         TEXT locked_until "ISO 8601, Nullable"
         TEXT status "active/inactive"
         TEXT photo_uri "Opsional, Path lokal gambar"
+        TEXT created_at "ISO 8601"
+        TEXT updated_at "ISO 8601"
     }
 
     store_profile {
@@ -68,6 +71,8 @@ erDiagram
         INTEGER purchase_price "Harga Beli"
         INTEGER stock "Sisa Fisik"
         TEXT image_uri "Path lokal gambar"
+        TEXT created_at "ISO 8601"
+        TEXT updated_at "ISO 8601"
     }
 
     shifts {

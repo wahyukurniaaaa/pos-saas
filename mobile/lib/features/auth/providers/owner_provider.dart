@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/core/database/database.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// Notifier for owner setup.
 /// Non-autoDispose so owner state persists throughout app lifecycle.
@@ -53,10 +54,27 @@ final ownerProvider = AsyncNotifierProvider<OwnerNotifier, Employee?>(
 /// Provider for current logged-in employee (via PIN).
 /// Non-autoDispose so session persists throughout app lifecycle.
 class SessionNotifier extends AsyncNotifier<Employee?> {
+  final _storage = const FlutterSecureStorage();
+  static const _failCountKey = 'login_fail_count';
+  static const _lockoutKey = 'login_lockout_until';
+
   @override
   Future<Employee?> build() async => null;
 
   Future<Employee?> loginWithPin(String pin) async {
+    // 1. Check Device Lockout
+    final lockoutStr = await _storage.read(key: _lockoutKey);
+    if (lockoutStr != null) {
+      final lockoutUntil = DateTime.tryParse(lockoutStr);
+      if (lockoutUntil != null && lockoutUntil.isAfter(DateTime.now())) {
+        state = AsyncValue.error(
+          'Terlalu banyak percobaan. Coba lagi dalam beberapa menit.',
+          StackTrace.current,
+        );
+        return null;
+      }
+    }
+
     state = const AsyncValue.loading();
     final db = ref.read(databaseProvider);
 
@@ -65,6 +83,19 @@ class SessionNotifier extends AsyncNotifier<Employee?> {
       if (!ref.mounted) return null;
 
       if (employee == null) {
+        // Increment failure count
+        final countStr = await _storage.read(key: _failCountKey) ?? '0';
+        int count = int.parse(countStr) + 1;
+        await _storage.write(key: _failCountKey, value: count.toString());
+
+        if (count >= 5) {
+          final lockoutTime = DateTime.now().add(const Duration(minutes: 30));
+          await _storage.write(
+            key: _lockoutKey,
+            value: lockoutTime.toIso8601String(),
+          );
+        }
+
         state = AsyncValue.error('PIN tidak ditemukan', StackTrace.current);
         return null;
       }
@@ -89,8 +120,14 @@ class SessionNotifier extends AsyncNotifier<Employee?> {
       }
 
       // Reset failed attempts on success
+      await _storage.delete(key: _failCountKey);
+      await _storage.delete(key: _lockoutKey);
+
       await db.updateEmployee(
-        employee.copyWith(failedLoginAttempts: 0, lockedUntil: Value(null)),
+        employee.copyWith(
+          failedLoginAttempts: 0,
+          lockedUntil: const Value(null),
+        ),
       );
 
       if (!ref.mounted) return null;

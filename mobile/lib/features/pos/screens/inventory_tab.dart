@@ -6,7 +6,8 @@ import 'package:drift/drift.dart' show Value;
 import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
-import '../providers/pos_providers.dart';
+import 'package:posify_app/features/auth/providers/owner_provider.dart';
+import 'package:posify_app/features/pos/providers/pos_providers.dart';
 import 'package:posify_app/features/pos/screens/barcode_scanner_modal.dart';
 import 'inventory/stock_opname_screen.dart';
 import 'inventory/import_product_screen.dart';
@@ -29,6 +30,8 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
   @override
   Widget build(BuildContext context) {
     final productsAsync = ref.watch(productProvider);
+    final session = ref.watch(sessionProvider).value;
+    final isCashier = session?.role == 'cashier';
 
     return Scaffold(
       appBar: AppBar(
@@ -40,10 +43,11 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add_circle_outline_rounded),
-            onPressed: () => _showAddProductSheet(context),
-          ),
+          if (!isCashier)
+            IconButton(
+              icon: const Icon(Icons.add_circle_outline_rounded),
+              onPressed: () => _showAddProductSheet(context),
+            ),
         ],
       ),
       body: ResponsiveCenter(
@@ -70,15 +74,16 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    ElevatedButton.icon(
-                      onPressed: () => _showAddProductSheet(context),
-                      icon: const Icon(Icons.add),
-                      label: const Text('Tambah Produk'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryColor,
-                        foregroundColor: Colors.white,
+                    if (!isCashier)
+                      ElevatedButton.icon(
+                        onPressed: () => _showAddProductSheet(context),
+                        icon: const Icon(Icons.add),
+                        label: const Text('Tambah Produk'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primaryColor,
+                          foregroundColor: Colors.white,
+                        ),
                       ),
-                    ),
                   ],
                 ),
               );
@@ -155,35 +160,36 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                                   horizontal: 4,
                                 ),
                               ),
-                              PopupMenuButton<String>(
-                                onSelected: (val) {
-                                  if (val == 'edit') {
-                                    showModalBottomSheet(
-                                      context: context,
-                                      isScrollControlled: true,
-                                      shape: const RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(20),
+                              if (!isCashier)
+                                PopupMenuButton<String>(
+                                  onSelected: (val) {
+                                    if (val == 'edit') {
+                                      showModalBottomSheet(
+                                        context: context,
+                                        isScrollControlled: true,
+                                        shape: const RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.vertical(
+                                            top: Radius.circular(20),
+                                          ),
                                         ),
-                                      ),
-                                      builder: (ctx) =>
-                                          AddProductSheet(product: p),
-                                    );
-                                  } else if (val == 'delete') {
-                                    _confirmDelete(context, p);
-                                  }
-                                },
-                                itemBuilder: (ctx) => [
-                                  const PopupMenuItem(
-                                    value: 'edit',
-                                    child: Text('Edit'),
-                                  ),
-                                  const PopupMenuItem(
-                                    value: 'delete',
-                                    child: Text('Hapus'),
-                                  ),
-                                ],
-                              ),
+                                        builder: (ctx) =>
+                                            AddProductSheet(product: p),
+                                      );
+                                    } else if (val == 'delete') {
+                                      _confirmDelete(context, p);
+                                    }
+                                  },
+                                  itemBuilder: (ctx) => [
+                                    const PopupMenuItem(
+                                      value: 'edit',
+                                      child: Text('Edit'),
+                                    ),
+                                    const PopupMenuItem(
+                                      value: 'delete',
+                                      child: Text('Hapus'),
+                                    ),
+                                  ],
+                                ),
                             ],
                           ),
                         ),
@@ -191,104 +197,104 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                     },
                   ),
                 ),
-                // Action Buttons
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, -5),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const ImportProductScreen(),
-                                  ),
-                                );
-                              },
-                              icon: const Icon(
-                                Icons.file_upload_outlined,
-                                size: 18,
-                              ),
-                              label: const Text('Import CSV'),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: AppTheme.primaryColor,
-                                side: const BorderSide(
-                                  color: AppTheme.primaryColor,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const StockOpnameScreen(),
-                                  ),
-                                );
-                              },
-                              icon: const Icon(
-                                Icons.inventory_2_outlined,
-                                size: 18,
-                              ),
-                              label: const Text('Opname'),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: AppTheme.primaryColor,
-                                side: const BorderSide(
-                                  color: AppTheme.primaryColor,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      ElevatedButton.icon(
-                        onPressed: () => _showAddProductSheet(context),
-                        icon: const Icon(Icons.add),
-                        label: const Text('TAMBAH PRODUK'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryColor,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          elevation: 0,
+                if (!isCashier)
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, -5),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const ImportProductScreen(),
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(
+                                  Icons.file_upload_outlined,
+                                  size: 18,
+                                ),
+                                label: const Text('Import CSV'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: AppTheme.primaryColor,
+                                  side: const BorderSide(
+                                    color: AppTheme.primaryColor,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const StockOpnameScreen(),
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(
+                                  Icons.inventory_2_outlined,
+                                  size: 18,
+                                ),
+                                label: const Text('Opname'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: AppTheme.primaryColor,
+                                  side: const BorderSide(
+                                    color: AppTheme.primaryColor,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        ElevatedButton.icon(
+                          onPressed: () => _showAddProductSheet(context),
+                          icon: const Icon(Icons.add),
+                          label: const Text('TAMBAH PRODUK'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.primaryColor,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            elevation: 0,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
               ],
             );
           },
