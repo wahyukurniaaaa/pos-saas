@@ -126,11 +126,11 @@ Berikut adalah representasi visual sketsa (wireframe) kasar untuk aplikasi POSif
 | | Tunai | | QRIS  | | Debit | | Bon | |
 | +-------+ +-------+ +-------+ +-----+ |
 |                                       |
-| Uang Diterima:                        |
-| +-----------------------------------+ |
-| | Rp 20.000                         | |
-| +-----------------------------------+ |
-| [ Uang Pas ] [ 20 K ] [ 50 K ][100 K] |
+| Informaasi Pelanggan (CRM):             |
+|  +-----------------------------------+ |
+|  | [Icon] Nomor WhatsApp (Wajib)      | |
+|  | [Icon] Nama Pelanggan (Opsional)   | |
+|  +-----------------------------------+ |
 |                                       |
 | [      SELESAIKAN PEMBAYARAN        ] |
 +---------------------------------------+
@@ -151,6 +151,7 @@ Berikut adalah representasi visual sketsa (wireframe) kasar untuk aplikasi POSif
 |                                       |
 |    [ 🖨️ CETAK ULANG STRUK ]           |
 |                                       |
+|    [ 🟢 BAGIKAN KE WHATSAPP ]         |
 |                                       |
 |  [    LANJUT TRANSAKSI BARU       ]   |
 |                                       |
@@ -319,6 +320,7 @@ Berikut adalah representasi visual sketsa (wireframe) kasar untuk aplikasi POSif
 |  Toko Budi Jaya                       |
 |---------------------------------------|
 |                                       |
+|  🏪 Profil Toko                       |
 |  👥 Kelola Karyawan                   |
 |  🏷️ Kelola Kategori Produk            |
 |                                       |
@@ -580,4 +582,39 @@ Berikut adalah representasi visual sketsa (wireframe) kasar untuk aplikasi POSif
 |                                       |
 | [ Batal ]                 [ Simpan ]  |
 +---------------------------------------+
+```
+
+---
+
+### 6. Profil Toko (Setup Struk)
+
+**Layar Pengaturan Profil Toko:**
+```text
++---------------------------------------+
+| [←] Profil Toko                 [💾]  |
++---------------------------------------+
+|                                       |
+|       +-----------------------+       |
+|       |       [ LOGO ]        |       |
+|       |     (Tap to Upload)   |       |
+|       +-----------------------+       |
+|                                       |
+|   🏪 Nama Toko*                       |
+|  +---------------------------------+  |
+|  | Toko Budi Jaya                  |  |
+|  +---------------------------------+  |
+|                                       |
+|   📍 Alamat Toko                      |
+|  +---------------------------------+  |
+|  | Jl. Merdeka No. 123, Jakarta    |  |
+|  +---------------------------------+  |
+|                                       |
+|   📞 Nomor Telepon                    |
+|  +---------------------------------+  |
+|  | 0812-3456-7890                  |  |
+|  +---------------------------------+  |
+|                                       |
+|   [      SIMPAN PERUBAHAN        ]    |
++---------------------------------------+
+```
 ```

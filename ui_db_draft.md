@@ -45,12 +45,13 @@ Berdasarkan pedoman `mobile-design`:
    - Muncul dari bawah saat CTA Bayar ditekan.
    - Menampilkan rincian Subtotal, Nilai Pajak & Service (Jika Ada), dan Total Tagihan.
    - Pilihan metode bayar (Tunai, QRIS, dll) -> Tombol *grid* besar.
+   - **Informasi Pelanggan (CRM):** Field input untuk Nomor WhatsApp dan Nama Pelanggan (Opsional) untuk pengiriman struk digital.
    - Input uang diterima (jika tunai) dengan Quick Cash buttons (Rp 50K, 100K).
    - CTA: "Selesaikan Pembayaran". Memicu print struk & insert ke DB.
-3. **[Screen] Transaction Success**
+4. **[Screen] Transaction Success**
    - Animasi *check* / Haptic feedback *Success* (sesuai *Touch Psychology*).
    - Info ringkas: "Kembalian: Rp X.XXX".
-   - Dua CTA berjajar: "Cetak Ulang Struk" (Secondary) dan "Lanjut Transaksi Baru" (Primary - ukurannya lebih menonjol).
+   - Tiga CTA: "Cetak Ulang Struk" (Secondary), **"Bagikan ke WhatsApp" (Success Green)**, dan "Lanjut Transaksi Baru" (Primary).
 
 ### **C. Flow Manajemen Stok (Tab 2: Inventory - Role L1, L2)**
 1. **[Screen] Inventory List**
@@ -71,7 +72,7 @@ Berdasarkan pedoman `mobile-design`:
 
 ### **D. Flow Manajemen (Tab 3: Settings - Role L1 Owner)**
 1. **[Screen] Settings & Data**
-   - Menu: Kelola Pegawai, Kelola Kategori, Riwayat Transaksi (Nota & Void), Laporan Penjualan, Riwayat Shift, Pengaturan Printer, Backup Data.
+   - Menu: Profil Toko, Kelola Pegawai, Kelola Kategori, Riwayat Transaksi (Nota & Void), Laporan Penjualan, Riwayat Shift, Pengaturan Printer, Backup Data.
 2. **[Screen] Employee Management (List Karyawan)**
    - Menampilkan list nama karyawan, *Role*, dan status aktif/non-aktif.
    - Cukup tap nama untuk ke form Edit. Tersedia FAB "Tambah Karyawan".
@@ -124,9 +125,10 @@ Dari flow UI di atas, kita membutuhkan struktur *Class List Table* di layer Drif
    - Kolom: `employee_id`, `start_time`, `end_time`, `starting_cash`, `ending_cash`, `actual_cash`.
 5. **`transactions`** & **`transaction_items`** (Pencatatan nota kasir).
    - Kolom `status_bayar` (Tunai, QRIS, dll). Terikat pada `shift_id`.
+   - Kolom CRM: `customer_phone`, `customer_name` (Untuk WhatsApp sharing).
 6. **`stock_adjustments`** (Log jejak audit saat Supervisor/Owner mengubah stok / *Stock Opname*).
 7. **`backup_logs`** (Mencatat kapan terakhir *Auto-Local Backup* berjalan).
-8. **`store_profile`** (Data tunggal profil toko: Nama, Alamat, Telp untuk kop struk).
+8. **`store_profile`** (Data tunggal profil toko: Nama, Alamat, Telp, **`logo_uri`** untuk kop struk).
 
 ---
 *Dokumen ini adalah draf kasar untuk diskusi arsitektur sebelum diubah ke `implementation_plan.md`.*

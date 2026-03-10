@@ -30,6 +30,10 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
   // Numpad state for manual entry
   String _cashReceivedString = '';
 
+  // Customer info controllers
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+
   // Quick cash options
   late List<double> _quickCashOptions;
 
@@ -37,6 +41,13 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
   void initState() {
     super.initState();
     _calculateQuickCash(widget.totalAmount);
+  }
+
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    _nameController.dispose();
+    super.dispose();
   }
 
   void _calculateQuickCash(double amount) {
@@ -246,6 +257,9 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                       if (_selectedMethod == 'Tunai')
                         _buildCashSection(finalTotal),
                       if (_selectedMethod != 'Tunai') _buildNonCashSection(),
+
+                      const SizedBox(height: 24),
+                      _buildCustomerInfoSection(),
                     ],
                   ),
                 ),
@@ -535,6 +549,64 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
     );
   }
 
+  Widget _buildCustomerInfoSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          'Informasi Pelanggan (CRM)',
+          style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 16),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppTheme.borderColor),
+          ),
+          child: Column(
+            children: [
+              TextField(
+                controller: _phoneController,
+                keyboardType: TextInputType.phone,
+                decoration: InputDecoration(
+                  labelText: 'Nomor WhatsApp',
+                  prefixIcon: const Icon(Icons.phone),
+                  hintText: '08123456789',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppTheme.borderColor),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _nameController,
+                textCapitalization: TextCapitalization.words,
+                decoration: InputDecoration(
+                  labelText: 'Nama Pelanggan (Opsional)',
+                  prefixIcon: const Icon(Icons.person),
+                  hintText: 'Budi Santoso',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppTheme.borderColor),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   bool _isProcessing = false;
 
   Future<void> _processPayment(
@@ -570,6 +642,12 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
             paymentMethod: _selectedMethod.toLowerCase(),
             taxAmount: tax,
             serviceCharge: service,
+            customerPhone: _phoneController.text.isNotEmpty
+                ? _phoneController.text
+                : null,
+            customerName: _nameController.text.isNotEmpty
+                ? _nameController.text
+                : null,
           );
 
       if (!mounted) return;

@@ -3012,6 +3012,28 @@ class $TransactionsTable extends Transactions
     requiredDuringInsert: false,
     defaultValue: currentDateAndTime,
   );
+  static const VerificationMeta _customerPhoneMeta = const VerificationMeta(
+    'customerPhone',
+  );
+  @override
+  late final GeneratedColumn<String> customerPhone = GeneratedColumn<String>(
+    'customer_phone',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _customerNameMeta = const VerificationMeta(
+    'customerName',
+  );
+  @override
+  late final GeneratedColumn<String> customerName = GeneratedColumn<String>(
+    'customer_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -3025,6 +3047,8 @@ class $TransactionsTable extends Transactions
     paymentStatus,
     voidBy,
     createdAt,
+    customerPhone,
+    customerName,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3126,6 +3150,24 @@ class $TransactionsTable extends Transactions
         createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
       );
     }
+    if (data.containsKey('customer_phone')) {
+      context.handle(
+        _customerPhoneMeta,
+        customerPhone.isAcceptableOrUnknown(
+          data['customer_phone']!,
+          _customerPhoneMeta,
+        ),
+      );
+    }
+    if (data.containsKey('customer_name')) {
+      context.handle(
+        _customerNameMeta,
+        customerName.isAcceptableOrUnknown(
+          data['customer_name']!,
+          _customerNameMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -3179,6 +3221,14 @@ class $TransactionsTable extends Transactions
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
       )!,
+      customerPhone: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}customer_phone'],
+      ),
+      customerName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}customer_name'],
+      ),
     );
   }
 
@@ -3200,6 +3250,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
   final String paymentStatus;
   final int? voidBy;
   final DateTime createdAt;
+  final String? customerPhone;
+  final String? customerName;
   const Transaction({
     required this.id,
     required this.receiptNumber,
@@ -3212,6 +3264,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     required this.paymentStatus,
     this.voidBy,
     required this.createdAt,
+    this.customerPhone,
+    this.customerName,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3229,6 +3283,12 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       map['void_by'] = Variable<int>(voidBy);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || customerPhone != null) {
+      map['customer_phone'] = Variable<String>(customerPhone);
+    }
+    if (!nullToAbsent || customerName != null) {
+      map['customer_name'] = Variable<String>(customerName);
+    }
     return map;
   }
 
@@ -3247,6 +3307,12 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           ? const Value.absent()
           : Value(voidBy),
       createdAt: Value(createdAt),
+      customerPhone: customerPhone == null && nullToAbsent
+          ? const Value.absent()
+          : Value(customerPhone),
+      customerName: customerName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(customerName),
     );
   }
 
@@ -3269,6 +3335,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       paymentStatus: serializer.fromJson<String>(json['paymentStatus']),
       voidBy: serializer.fromJson<int?>(json['voidBy']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      customerPhone: serializer.fromJson<String?>(json['customerPhone']),
+      customerName: serializer.fromJson<String?>(json['customerName']),
     );
   }
   @override
@@ -3286,6 +3354,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       'paymentStatus': serializer.toJson<String>(paymentStatus),
       'voidBy': serializer.toJson<int?>(voidBy),
       'createdAt': serializer.toJson<DateTime>(createdAt),
+      'customerPhone': serializer.toJson<String?>(customerPhone),
+      'customerName': serializer.toJson<String?>(customerName),
     };
   }
 
@@ -3301,6 +3371,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     String? paymentStatus,
     Value<int?> voidBy = const Value.absent(),
     DateTime? createdAt,
+    Value<String?> customerPhone = const Value.absent(),
+    Value<String?> customerName = const Value.absent(),
   }) => Transaction(
     id: id ?? this.id,
     receiptNumber: receiptNumber ?? this.receiptNumber,
@@ -3313,6 +3385,10 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     paymentStatus: paymentStatus ?? this.paymentStatus,
     voidBy: voidBy.present ? voidBy.value : this.voidBy,
     createdAt: createdAt ?? this.createdAt,
+    customerPhone: customerPhone.present
+        ? customerPhone.value
+        : this.customerPhone,
+    customerName: customerName.present ? customerName.value : this.customerName,
   );
   Transaction copyWithCompanion(TransactionsCompanion data) {
     return Transaction(
@@ -3337,6 +3413,12 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           : this.paymentStatus,
       voidBy: data.voidBy.present ? data.voidBy.value : this.voidBy,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      customerPhone: data.customerPhone.present
+          ? data.customerPhone.value
+          : this.customerPhone,
+      customerName: data.customerName.present
+          ? data.customerName.value
+          : this.customerName,
     );
   }
 
@@ -3353,7 +3435,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           ..write('paymentMethod: $paymentMethod, ')
           ..write('paymentStatus: $paymentStatus, ')
           ..write('voidBy: $voidBy, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('customerPhone: $customerPhone, ')
+          ..write('customerName: $customerName')
           ..write(')'))
         .toString();
   }
@@ -3371,6 +3455,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     paymentStatus,
     voidBy,
     createdAt,
+    customerPhone,
+    customerName,
   );
   @override
   bool operator ==(Object other) =>
@@ -3386,7 +3472,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           other.paymentMethod == this.paymentMethod &&
           other.paymentStatus == this.paymentStatus &&
           other.voidBy == this.voidBy &&
-          other.createdAt == this.createdAt);
+          other.createdAt == this.createdAt &&
+          other.customerPhone == this.customerPhone &&
+          other.customerName == this.customerName);
 }
 
 class TransactionsCompanion extends UpdateCompanion<Transaction> {
@@ -3401,6 +3489,8 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
   final Value<String> paymentStatus;
   final Value<int?> voidBy;
   final Value<DateTime> createdAt;
+  final Value<String?> customerPhone;
+  final Value<String?> customerName;
   const TransactionsCompanion({
     this.id = const Value.absent(),
     this.receiptNumber = const Value.absent(),
@@ -3413,6 +3503,8 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     this.paymentStatus = const Value.absent(),
     this.voidBy = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.customerPhone = const Value.absent(),
+    this.customerName = const Value.absent(),
   });
   TransactionsCompanion.insert({
     this.id = const Value.absent(),
@@ -3426,6 +3518,8 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     this.paymentStatus = const Value.absent(),
     this.voidBy = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.customerPhone = const Value.absent(),
+    this.customerName = const Value.absent(),
   }) : receiptNumber = Value(receiptNumber),
        shiftId = Value(shiftId),
        subtotal = Value(subtotal),
@@ -3443,6 +3537,8 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     Expression<String>? paymentStatus,
     Expression<int>? voidBy,
     Expression<DateTime>? createdAt,
+    Expression<String>? customerPhone,
+    Expression<String>? customerName,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -3457,6 +3553,8 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       if (paymentStatus != null) 'payment_status': paymentStatus,
       if (voidBy != null) 'void_by': voidBy,
       if (createdAt != null) 'created_at': createdAt,
+      if (customerPhone != null) 'customer_phone': customerPhone,
+      if (customerName != null) 'customer_name': customerName,
     });
   }
 
@@ -3472,6 +3570,8 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     Value<String>? paymentStatus,
     Value<int?>? voidBy,
     Value<DateTime>? createdAt,
+    Value<String?>? customerPhone,
+    Value<String?>? customerName,
   }) {
     return TransactionsCompanion(
       id: id ?? this.id,
@@ -3485,6 +3585,8 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       paymentStatus: paymentStatus ?? this.paymentStatus,
       voidBy: voidBy ?? this.voidBy,
       createdAt: createdAt ?? this.createdAt,
+      customerPhone: customerPhone ?? this.customerPhone,
+      customerName: customerName ?? this.customerName,
     );
   }
 
@@ -3524,6 +3626,12 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
+    if (customerPhone.present) {
+      map['customer_phone'] = Variable<String>(customerPhone.value);
+    }
+    if (customerName.present) {
+      map['customer_name'] = Variable<String>(customerName.value);
+    }
     return map;
   }
 
@@ -3540,7 +3648,9 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
           ..write('paymentMethod: $paymentMethod, ')
           ..write('paymentStatus: $paymentStatus, ')
           ..write('voidBy: $voidBy, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('customerPhone: $customerPhone, ')
+          ..write('customerName: $customerName')
           ..write(')'))
         .toString();
   }
@@ -7161,6 +7271,8 @@ typedef $$TransactionsTableCreateCompanionBuilder =
       Value<String> paymentStatus,
       Value<int?> voidBy,
       Value<DateTime> createdAt,
+      Value<String?> customerPhone,
+      Value<String?> customerName,
     });
 typedef $$TransactionsTableUpdateCompanionBuilder =
     TransactionsCompanion Function({
@@ -7175,6 +7287,8 @@ typedef $$TransactionsTableUpdateCompanionBuilder =
       Value<String> paymentStatus,
       Value<int?> voidBy,
       Value<DateTime> createdAt,
+      Value<String?> customerPhone,
+      Value<String?> customerName,
     });
 
 final class $$TransactionsTableReferences
@@ -7293,6 +7407,16 @@ class $$TransactionsTableFilterComposer
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get customerPhone => $composableBuilder(
+    column: $table.customerPhone,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get customerName => $composableBuilder(
+    column: $table.customerName,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -7422,6 +7546,16 @@ class $$TransactionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get customerPhone => $composableBuilder(
+    column: $table.customerPhone,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get customerName => $composableBuilder(
+    column: $table.customerName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$ShiftsTableOrderingComposer get shiftId {
     final $$ShiftsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -7514,6 +7648,16 @@ class $$TransactionsTableAnnotationComposer
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get customerPhone => $composableBuilder(
+    column: $table.customerPhone,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get customerName => $composableBuilder(
+    column: $table.customerName,
+    builder: (column) => column,
+  );
 
   $$ShiftsTableAnnotationComposer get shiftId {
     final $$ShiftsTableAnnotationComposer composer = $composerBuilder(
@@ -7630,6 +7774,8 @@ class $$TransactionsTableTableManager
                 Value<String> paymentStatus = const Value.absent(),
                 Value<int?> voidBy = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
+                Value<String?> customerPhone = const Value.absent(),
+                Value<String?> customerName = const Value.absent(),
               }) => TransactionsCompanion(
                 id: id,
                 receiptNumber: receiptNumber,
@@ -7642,6 +7788,8 @@ class $$TransactionsTableTableManager
                 paymentStatus: paymentStatus,
                 voidBy: voidBy,
                 createdAt: createdAt,
+                customerPhone: customerPhone,
+                customerName: customerName,
               ),
           createCompanionCallback:
               ({
@@ -7656,6 +7804,8 @@ class $$TransactionsTableTableManager
                 Value<String> paymentStatus = const Value.absent(),
                 Value<int?> voidBy = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
+                Value<String?> customerPhone = const Value.absent(),
+                Value<String?> customerName = const Value.absent(),
               }) => TransactionsCompanion.insert(
                 id: id,
                 receiptNumber: receiptNumber,
@@ -7668,6 +7818,8 @@ class $$TransactionsTableTableManager
                 paymentStatus: paymentStatus,
                 voidBy: voidBy,
                 createdAt: createdAt,
+                customerPhone: customerPhone,
+                customerName: customerName,
               ),
           withReferenceMapper: (p0) => p0
               .map(

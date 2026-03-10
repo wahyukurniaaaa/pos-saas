@@ -39,7 +39,7 @@ class PosifyDatabase extends _$PosifyDatabase {
   PosifyDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration {
@@ -55,6 +55,11 @@ class PosifyDatabase extends _$PosifyDatabase {
         if (from < 3) {
           // Add logoUri column to store_profile table
           await m.addColumn(storeProfile, storeProfile.logoUri);
+        }
+        if (from < 4) {
+          // Add customer columns to transactions table
+          await m.addColumn(transactions, transactions.customerPhone);
+          await m.addColumn(transactions, transactions.customerName);
         }
       },
     );

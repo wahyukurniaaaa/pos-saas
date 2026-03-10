@@ -149,6 +149,53 @@ class PaymentSuccessScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
 
+                // Share to WhatsApp Button
+                ElevatedButton.icon(
+                  onPressed: () async {
+                    try {
+                      final db = ref.read(databaseProvider);
+                      final receiptService = ref.read(receiptServiceProvider);
+
+                      final profile = await db.getStoreProfile();
+                      final txnData = await db.getTransactionWithItems(
+                        transactionId,
+                      );
+
+                      if (txnData != null) {
+                        await receiptService.shareToWhatsApp(
+                          profile: profile,
+                          data: txnData,
+                        );
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Gagal membagikan: $e'),
+                            backgroundColor: AppTheme.errorColor,
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  icon: const Icon(Icons.share_rounded, color: Colors.white),
+                  label: const Text('BAGIKAN KE WHATSAPP'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF25D366), // WhatsApp Green
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    textStyle: GoogleFonts.inter(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
                 // New Transaction Button
                 ElevatedButton(
                   onPressed: () {

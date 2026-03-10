@@ -116,6 +116,8 @@ class CartNotifier extends Notifier<List<CartItem>> {
     required String paymentMethod,
     required double taxAmount,
     required double serviceCharge,
+    String? customerPhone,
+    String? customerName,
     int? voidBy,
   }) async {
     try {
@@ -138,6 +140,8 @@ class CartNotifier extends Notifier<List<CartItem>> {
         serviceChargeAmount: drift.Value(serviceCharge.toInt()),
         totalAmount: total.toInt(),
         paymentMethod: paymentMethod,
+        customerPhone: drift.Value(customerPhone),
+        customerName: drift.Value(customerName),
       );
 
       final itemsParams = state.map((item) {

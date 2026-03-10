@@ -1,7 +1,12 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:screenshot/screenshot.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:posify_app/core/database/database.dart';
+import 'package:posify_app/core/widgets/whatsapp_receipt_widget.dart';
 
 class ReceiptService {
   final BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
@@ -107,6 +112,70 @@ class ReceiptService {
     await bluetooth.printNewLine();
     await bluetooth.printNewLine();
     await bluetooth.paperCut();
+  }
+
+  Future<void> shareToWhatsApp({
+    required StoreProfileData? profile,
+    required TransactionWithItems data,
+  }) async {
+    final screenshotController = ScreenshotController();
+
+    // 1. Generate Image
+    final Uint8List? imageBytes = await screenshotController.captureFromWidget(
+      WhatsAppReceiptWidget(data: data, storeProfile: profile),
+      delay: const Duration(milliseconds: 100),
+    );
+
+    if (imageBytes == null) throw Exception('Gagal membuat gambar struk');
+
+    // 2. Save to Temp
+    final tempDir = await getTemporaryDirectory();
+    final file = await File(
+      '${tempDir.path}/struk_${data.transaction.receiptNumber}.png',
+    ).writeAsBytes(imageBytes);
+
+    // 3. Format Text
+    final String text = _formatWhatsAppText(profile, data);
+
+    // 4. Share
+    await Share.shareXFiles([XFile(file.path)], text: text);
+  }
+
+  String _formatWhatsAppText(
+    StoreProfileData? profile,
+    TransactionWithItems data,
+  ) {
+    final currency = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    );
+    final buffer = StringBuffer();
+
+    buffer.writeln('🛍️ *STRUK BELANJA - ${profile?.name ?? 'POSIFY'}*');
+    buffer.writeln('--------------------------------');
+    buffer.writeln('No. Struk: ${data.transaction.receiptNumber}');
+    buffer.writeln(
+      'Tanggal: ${DateFormat('dd/MM/yyyy HH:mm').format(data.transaction.createdAt)}',
+    );
+    buffer.writeln('');
+
+    for (final item in data.items) {
+      buffer.writeln('• ${item.product.name}');
+      buffer.writeln(
+        '  ${item.item.quantity} x ${currency.format(item.item.priceAtTransaction)} = ${currency.format(item.item.subtotal)}',
+      );
+    }
+
+    buffer.writeln('');
+    buffer.writeln('*TOTAL: ${currency.format(data.transaction.totalAmount)}*');
+    buffer.writeln(
+      'Metode Bayar: ${data.transaction.paymentMethod.toUpperCase()}',
+    );
+    buffer.writeln('');
+    buffer.writeln('Terima kasih sudah berbelanja! 🙏');
+
+    return buffer.toString();
   }
 
   Future<void> _printRow(

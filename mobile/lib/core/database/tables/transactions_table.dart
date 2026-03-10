@@ -16,4 +16,6 @@ class Transactions extends Table {
       text().withDefault(const Constant('paid'))(); // paid, void
   IntColumn get voidBy => integer().nullable().references(Employees, #id)();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  TextColumn get customerPhone => text().nullable()();
+  TextColumn get customerName => text().nullable()();
 }
