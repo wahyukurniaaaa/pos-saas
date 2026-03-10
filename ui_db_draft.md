@@ -48,7 +48,7 @@ Berdasarkan pedoman `mobile-design`:
    - **Informasi Pelanggan (CRM):** Field input untuk Nomor WhatsApp dan Nama Pelanggan (Opsional) untuk pengiriman struk digital.
    - Input uang diterima (jika tunai) dengan Quick Cash buttons (Rp 50K, 100K).
    - CTA: "Selesaikan Pembayaran". Memicu print struk & insert ke DB.
-4. **[Screen] Transaction Success**
+6. **[Screen] Transaction Success**
    - Animasi *check* / Haptic feedback *Success* (sesuai *Touch Psychology*).
    - Info ringkas: "Kembalian: Rp X.XXX".
    - Tiga CTA: "Cetak Ulang Struk" (Secondary), **"Bagikan ke WhatsApp" (Success Green)**, dan "Lanjut Transaksi Baru" (Primary).
@@ -118,17 +118,19 @@ Berdasarkan pedoman `mobile-design`:
 Dari flow UI di atas, kita membutuhkan struktur *Class List Table* di layer Drift ORM:
 
 1. **`licenses`** (Menyimpan status aktivasi & *device fingerprint*).
-2. **`employees`** (Menyimpan PIN 6 digit, Nama, Role level).
-   - Kolom khusus: `failed_login_attempts`, `locked_until` (untuk NFR keamanan).
-3. **`categories`** & **`products`** (Data barang master).
-4. **`shifts`** (Catatan sesi buka/tutup laci uang kasir).
+2. **`users`** (karyawan, PIN, Role L1/L2/L3).
+3. **`categories`** (master kategori).
+4. **`products`** (master barang, harga master, stok master, `image_uri`). Stok dan Harga Master hanya dipakai jika tidak ada record di `product_variants`.
+5. **`product_variants`** (BARU: id, `product_id`, `name`, `sku`, `price`, `stock`).
+6. **`sessions`** (logik buka tutup shift kasir).
    - Kolom: `employee_id`, `start_time`, `end_time`, `starting_cash`, `ending_cash`, `actual_cash`.
-5. **`transactions`** & **`transaction_items`** (Pencatatan nota kasir).
+7. **`transactions`** & **`transaction_items`** (Pencatatan nota kasir).
    - Kolom `status_bayar` (Tunai, QRIS, dll). Terikat pada `shift_id`.
    - Kolom CRM: `customer_phone`, `customer_name` (Untuk WhatsApp sharing).
-6. **`stock_adjustments`** (Log jejak audit saat Supervisor/Owner mengubah stok / *Stock Opname*).
-7. **`backup_logs`** (Mencatat kapan terakhir *Auto-Local Backup* berjalan).
-8. **`store_profile`** (Data tunggal profil toko: Nama, Alamat, Telp, **`logo_uri`** untuk kop struk).
+   - `transaction_items` memiliki kolom opsional `variant_id` (jika produk varian terjual).
+8. **`stock_adjustments`** (Log jejak audit saat Supervisor/Owner mengubah stok / *Stock Opname*. Terikat pada `product_id` dan/opsional `variant_id`).
+9. **`backup_logs`** (Mencatat kapan terakhir *Auto-Local Backup* berjalan).
+10. **`store_profile`** (Data tunggal profil toko: Nama, Alamat, Telp, **`logo_uri`** untuk kop struk).
 
 ---
 *Dokumen ini adalah draf kasar untuk diskusi arsitektur sebelum diubah ke `implementation_plan.md`.*

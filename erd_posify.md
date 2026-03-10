@@ -20,6 +20,9 @@ erDiagram
     
     products ||--o{ stock_adjustments : "memiliki riwayat"
     products ||--o{ transaction_items : "dibeli dalam"
+    products ||--o{ product_variants : "memiliki ragam"
+    product_variants ||--o{ transaction_items : "dibeli (opsional)"
+    product_variants ||--o{ stock_adjustments : "diopname (opsional)"
     
     transactions ||--|{ transaction_items : "memiliki detail"
 
@@ -67,13 +70,22 @@ erDiagram
         INTEGER id PK "Auto Increment"
         INTEGER category_id FK 
         TEXT name 
-        TEXT sku "Unik, Barcode"
-        INTEGER price "Harga Jual"
+        TEXT sku "Barang Simple. Unik, Barcode"
+        INTEGER price "Harga Jual (Jika simple)"
         INTEGER purchase_price "Harga Beli"
-        INTEGER stock "Sisa Fisik"
+        INTEGER stock "Sisa Fisik (Jika simple)"
         TEXT image_uri "Path lokal gambar"
         TEXT created_at "ISO 8601"
         TEXT updated_at "ISO 8601"
+    }
+
+    product_variants {
+        INTEGER id PK "Auto Increment"
+        INTEGER product_id FK
+        TEXT name "Contoh: L, XL, M"
+        TEXT sku "Opsional, Unik"
+        INTEGER price "Harga Varian"
+        INTEGER stock "Stok Varian"
     }
 
     shifts {
@@ -141,7 +153,9 @@ Satu perangkat SQLite hanya perlu `SELECT * FROM licenses LIMIT 1`. Jika perangk
 Keamanan L1/L2/L3 dari PRD diimplementasikan lewat tabel ini. Kolom `pin` sifatnya *UNIQUE* sehingga query login sangat cepat dan bebas ambigu. Apabila salah login 5x, kolom `locked_until` akan terisi jam berapa akun bisa dipakai lagi.
 
 ### c) `categories` & `products` (Katalog)
-`sku` wajib *UNIQUE* untuk memastikan operasional barcode scanner berjalan dengan semestinya. Gambar produk disimpan di variabel `image_uri` yang berisi path absolut ke internal storage HP, agar aplikasi tidak berat menampung BLOB dalam SQLite.
+`sku` wajib *UNIQUE* untuk memastikan operasional barcode scanner berjalan dengan semestinya. Gambar produk disimpan di variabel `image_uri` yang berisi path absolut ke internal storage HP, agar aplikasi tidak berat menampung BLOB dalam SQLite. 
+
+Jika produk memiliki `product_variants`, maka `price` dan `stock` di master `products` akan di-override oleh nilai masing-masing varian dari tabel `product_variants`.
 
 ### d) `shifts` (Riwayat Sesi)
 Sebuah transaksi (*receipt*) tidak bisa terjadi jika di device tersebut tidak ada `shifts` yang berstatus `open`. Shift diikat per individu (satu kasir satu laci).

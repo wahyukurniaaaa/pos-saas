@@ -49,7 +49,10 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
 
 ### **4.3. Modul Kasir & Inventaris (Offline)**
 
-* **Manajemen Produk:** Input manual satu-per-satu atau impor massal via file Excel/CSV secara offline.  
+* **Manajemen Produk (Hybrid):** 
+    * Input manual satu-per-satu atau impor massal via file Excel/CSV secara offline.
+    * **Foto Produk**: Dapat mengunggah foto lokal yang tersimpan efisien (auto-delete jika produk dihapus).
+    * **Varian Produk**: Mendukung produk sederhana (tanpa varian) bagi toko kelontong, maupun produk kompleks dengan varian (ukuran/rasa) bagi toko baju/F&B. Harga dan stok varian diatur secara individu.
 * **Barcode Scanning System:** 
     * **Continuous Scanning:** Scanner tetap terbuka untuk input keranjang belanja yang cepat di menu POS.
     * **Inventory Input:** Integrasi scanner pada form tambah/edit produk untuk mengisi SKU secara otomatis.
@@ -80,9 +83,13 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
 | **Produk** | Nama Produk | String, 3 \- 100 karakter. Wajib diisi. |
 |  | Kategori | Relasi ke tabel Kategori. |
 |  | SKU / Barcode | Alphanumeric, 3 \- 30 karakter. **Harus Unik** (Primary Identifier). |
-|  | Harga Beli / Jual | Numeric. Minimal 0\. Tidak boleh negatif. |
-|  | Stok | Integer. Default 0\. |
-|  | Gambar Produk | Path ke Image Device lokal, opsional. |
+|  | Harga Beli / Jual | Numeric. Minimal 0\. Tersedia jika tidak ada varian. |
+|  | Stok | Integer. Default 0\. Tersedia jika tidak ada varian. (Jika ada varian, rekap info). |
+|  | Foto / Gambar | Path ke Image Device lokal, opsional. (`imageUri`) |
+| **Varian Produk** | Nama Varian | String, opsional. (Contoh: "Besar", "L", "Rasa Coklat"). |
+| (Baru) | SKU Varian | Alphanumeric. Opsional, unik. |
+|  | Harga | Numeric. Harga spesifik varian ini. |
+|  | Stok Varian | Integer. Stok spesifik varian ini. |
 | **Kategori** | Nama Kategori | String, max 50 karakter. Wajib diisi & **Unik**. |
 | **User (Karyawan)**| Nama User | String, max 50 karakter. Wajib diisi. |
 |  | Role (Level) | Enum: {Owner (L1), Supervisor (L2), Kasir (L3)}. |
@@ -118,7 +125,7 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
 
 * **Setup Awal:** Sebagai Owner, setelah memasukkan kode lisensi yang valid, saya wajib mendata Nama dan PIN 6-digit saya untuk akun Owner yang sah. 
 * **Aktivasi Offline:** Saya ingin menginput lisensi dari email agar aplikasi aktif selamanya tanpa perlu internet lagi.  
-* **Manajemen Produk:** Saya ingin menambah produk secara manual (dengan fitur lampiran foto/gambar) atau **Impor via Excell/CSV** agar katalog cepat tersedia.  
+* **Manajemen Master Produk:** Saya ingin menambah produk sederhana (seperti sabun) atau kompleks beserta Varian & Foto Produk (seperti ukuran Baju/Rasa Kopi) agar memudahkan kasir dalam memilih item pesanan.
 * **Manajemen Karyawan:** Saya ingin menambah banyak akun Kasir/Supervisor, melampirkan foto profil mereka (opsional), mengatur PIN 6-digit yang berbeda tanpa biaya tambahan, dan memantau akun yang terkunci akibat salah PIN 5x.
 * **Konfigurasi Biaya:** Saya ingin mengatur besaran persentase Pajak (PPN/PB1) secara *inclusive* atau *exclusive*, serta menetapkan *Service Charge* (%) agar sistem otomatis menghitungnya ke total belanjaan pelanggan. Perhitungan pajak bersifat dinamis dan akan di-record nilainya (nominal) pada setiap nota.
 * **Branded Receipt:** Saya ingin mengunggah logo toko saya agar struk fisik (Thermal) maupun struk digital (WhatsApp) terlihat lebih profesional.
@@ -135,7 +142,7 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
 ### **8.3. Peran: Kasir**
 
 * **Manajemen Shift:** Saya ingin melakukan "Buka Shift" (input saldo awal) dan "Tutup Shift" (closing) agar uang tunai di laci dapat dipertanggungjawabkan.  
-* **Transaksi Cepat:** Saya ingin mencari produk via scan barcode agar pelayanan cepat.  
+* **Transaksi Cepat (Hybrid):** Saya ingin tap produk biasa dan langsung masuk keranjang, ATAU jika produk punya Varian, saya ingin memilih ukuran/rasa spesifik sebelum masuk ke keranjang. Foto produk akan membedakan nama yang mirip.
 * **Pembayaran:** Saya ingin memilih metode pembayaran (Tunai/QRIS/Debit) secara manual agar laporan akhir shift akurat.  
 * **Struk Fisik:** Saya ingin mencetak struk belanja via Bluetooth segera setelah transaksi selesai sebagai bukti bagi pelanggan.  
 * **WhatsApp Sharing & CRM:** Saya ingin menanyakan nomor WhatsApp pelanggan dan mengirimkan struk digital secara instan untuk menghemat kertas dan membangun database pelanggan.
