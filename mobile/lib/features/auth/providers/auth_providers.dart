@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:drift/drift.dart';
@@ -103,6 +104,7 @@ class LicenseNotifier extends AsyncNotifier<License?> {
       final deviceId = await _getDeviceId();
       final model = await _getDeviceModel();
 
+
       // 1. Call Backend Go API
       final response = await dio.post(
         '/license/activate',
@@ -114,21 +116,27 @@ class LicenseNotifier extends AsyncNotifier<License?> {
         },
       );
 
+
       if (!ref.mounted) return false;
 
       if (response.data['status'] == 'success') {
         // 2. Save to Local SQLite
-        await db.insertLicense(
-          LicensesCompanion.insert(
-            licenseCode: code,
-            deviceFingerprint: Value(deviceId),
-            activationDate: Value(DateTime.now()),
-            status: const Value('active'),
-          ),
-        );
+        try {
+          await db.insertLicense(
+            LicensesCompanion.insert(
+              licenseCode: code,
+              deviceFingerprint: Value(deviceId),
+              activationDate: Value(DateTime.now()),
+              status: const Value('active'),
+            ),
+          );
+        } catch (insertErr) {
+          // Duplicate license code — already exists in local DB, continue
+        }
 
-        // 3. Refresh state
-        ref.invalidateSelf();
+        // 3. Read back dari DB dan update state
+        final newLicense = await db.getLocalLicense();
+        if (ref.mounted) state = AsyncValue.data(newLicense);
         return true;
       }
 

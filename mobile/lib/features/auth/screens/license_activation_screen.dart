@@ -321,7 +321,9 @@ class _LicenseActivationScreenState
     setState(() => _isLoading = false);
 
     if (success) {
-      Navigator.pushReplacementNamed(context, '/owner-setup');
+      // AppBootstrap akan otomatis navigate ke screen berikutnya
+      // karena licenseProvider state sudah diupdate secara reaktif.
+      return;
     } else {
       final error = ref.read(licenseProvider);
       final msg = error.maybeWhen(
