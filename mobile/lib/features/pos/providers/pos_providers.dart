@@ -111,7 +111,7 @@ class CartNotifier extends Notifier<List<CartItem>> {
 
   double get subtotal => state.fold(0, (sum, item) => sum + item.total);
 
-  Future<bool> checkout({
+  Future<int?> checkout({
     required int shiftId,
     required String paymentMethod,
     required double taxAmount,
@@ -119,7 +119,7 @@ class CartNotifier extends Notifier<List<CartItem>> {
     int? voidBy,
   }) async {
     try {
-      if (state.isEmpty) return false;
+      if (state.isEmpty) return null;
 
       final db = ref.read(databaseProvider);
 
@@ -150,18 +150,18 @@ class CartNotifier extends Notifier<List<CartItem>> {
         );
       }).toList();
 
-      await db.processCheckout(
+      final id = await db.processCheckout(
         transactionEntry: transactionEntry,
         itemsParams: itemsParams,
       );
 
       ref.invalidate(productProvider);
       clearCart();
-      return true;
+      return id;
     } catch (e) {
       // ignore: avoid_print
       print('Checkout error: $e');
-      return false;
+      return null;
     }
   }
 }

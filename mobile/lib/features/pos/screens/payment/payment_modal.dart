@@ -563,7 +563,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
       // final subtotal = ref.read(cartProvider.notifier).subtotal; // No longer needed directly here
 
       // 1. Process Checkout in Database
-      final success = await ref
+      final transactionId = await ref
           .read(cartProvider.notifier)
           .checkout(
             shiftId: shiftId,
@@ -574,12 +574,13 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
 
       if (!mounted) return;
 
-      if (success) {
+      if (transactionId != null) {
         // 2. Tampilkan Layar Sukses (Replace modal dengan screen sukses)
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) => PaymentSuccessScreen(
+              transactionId: transactionId,
               totalAmount: finalTotal,
               cashReceived: _selectedMethod == 'Tunai'
                   ? _cashReceived

@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
+import 'package:posify_app/core/providers/receipt_provider.dart';
 import 'package:posify_app/features/auth/widgets/supervisor_auth_dialog.dart';
 import 'package:intl/intl.dart';
 import 'package:posify_app/core/widgets/responsive_layout.dart';
@@ -279,10 +280,31 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
 
               // Action Buttons
               OutlinedButton.icon(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Mencetak ulang struk...')),
-                  );
+                onPressed: () async {
+                  try {
+                    final db = ref.read(databaseProvider);
+                    final receiptService = ref.read(receiptServiceProvider);
+
+                    // Fetch profile and data already available in state
+                    final profile = await db.getStoreProfile();
+
+                    if (_txnData != null) {
+                      await receiptService.printReceipt(
+                        profile: profile,
+                        transaction: _txnData!.transaction,
+                        items: _txnData!.items,
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Gagal mencetak: $e'),
+                          backgroundColor: AppTheme.errorColor,
+                        ),
+                      );
+                    }
+                  }
                 },
                 icon: const Icon(Icons.print),
                 label: const Text('CETAK ULANG STRUK'),

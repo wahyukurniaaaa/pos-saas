@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:posify_app/core/providers/database_provider.dart';
+import 'package:posify_app/core/providers/receipt_provider.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:intl/intl.dart';
 import 'package:posify_app/core/widgets/responsive_layout.dart';
 
-class PaymentSuccessScreen extends StatelessWidget {
+class PaymentSuccessScreen extends ConsumerWidget {
+  final int transactionId;
   final double totalAmount;
   final double cashReceived;
   final double changeAmount;
@@ -12,6 +16,7 @@ class PaymentSuccessScreen extends StatelessWidget {
 
   const PaymentSuccessScreen({
     super.key,
+    required this.transactionId,
     required this.totalAmount,
     required this.cashReceived,
     required this.changeAmount,
@@ -19,7 +24,7 @@ class PaymentSuccessScreen extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final formatCurrency = NumberFormat.currency(
       locale: 'id_ID',
       symbol: 'Rp ',
@@ -28,125 +33,147 @@ class PaymentSuccessScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: ResponsiveCenter(child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Spacer(),
-              // Success Icon
-              Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  color: AppTheme.successColor.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
+      body: ResponsiveCenter(
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Spacer(),
+                // Success Icon
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: AppTheme.successColor.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.check_circle_rounded,
+                    color: AppTheme.successColor,
+                    size: 60,
+                  ),
                 ),
-                child: const Icon(
-                  Icons.check_circle_rounded,
-                  color: AppTheme.successColor,
-                  size: 60,
-                ),
-              ),
-              const SizedBox(height: 32),
+                const SizedBox(height: 32),
 
-              // Success Text
-              Text(
-                'TRANSAKSI BERHASIL',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: AppTheme.textPrimary,
+                // Success Text
+                Text(
+                  'TRANSAKSI BERHASIL',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.textPrimary,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 32),
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: AppTheme.backgroundLight,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey.shade200),
+                const SizedBox(height: 32),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: AppTheme.backgroundLight,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildDataRow(
+                        'Total Belanja',
+                        formatCurrency.format(totalAmount),
+                      ),
+                      _buildDataRow(
+                        'Dibayar (${paymentMethod.toUpperCase()})',
+                        formatCurrency.format(cashReceived),
+                      ),
+                      const Divider(height: 24),
+                      _buildDataRow(
+                        'Kembalian',
+                        formatCurrency.format(changeAmount),
+                        isTotal: true,
+                      ),
+                    ],
+                  ),
                 ),
-                child: Column(
-                  children: [
-                    _buildDataRow(
-                      'Total Belanja',
-                      formatCurrency.format(totalAmount),
-                    ),
-                    _buildDataRow(
-                      'Dibayar (${paymentMethod.toUpperCase()})',
-                      formatCurrency.format(cashReceived),
-                    ),
-                    const Divider(height: 24),
-                    _buildDataRow(
-                      'Kembalian',
-                      formatCurrency.format(changeAmount),
-                      isTotal: true,
-                    ),
-                  ],
-                ),
-              ),
 
-              const Spacer(),
+                const Spacer(),
 
-              // Print Receipt Button
-              OutlinedButton.icon(
-                onPressed: () {
-                  // TODO: Implement actual printing logic
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Mencetak struk...'),
-                      behavior: SnackBarBehavior.floating,
+                // Print Receipt Button
+                OutlinedButton.icon(
+                  onPressed: () async {
+                    try {
+                      final db = ref.read(databaseProvider);
+                      final receiptService = ref.read(receiptServiceProvider);
+
+                      // Fetch profile and transaction data
+                      final profile = await db.getStoreProfile();
+                      final txnData = await db.getTransactionWithItems(
+                        transactionId,
+                      );
+
+                      if (txnData != null) {
+                        await receiptService.printReceipt(
+                          profile: profile,
+                          transaction: txnData.transaction,
+                          items: txnData.items,
+                        );
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Gagal mencetak: $e'),
+                            backgroundColor: AppTheme.errorColor,
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  icon: const Icon(Icons.print_rounded),
+                  label: const Text('CETAK ULANG STRUK'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    side: const BorderSide(
+                      color: AppTheme.primaryColor,
+                      width: 2,
                     ),
-                  );
-                },
-                icon: const Icon(Icons.print_rounded),
-                label: const Text('CETAK ULANG STRUK'),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  side: const BorderSide(
-                    color: AppTheme.primaryColor,
-                    width: 2,
-                  ),
-                  foregroundColor: AppTheme.primaryColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  textStyle: GoogleFonts.inter(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
+                    foregroundColor: AppTheme.primaryColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    textStyle: GoogleFonts.inter(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-              // New Transaction Button
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryColor,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                // New Transaction Button
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    textStyle: GoogleFonts.inter(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                  textStyle: GoogleFonts.inter(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  child: const Text('LANJUT TRANSAKSI BARU'),
                 ),
-                child: const Text('LANJUT TRANSAKSI BARU'),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-      )),
+      ),
     );
   }
 
