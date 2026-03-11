@@ -2,7 +2,7 @@ package license
 
 type ActivateRequest struct {
 	LicenseCode       string `json:"license_code" validate:"required"`
-	DeviceFingerprint string `json:"device_fingerprint" validate:"required,max=36"`
+	DeviceFingerprint string `json:"device_fingerprint" validate:"required,max=100"`
 	DeviceModel       string `json:"device_model"`
 	OsVersion         string `json:"os_version"`
 }
