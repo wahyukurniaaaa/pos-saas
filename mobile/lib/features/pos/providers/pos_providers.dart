@@ -3,11 +3,15 @@ import 'package:drift/drift.dart' as drift;
 import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 
-/// Provider for categories
+// ===== Category Provider =====
+
 class CategoryNotifier extends AsyncNotifier<List<Category>> {
   @override
   Future<List<Category>> build() async {
     final db = ref.watch(databaseProvider);
+    db.watchAllCategories().listen((categories) {
+      if (ref.mounted) state = AsyncValue.data(categories);
+    });
     return db.getAllCategories();
   }
 }
@@ -17,7 +21,8 @@ final categoryProvider =
       CategoryNotifier.new,
     );
 
-/// Provider for products
+// ===== Product Provider =====
+
 class ProductNotifier extends AsyncNotifier<List<Product>> {
   String? _searchQuery;
   int? _categoryId;
@@ -25,9 +30,7 @@ class ProductNotifier extends AsyncNotifier<List<Product>> {
   @override
   Future<List<Product>> build() async {
     final db = ref.watch(databaseProvider);
-    // TODO: Implement filtered query in database.dart
     final allProducts = await db.getAllProducts();
-
     return allProducts.where((p) {
       final matchesCategory =
           _categoryId == null || p.categoryId == _categoryId;
@@ -53,27 +56,48 @@ final productProvider = AsyncNotifierProvider<ProductNotifier, List<Product>>(
   ProductNotifier.new,
 );
 
-/// Model for cart items
+// ===== Cart Model =====
+
+/// Represents one line in the shopping cart.
+/// Supports both simple products and variable products (with variants).
 class CartItem {
   final Product product;
+  final ProductVariant? variant; // null = simple product
   final int quantity;
 
-  CartItem({required this.product, this.quantity = 1});
+  CartItem({required this.product, this.variant, this.quantity = 1});
 
   CartItem copyWith({int? quantity}) {
-    return CartItem(product: product, quantity: quantity ?? this.quantity);
+    return CartItem(
+      product: product,
+      variant: variant,
+      quantity: quantity ?? this.quantity,
+    );
   }
 
-  double get total => (product.price * quantity).toDouble();
+  /// Variant price takes priority over product base price.
+  int get effectivePrice =>
+      (variant?.price != null && variant!.price! > 0)
+          ? variant!.price!
+          : product.price;
+
+  double get total => (effectivePrice * quantity).toDouble();
+
+  /// Unique key: same product with different variants = different cart lines.
+  String get cartKey =>
+      variant != null ? '${product.id}_v${variant!.id}' : '${product.id}';
 }
 
-/// Provider for shopping cart
+// ===== Cart Provider =====
+
 class CartNotifier extends Notifier<List<CartItem>> {
   @override
   List<CartItem> build() => [];
 
-  void addToCart(Product product) {
-    final index = state.indexWhere((item) => item.product.id == product.id);
+  void addToCart(Product product, {ProductVariant? variant}) {
+    final key =
+        variant != null ? '${product.id}_v${variant.id}' : '${product.id}';
+    final index = state.indexWhere((item) => item.cartKey == key);
     if (index >= 0) {
       state = [
         for (int i = 0; i < state.length; i++)
@@ -83,31 +107,26 @@ class CartNotifier extends Notifier<List<CartItem>> {
             state[i],
       ];
     } else {
-      state = [...state, CartItem(product: product)];
+      state = [...state, CartItem(product: product, variant: variant)];
     }
   }
 
-  void removeFromCart(int productId) {
-    state = state.where((item) => item.product.id != productId).toList();
+  void removeFromCart(String cartKey) {
+    state = state.where((item) => item.cartKey != cartKey).toList();
   }
 
-  void updateQuantity(int productId, int quantity) {
+  void updateQuantity(String cartKey, int quantity) {
     if (quantity <= 0) {
-      removeFromCart(productId);
+      removeFromCart(cartKey);
       return;
     }
     state = [
       for (final item in state)
-        if (item.product.id == productId)
-          item.copyWith(quantity: quantity)
-        else
-          item,
+        if (item.cartKey == cartKey) item.copyWith(quantity: quantity) else item,
     ];
   }
 
-  void clearCart() {
-    state = [];
-  }
+  void clearCart() => state = [];
 
   double get subtotal => state.fold(0, (sum, item) => sum + item.total);
 
@@ -118,14 +137,11 @@ class CartNotifier extends Notifier<List<CartItem>> {
     required double serviceCharge,
     String? customerPhone,
     String? customerName,
-    int? voidBy,
   }) async {
     try {
       if (state.isEmpty) return null;
 
       final db = ref.read(databaseProvider);
-
-      // Generate receipt number (POS-YYYYMMDD-HHMMSS)
       final now = DateTime.now();
       final receiptNumber =
           'POS-${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}-${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}${now.second.toString().padLeft(2, '0')}';
@@ -145,11 +161,18 @@ class CartNotifier extends Notifier<List<CartItem>> {
       );
 
       final itemsParams = state.map((item) {
+        // Snapshot variant label for permanent audit trail on receipts/history
+        final variantLabel = item.variant != null
+            ? '${item.variant!.name}: ${item.variant!.optionValue}'
+            : null;
+
         return TransactionItemsCompanion.insert(
-          transactionId: 0, // Will be overridden in processCheckout
+          transactionId: 0, // Overridden by processCheckout
           productId: item.product.id,
+          variantId: drift.Value(item.variant?.id),
+          variantName: drift.Value(variantLabel),
           quantity: item.quantity,
-          priceAtTransaction: item.product.price,
+          priceAtTransaction: item.effectivePrice,
           subtotal: item.total.toInt(),
         );
       }).toList();

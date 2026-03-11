@@ -57,7 +57,10 @@ class ReceiptService {
 
     // 3. Items
     for (final item in items) {
-      await bluetooth.printCustom(item.product.name, 0, 0);
+      final String itemName = item.item.variantName != null 
+          ? '${item.product.name} - ${item.item.variantName}' 
+          : item.product.name;
+      await bluetooth.printCustom(itemName, 0, 0);
 
       final String qtyPrice =
           '${item.item.quantity} x ${currency.format(item.item.priceAtTransaction)}';
@@ -161,7 +164,10 @@ class ReceiptService {
     buffer.writeln('');
 
     for (final item in data.items) {
-      buffer.writeln('• ${item.product.name}');
+      final String itemName = item.item.variantName != null 
+          ? '${item.product.name} - ${item.item.variantName}' 
+          : item.product.name;
+      buffer.writeln('• $itemName');
       buffer.writeln(
         '  ${item.item.quantity} x ${currency.format(item.item.priceAtTransaction)} = ${currency.format(item.item.subtotal)}',
       );

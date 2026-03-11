@@ -213,7 +213,9 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
                     final e = items[index];
                     return ListTile(
                       title: Text(
-                        e.product.name,
+                        e.item.variantName != null
+                            ? '${e.product.name} - ${e.item.variantName}'
+                            : e.product.name,
                         style: GoogleFonts.inter(fontWeight: FontWeight.w600),
                       ),
                       subtitle: Text(

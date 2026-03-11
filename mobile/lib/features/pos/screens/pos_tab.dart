@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:io';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:posify_app/core/database/database.dart';
+import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
+import 'package:posify_app/core/widgets/responsive_layout.dart';
 import 'package:posify_app/features/auth/providers/owner_provider.dart';
 import 'package:posify_app/features/pos/screens/payment/payment_modal.dart';
 import 'package:posify_app/features/pos/screens/shift/shift_report_modal.dart';
@@ -394,16 +397,22 @@ class _PosTabState extends ConsumerState<PosTab> {
   }
 
   Widget _buildProductCard(Product product) {
-    final inCart = ref
-        .watch(cartProvider)
-        .any((i) => i.product.id == product.id);
-    final isOutOfStock = product.stock <= 0;
+    final hasVariants = product.hasVariants;
+    final isOutOfStock = !hasVariants && product.stock <= 0;
+    // For simple products, check if any cart item matches
+    final inCart = hasVariants
+        ? false // Variants can have multiple lines, don't highlight card
+        : ref.watch(cartProvider).any((i) => i.cartKey == '${product.id}');
 
     return GestureDetector(
       onTap: isOutOfStock
           ? null
           : () {
-              ref.read(cartProvider.notifier).addToCart(product);
+              if (hasVariants) {
+                _showVariantPicker(context, product);
+              } else {
+                ref.read(cartProvider.notifier).addToCart(product);
+              }
             },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
@@ -436,12 +445,20 @@ class _PosTabState extends ConsumerState<PosTab> {
                       decoration: BoxDecoration(
                         color: AppTheme.primaryColor.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(10),
+                        image: product.imageUri != null 
+                            ? DecorationImage(
+                                image: FileImage(File(product.imageUri!)),
+                                fit: BoxFit.cover,
+                              )
+                            : null,
                       ),
-                      child: const Icon(
-                        Icons.fastfood_rounded,
-                        color: AppTheme.primaryColor,
-                        size: 32,
-                      ),
+                      child: product.imageUri != null 
+                          ? null 
+                          : const Icon(
+                              Icons.fastfood_rounded,
+                              color: AppTheme.primaryColor,
+                              size: 32,
+                            ),
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -458,7 +475,7 @@ class _PosTabState extends ConsumerState<PosTab> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    _currency.format(product.price),
+                    hasVariants ? 'Lihat Varian' : _currency.format(product.price),
                     style: GoogleFonts.inter(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
@@ -467,7 +484,7 @@ class _PosTabState extends ConsumerState<PosTab> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Stok: ${product.stock}',
+                    hasVariants ? 'Berbagai pilihan' : 'Stok: ${product.stock}',
                     style: GoogleFonts.inter(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
@@ -505,7 +522,27 @@ class _PosTabState extends ConsumerState<PosTab> {
                   ),
                 ),
               ),
-            if (inCart)
+            if (hasVariants)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade600,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    'Varian',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              )
+            else if (inCart)
               Positioned(
                 top: 8,
                 right: 8,
@@ -521,6 +558,18 @@ class _PosTabState extends ConsumerState<PosTab> {
           ],
         ),
       ),
+    );
+  }
+
+  void _showVariantPicker(BuildContext context, Product product) {
+    final db = ref.read(databaseProvider);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => _VariantPickerSheet(product: product, db: db),
     );
   }
 }
@@ -677,6 +726,11 @@ class CartPanel extends ConsumerWidget {
   }
 
   Widget _buildCartItem(BuildContext context, WidgetRef ref, CartItem item) {
+    final currency = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    );
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
@@ -709,9 +763,18 @@ class CartPanel extends ConsumerWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
+                if (item.variant != null)
+                  Text(
+                    '${item.variant!.name}: ${item.variant!.optionValue}',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: AppTheme.textSecondary,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
                 const SizedBox(height: 4),
                 Text(
-                  _currency.format(item.product.price),
+                  currency.format(item.effectivePrice),
                   style: GoogleFonts.inter(
                     fontSize: 13,
                     color: AppTheme.primaryColor,
@@ -735,7 +798,7 @@ class CartPanel extends ConsumerWidget {
                   Icons.remove,
                   () => ref
                       .read(cartProvider.notifier)
-                      .updateQuantity(item.product.id, item.quantity - 1),
+                      .updateQuantity(item.cartKey, item.quantity - 1),
                 ),
                 SizedBox(
                   width: 32,
@@ -752,7 +815,7 @@ class CartPanel extends ConsumerWidget {
                   Icons.add,
                   () => ref
                       .read(cartProvider.notifier)
-                      .updateQuantity(item.product.id, item.quantity + 1),
+                      .updateQuantity(item.cartKey, item.quantity + 1),
                 ),
               ],
             ),
@@ -940,3 +1003,180 @@ void _showShiftReport(BuildContext context, String cashierName) {
     );
   }
 }
+
+/// Bottom sheet for selecting a variant before adding to cart
+class _VariantPickerSheet extends ConsumerStatefulWidget {
+  final Product product;
+  final PosifyDatabase db;
+
+  const _VariantPickerSheet({required this.product, required this.db});
+
+  @override
+  ConsumerState<_VariantPickerSheet> createState() =>
+      _VariantPickerSheetState();
+}
+
+class _VariantPickerSheetState extends ConsumerState<_VariantPickerSheet> {
+  List<ProductVariant> _variants = [];
+  bool _loading = true;
+
+  final _currency = NumberFormat.currency(
+    locale: 'id_ID',
+    symbol: 'Rp ',
+    decimalDigits: 0,
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVariants();
+  }
+
+  Future<void> _loadVariants() async {
+    final variants = await widget.db.getVariantsByProduct(widget.product.id);
+    if (mounted) setState(() { _variants = variants; _loading = false; });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ResponsiveCenter(
+      maxWidth: 600,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  widget.product.name,
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.close),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Pilih varian:',
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              color: AppTheme.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 16),
+          if (_loading)
+            const Center(child: CircularProgressIndicator())
+          else if (_variants.isEmpty)
+            Center(
+              child: Text(
+                'Belum ada varian untuk produk ini.',
+                style: GoogleFonts.inter(color: AppTheme.textSecondary),
+              ),
+            )
+          else
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _variants.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 8),
+              itemBuilder: (_, i) {
+                final v = _variants[i];
+                final effectivePrice =
+                    (v.price != null && v.price! > 0)
+                        ? v.price!
+                        : widget.product.price;
+                final isOutOfStock = v.stock <= 0;
+
+                return Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: isOutOfStock
+                        ? null
+                        : () {
+                            ref
+                                .read(cartProvider.notifier)
+                                .addToCart(widget.product, variant: v);
+                            Navigator.pop(context);
+                          },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: isOutOfStock
+                              ? Colors.grey.shade200
+                              : AppTheme.primaryColor.withValues(alpha: 0.3),
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        color: isOutOfStock
+                            ? Colors.grey.shade50
+                            : AppTheme.primaryColor.withValues(alpha: 0.03),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${v.name}: ${v.optionValue}',
+                                  style: GoogleFonts.inter(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                    color: isOutOfStock
+                                        ? AppTheme.textSecondary
+                                        : AppTheme.textPrimary,
+                                  ),
+                                ),
+                                Text(
+                                  'Stok: ${v.stock}',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    color: isOutOfStock
+                                        ? AppTheme.errorColor
+                                        : AppTheme.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Text(
+                            isOutOfStock
+                                ? 'Habis'
+                                : _currency.format(effectivePrice),
+                            style: GoogleFonts.inter(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                              color: isOutOfStock
+                                  ? AppTheme.errorColor
+                                  : AppTheme.primaryColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+        ],
+      ),
+    ),
+  );
+  }
+}
+

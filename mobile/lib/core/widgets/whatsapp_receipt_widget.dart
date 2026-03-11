@@ -116,7 +116,9 @@ class WhatsAppReceiptWidget extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Text(
-                          item.product.name,
+                          item.item.variantName != null
+                              ? '${item.product.name} - ${item.item.variantName}'
+                              : item.product.name,
                           style: GoogleFonts.inter(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,

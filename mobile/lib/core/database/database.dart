@@ -10,6 +10,7 @@ import 'tables/employees_table.dart';
 import 'tables/store_profile_table.dart';
 import 'tables/categories_table.dart';
 import 'tables/products_table.dart';
+import 'tables/product_variants_table.dart';
 import 'tables/shifts_table.dart';
 import 'tables/transactions_table.dart';
 import 'tables/transaction_items_table.dart';
@@ -25,6 +26,7 @@ part 'database.g.dart';
     StoreProfile,
     Categories,
     Products,
+    ProductVariants,
     Shifts,
     Transactions,
     TransactionItems,
@@ -39,7 +41,7 @@ class PosifyDatabase extends _$PosifyDatabase {
   PosifyDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration {
@@ -49,17 +51,23 @@ class PosifyDatabase extends _$PosifyDatabase {
       },
       onUpgrade: (m, from, to) async {
         if (from < 2) {
-          // Add lastVerified column to licenses table
           await m.addColumn(licenses, licenses.lastVerified);
         }
         if (from < 3) {
-          // Add logoUri column to store_profile table
           await m.addColumn(storeProfile, storeProfile.logoUri);
         }
         if (from < 4) {
-          // Add customer columns to transactions table
           await m.addColumn(transactions, transactions.customerPhone);
           await m.addColumn(transactions, transactions.customerName);
+        }
+        if (from < 5) {
+          // Add Product Variants table
+          await m.createTable(productVariants);
+          // Add hasVariants flag to products
+          await m.addColumn(products, products.hasVariants);
+          // Add variant tracking to transaction_items
+          await m.addColumn(transactionItems, transactionItems.variantId);
+          await m.addColumn(transactionItems, transactionItems.variantName);
         }
       },
     );
@@ -131,6 +139,43 @@ class PosifyDatabase extends _$PosifyDatabase {
     });
   }
 
+  // ===== Product Variants =====
+  Stream<List<ProductVariant>> watchVariantsByProduct(int productId) =>
+      (select(productVariants)
+            ..where((v) => v.productId.equals(productId)))
+          .watch();
+
+  Future<List<ProductVariant>> getVariantsByProduct(int productId) =>
+      (select(productVariants)
+            ..where((v) => v.productId.equals(productId)))
+          .get();
+
+  Future<int> insertVariant(ProductVariantsCompanion entry) =>
+      into(productVariants).insert(entry);
+
+  Future<bool> updateVariant(ProductVariant entry) =>
+      update(productVariants).replace(entry);
+
+  Future<int> deleteVariant(ProductVariant entry) =>
+      delete(productVariants).delete(entry);
+
+  Future<void> deleteVariantsByProduct(int productId) =>
+      (delete(productVariants)
+            ..where((v) => v.productId.equals(productId)))
+          .go();
+
+  Future<void> replaceVariants(
+    int productId,
+    List<ProductVariantsCompanion> newVariants,
+  ) async {
+    await transaction(() async {
+      await deleteVariantsByProduct(productId);
+      if (newVariants.isNotEmpty) {
+        await batch((b) => b.insertAll(productVariants, newVariants));
+      }
+    });
+  }
+
   // ===== Shift Queries =====
   Future<Product?> getProduct(int id) =>
       (select(products)..where((p) => p.id.equals(id))).getSingleOrNull();
@@ -181,22 +226,38 @@ class PosifyDatabase extends _$PosifyDatabase {
       // 1. Insert Transaction
       final txId = await into(transactions).insert(transactionEntry);
 
-      // 2. Insert Items & 3. Update Stocks
+      // 2. Insert Items & 3. Update Stocks (supports both simple and variant products)
       for (final itemParam in itemsParams) {
-        // Set the transaction ID for the item
         final finalItem = itemParam.copyWith(transactionId: Value(txId));
         await into(transactionItems).insert(finalItem);
 
-        // Update product stock
-        final productId = itemParam.productId.value;
         final qty = itemParam.quantity.value;
+        final variantId = itemParam.variantId.present
+            ? itemParam.variantId.value
+            : null;
 
-        final product = await (select(
-          products,
-        )..where((p) => p.id.equals(productId))).getSingleOrNull();
-        if (product != null) {
-          final newStock = product.stock - qty;
-          await update(products).replace(product.copyWith(stock: newStock));
+        if (variantId != null) {
+          // Variable product: decrement variant stock
+          final variant = await (select(productVariants)
+                ..where((v) => v.id.equals(variantId)))
+              .getSingleOrNull();
+          if (variant != null) {
+            await (update(productVariants)
+                  ..where((v) => v.id.equals(variant.id)))
+                .write(ProductVariantsCompanion(
+                  stock: Value(variant.stock - qty),
+                ));
+          }
+        } else {
+          // Simple product: decrement product stock
+          final productId = itemParam.productId.value;
+          final product = await (select(products)
+                ..where((p) => p.id.equals(productId)))
+              .getSingleOrNull();
+          if (product != null) {
+            await update(products)
+                .replace(product.copyWith(stock: product.stock - qty));
+          }
         }
       }
 
@@ -270,24 +331,41 @@ class PosifyDatabase extends _$PosifyDatabase {
         ),
       );
 
-      // 3. Restore stock
+      // 3. Restore stock (supports both simple and variant products)
       final items = await (select(
         transactionItems,
       )..where((tbl) => tbl.transactionId.equals(transactionId))).get();
       for (final item in items) {
-        final product = await (select(
-          products,
-        )..where((p) => p.id.equals(item.productId))).getSingleOrNull();
-        if (product != null) {
-          await (update(products)..where((p) => p.id.equals(product.id))).write(
-            ProductsCompanion(stock: Value(product.stock + item.quantity)),
-          );
+        if (item.variantId != null) {
+          // Restore variant stock
+          final variant = await (select(productVariants)
+                ..where((v) => v.id.equals(item.variantId!)))
+              .getSingleOrNull();
+          if (variant != null) {
+            await (update(productVariants)
+                  ..where((v) => v.id.equals(variant.id)))
+                .write(ProductVariantsCompanion(
+                  stock: Value(variant.stock + item.quantity),
+                ));
+          }
+        } else {
+          // Restore product stock
+          final product = await (select(
+            products,
+          )..where((p) => p.id.equals(item.productId))).getSingleOrNull();
+          if (product != null) {
+            await (update(products)..where((p) => p.id.equals(product.id)))
+                .write(
+              ProductsCompanion(stock: Value(product.stock + item.quantity)),
+            );
+          }
         }
       }
 
       return true;
     });
   }
+
 
   // ===== Sales Analytics =====
   Future<int> getTotalRevenue(DateTime start, DateTime end) async {
