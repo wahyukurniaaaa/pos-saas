@@ -111,9 +111,10 @@ func (h *Handler) Generate(c *fiber.Ctx) error {
 	}
 
 	resData := GenerateResponseData{
-		LicenseCode: lic.LicenseCode,
-		TierLevel:   lic.TierLevel,
-		MaxDevices:  lic.MaxDevices,
+		LicenseCode:   lic.LicenseCode,
+		TierLevel:     lic.TierLevel,
+		MaxDevices:    lic.MaxDevices,
+		CustomerEmail: lic.CustomerEmail,
 	}
 
 	return response.Success(c, fiber.StatusCreated, "Lisensi berhasil dibuat.", resData)
