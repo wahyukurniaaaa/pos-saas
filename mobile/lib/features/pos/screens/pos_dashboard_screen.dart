@@ -4,6 +4,7 @@ import 'package:posify_app/core/theme/app_theme.dart';
 import 'pos_tab.dart';
 import 'inventory_tab.dart';
 import 'settings_tab.dart';
+import 'package:posify_app/features/settings/screens/transaction_history_screen.dart';
 
 class PosDashboardScreen extends ConsumerStatefulWidget {
   const PosDashboardScreen({super.key});
@@ -21,7 +22,12 @@ class _PosDashboardScreenState extends ConsumerState<PosDashboardScreen> {
       backgroundColor: Colors.grey.shade50, // Soft background for Stitch style
       body: IndexedStack(
         index: _currentTabIndex,
-        children: const [PosTab(), InventoryTab(), SettingsTab()],
+        children: const [
+          PosTab(),
+          TransactionHistoryScreen(),
+          InventoryTab(),
+          SettingsTab()
+        ],
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -56,6 +62,13 @@ class _PosDashboardScreenState extends ConsumerState<PosDashboardScreen> {
                 child: Icon(Icons.point_of_sale_rounded),
               ),
               label: 'Kasir',
+            ),
+            BottomNavigationBarItem(
+              icon: Padding(
+                padding: EdgeInsets.only(bottom: 4),
+                child: Icon(Icons.receipt_long_rounded),
+              ),
+              label: 'Riwayat',
             ),
             BottomNavigationBarItem(
               icon: Padding(

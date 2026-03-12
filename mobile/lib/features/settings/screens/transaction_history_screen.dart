@@ -23,6 +23,7 @@ class TransactionHistoryScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: Navigator.canPop(context),
         title: Text(
           'Riwayat Transaksi',
           style: GoogleFonts.inter(fontWeight: FontWeight.w700),
