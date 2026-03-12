@@ -36,12 +36,7 @@ class _OwnerSetupScreenState extends ConsumerState<OwnerSetupScreen> {
     return Scaffold(
       body: ResponsiveCenter(child: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [AppTheme.primaryDark, AppTheme.primaryColor],
-            stops: [0.0, 0.3],
-          ),
+          gradient: AppTheme.primaryGradient,
         ),
         child: SafeArea(
           child: Column(
@@ -54,7 +49,7 @@ class _OwnerSetupScreenState extends ConsumerState<OwnerSetupScreen> {
                     const Icon(
                       Icons.store_rounded,
                       size: 40,
-                      color: Colors.white,
+                      color: AppTheme.textOnPrimary,
                     ),
                     const SizedBox(height: 10),
                     Text(
@@ -62,7 +57,7 @@ class _OwnerSetupScreenState extends ConsumerState<OwnerSetupScreen> {
                       style: GoogleFonts.poppins(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                        color: AppTheme.textOnPrimary,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -70,7 +65,7 @@ class _OwnerSetupScreenState extends ConsumerState<OwnerSetupScreen> {
                       'Lengkapi data untuk memulai',
                       style: GoogleFonts.poppins(
                         fontSize: 13,
-                        color: Colors.white.withValues(alpha: 0.7),
+                        color: AppTheme.textOnPrimary.withValues(alpha: 0.7),
                       ),
                     ),
                   ],
@@ -209,12 +204,13 @@ class _OwnerSetupScreenState extends ConsumerState<OwnerSetupScreen> {
                                       height: 20,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        color: Colors.white,
+                                        color: AppTheme.textOnPrimary,
                                       ),
                                     )
                                   : const Icon(
                                       Icons.rocket_launch_rounded,
                                       size: 20,
+                                      color: AppTheme.textOnPrimary,
                                     ),
                               label: Text(
                                 _isLoading

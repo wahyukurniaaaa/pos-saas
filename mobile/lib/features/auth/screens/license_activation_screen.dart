@@ -54,16 +54,8 @@ class _LicenseActivationScreenState
     return Scaffold(
       body: ResponsiveCenter(
         child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                AppTheme.primaryDark,
-                AppTheme.primaryColor,
-                AppTheme.primaryColor.withValues(alpha: 0.8),
-              ],
-            ),
+          decoration: const BoxDecoration(
+            gradient: AppTheme.primaryGradient,
           ),
           child: SafeArea(
             child: Center(
@@ -85,7 +77,7 @@ class _LicenseActivationScreenState
                         child: const Icon(
                           Icons.point_of_sale_rounded,
                           size: 44,
-                          color: Colors.white,
+                          color: AppTheme.textOnPrimary,
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -96,7 +88,7 @@ class _LicenseActivationScreenState
                         style: GoogleFonts.poppins(
                           fontSize: 32,
                           fontWeight: FontWeight.w800,
-                          color: Colors.white,
+                          color: AppTheme.textOnPrimary,
                           letterSpacing: -0.5,
                         ),
                       ),
@@ -106,7 +98,7 @@ class _LicenseActivationScreenState
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
-                          color: Colors.white.withValues(alpha: 0.8),
+                          color: AppTheme.textOnPrimary.withValues(alpha: 0.8),
                         ),
                       ),
                       const SizedBox(height: 40),
