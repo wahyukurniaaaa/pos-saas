@@ -164,11 +164,19 @@ class _StoreProfileScreenState extends ConsumerState<StoreProfileScreen> {
       appBar: AppBar(
         title: Text(
           'Profil Toko',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w700,
+            color: AppTheme.textOnPrimary,
+          ),
         ),
         backgroundColor: AppTheme.primaryColor,
-        foregroundColor: Colors.white,
+        foregroundColor: AppTheme.textOnPrimary,
         elevation: 0,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: AppTheme.primaryGradient,
+          ),
+        ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -216,7 +224,7 @@ class _StoreProfileScreenState extends ConsumerState<StoreProfileScreen> {
                                       const SizedBox(height: 8),
                                       Text(
                                         'Pilih Logo',
-                                        style: GoogleFonts.inter(
+                                        style: GoogleFonts.poppins(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w500,
                                           color: Colors.grey.shade500,
@@ -232,7 +240,7 @@ class _StoreProfileScreenState extends ConsumerState<StoreProfileScreen> {
                       // Format Info
                       Text(
                         'Informasi Toko',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                           color: AppTheme.textPrimary,
@@ -241,7 +249,7 @@ class _StoreProfileScreenState extends ConsumerState<StoreProfileScreen> {
                       const SizedBox(height: 8),
                       Text(
                         'Informasi ini akan ditampilkan pada header cetak nota/struk pembelanjaan pelanggan.',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           fontSize: 14,
                           color: AppTheme.textSecondary,
                         ),
@@ -299,6 +307,7 @@ class _StoreProfileScreenState extends ConsumerState<StoreProfileScreen> {
                         onPressed: _isSaving ? null : _saveProfile,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppTheme.primaryColor,
+                          foregroundColor: AppTheme.textOnPrimary,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -310,16 +319,15 @@ class _StoreProfileScreenState extends ConsumerState<StoreProfileScreen> {
                                 width: 24,
                                 height: 24,
                                 child: CircularProgressIndicator(
-                                  color: Colors.white,
+                                  color: AppTheme.textOnPrimary,
                                   strokeWidth: 2,
                                 ),
                               )
                             : Text(
                                 'Simpan Pengaturan',
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.poppins(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.white,
                                 ),
                               ),
                       ),

@@ -37,7 +37,7 @@ class WhatsAppReceiptWidget extends StatelessWidget {
             Text(
               storeProfile!.name,
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontSize: 24,
                 fontWeight: FontWeight.w800,
                 color: AppTheme.textPrimary,
@@ -47,7 +47,7 @@ class WhatsAppReceiptWidget extends StatelessWidget {
             Text(
               storeProfile!.address!,
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontSize: 14,
                 color: AppTheme.textSecondary,
               ),
@@ -62,7 +62,7 @@ class WhatsAppReceiptWidget extends StatelessWidget {
             children: [
               Text(
                 'NO. STRUK:',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: AppTheme.textSecondary,
@@ -70,7 +70,7 @@ class WhatsAppReceiptWidget extends StatelessWidget {
               ),
               Text(
                 data.transaction.receiptNumber,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                   color: AppTheme.textPrimary,
@@ -84,7 +84,7 @@ class WhatsAppReceiptWidget extends StatelessWidget {
             children: [
               Text(
                 'TANGGAL:',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: AppTheme.textSecondary,
@@ -92,7 +92,7 @@ class WhatsAppReceiptWidget extends StatelessWidget {
               ),
               Text(
                 date,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                   color: AppTheme.textPrimary,
@@ -119,7 +119,7 @@ class WhatsAppReceiptWidget extends StatelessWidget {
                           item.item.variantName != null
                               ? '${item.product.name} - ${item.item.variantName}'
                               : item.product.name,
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
                             color: AppTheme.textPrimary,
@@ -127,7 +127,7 @@ class WhatsAppReceiptWidget extends StatelessWidget {
                         ),
                         Text(
                           '${item.item.quantity} x ${currency.format(item.item.priceAtTransaction)}',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             fontSize: 13,
                             color: AppTheme.textSecondary,
                           ),
@@ -137,7 +137,7 @@ class WhatsAppReceiptWidget extends StatelessWidget {
                   ),
                   Text(
                     currency.format(item.item.subtotal),
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                       color: AppTheme.textPrimary,
@@ -158,7 +158,7 @@ class WhatsAppReceiptWidget extends StatelessWidget {
             children: [
               Text(
                 'TOTAL',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
                   color: AppTheme.textPrimary,
@@ -166,7 +166,7 @@ class WhatsAppReceiptWidget extends StatelessWidget {
               ),
               Text(
                 currency.format(data.transaction.totalAmount),
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 22,
                   fontWeight: FontWeight.w900,
                   color: AppTheme.primaryColor,
@@ -180,7 +180,7 @@ class WhatsAppReceiptWidget extends StatelessWidget {
             children: [
               Text(
                 'PEMBAYARAN:',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: AppTheme.textSecondary,
@@ -188,7 +188,7 @@ class WhatsAppReceiptWidget extends StatelessWidget {
               ),
               Text(
                 data.transaction.paymentMethod.toUpperCase(),
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: AppTheme.textPrimary,
@@ -201,7 +201,7 @@ class WhatsAppReceiptWidget extends StatelessWidget {
           Text(
             'Terima kasih telah berbelanja!',
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 14,
               fontStyle: FontStyle.italic,
               color: AppTheme.textSecondary,
@@ -211,7 +211,7 @@ class WhatsAppReceiptWidget extends StatelessWidget {
           Text(
             'POSIFY - Solusi POS Pintar',
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 10,
               fontWeight: FontWeight.w600,
               color: AppTheme.primaryColor.withValues(alpha: 0.5),

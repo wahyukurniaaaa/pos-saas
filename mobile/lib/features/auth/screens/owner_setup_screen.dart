@@ -59,7 +59,7 @@ class _OwnerSetupScreenState extends ConsumerState<OwnerSetupScreen> {
                     const SizedBox(height: 10),
                     Text(
                       'Pengaturan Pemilik & Toko',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
@@ -68,7 +68,7 @@ class _OwnerSetupScreenState extends ConsumerState<OwnerSetupScreen> {
                     const SizedBox(height: 4),
                     Text(
                       'Lengkapi data untuk memulai',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 13,
                         color: Colors.white.withValues(alpha: 0.7),
                       ),
@@ -220,14 +220,14 @@ class _OwnerSetupScreenState extends ConsumerState<OwnerSetupScreen> {
                                 _isLoading
                                     ? 'MENYIMPAN...'
                                     : 'MULAI GUNAKAN POSIFY',
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.poppins(
                                   fontWeight: FontWeight.w700,
                                   letterSpacing: 0.5,
                                 ),
                               ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppTheme.primaryColor,
-                                foregroundColor: Colors.white,
+                                foregroundColor: AppTheme.textOnPrimary,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -254,7 +254,7 @@ class _OwnerSetupScreenState extends ConsumerState<OwnerSetupScreen> {
         const SizedBox(width: 8),
         Text(
           label,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.poppins(
             fontSize: 14,
             fontWeight: FontWeight.w600,
             color: AppTheme.textPrimary,

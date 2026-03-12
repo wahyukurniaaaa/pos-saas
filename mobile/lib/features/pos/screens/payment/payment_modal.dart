@@ -179,7 +179,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                   children: [
                     Text(
                       'Pembayaran',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
                         color: AppTheme.textPrimary,
@@ -215,7 +215,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                           children: [
                             Text(
                               'Total Tagihan',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                 color: AppTheme.primaryColor,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -223,7 +223,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                             const SizedBox(height: 8),
                             Text(
                               _currency.format(finalTotal),
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                 fontSize: 32,
                                 fontWeight: FontWeight.w800,
                                 color: AppTheme.primaryColor,
@@ -237,7 +237,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                       // Payment Methods
                       Text(
                         'Metode Pembayaran',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           fontWeight: FontWeight.w600,
                           fontSize: 16,
                         ),
@@ -291,7 +291,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                       : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryColor,
-                    foregroundColor: Colors.white,
+                    foregroundColor: AppTheme.textOnPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -312,7 +312,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                         )
                       : Text(
                           'Konfirmasi & Cetak Struk',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                           ),
@@ -342,7 +342,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
         ),
         child: Text(
           method,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.poppins(
             color: isSelected ? Colors.white : AppTheme.textSecondary,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
           ),
@@ -369,11 +369,11 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
             children: [
               Text(
                 'Terima Tunai',
-                style: GoogleFonts.inter(color: AppTheme.textSecondary),
+                style: GoogleFonts.poppins(color: AppTheme.textSecondary),
               ),
               Text(
                 _currency.format(_cashReceived),
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
                   color: AppTheme.textPrimary,
@@ -407,7 +407,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                         amt == finalTotal
                             ? 'Uang Pas'
                             : _currency.format(amt).replaceAll('Rp ', ''),
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           fontWeight: FontWeight.w600,
                           fontSize: 13,
                         ),
@@ -469,7 +469,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
             children: [
               Text(
                 'Kembalian',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontWeight: FontWeight.w600,
                   color: change > 0
                       ? AppTheme.neutralSlate
@@ -478,7 +478,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
               ),
               Text(
                 _currency.format(change),
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
                   color: change > 0
@@ -506,7 +506,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
         alignment: Alignment.center,
         child: Text(
           label,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.poppins(
             fontSize: 20,
             fontWeight: FontWeight.w600,
             color: textColor ?? AppTheme.textPrimary,
@@ -539,7 +539,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
           Text(
             'Siapkan mesin EDC atau minta Pelanggan scan kode QR. Tekan Konfirmasi jika pembayaran berhasil.',
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               color: AppTheme.textSecondary,
               height: 1.5,
             ),
@@ -555,7 +555,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
       children: [
         Text(
           'Informasi Pelanggan (CRM)',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 16),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 16),
         ),
         const SizedBox(height: 12),
         Container(

@@ -27,11 +27,19 @@ class SettingsTab extends ConsumerWidget {
       appBar: AppBar(
         title: Text(
           'Pengaturan',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w700,
+            color: AppTheme.textOnPrimary,
+          ),
         ),
         backgroundColor: AppTheme.primaryColor,
-        foregroundColor: Colors.white,
+        foregroundColor: AppTheme.textOnPrimary,
         elevation: 0,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: AppTheme.primaryGradient,
+          ),
+        ),
       ),
       body: ResponsiveCenter(
         child: Consumer(
@@ -185,7 +193,7 @@ class SettingsTab extends ConsumerWidget {
         ),
         title: Text(
           title,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.poppins(
             fontWeight: FontWeight.w600,
             fontSize: 14,
             color: !isEnabled
@@ -197,7 +205,7 @@ class SettingsTab extends ConsumerWidget {
         ),
         subtitle: Text(
           subtitle,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.poppins(
             fontSize: 12,
             color: isEnabled ? AppTheme.textSecondary : Colors.grey.shade300,
           ),

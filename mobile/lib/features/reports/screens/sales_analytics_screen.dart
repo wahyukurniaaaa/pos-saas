@@ -134,10 +134,16 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
       appBar: AppBar(
         title: Text(
           'Analitik Penjualan',
-          style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
         ),
         backgroundColor: AppTheme.primaryColor,
-        foregroundColor: Colors.white,
+        foregroundColor: AppTheme.textOnPrimary,
+        elevation: 0,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: AppTheme.primaryGradient,
+          ),
+        ),
       ),
       backgroundColor: AppTheme.backgroundLight,
       body: LayoutBuilder(
@@ -216,7 +222,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                   }
                 },
                 selectedColor: AppTheme.primaryColor,
-                labelStyle: GoogleFonts.inter(
+                labelStyle: GoogleFonts.poppins(
                   color: isSelected ? Colors.white : AppTheme.textPrimary,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                 ),
@@ -286,7 +292,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                   ),
                   child: Text(
                     '${isPositive ? '+' : ''}${change.toStringAsFixed(1)}%',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
                       color: isPositive ? Colors.green : Colors.red,
@@ -298,13 +304,13 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
             const SizedBox(height: 12),
             Text(
               title,
-              style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary),
+              style: GoogleFonts.poppins(fontSize: 12, color: AppTheme.textSecondary),
             ),
             const SizedBox(height: 4),
             FittedBox(
               child: Text(
                 value,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: AppTheme.primaryColor,
@@ -341,18 +347,18 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                 children: [
                   Text(
                     title,
-                    style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary),
+                    style: GoogleFonts.poppins(fontSize: 12, color: AppTheme.textSecondary),
                   ),
                   Text(
                     value,
-                    style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.bold),
+                    style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
             ),
             Text(
               subtitle,
-              style: GoogleFonts.inter(fontSize: 10, color: AppTheme.textSecondary),
+              style: GoogleFonts.poppins(fontSize: 10, color: AppTheme.textSecondary),
             ),
           ],
         ),
@@ -377,7 +383,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
           children: [
             Text(
               'Tren Penjualan ($_selectedRange)',
-              style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+              style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 24),
             SizedBox(
@@ -399,7 +405,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                         return touchedSpots.map((spot) {
                           return LineTooltipItem(
                             _formatCompact(spot.y),
-                            GoogleFonts.inter(
+                            GoogleFonts.poppins(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
@@ -416,7 +422,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                         reservedSize: 45,
                         getTitlesWidget: (value, meta) => Text(
                           _formatCompact(value),
-                          style: GoogleFonts.inter(fontSize: 10, color: AppTheme.textSecondary),
+                          style: GoogleFonts.poppins(fontSize: 10, color: AppTheme.textSecondary),
                         ),
                       ),
                     ),
@@ -448,7 +454,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                               space: 8,
                               child: Text(
                                 label,
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.poppins(
                                   fontSize: 10,
                                   color: AppTheme.textSecondary,
                                   fontWeight: FontWeight.w500,
@@ -523,7 +529,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
           children: [
             Text(
               'Metode Pembayaran',
-              style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+              style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             Row(
@@ -559,8 +565,8 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                               shape: BoxShape.circle,
                             )),
                             const SizedBox(width: 8),
-                            Expanded(child: Text(e.value.method.toUpperCase(), style: GoogleFonts.inter(fontSize: 12))),
-                            Text('${((e.value.totalAmount / _totalRevenue) * 100).toStringAsFixed(0)}%', style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
+                            Expanded(child: Text(e.value.method.toUpperCase(), style: GoogleFonts.poppins(fontSize: 12))),
+                            Text('${((e.value.totalAmount / _totalRevenue) * 100).toStringAsFixed(0)}%', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
                           ],
                         ),
                       );
@@ -586,7 +592,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
           children: [
             Text(
               'Top 5 Produk (Kuantitas)',
-              style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+              style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             if (_topProducts.isEmpty)
@@ -595,7 +601,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 20),
                   child: Text(
                     'Belum ada data',
-                    style: GoogleFonts.inter(color: AppTheme.textSecondary),
+                    style: GoogleFonts.poppins(color: AppTheme.textSecondary),
                   ),
                 ),
               )
@@ -611,10 +617,10 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                        children: [
                          Row(
                            children: [
-                             Text('${entry.key + 1}', style: GoogleFonts.inter(color: AppTheme.textSecondary, fontWeight: FontWeight.bold)),
+                             Text('${entry.key + 1}', style: GoogleFonts.poppins(color: AppTheme.textSecondary, fontWeight: FontWeight.bold)),
                              const SizedBox(width: 12),
-                             Expanded(child: Text(p.productName, style: GoogleFonts.inter(fontWeight: FontWeight.w600))),
-                             Text('${p.totalQuantity}x', style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
+                             Expanded(child: Text(p.productName, style: GoogleFonts.poppins(fontWeight: FontWeight.w600))),
+                             Text('${p.totalQuantity}x', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
                            ],
                          ),
                          const SizedBox(height: 6),

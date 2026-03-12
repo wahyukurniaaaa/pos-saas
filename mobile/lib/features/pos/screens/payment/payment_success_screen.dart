@@ -62,7 +62,7 @@ class PaymentSuccessScreen extends ConsumerWidget {
                 Text(
                   'TRANSAKSI BERHASIL',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 24,
                     fontWeight: FontWeight.w800,
                     color: AppTheme.textPrimary,
@@ -141,7 +141,7 @@ class PaymentSuccessScreen extends ConsumerWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    textStyle: GoogleFonts.inter(
+                    textStyle: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
@@ -182,13 +182,13 @@ class PaymentSuccessScreen extends ConsumerWidget {
                   label: const Text('BAGIKAN KE WHATSAPP'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF25D366), // WhatsApp Green
-                    foregroundColor: Colors.white,
+                    foregroundColor: AppTheme.textOnPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    textStyle: GoogleFonts.inter(
+                    textStyle: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
@@ -203,13 +203,13 @@ class PaymentSuccessScreen extends ConsumerWidget {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryColor,
-                    foregroundColor: Colors.white,
+                    foregroundColor: AppTheme.textOnPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    textStyle: GoogleFonts.inter(
+                    textStyle: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
@@ -232,7 +232,7 @@ class PaymentSuccessScreen extends ConsumerWidget {
         children: [
           Text(
             label,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: isTotal ? 16 : 14,
               color: isTotal ? AppTheme.textPrimary : AppTheme.textSecondary,
               fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
@@ -240,7 +240,7 @@ class PaymentSuccessScreen extends ConsumerWidget {
           ),
           Text(
             value,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: isTotal ? 20 : 14,
               color: isTotal ? AppTheme.primaryColor : AppTheme.textPrimary,
               fontWeight: isTotal ? FontWeight.w800 : FontWeight.w600,

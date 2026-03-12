@@ -109,7 +109,7 @@ class _SupervisorAuthDialogState extends ConsumerState<SupervisorAuthDialog> {
               const SizedBox(height: 16),
               Text(
                 'Otorisasi Supervisor',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
                   color: AppTheme.textPrimary,
@@ -119,7 +119,7 @@ class _SupervisorAuthDialogState extends ConsumerState<SupervisorAuthDialog> {
               Text(
                 widget.actionDescription,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   color: AppTheme.textSecondary,
                   fontSize: 14,
                 ),
@@ -153,7 +153,7 @@ class _SupervisorAuthDialogState extends ConsumerState<SupervisorAuthDialog> {
                 const SizedBox(height: 12),
                 Text(
                   _errorMessage!,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     color: AppTheme.errorColor,
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
@@ -178,7 +178,7 @@ class _SupervisorAuthDialogState extends ConsumerState<SupervisorAuthDialog> {
                 onPressed: () => Navigator.of(context).pop(null),
                 child: Text(
                   'Batal',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     color: AppTheme.textSecondary,
                     fontWeight: FontWeight.w600,
                   ),
@@ -224,7 +224,7 @@ class _SupervisorAuthDialogState extends ConsumerState<SupervisorAuthDialog> {
         alignment: Alignment.center,
         child: Text(
           label,
-          style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w600),
+          style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w600),
         ),
       ),
     );

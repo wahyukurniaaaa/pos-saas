@@ -40,11 +40,19 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
       appBar: AppBar(
         title: Text(
           'Manajemen Stok',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w700,
+            color: AppTheme.textOnPrimary,
+          ),
         ),
         backgroundColor: AppTheme.primaryColor,
-        foregroundColor: Colors.white,
+        foregroundColor: AppTheme.textOnPrimary,
         elevation: 0,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: AppTheme.primaryGradient,
+          ),
+        ),
         actions: [
           if (!isCashier)
             IconButton(
@@ -71,7 +79,7 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                     const SizedBox(height: 12),
                     Text(
                       'Belum ada produk',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         color: AppTheme.textSecondary,
                         fontSize: 15,
                       ),
@@ -86,7 +94,7 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                           label: const Text('Tambah Produk'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppTheme.primaryColor,
-                            foregroundColor: Colors.white,
+                            foregroundColor: AppTheme.textOnPrimary,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -129,7 +137,7 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                               Expanded(
                                 child: Text(
                                   p.name,
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.poppins(
                                     fontWeight: FontWeight.w600,
                                     fontSize: 14,
                                   ),
@@ -147,7 +155,7 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                                   ),
                                   child: Text(
                                     'Varian',
-                                    style: GoogleFonts.inter(
+                                    style: GoogleFonts.poppins(
                                       fontSize: 10,
                                       color: Colors.orange.shade800,
                                       fontWeight: FontWeight.w600,
@@ -160,7 +168,7 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                             p.hasVariants
                                 ? '${p.sku}  •  Harga dasar: ${_currency.format(p.price)}'
                                 : '${p.sku}  •  ${_currency.format(p.price)}',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               fontSize: 12,
                               color: AppTheme.textSecondary,
                             ),
@@ -172,7 +180,7 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                                 Chip(
                                   label: Text(
                                     'Stok: ${p.stock}',
-                                    style: GoogleFonts.inter(
+                                    style: GoogleFonts.poppins(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
                                       color: p.stock > 0
@@ -323,14 +331,14 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                               icon: const Icon(Icons.add_rounded),
                               label: Text(
                                 'Tambah Produk Baru',
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.poppins(
                                   fontWeight: FontWeight.w700,
                                   fontSize: 14,
                                 ),
                               ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppTheme.primaryColor,
-                                foregroundColor: Colors.white,
+                                foregroundColor: AppTheme.textOnPrimary,
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 14,
                                 ),
@@ -360,7 +368,7 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           'Hapus Produk',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
         ),
         content: Text('Yakin ingin menghapus "${product.name}"?'),
         actions: [
@@ -377,7 +385,7 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.errorColor,
-              foregroundColor: Colors.white,
+              foregroundColor: AppTheme.textOnPrimary,
             ),
             child: const Text('Hapus'),
           ),
@@ -531,7 +539,7 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
               children: [
               Text(
                 widget.product == null ? 'Tambah Produk' : 'Edit Produk',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),
@@ -566,7 +574,7 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
                               const SizedBox(height: 4),
                               Text(
                                 'Foto',
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.poppins(
                                   fontSize: 12,
                                   color: Colors.grey,
                                 ),
@@ -671,11 +679,11 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
                 },
                 title: Text(
                   'Produk ini memiliki varian',
-                  style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
                 ),
                 subtitle: Text(
                   'Contoh: Ukuran (S/M/L), Rasa (Coklat/Vanilla)',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 12,
                     color: AppTheme.textSecondary,
                   ),
@@ -689,7 +697,7 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
                 const Divider(),
                 Text(
                   'Daftar Varian',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
                   ),
@@ -713,7 +721,7 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
                             children: [
                               Text(
                                 'Varian ${idx + 1}',
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.poppins(
                                   fontWeight: FontWeight.w600,
                                   fontSize: 13,
                                 ),
@@ -839,7 +847,7 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
                   onPressed: _isLoading ? null : _saveProduct,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryColor,
-                    foregroundColor: Colors.white,
+                    foregroundColor: AppTheme.textOnPrimary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -855,7 +863,7 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
                         )
                       : Text(
                           'Simpan Produk',
-                          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
                         ),
                 ),
               ),

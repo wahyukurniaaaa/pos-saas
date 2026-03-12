@@ -61,10 +61,10 @@ class _TaxServiceSettingsScreenState
       appBar: AppBar(
         title: Text(
           'Pajak & Service Charge',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
         ),
         backgroundColor: AppTheme.primaryColor,
-        foregroundColor: Colors.white,
+        foregroundColor: AppTheme.textOnPrimary,
       ),
       body: ResponsiveCenter(child: storeAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -145,7 +145,7 @@ class _TaxServiceSettingsScreenState
                       : _save,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryColor,
-                    foregroundColor: Colors.white,
+                    foregroundColor: AppTheme.textOnPrimary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -154,7 +154,7 @@ class _TaxServiceSettingsScreenState
                       ? const CircularProgressIndicator(color: Colors.white)
                       : Text(
                           'Simpan Pengaturan',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             fontWeight: FontWeight.w700,
                             fontSize: 16,
                           ),
@@ -171,7 +171,7 @@ class _TaxServiceSettingsScreenState
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      style: GoogleFonts.inter(
+      style: GoogleFonts.poppins(
         fontSize: 16,
         fontWeight: FontWeight.w700,
         color: AppTheme.textPrimary,
@@ -205,7 +205,7 @@ class _TaxServiceSettingsScreenState
           children: [
             Text(
               label,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontWeight: FontWeight.w700,
                 color: selected ? AppTheme.primaryColor : AppTheme.textPrimary,
                 fontSize: 13,
@@ -214,7 +214,7 @@ class _TaxServiceSettingsScreenState
             const SizedBox(height: 4),
             Text(
               description,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontSize: 10,
                 color: AppTheme.textSecondary,
               ),

@@ -33,14 +33,14 @@ class _CategoryManagementScreenState
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           existing != null ? 'Edit Kategori' : 'Tambah Kategori',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
         ),
         content: TextField(
           controller: _nameController,
           autofocus: true,
           decoration: InputDecoration(
             hintText: 'Nama kategori',
-            hintStyle: GoogleFonts.inter(color: AppTheme.textSecondary),
+            hintStyle: GoogleFonts.poppins(color: AppTheme.textSecondary),
             filled: true,
             fillColor: Colors.grey.shade50,
             border: OutlineInputBorder(
@@ -61,7 +61,7 @@ class _CategoryManagementScreenState
             onPressed: () => Navigator.pop(ctx),
             child: Text(
               'Batal',
-              style: GoogleFonts.inter(color: AppTheme.textSecondary),
+              style: GoogleFonts.poppins(color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -80,14 +80,14 @@ class _CategoryManagementScreenState
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.primaryColor,
-              foregroundColor: Colors.white,
+              foregroundColor: AppTheme.textOnPrimary,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
             child: Text(
               'Simpan',
-              style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -102,18 +102,18 @@ class _CategoryManagementScreenState
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           'Hapus Kategori',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
         ),
         content: Text(
           'Yakin ingin menghapus kategori "${cat.name}"?',
-          style: GoogleFonts.inter(),
+          style: GoogleFonts.poppins(),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text(
               'Batal',
-              style: GoogleFonts.inter(color: AppTheme.textSecondary),
+              style: GoogleFonts.poppins(color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -124,14 +124,14 @@ class _CategoryManagementScreenState
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.errorColor,
-              foregroundColor: Colors.white,
+              foregroundColor: AppTheme.textOnPrimary,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
             child: Text(
               'Hapus',
-              style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -147,10 +147,10 @@ class _CategoryManagementScreenState
       appBar: AppBar(
         title: Text(
           'Kelola Kategori Produk',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
         ),
         backgroundColor: AppTheme.primaryColor,
-        foregroundColor: Colors.white,
+        foregroundColor: AppTheme.textOnPrimary,
         elevation: 0,
       ),
       body: ResponsiveCenter(child: StreamBuilder<List<Category>>(
@@ -174,7 +174,7 @@ class _CategoryManagementScreenState
                   const SizedBox(height: 16),
                   Text(
                     'Belum ada kategori',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       color: AppTheme.textSecondary,
                       fontSize: 16,
                     ),
@@ -214,7 +214,7 @@ class _CategoryManagementScreenState
                   ),
                   title: Text(
                     cat.name,
-                    style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                    style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
                   ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,

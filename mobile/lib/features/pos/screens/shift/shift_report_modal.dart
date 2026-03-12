@@ -101,7 +101,7 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
                   children: [
                     Text(
                       'Laporan Shift Saat Ini',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
                         color: AppTheme.textPrimary,
@@ -110,7 +110,7 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
                     const SizedBox(height: 4),
                     Text(
                       'Kasir: ${widget.cashierName}',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         color: AppTheme.textSecondary,
                         fontSize: 14,
                       ),
@@ -147,7 +147,7 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
                       children: [
                         Text(
                           'Estimasi Uang Dalam Laci',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             color: AppTheme.primaryColor,
                             fontWeight: FontWeight.w500,
                           ),
@@ -155,7 +155,7 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
                         const SizedBox(height: 8),
                         Text(
                           _currency.format(expectedDrawer),
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             fontSize: 32,
                             fontWeight: FontWeight.w800,
                             color: AppTheme.primaryColor,
@@ -218,7 +218,7 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
                           borderSide: BorderSide(color: Colors.grey.shade300),
                         ),
                       ),
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                         color: AppTheme.textPrimary,
@@ -267,7 +267,7 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
                             Expanded(
                               child: Text(
                                 'Tutup shift akan mengakhiri sesi penjualan dan mengirim laporan harian.',
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.poppins(
                                   color: AppTheme.dangerColor,
                                   fontSize: 13,
                                 ),
@@ -293,13 +293,13 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppTheme.dangerColor,
-                              foregroundColor: Colors.white,
+                              foregroundColor: AppTheme.textOnPrimary,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                             ),
                             child: Text(
                               'Kalkulasi & Tutup Shift',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -320,7 +320,7 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      style: GoogleFonts.inter(
+      style: GoogleFonts.poppins(
         fontSize: 16,
         fontWeight: FontWeight.w600,
         color: AppTheme.textPrimary,
@@ -350,14 +350,14 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
         children: [
           Text(
             label,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               color: AppTheme.textSecondary,
               fontWeight: FontWeight.w500,
             ),
           ),
           Text(
             _currency.format(amount),
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontWeight: FontWeight.w600,
               color: amountColor,
             ),
@@ -390,14 +390,14 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
         children: [
           Text(
             'Selisih Kas',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontWeight: FontWeight.w600,
               color: isWarning ? AppTheme.dangerColor : AppTheme.successColor,
             ),
           ),
           Text(
             _currency.format(diff),
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontWeight: FontWeight.w800,
               color: isWarning ? AppTheme.dangerColor : AppTheme.successColor,
             ),
@@ -424,18 +424,18 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           'Konfirmasi Tutup Shift',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
         ),
         content: Text(
           'Sesi kasir akan diakhiri. $diffText Apakah Anda yakin uang fisik di laci telah sesuai dengan input Anda?',
-          style: GoogleFonts.inter(color: AppTheme.textSecondary),
+          style: GoogleFonts.poppins(color: AppTheme.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text(
               'Batal',
-              style: GoogleFonts.inter(color: AppTheme.textSecondary),
+              style: GoogleFonts.poppins(color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -460,7 +460,7 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
                   SnackBar(
                     content: Text(
                       'Shift Ditutup, laporan tercetak! ✅',
-                      style: GoogleFonts.inter(fontWeight: FontWeight.w500),
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
                     ),
                     backgroundColor: AppTheme.successColor,
                     behavior: SnackBarBehavior.floating,
@@ -471,7 +471,7 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
                   SnackBar(
                     content: Text(
                       'Gagal menutup shift. Silakan coba lagi.',
-                      style: GoogleFonts.inter(fontWeight: FontWeight.w500),
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
                     ),
                     backgroundColor: AppTheme.dangerColor,
                   ),

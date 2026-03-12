@@ -114,7 +114,7 @@ class _PosTabState extends ConsumerState<PosTab> {
           const SizedBox(height: 16),
           Text(
             'Kasir Belum Buka',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 20,
               fontWeight: FontWeight.w700,
               color: AppTheme.textPrimary,
@@ -123,7 +123,7 @@ class _PosTabState extends ConsumerState<PosTab> {
           const SizedBox(height: 8),
           Text(
             'Silakan buka shift untuk mulai bertransaksi',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 14,
               color: AppTheme.textSecondary,
             ),
@@ -142,7 +142,7 @@ class _PosTabState extends ConsumerState<PosTab> {
               label: const Text('Buka Kasir'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryColor,
-                foregroundColor: Colors.white,
+                foregroundColor: AppTheme.textOnPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
@@ -158,7 +158,9 @@ class _PosTabState extends ConsumerState<PosTab> {
 
   Widget _buildAppBar(String cashierName, bool hasOpenShift) {
     return Container(
-      color: AppTheme.primaryColor,
+      decoration: const BoxDecoration(
+        gradient: AppTheme.primaryGradient,
+      ),
       child: SafeArea(
         bottom: false,
         child: Padding(
@@ -167,11 +169,11 @@ class _PosTabState extends ConsumerState<PosTab> {
             children: [
               CircleAvatar(
                 radius: 16,
-                backgroundColor: Colors.white24,
+                backgroundColor: AppTheme.secondaryColor.withValues(alpha: 0.1),
                 child: Text(
                   cashierName.isNotEmpty ? cashierName[0].toUpperCase() : 'K',
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppTheme.textOnPrimary,
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                   ),
@@ -181,10 +183,10 @@ class _PosTabState extends ConsumerState<PosTab> {
               Expanded(
                 child: Text(
                   cashierName,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: AppTheme.textOnPrimary,
                   ),
                 ),
               ),
@@ -234,9 +236,9 @@ class _PosTabState extends ConsumerState<PosTab> {
                         const SizedBox(width: 5),
                         Text(
                           hasOpenShift ? 'Shift Buka' : 'Shift Tutup',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             fontSize: 11,
-                            color: Colors.white,
+                            color: AppTheme.textOnPrimary,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -263,7 +265,7 @@ class _PosTabState extends ConsumerState<PosTab> {
         },
         decoration: InputDecoration(
           hintText: 'Cari produk atau SKU...',
-          hintStyle: GoogleFonts.inter(
+          hintStyle: GoogleFonts.poppins(
             fontSize: 14,
             color: AppTheme.textSecondary,
           ),
@@ -331,7 +333,7 @@ class _PosTabState extends ConsumerState<PosTab> {
       child: FilterChip(
         label: Text(
           label,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.poppins(
             fontSize: 13,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
           ),
@@ -379,7 +381,7 @@ class _PosTabState extends ConsumerState<PosTab> {
                 const SizedBox(height: 8),
                 Text(
                   'Belum ada produk',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     color: AppTheme.textSecondary,
                     fontSize: 14,
                   ),
@@ -467,7 +469,7 @@ class _PosTabState extends ConsumerState<PosTab> {
                     product.name,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: AppTheme.textPrimary,
@@ -477,7 +479,7 @@ class _PosTabState extends ConsumerState<PosTab> {
                   const SizedBox(height: 4),
                   Text(
                     hasVariants ? 'Lihat Varian' : _currency.format(product.price),
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                       color: AppTheme.primaryColor,
@@ -486,7 +488,7 @@ class _PosTabState extends ConsumerState<PosTab> {
                   const SizedBox(height: 2),
                   Text(
                     hasVariants ? 'Berbagai pilihan' : 'Stok: ${product.stock}',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
                       color: isOutOfStock
@@ -515,7 +517,7 @@ class _PosTabState extends ConsumerState<PosTab> {
                   ),
                   child: Text(
                     'Habis',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       color: Colors.white,
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
@@ -535,7 +537,7 @@ class _PosTabState extends ConsumerState<PosTab> {
                   ),
                   child: Text(
                     'Varian',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       color: Colors.white,
                       fontSize: 9,
                       fontWeight: FontWeight.w700,
@@ -601,7 +603,7 @@ class CartPanel extends ConsumerWidget {
               const SizedBox(width: 8),
               Text(
                 'Keranjang Belanja',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontWeight: FontWeight.w700,
                   fontSize: 16,
                 ),
@@ -617,7 +619,7 @@ class CartPanel extends ConsumerWidget {
                   ),
                   child: Text(
                     'Hapus Semua',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -642,7 +644,7 @@ class CartPanel extends ConsumerWidget {
                       const SizedBox(height: 12),
                       Text(
                         'Belum ada item',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           color: AppTheme.textSecondary,
                           fontSize: 14,
                         ),
@@ -682,14 +684,14 @@ class CartPanel extends ConsumerWidget {
                   children: [
                     Text(
                       'Subtotal',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 14,
                         color: AppTheme.textSecondary,
                       ),
                     ),
                     Text(
                       _currency.format(subtotal),
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                       ),
@@ -704,7 +706,7 @@ class CartPanel extends ConsumerWidget {
                     onPressed: () => _showPaymentDialog(context, ref, subtotal),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.primaryColor,
-                      foregroundColor: Colors.white,
+                      foregroundColor: AppTheme.textOnPrimary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -712,7 +714,7 @@ class CartPanel extends ConsumerWidget {
                     ),
                     child: Text(
                       'Lanjut Pembayaran',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontWeight: FontWeight.w700,
                         fontSize: 14,
                       ),
@@ -754,7 +756,7 @@ class CartPanel extends ConsumerWidget {
                   item.product.name,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -762,7 +764,7 @@ class CartPanel extends ConsumerWidget {
                 if (item.variant != null)
                   Text(
                     '${item.variant!.name}: ${item.variant!.optionValue}',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       fontSize: 12,
                       color: AppTheme.textSecondary,
                       fontStyle: FontStyle.italic,
@@ -771,7 +773,7 @@ class CartPanel extends ConsumerWidget {
                 const SizedBox(height: 4),
                 Text(
                   currency.format(item.effectivePrice),
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 13,
                     color: AppTheme.primaryColor,
                     fontWeight: FontWeight.w600,
@@ -858,7 +860,7 @@ class _CartQtyActionState extends ConsumerState<_CartQtyAction> {
               textAlign: TextAlign.center,
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
               ),
@@ -986,7 +988,7 @@ class CartBottomSticky extends ConsumerWidget {
                   children: [
                     Text(
                       '$totalItems item di keranjang',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         color: Colors.white.withValues(alpha: 0.9),
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
@@ -994,7 +996,7 @@ class CartBottomSticky extends ConsumerWidget {
                     ),
                     Text(
                       _currency.format(subtotal),
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         color: Colors.white,
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
@@ -1005,7 +1007,7 @@ class CartBottomSticky extends ConsumerWidget {
                 const Spacer(),
                 Text(
                   'Lihat',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
@@ -1132,7 +1134,7 @@ class _VariantPickerSheetState extends ConsumerState<_VariantPickerSheet> {
                     children: [
                       Text(
                         widget.product.name,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                           color: AppTheme.textPrimary,
@@ -1141,7 +1143,7 @@ class _VariantPickerSheetState extends ConsumerState<_VariantPickerSheet> {
                       const SizedBox(height: 4),
                       Text(
                         'Pilih varian produk di bawah ini',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           fontSize: 13,
                           color: AppTheme.textSecondary,
                         ),
@@ -1168,7 +1170,7 @@ class _VariantPickerSheetState extends ConsumerState<_VariantPickerSheet> {
             Center(
               child: Text(
                 'Belum ada varian untuk produk ini.',
-                style: GoogleFonts.inter(color: AppTheme.textSecondary),
+                style: GoogleFonts.poppins(color: AppTheme.textSecondary),
               ),
             )
           else
@@ -1221,7 +1223,7 @@ class _VariantPickerSheetState extends ConsumerState<_VariantPickerSheet> {
                               children: [
                                 Text(
                                   '${v.name}: ${v.optionValue}',
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.poppins(
                                     fontWeight: FontWeight.w600,
                                     fontSize: 14,
                                     color: isOutOfStock
@@ -1231,7 +1233,7 @@ class _VariantPickerSheetState extends ConsumerState<_VariantPickerSheet> {
                                 ),
                                 Text(
                                   'Stok: ${v.stock}',
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.poppins(
                                     fontSize: 12,
                                     color: isOutOfStock
                                         ? AppTheme.errorColor
@@ -1245,7 +1247,7 @@ class _VariantPickerSheetState extends ConsumerState<_VariantPickerSheet> {
                             isOutOfStock
                                 ? 'Habis'
                                 : _currency.format(effectivePrice),
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               fontWeight: FontWeight.w700,
                               fontSize: 14,
                               color: isOutOfStock

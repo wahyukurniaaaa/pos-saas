@@ -110,11 +110,19 @@ class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
       appBar: AppBar(
         title: Text(
           _isEditing ? 'Edit Karyawan' : 'Tambah Karyawan Baru',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w700,
+            color: AppTheme.textOnPrimary,
+          ),
         ),
         backgroundColor: AppTheme.primaryColor,
-        foregroundColor: Colors.white,
+        foregroundColor: AppTheme.textOnPrimary,
         elevation: 0,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: AppTheme.primaryGradient,
+          ),
+        ),
       ),
       body: ResponsiveCenter(
         child: Form(
@@ -148,7 +156,7 @@ class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
                         ),
                         child: const Icon(
                           Icons.camera_alt,
-                          color: Colors.white,
+                          color: AppTheme.textOnPrimary,
                           size: 16,
                         ),
                       ),
@@ -178,7 +186,7 @@ class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
                 items: _roles.map((r) {
                   return DropdownMenuItem(
                     value: r['value'],
-                    child: Text(r['label']!, style: GoogleFonts.inter()),
+                    child: Text(r['label']!, style: GoogleFonts.poppins()),
                   );
                 }).toList(),
                 onChanged: (v) => setState(() => _selectedRole = v!),
@@ -217,7 +225,7 @@ class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
                 items: _statuses.map((s) {
                   return DropdownMenuItem(
                     value: s['value'],
-                    child: Text(s['label']!, style: GoogleFonts.inter()),
+                    child: Text(s['label']!, style: GoogleFonts.poppins()),
                   );
                 }).toList(),
                 onChanged: (v) => setState(() => _selectedStatus = v!),
@@ -229,7 +237,7 @@ class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
                 onPressed: _isLoading ? null : _saveEmployee,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryColor,
-                  foregroundColor: Colors.white,
+                  foregroundColor: AppTheme.textOnPrimary,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -242,12 +250,12 @@ class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
                         width: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.white,
+                          color: AppTheme.textOnPrimary,
                         ),
                       )
                     : Text(
                         '💾 SIMPAN KARYAWAN',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                         ),
@@ -263,7 +271,7 @@ class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
   Widget _buildLabel(String text) {
     return Text(
       text,
-      style: GoogleFonts.inter(
+      style: GoogleFonts.poppins(
         fontWeight: FontWeight.w600,
         fontSize: 14,
         color: AppTheme.textPrimary,
@@ -274,7 +282,7 @@ class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
   InputDecoration _inputDecoration(String hint) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: GoogleFonts.inter(color: AppTheme.textSecondary),
+      hintStyle: GoogleFonts.poppins(color: AppTheme.textSecondary),
       filled: true,
       fillColor: Colors.grey.shade50,
       border: OutlineInputBorder(

@@ -18,11 +18,19 @@ class EmployeeListScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(
           'Daftar Karyawan',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w700,
+            color: AppTheme.textOnPrimary,
+          ),
         ),
         backgroundColor: AppTheme.primaryColor,
-        foregroundColor: Colors.white,
+        foregroundColor: AppTheme.textOnPrimary,
         elevation: 0,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: AppTheme.primaryGradient,
+          ),
+        ),
       ),
       body: ResponsiveCenter(child: StreamBuilder<List<Employee>>(
         stream: db.watchAllEmployees(),
@@ -45,7 +53,7 @@ class EmployeeListScreen extends ConsumerWidget {
                   const SizedBox(height: 16),
                   Text(
                     'Belum ada karyawan',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       color: AppTheme.textSecondary,
                       fontSize: 16,
                     ),
@@ -73,7 +81,7 @@ class EmployeeListScreen extends ConsumerWidget {
           );
         },
         backgroundColor: AppTheme.primaryColor,
-        child: const Icon(Icons.add, color: Colors.white),
+        child: const Icon(Icons.add, color: AppTheme.textOnPrimary),
       ),
     );
   }
@@ -127,7 +135,7 @@ class _EmployeeCard extends StatelessWidget {
         ),
         title: Text(
           employee.name,
-          style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
         ),
         subtitle: Row(
           children: [
@@ -140,7 +148,7 @@ class _EmployeeCard extends StatelessWidget {
               ),
               child: Text(
                 _getRoleLabel(employee.role),
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
                   color: _getRoleColor(employee.role),
@@ -160,7 +168,7 @@ class _EmployeeCard extends StatelessWidget {
           },
           child: Text(
             'Edit',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               color: AppTheme.primaryColor,
               fontWeight: FontWeight.w600,
             ),

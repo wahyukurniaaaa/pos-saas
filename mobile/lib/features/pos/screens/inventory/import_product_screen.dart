@@ -16,10 +16,10 @@ class ImportProductScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(
           'Impor Produk',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
         ),
         backgroundColor: AppTheme.primaryColor,
-        foregroundColor: Colors.white,
+        foregroundColor: AppTheme.textOnPrimary,
       ),
       body: ResponsiveCenter(child: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -36,7 +36,7 @@ class ImportProductScreen extends ConsumerWidget {
             Text(
               'Impor Produk dari CSV',
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
               ),
@@ -46,7 +46,7 @@ class ImportProductScreen extends ConsumerWidget {
               'Gunakan file CSV dengan format berikut:\n'
               'Nama, SKU, Harga, Stok, ID Kategori',
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 color: AppTheme.textSecondary,
                 fontSize: 14,
               ),
@@ -68,7 +68,7 @@ class ImportProductScreen extends ConsumerWidget {
                 label: const Text('PILIH FILE CSV'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryColor,
-                  foregroundColor: Colors.white,
+                  foregroundColor: AppTheme.textOnPrimary,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
