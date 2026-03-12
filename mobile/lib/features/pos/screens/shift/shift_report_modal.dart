@@ -454,6 +454,7 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
               if (!mounted) return;
               setState(() => _isSubmitting = false);
 
+              if (!mounted) return;
               if (success) {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(

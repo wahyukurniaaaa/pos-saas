@@ -316,6 +316,15 @@ class PosifyDatabase extends _$PosifyDatabase {
     transactions,
   )..orderBy([(t) => OrderingTerm.desc(t.createdAt)])).watch();
 
+  Stream<List<Transaction>> watchTransactionsByRange(
+    DateTime start,
+    DateTime end,
+  ) => (select(
+    transactions,
+  )
+    ..where((t) => t.createdAt.isBetweenValues(start, end))
+    ..orderBy([(t) => OrderingTerm.desc(t.createdAt)])).watch();
+
   // ===== All Shifts =====
   Future<List<ShiftWithEmployee>> getAllShifts() async {
     final query = select(shifts).join([

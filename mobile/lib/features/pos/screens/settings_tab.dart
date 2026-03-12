@@ -132,7 +132,7 @@ class SettingsTab extends ConsumerWidget {
                   isDestructive: true,
                   onTap: () {
                     ref.read(sessionProvider.notifier).logout();
-                    Navigator.pushReplacementNamed(context, '/pin-login');
+                    Navigator.pushReplacementNamed(context, '/employee-selection');
                   },
                 ),
               ],

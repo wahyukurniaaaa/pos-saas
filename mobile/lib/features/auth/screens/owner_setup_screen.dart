@@ -281,7 +281,7 @@ class _OwnerSetupScreenState extends ConsumerState<OwnerSetupScreen> {
     setState(() => _isLoading = false);
 
     if (success) {
-      Navigator.pushReplacementNamed(context, '/pin-login');
+      Navigator.pushReplacementNamed(context, '/employee-selection');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

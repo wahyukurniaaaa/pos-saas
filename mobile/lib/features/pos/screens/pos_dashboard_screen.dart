@@ -4,7 +4,7 @@ import 'package:posify_app/core/theme/app_theme.dart';
 import 'pos_tab.dart';
 import 'inventory_tab.dart';
 import 'settings_tab.dart';
-import 'package:posify_app/features/settings/screens/transaction_history_screen.dart';
+import 'current_shift_history_tab.dart';
 
 class PosDashboardScreen extends ConsumerStatefulWidget {
   const PosDashboardScreen({super.key});
@@ -24,7 +24,7 @@ class _PosDashboardScreenState extends ConsumerState<PosDashboardScreen> {
         index: _currentTabIndex,
         children: const [
           PosTab(),
-          TransactionHistoryScreen(),
+          CurrentShiftHistoryTab(),
           InventoryTab(),
           SettingsTab()
         ],

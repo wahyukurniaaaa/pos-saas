@@ -32,9 +32,14 @@ class PosifyApp extends StatelessWidget {
       routes: {
         '/license': (context) => const LicenseActivationScreen(),
         '/owner-setup': (context) => const OwnerSetupScreen(),
-        '/pin-login': (context) => PinLoginScreen(
-              employee: ModalRoute.of(context)!.settings.arguments as Employee,
-            ),
+        '/pin-login': (context) {
+          final employee = ModalRoute.of(context)!.settings.arguments;
+          if (employee is Employee) {
+            return PinLoginScreen(employee: employee);
+          }
+          // Fallback if no employee is provided
+          return const EmployeeSelectionScreen();
+        },
         '/employee-selection': (context) => const EmployeeSelectionScreen(),
         '/pos': (context) => const PosDashboardScreen(),
       },

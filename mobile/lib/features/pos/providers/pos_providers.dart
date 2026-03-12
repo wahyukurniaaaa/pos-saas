@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:posify_app/core/database/database.dart';
@@ -234,4 +235,54 @@ class CartNotifier extends Notifier<List<CartItem>> {
 
 final cartProvider = NotifierProvider<CartNotifier, List<CartItem>>(
   CartNotifier.new,
+);
+
+// ===== History Filter Provider =====
+
+enum HistoryFilterType {
+  currentShift,
+  today,
+  thisWeek,
+  thisMonth,
+  thisYear,
+  custom
+}
+
+class HistoryFilter {
+  final HistoryFilterType type;
+  final DateTimeRange? range;
+
+  HistoryFilter({required this.type, this.range});
+
+  String get label {
+    switch (type) {
+      case HistoryFilterType.currentShift:
+        return 'Shift Sekarang';
+      case HistoryFilterType.today:
+        return 'Hari Ini';
+      case HistoryFilterType.thisWeek:
+        return 'Minggu Ini';
+      case HistoryFilterType.thisMonth:
+        return 'Bulan Ini';
+      case HistoryFilterType.thisYear:
+        return 'Tahun Ini';
+      case HistoryFilterType.custom:
+        return 'Pilih Tanggal';
+    }
+  }
+}
+
+class HistoryFilterNotifier extends Notifier<HistoryFilter> {
+  @override
+  HistoryFilter build() {
+    return HistoryFilter(type: HistoryFilterType.currentShift);
+  }
+
+  void setFilter(HistoryFilter filter) {
+    state = filter;
+  }
+}
+
+final historyFilterProvider = NotifierProvider<HistoryFilterNotifier, HistoryFilter>(
+  HistoryFilterNotifier.new,
 );

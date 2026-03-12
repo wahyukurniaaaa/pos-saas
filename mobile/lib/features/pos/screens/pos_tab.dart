@@ -1107,163 +1107,245 @@ class _VariantPickerSheetState extends ConsumerState<_VariantPickerSheet> {
   Widget build(BuildContext context) {
     return ResponsiveCenter(
       maxWidth: 600,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Product Image in Variant Picker
-                ProductImage(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Hero Image Section
+          Stack(
+            children: [
+              Container(
+                height: 240,
+                width: double.infinity,
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryColor.withValues(alpha: 0.05),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                child: ProductImage(
                   imageUri: widget.product.imageUri,
                   categoryId: widget.product.categoryId,
-                  width: 80,
-                  height: 80,
-                  borderRadius: 12,
-                  iconSize: 32,
+                  width: double.infinity,
+                  height: 240,
+                  borderRadius: 0, // Will be clipped by container if needed
+                  iconSize: 64,
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.product.name,
-                        style: GoogleFonts.inter(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: AppTheme.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Pilih varian produk di bawah ini',
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          color: AppTheme.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  style: IconButton.styleFrom(
-                    backgroundColor: Colors.grey.shade100,
-                    padding: const EdgeInsets.all(4),
-                  ),
-                ),
-              ],
-            ),
-          const SizedBox(height: 16),
-          if (_loading)
-            const Center(child: CircularProgressIndicator())
-          else if (_variants.isEmpty)
-            Center(
-              child: Text(
-                'Belum ada varian untuk produk ini.',
-                style: GoogleFonts.inter(color: AppTheme.textSecondary),
               ),
-            )
-          else
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _variants.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 8),
-              itemBuilder: (_, i) {
-                final v = _variants[i];
-                final effectivePrice =
-                    (v.price != null && v.price! > 0)
-                        ? v.price!
-                        : widget.product.price;
-                final isOutOfStock = v.stock <= 0;
+              // Close Button Overlay
+              Positioned(
+                top: 12,
+                right: 12,
+                child: Material(
+                  color: Colors.white,
+                  shape: const CircleBorder(),
+                  elevation: 2,
+                  child: IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close, size: 20),
+                    padding: const EdgeInsets.all(8),
+                    constraints: const BoxConstraints(),
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+              ),
+              // Gradient Overlay for Title readability if needed
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  height: 80,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: 0.4),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: 16,
+                left: 16,
+                right: 16,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.product.name,
+                      style: GoogleFonts.poppins(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Text(
+                      'Pilih Varian',
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white.withValues(alpha: 0.9),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
 
-                return Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: isOutOfStock
-                        ? null
-                        : () {
-                            ref
-                                .read(cartProvider.notifier)
-                                .addToCart(widget.product, variant: v);
-                            Navigator.pop(context);
-                          },
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (_loading)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 40),
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (_variants.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 40),
+                    child: Center(
+                      child: Text(
+                        'Belum ada varian untuk produk ini.',
+                        style: GoogleFonts.poppins(color: AppTheme.textSecondary),
                       ),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: isOutOfStock
-                              ? Colors.grey.shade200
-                              : AppTheme.primaryColor.withValues(alpha: 0.3),
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                        color: isOutOfStock
-                            ? Colors.grey.shade50
-                            : AppTheme.primaryColor.withValues(alpha: 0.03),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                    ),
+                  )
+                else
+                  ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: _variants.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 10),
+                    itemBuilder: (_, i) {
+                      final v = _variants[i];
+                      final effectivePrice =
+                          (v.price != null && v.price! > 0)
+                              ? v.price!
+                              : widget.product.price;
+                      final isOutOfStock = v.stock <= 0;
+
+                      return Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: isOutOfStock
+                              ? null
+                              : () {
+                                  ref
+                                      .read(cartProvider.notifier)
+                                      .addToCart(widget.product, variant: v);
+                                  Navigator.pop(context);
+                                },
+                          borderRadius: BorderRadius.circular(16),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: isOutOfStock
+                                    ? Colors.grey.shade200
+                                    : AppTheme.primaryColor.withValues(alpha: 0.2),
+                                width: 1.5,
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              color: isOutOfStock
+                                  ? Colors.grey.shade50
+                                  : Colors.white,
+                              boxShadow: isOutOfStock ? null : [
+                                BoxShadow(
+                                  color: AppTheme.primaryColor.withValues(alpha: 0.05),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Row(
                               children: [
-                                Text(
-                                  '${v.name}: ${v.optionValue}',
-                                  style: GoogleFonts.inter(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 14,
-                                    color: isOutOfStock
-                                        ? AppTheme.textSecondary
-                                        : AppTheme.textPrimary,
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        '${v.name}: ${v.optionValue}',
+                                        style: GoogleFonts.poppins(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 15,
+                                          color: isOutOfStock
+                                              ? AppTheme.textSecondary
+                                              : AppTheme.textPrimary,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.inventory_2_outlined,
+                                            size: 12,
+                                            color: isOutOfStock
+                                                ? AppTheme.errorColor
+                                                : AppTheme.textSecondary,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            isOutOfStock ? 'Stok Habis' : 'Stok: ${v.stock}',
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w500,
+                                              color: isOutOfStock
+                                                  ? AppTheme.errorColor
+                                                  : AppTheme.textSecondary,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                Text(
-                                  'Stok: ${v.stock}',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 12,
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
                                     color: isOutOfStock
-                                        ? AppTheme.errorColor
-                                        : AppTheme.textSecondary,
+                                        ? Colors.grey.shade200
+                                        : AppTheme.primaryColor.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    isOutOfStock
+                                        ? 'N/A'
+                                        : _currency.format(effectivePrice),
+                                    style: GoogleFonts.poppins(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 14,
+                                      color: isOutOfStock
+                                          ? AppTheme.textSecondary
+                                          : AppTheme.primaryColor,
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          Text(
-                            isOutOfStock
-                                ? 'Habis'
-                                : _currency.format(effectivePrice),
-                            style: GoogleFonts.inter(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 14,
-                              color: isOutOfStock
-                                  ? AppTheme.errorColor
-                                  : AppTheme.primaryColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
+              ],
             ),
+          ),
         ],
       ),
-    ),
-  );
+    );
   }
 }
 
