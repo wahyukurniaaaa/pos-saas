@@ -58,31 +58,56 @@ Berikut adalah representasi visual sketsa (wireframe) kasar untuk aplikasi POSif
 
 ---
 
-### 2. Login & Workspace Kasir (Operasional Harian)
+### 2. Seleksi Karyawan & Login PIN
 
-**A. PIN Login Karyawan:**
+**A. Pilih Profil Karyawan:**
 ```text
 +---------------------------------------+
 |                                       |
 |                                       |
 |           === POSify ===              |
+|        Pilih Profil Anda              |
+|                                       |
+|   +-----------+       +-----------+   |
+|   |   (FOTO)  |       |   (FOTO)  |   |
+|   |    Budi   |       |    Siti   |   |
+|   |  (Owner)  |       |  (Kasir)  |   |
+|   +-----------+       +-----------+   |
+|                                       |
+|   +-----------+       +-----------+   |
+|   |   (FOTO)  |       |   (FOTO)  |   |
+|   |    Joko   |       |    Rina   |   |
+|   |  (Kasir)  |       |  (Spv)    |   |
+|   +-----------+       +-----------+   |
+|                                       |
+|                                       |
+|  [     TAMBAH KARYAWAN (L1)       ]   |
++---------------------------------------+
+```
+
+**B. PIN Login (Setelah Pilih Karyawan):**
+```text
++---------------------------------------+
+|   [←] Kembali                         |
+|                                       |
+|           === POSify ===              |
+|          Halo, Siti (Kasir)           |
 |                                       |
 |          Masukkan PIN Anda            |
 |                                       |
 |            * * * . . .                |
-|                                       |
 |                                       |
 |        [ 1 ]  [ 2 ]  [ 3 ]            |
 |        [ 4 ]  [ 5 ]  [ 6 ]            |
 |        [ 7 ]  [ 8 ]  [ 9 ]            |
 |        [ C ]  [ 0 ]  [ < ]            |
 |                                       |
-|                                       |
-|                                       |
 +---------------------------------------+
 ```
 
-**B. Dashboard Kasir (Main Workspace):**
+---
+
+### 3. Dashboard Kasir (Main Workspace)
 ```text
 +---------------------------------------+
 | 👤 Siti (Kasir) | 🟢 Shift Buka  [i]  |
@@ -110,7 +135,7 @@ Berikut adalah representasi visual sketsa (wireframe) kasar untuk aplikasi POSif
 
 ---
 
-### 3. Analytics & Modal Pembayaran
+### 4. Analytics & Modal Pembayaran
 
 **A. Modal Pembayaran (Bottom Sheet dari tombol Bayar):**
 ```text
@@ -187,7 +212,7 @@ Berikut adalah representasi visual sketsa (wireframe) kasar untuk aplikasi POSif
 
 ---
 
-### 4. Inventaris & Manajemen Produk (Tab 2)
+### 5. Inventaris & Manajemen Produk (Tab 3: Stok)
 
 **A. Inventory List:**
 ```text
@@ -331,7 +356,7 @@ Berikut adalah representasi visual sketsa (wireframe) kasar untuk aplikasi POSif
 
 ---
 
-### 5. Manajemen Toko & Karyawan (Tab 3: Settings)
+### 6. Manajemen Toko & Karyawan (Tab 4: Settings)
 
 **A. Settings Menu (Tab 3):**
 ```text
@@ -608,7 +633,7 @@ Berikut adalah representasi visual sketsa (wireframe) kasar untuk aplikasi POSif
 
 ---
 
-### 6. Profil Toko (Setup Struk)
+### 7. Profil Toko (Setup Struk)
 
 **Layar Pengaturan Profil Toko:**
 ```text

@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
+import 'package:posify_app/core/database/database.dart';
 import '../providers/owner_provider.dart';
 import 'package:posify_app/core/widgets/responsive_layout.dart';
 
 class PinLoginScreen extends ConsumerStatefulWidget {
-  const PinLoginScreen({super.key});
+  final Employee employee;
+  const PinLoginScreen({super.key, required this.employee});
 
   @override
   ConsumerState<PinLoginScreen> createState() => _PinLoginScreenState();
@@ -71,7 +74,7 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen>
 
     final employee = await ref
         .read(sessionProvider.notifier)
-        .loginWithPin(_pin);
+        .loginWithEmployeeAndPin(widget.employee, _pin);
 
     if (!mounted) return;
 
@@ -97,7 +100,7 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Header
+                // App Logo
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -106,7 +109,7 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen>
                   ),
                   child: const Icon(
                     Icons.point_of_sale_rounded,
-                    size: 48,
+                    size: 40,
                     color: AppTheme.primaryColor,
                   ),
                 ),
@@ -120,16 +123,81 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen>
                     letterSpacing: -1.0,
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Cashier PIN Login & Shift Status',
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    color: AppTheme.textSecondary,
-                    fontWeight: FontWeight.w500,
+                const SizedBox(height: 24),
+
+                // Selected Employee Info
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                          image: widget.employee.photoUri != null
+                              ? DecorationImage(
+                                  image: FileImage(File(widget.employee.photoUri!)),
+                                  fit: BoxFit.cover,
+                                )
+                              : null,
+                        ),
+                        child: widget.employee.photoUri == null
+                            ? Center(
+                                child: Text(
+                                  widget.employee.name.substring(0, 1).toUpperCase(),
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppTheme.primaryColor,
+                                  ),
+                                ),
+                              )
+                            : null,
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.employee.name,
+                              style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.textPrimary,
+                              ),
+                            ),
+                            Text(
+                              _getRoleLabel(widget.employee.role),
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: AppTheme.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.logout_rounded),
+                        color: AppTheme.textSecondary,
+                        tooltip: 'Ganti Akun',
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 24),
 
                 // Main Card (Design System Component Style)
                 Container(
@@ -285,5 +353,18 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen>
         ),
       ),
     );
+  }
+
+  String _getRoleLabel(String role) {
+    switch (role) {
+      case 'owner':
+        return 'Owner (Level 1)';
+      case 'supervisor':
+        return 'Supervisor (Level 2)';
+      case 'cashier':
+        return 'Kasir (Level 3)';
+      default:
+        return role;
+    }
   }
 }

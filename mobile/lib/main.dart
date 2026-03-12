@@ -5,9 +5,11 @@ import 'core/theme/app_theme.dart';
 import 'features/auth/screens/license_activation_screen.dart';
 import 'features/auth/screens/owner_setup_screen.dart';
 import 'features/auth/screens/pin_login_screen.dart';
+import 'features/auth/screens/employee_selection_screen.dart';
 import 'features/pos/screens/pos_dashboard_screen.dart';
 import 'features/auth/providers/auth_providers.dart';
 import 'features/auth/providers/owner_provider.dart';
+import 'core/database/database.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 void main() async {
@@ -30,7 +32,10 @@ class PosifyApp extends StatelessWidget {
       routes: {
         '/license': (context) => const LicenseActivationScreen(),
         '/owner-setup': (context) => const OwnerSetupScreen(),
-        '/pin-login': (context) => const PinLoginScreen(),
+        '/pin-login': (context) => PinLoginScreen(
+              employee: ModalRoute.of(context)!.settings.arguments as Employee,
+            ),
+        '/employee-selection': (context) => const EmployeeSelectionScreen(),
         '/pos': (context) => const PosDashboardScreen(),
       },
     );
@@ -62,7 +67,7 @@ class AppBootstrap extends ConsumerWidget {
             if (owner == null) {
               return const OwnerSetupScreen();
             }
-            return const PinLoginScreen();
+            return const EmployeeSelectionScreen();
           },
         );
       },

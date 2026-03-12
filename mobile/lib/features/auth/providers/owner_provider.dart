@@ -61,6 +61,87 @@ class SessionNotifier extends AsyncNotifier<Employee?> {
   @override
   Future<Employee?> build() async => null;
 
+  Future<Employee?> loginWithEmployeeAndPin(
+    Employee employee,
+    String pin,
+  ) async {
+    // 1. Check Device Lockout
+    final lockoutStr = await _storage.read(key: _lockoutKey);
+    if (lockoutStr != null) {
+      final lockoutUntil = DateTime.tryParse(lockoutStr);
+      if (lockoutUntil != null && lockoutUntil.isAfter(DateTime.now())) {
+        state = AsyncValue.error(
+          'Terlalu banyak percobaan. Coba lagi dalam beberapa menit.',
+          StackTrace.current,
+        );
+        return null;
+      }
+    }
+
+    state = const AsyncValue.loading();
+    final db = ref.read(databaseProvider);
+
+    try {
+      // 2. Verify PIN matches the specific selected employee
+      if (employee.pin != pin) {
+        // Increment failure count
+        final countStr = await _storage.read(key: _failCountKey) ?? '0';
+        int count = int.parse(countStr) + 1;
+        await _storage.write(key: _failCountKey, value: count.toString());
+
+        if (count >= 5) {
+          final lockoutTime = DateTime.now().add(const Duration(minutes: 30));
+          await _storage.write(
+            key: _lockoutKey,
+            value: lockoutTime.toIso8601String(),
+          );
+        }
+
+        state = AsyncValue.error('PIN salah', StackTrace.current);
+        return null;
+      }
+
+      // 3. Check if locked
+      if (employee.lockedUntil != null &&
+          employee.lockedUntil!.isAfter(DateTime.now())) {
+        state = AsyncValue.error(
+          'Akun terkunci. Coba lagi nanti.',
+          StackTrace.current,
+        );
+        return null;
+      }
+
+      // 4. Check if active
+      if (employee.status != 'active') {
+        state = AsyncValue.error(
+          'Akun tidak aktif. Hubungi pemilik.',
+          StackTrace.current,
+        );
+        return null;
+      }
+
+      // Reset failed attempts on success
+      await _storage.delete(key: _failCountKey);
+      await _storage.delete(key: _lockoutKey);
+
+      await db.updateEmployee(
+        employee.copyWith(
+          failedLoginAttempts: 0,
+          lockedUntil: const Value(null),
+        ),
+      );
+
+      if (!ref.mounted) return null;
+
+      state = AsyncValue.data(employee);
+      return employee;
+    } catch (e, st) {
+      if (!ref.mounted) return null;
+      state = AsyncValue.error(e.toString(), st);
+      return null;
+    }
+  }
+
   Future<Employee?> loginWithPin(String pin) async {
     // 1. Check Device Lockout
     final lockoutStr = await _storage.read(key: _lockoutKey);
