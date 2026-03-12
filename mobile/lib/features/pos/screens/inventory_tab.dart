@@ -14,6 +14,7 @@ import 'package:image_picker/image_picker.dart';
 import 'inventory/stock_opname_screen.dart';
 import 'inventory/import_product_screen.dart';
 import 'package:posify_app/core/widgets/responsive_layout.dart';
+import 'package:posify_app/core/widgets/product_image.dart';
 
 final _currency = NumberFormat.currency(
   locale: 'id_ID',
@@ -77,13 +78,21 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                     ),
                     const SizedBox(height: 16),
                     if (!isCashier)
-                      ElevatedButton.icon(
-                        onPressed: () => _showAddProductSheet(context),
-                        icon: const Icon(Icons.add),
-                        label: const Text('Tambah Produk'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryColor,
-                          foregroundColor: Colors.white,
+                      SizedBox(
+                        width: 200,
+                        child: ElevatedButton.icon(
+                          onPressed: () => _showAddProductSheet(context),
+                          icon: const Icon(Icons.add_rounded),
+                          label: const Text('Tambah Produk'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.primaryColor,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 0,
+                          ),
                         ),
                       ),
                   ],
@@ -107,28 +116,13 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                           side: BorderSide(color: Colors.grey.shade200),
                         ),
                         child: ListTile(
-                          leading: Container(
-                            width: 42,
-                            height: 42,
-                            decoration: BoxDecoration(
-                              color: AppTheme.primaryColor.withValues(
-                                alpha: 0.1,
-                              ),
-                              borderRadius: BorderRadius.circular(8),
-                              image: p.imageUri != null 
-                                ? DecorationImage(
-                                    image: FileImage(File(p.imageUri!)),
-                                    fit: BoxFit.cover,
-                                  )
-                                : null,
-                            ),
-                            child: p.imageUri != null 
-                                ? null 
-                                : const Icon(
-                                    Icons.fastfood_rounded,
-                                    color: AppTheme.primaryColor,
-                                    size: 22,
-                                  ),
+                          leading: ProductImage(
+                            imageUri: p.imageUri,
+                            categoryId: p.categoryId,
+                            width: 48,
+                            height: 48,
+                            borderRadius: 8,
+                            iconSize: 22,
                           ),
                           title: Row(
                             children: [
@@ -237,18 +231,22 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                 ),
                 if (!isCashier)
                   Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
                     decoration: BoxDecoration(
                       color: Colors.white,
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(24),
+                      ),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 10,
+                          blurRadius: 15,
                           offset: const Offset(0, -5),
                         ),
                       ],
                     ),
                     child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Row(
                           children: [
@@ -269,12 +267,12 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                                 ),
                                 label: const Text('Import CSV'),
                                 style: OutlinedButton.styleFrom(
-                                  foregroundColor: AppTheme.primaryColor,
-                                  side: const BorderSide(
-                                    color: AppTheme.primaryColor,
+                                  foregroundColor: AppTheme.textSecondary,
+                                  side: BorderSide(
+                                    color: Colors.grey.shade300,
                                   ),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 12,
@@ -300,12 +298,12 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                                 ),
                                 label: const Text('Opname'),
                                 style: OutlinedButton.styleFrom(
-                                  foregroundColor: AppTheme.primaryColor,
-                                  side: const BorderSide(
-                                    color: AppTheme.primaryColor,
+                                  foregroundColor: AppTheme.textSecondary,
+                                  side: BorderSide(
+                                    color: Colors.grey.shade300,
                                   ),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 12,
@@ -315,19 +313,33 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
-                        ElevatedButton.icon(
-                          onPressed: () => _showAddProductSheet(context),
-                          icon: const Icon(Icons.add),
-                          label: const Text('TAMBAH PRODUK'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primaryColor,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                        const SizedBox(height: 16),
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 320),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () => _showAddProductSheet(context),
+                              icon: const Icon(Icons.add_rounded),
+                              label: Text(
+                                'Tambah Produk Baru',
+                                style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppTheme.primaryColor,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                elevation: 0,
+                              ),
                             ),
-                            elevation: 0,
                           ),
                         ),
                       ],
@@ -539,7 +551,9 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
                       border: Border.all(color: Colors.grey.shade300),
                       image: _imagePath != null
                           ? DecorationImage(
-                              image: FileImage(File(_imagePath!)),
+                              image: _imagePath!.startsWith('http')
+                                  ? NetworkImage(_imagePath!) as ImageProvider
+                                  : FileImage(File(_imagePath!)),
                               fit: BoxFit.cover,
                             )
                           : null,
@@ -666,7 +680,7 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
                     color: AppTheme.textSecondary,
                   ),
                 ),
-                activeColor: AppTheme.primaryColor,
+                activeThumbColor: AppTheme.primaryColor,
                 contentPadding: EdgeInsets.zero,
               ),
 

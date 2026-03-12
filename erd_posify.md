@@ -74,6 +74,7 @@ erDiagram
         INTEGER price "Harga Jual (Jika simple)"
         INTEGER purchase_price "Harga Beli"
         INTEGER stock "Sisa Fisik (Jika simple)"
+        BOOLEAN has_variants "Default False"
         TEXT image_uri "Path lokal gambar"
         TEXT created_at "ISO 8601"
         TEXT updated_at "ISO 8601"
@@ -86,6 +87,8 @@ erDiagram
         TEXT sku "Opsional, Unik"
         INTEGER price "Harga Varian"
         INTEGER stock "Stok Varian"
+        TEXT created_at "ISO 8601"
+        TEXT updated_at "ISO 8601"
     }
 
     shifts {
@@ -117,6 +120,8 @@ erDiagram
         INTEGER id PK "Auto Increment"
         INTEGER transaction_id FK 
         INTEGER product_id FK 
+        INTEGER variant_id FK "Nullable"
+        TEXT variant_name "Snapshot nama varian"
         INTEGER quantity "Jml Beli"
         INTEGER price_at_transaction "Harga saat dibeli"
         INTEGER subtotal "Q * Harga"
@@ -125,6 +130,7 @@ erDiagram
     stock_adjustments {
         INTEGER id PK "Auto Increment"
         INTEGER product_id FK
+        INTEGER variant_id FK "Nullable"
         INTEGER employee_id FK "Pelaku opname"
         INTEGER previous_stock "Stok sistem"
         INTEGER new_stock "Stok fisik"

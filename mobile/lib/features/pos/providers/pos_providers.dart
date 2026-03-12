@@ -9,10 +9,24 @@ class CategoryNotifier extends AsyncNotifier<List<Category>> {
   @override
   Future<List<Category>> build() async {
     final db = ref.watch(databaseProvider);
+    
+    // Listen to changes and apply dummy if empty
     db.watchAllCategories().listen((categories) {
-      if (ref.mounted) state = AsyncValue.data(categories);
+      if (ref.mounted) {
+        state = AsyncValue.data(categories.isEmpty ? _getDummyCategories() : categories);
+      }
     });
-    return db.getAllCategories();
+
+    final all = await db.getAllCategories();
+    return all.isEmpty ? _getDummyCategories() : all;
+  }
+
+  List<Category> _getDummyCategories() {
+    return [
+      Category(id: 1, name: 'Makanan'),
+      Category(id: 2, name: 'Minuman'),
+      Category(id: 3, name: 'Camilan'),
+    ];
   }
 }
 
@@ -31,6 +45,7 @@ class ProductNotifier extends AsyncNotifier<List<Product>> {
   Future<List<Product>> build() async {
     final db = ref.watch(databaseProvider);
     final allProducts = await db.getAllProducts();
+    
     return allProducts.where((p) {
       final matchesCategory =
           _categoryId == null || p.categoryId == _categoryId;
@@ -50,11 +65,35 @@ class ProductNotifier extends AsyncNotifier<List<Product>> {
     _categoryId = id;
     ref.invalidateSelf();
   }
+
 }
 
 final productProvider = AsyncNotifierProvider<ProductNotifier, List<Product>>(
   ProductNotifier.new,
 );
+
+// ===== Product with Variants Provider (for Inventory/Opname) =====
+
+class ProductWithVariantsNotifier
+    extends AsyncNotifier<List<ProductWithVariants>> {
+  @override
+  Future<List<ProductWithVariants>> build() async {
+    final db = ref.watch(databaseProvider);
+    // Directly stream for real-time updates in opname
+    db.watchAllProductsWithVariants().listen((data) {
+      if (ref.mounted) {
+        state = AsyncValue.data(data);
+      }
+    });
+
+    return db.watchAllProductsWithVariants().first;
+  }
+}
+
+final productWithVariantsProvider =
+    AsyncNotifierProvider<ProductWithVariantsNotifier, List<ProductWithVariants>>(
+      ProductWithVariantsNotifier.new,
+    );
 
 // ===== Cart Model =====
 

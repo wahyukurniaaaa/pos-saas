@@ -11,4 +11,5 @@ class ProductVariants extends Table {
   IntColumn get stock => integer().withDefault(const Constant(0))();
   TextColumn get sku => text().nullable()(); // Optional, for barcode-per-variant
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'dart:io';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:posify_app/core/database/database.dart';
@@ -13,6 +13,7 @@ import 'package:posify_app/features/pos/screens/shift/shift_report_modal.dart';
 import 'package:posify_app/features/pos/providers/shift_provider.dart';
 import 'package:posify_app/features/pos/screens/shift/shift_opening_modal.dart';
 import 'package:posify_app/features/pos/screens/barcode_scanner_modal.dart';
+import 'package:posify_app/core/widgets/product_image.dart';
 import '../providers/pos_providers.dart';
 
 final _currency = NumberFormat.currency(
@@ -27,6 +28,9 @@ class PosTab extends ConsumerStatefulWidget {
   @override
   ConsumerState<PosTab> createState() => _PosTabState();
 }
+
+
+
 
 class _PosTabState extends ConsumerState<PosTab> {
   final _searchController = TextEditingController();
@@ -78,6 +82,9 @@ class _PosTabState extends ConsumerState<PosTab> {
   }
 
   Widget _buildMobileLayout() {
+    final cartItems = ref.watch(cartProvider);
+    final hasItems = cartItems.isNotEmpty;
+
     return Stack(
       children: [
         Column(
@@ -85,7 +92,7 @@ class _PosTabState extends ConsumerState<PosTab> {
             _buildSearchBar(),
             _buildCategoryChips(),
             Expanded(child: _buildProductGrid()),
-            const SizedBox(height: 80), // Padding for sticky bottom cart
+            if (hasItems) const SizedBox(height: 80), // Padding only when cart has items
           ],
         ),
         const Positioned(
@@ -122,26 +129,25 @@ class _PosTabState extends ConsumerState<PosTab> {
             ),
           ),
           const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) => const ShiftOpeningModal(),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryColor,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: Text(
-              'Buka Kasir',
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
+          SizedBox(
+            width: 200,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => const ShiftOpeningModal(),
+                );
+              },
+              icon: const Icon(Icons.point_of_sale_rounded),
+              label: const Text('Buka Kasir'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                elevation: 0,
               ),
             ),
           ),
@@ -251,8 +257,10 @@ class _PosTabState extends ConsumerState<PosTab> {
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: TextField(
         controller: _searchController,
-        onChanged: (v) =>
-            ref.read(productProvider.notifier).setSearch(v.isEmpty ? null : v),
+        onChanged: (v) {
+          setState(() {}); // Rebuild for suffix icon visibility
+          ref.read(productProvider.notifier).setSearch(v.isEmpty ? null : v);
+        },
         decoration: InputDecoration(
           hintText: 'Cari produk atau SKU...',
           hintStyle: GoogleFonts.inter(
@@ -384,8 +392,8 @@ class _PosTabState extends ConsumerState<PosTab> {
         return GridView.builder(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: isDesktop ? 4 : 3,
-            childAspectRatio: 0.75,
+            crossAxisCount: isDesktop ? 4 : 2,
+            childAspectRatio: 0.9,
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
           ),
@@ -434,7 +442,7 @@ class _PosTabState extends ConsumerState<PosTab> {
         child: Stack(
           children: [
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(8),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -445,20 +453,13 @@ class _PosTabState extends ConsumerState<PosTab> {
                       decoration: BoxDecoration(
                         color: AppTheme.primaryColor.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(10),
-                        image: product.imageUri != null 
-                            ? DecorationImage(
-                                image: FileImage(File(product.imageUri!)),
-                                fit: BoxFit.cover,
-                              )
-                            : null,
                       ),
-                      child: product.imageUri != null 
-                          ? null 
-                          : const Icon(
-                              Icons.fastfood_rounded,
-                              color: AppTheme.primaryColor,
-                              size: 32,
-                            ),
+                      child: ProductImage(
+                        imageUri: product.imageUri,
+                        categoryId: product.categoryId,
+                        borderRadius: 10,
+                        iconSize: 32,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -736,18 +737,13 @@ class CartPanel extends ConsumerWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
+          ProductImage(
+            imageUri: item.product.imageUri,
+            categoryId: item.product.categoryId,
             width: 48,
             height: 48,
-            decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(
-              Icons.fastfood_rounded,
-              color: AppTheme.primaryColor,
-              size: 24,
-            ),
+            borderRadius: 8,
+            iconSize: 24,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -785,40 +781,110 @@ class CartPanel extends ConsumerWidget {
             ),
           ),
           const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade200),
-              borderRadius: BorderRadius.circular(8),
+          _CartQtyAction(item: item),
+        ],
+      ),
+    );
+  }
+}
+
+class _CartQtyAction extends ConsumerStatefulWidget {
+  final CartItem item;
+
+  const _CartQtyAction({required this.item});
+
+  @override
+  ConsumerState<_CartQtyAction> createState() => _CartQtyActionState();
+}
+
+class _CartQtyActionState extends ConsumerState<_CartQtyAction> {
+  late TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: '${widget.item.quantity}');
+  }
+
+  @override
+  void didUpdateWidget(_CartQtyAction oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.item.quantity != widget.item.quantity &&
+        _controller.text != '${widget.item.quantity}') {
+      _controller.text = '${widget.item.quantity}';
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _updateQty(String value) {
+    final qty = int.tryParse(value) ?? 0;
+    if (qty != widget.item.quantity) {
+      ref.read(cartProvider.notifier).updateQuantity(widget.item.cartKey, qty);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade200),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildActionIcon(
+            Icons.remove,
+            () {
+              if (widget.item.quantity > 0) {
+                final newQty = widget.item.quantity - 1;
+                ref
+                    .read(cartProvider.notifier)
+                    .updateQuantity(widget.item.cartKey, newQty);
+                _controller.text = '$newQty';
+              }
+            },
+          ),
+          SizedBox(
+            width: 44,
+            child: TextField(
+              controller: _controller,
+              textAlign: TextAlign.center,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              style: GoogleFonts.inter(
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+              onTap: () {
+                _controller.selection = TextSelection(
+                  baseOffset: 0,
+                  extentOffset: _controller.text.length,
+                );
+              },
+              decoration: const InputDecoration(
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
+                border: InputBorder.none,
+              ),
+              onChanged: _updateQty,
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildActionIcon(
-                  Icons.remove,
-                  () => ref
-                      .read(cartProvider.notifier)
-                      .updateQuantity(item.cartKey, item.quantity - 1),
-                ),
-                SizedBox(
-                  width: 32,
-                  child: Text(
-                    '${item.quantity}',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-                _buildActionIcon(
-                  Icons.add,
-                  () => ref
-                      .read(cartProvider.notifier)
-                      .updateQuantity(item.cartKey, item.quantity + 1),
-                ),
-              ],
-            ),
+          ),
+          _buildActionIcon(
+            Icons.add,
+            () {
+              final newQty = widget.item.quantity + 1;
+              ref
+                  .read(cartProvider.notifier)
+                  .updateQuantity(widget.item.cartKey, newQty);
+              _controller.text = '$newQty';
+            },
           ),
         ],
       ),
@@ -1047,33 +1113,54 @@ class _VariantPickerSheetState extends ConsumerState<_VariantPickerSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  widget.product.name,
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Product Image in Variant Picker
+                ProductImage(
+                  imageUri: widget.product.imageUri,
+                  categoryId: widget.product.categoryId,
+                  width: 80,
+                  height: 80,
+                  borderRadius: 12,
+                  iconSize: 32,
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.product.name,
+                        style: GoogleFonts.inter(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Pilih varian produk di bawah ini',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          color: AppTheme.textSecondary,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.close),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Pilih varian:',
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              color: AppTheme.textSecondary,
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.grey.shade100,
+                    padding: const EdgeInsets.all(4),
+                  ),
+                ),
+              ],
             ),
-          ),
           const SizedBox(height: 16),
           if (_loading)
             const Center(child: CircularProgressIndicator())
@@ -1089,7 +1176,7 @@ class _VariantPickerSheetState extends ConsumerState<_VariantPickerSheet> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: _variants.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 8),
+              separatorBuilder: (_, _) => const SizedBox(height: 8),
               itemBuilder: (_, i) {
                 final v = _variants[i];
                 final effectivePrice =

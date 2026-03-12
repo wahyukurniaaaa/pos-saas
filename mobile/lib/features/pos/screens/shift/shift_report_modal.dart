@@ -32,6 +32,14 @@ class ShiftReportModal extends ConsumerStatefulWidget {
 
 class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
   bool _isSubmitting = false;
+  final _actualCashController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+
+  @override
+  void dispose() {
+    _actualCashController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -187,6 +195,55 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
 
                   const SizedBox(height: 24),
 
+                  // Cash Reconciliation Section
+                  _buildSectionTitle('Rekonsiliasi Kas'),
+                  const SizedBox(height: 12),
+                  Form(
+                    key: _formKey,
+                    child: TextFormField(
+                      controller: _actualCashController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: 'Total Uang Tunai Fisik di Laci',
+                        hintText: 'Masukkan jumlah uang tunai...',
+                        prefixText: 'Rp ',
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                      ),
+                      style: GoogleFonts.inter(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.textPrimary,
+                      ),
+                      onChanged: (value) {
+                        setState(() {}); // Refresh for discrepancy calc
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Wajib diisi';
+                        }
+                        if (int.tryParse(value) == null) {
+                          return 'Masukkan angka valid';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Discrepancy Display
+                  _buildDiscrepancyDisplay(expectedDrawer),
+
+                  const SizedBox(height: 24),
+
                   // End Shift Action
                   Container(
                     padding: const EdgeInsets.all(16),
@@ -223,11 +280,16 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
                           width: double.infinity,
                           child: ElevatedButton(
                             onPressed: () {
-                              _showEndShiftConfirmation(
-                                context,
-                                activeShift.id,
-                                expectedDrawer.toInt(),
-                              );
+                              if (_formKey.currentState!.validate()) {
+                                final actualCash =
+                                    int.parse(_actualCashController.text);
+                                _showEndShiftConfirmation(
+                                  context,
+                                  activeShift.id,
+                                  actualCash,
+                                  expectedDrawer.toInt(),
+                                );
+                              }
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppTheme.dangerColor,
@@ -305,11 +367,57 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
     );
   }
 
+  Widget _buildDiscrepancyDisplay(double expected) {
+    final actual = double.tryParse(_actualCashController.text) ?? 0;
+    final diff = actual - expected;
+    final isWarning = diff != 0;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isWarning
+            ? AppTheme.dangerColor.withValues(alpha: 0.05)
+            : AppTheme.successColor.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isWarning
+              ? AppTheme.dangerColor.withValues(alpha: 0.2)
+              : AppTheme.successColor.withValues(alpha: 0.2),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'Selisih Kas',
+            style: GoogleFonts.inter(
+              fontWeight: FontWeight.w600,
+              color: isWarning ? AppTheme.dangerColor : AppTheme.successColor,
+            ),
+          ),
+          Text(
+            _currency.format(diff),
+            style: GoogleFonts.inter(
+              fontWeight: FontWeight.w800,
+              color: isWarning ? AppTheme.dangerColor : AppTheme.successColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showEndShiftConfirmation(
     BuildContext context,
     int shiftId,
+    int actualCash,
     int expectedCash,
   ) {
+    final diff = actualCash - expectedCash;
+    final diffText = diff == 0
+        ? 'Kas imbang (Balance).'
+        : 'Terdapat selisih ${_currency.format(diff)}.';
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -319,7 +427,7 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
           style: GoogleFonts.inter(fontWeight: FontWeight.w700),
         ),
         content: Text(
-          'Sesi kasir akan diakhiri. Apakah Anda yakin uang fisik di laci telah sesuai dengan laporan?',
+          'Sesi kasir akan diakhiri. $diffText Apakah Anda yakin uang fisik di laci telah sesuai dengan input Anda?',
           style: GoogleFonts.inter(color: AppTheme.textSecondary),
         ),
         actions: [
@@ -337,8 +445,7 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
 
               final success = await ref
                   .read(shiftControllerProvider.notifier)
-                  .closeShift(shiftId, expectedCash);
-
+                  .closeShift(shiftId, actualCash);
               if (success) {
                 // Trigger auto-backup after successful close shift
                 await BackupService().performAutoBackup();

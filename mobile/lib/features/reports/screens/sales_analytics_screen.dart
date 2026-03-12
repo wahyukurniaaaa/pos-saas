@@ -376,7 +376,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Tren Penjualan (${_selectedRange})',
+              'Tren Penjualan ($_selectedRange)',
               style: GoogleFonts.inter(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 24),
@@ -638,61 +638,4 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
     );
   }
 
-  void _injectDummyData(DateTimeRange range) {
-    int dummyRevenue = 0;
-    int dummyCount = 0;
-    List<DailySales> dummySales = [];
-    
-    DateTime current = range.start;
-    final now = DateTime.now();
-    final endLimit = range.end.isAfter(now) ? now : range.end;
-
-    if (_selectedRange == 'Hari Ini') {
-      // Untuk simulasi 'Hari Ini', kita tampilkan data penuh 
-      // dari jam 08:00 sampai 22:00 agar grafik terlihat bagus.
-      for (int i = 8; i <= 22; i++) {
-        final amount = 150000 + (i * 20000) + (i % 2 == 0 ? 50000 : -30000);
-        dummySales.add(DailySales('$i:00', amount));
-        dummyRevenue += amount;
-        dummyCount += 5 + (i % 3);
-      }
-    } else {
-      while (current.isBefore(endLimit) || current.isAtSameMomentAs(endLimit)) {
-        String format = 'dd/MM';
-        if (_selectedRange == 'Tahun Ini') format = 'MMM';
-        
-        final dateStr = DateFormat(format).format(current);
-        final amount = 450000 + (current.day * 35000) + (current.weekday * 80000);
-        dummySales.add(DailySales(dateStr, amount));
-        dummyRevenue += amount;
-        dummyCount += 12 + (current.day % 5);
-        
-        current = _selectedRange == 'Tahun Ini' 
-          ? DateTime(current.year, current.month + 1, 1)
-          : current.add(const Duration(days: 1));
-      }
-    }
-
-    setState(() {
-      _totalRevenue = dummyRevenue;
-      _totalTransactions = dummyCount;
-      _aov = dummyCount > 0 ? (dummyRevenue / dummyCount).round() : 0;
-      _revenueChange = 12.5; 
-      _transactionChange = 5.2;
-      _topProducts = [
-        ProductSales('Kopi Gula Aren', 120),
-        ProductSales('Teh Manis Dingin', 95),
-        ProductSales('Nasi Goreng Spesial', 85),
-        ProductSales('Mie Ayam Pangsit', 64),
-        ProductSales('Roti Bakar Coklat', 54),
-      ];
-      _salesData = dummySales;
-      _paymentMethods = [
-        PaymentMethodSales('cash', (dummyRevenue * 0.6).round(), (dummyCount * 0.6).round()),
-        PaymentMethodSales('qris', (dummyRevenue * 0.3).round(), (dummyCount * 0.3).round()),
-        PaymentMethodSales('debit', (dummyRevenue * 0.1).round(), (dummyCount * 0.1).round()),
-      ];
-      _isLoading = false;
-    });
-  }
 }

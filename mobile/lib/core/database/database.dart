@@ -41,7 +41,7 @@ class PosifyDatabase extends _$PosifyDatabase {
   PosifyDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration {
@@ -61,13 +61,16 @@ class PosifyDatabase extends _$PosifyDatabase {
           await m.addColumn(transactions, transactions.customerName);
         }
         if (from < 5) {
-          // Add Product Variants table
           await m.createTable(productVariants);
-          // Add hasVariants flag to products
           await m.addColumn(products, products.hasVariants);
-          // Add variant tracking to transaction_items
           await m.addColumn(transactionItems, transactionItems.variantId);
           await m.addColumn(transactionItems, transactionItems.variantName);
+        }
+        if (from < 6) {
+          await m.addColumn(stockAdjustments, stockAdjustments.variantId);
+        }
+        if (from < 7) {
+          await m.addColumn(productVariants, productVariants.updatedAt);
         }
       },
     );
@@ -140,15 +143,18 @@ class PosifyDatabase extends _$PosifyDatabase {
   }
 
   // ===== Product Variants =====
+  Future<List<ProductVariant>> getAllVariants() => select(productVariants).get();
+
   Stream<List<ProductVariant>> watchVariantsByProduct(int productId) =>
       (select(productVariants)
             ..where((v) => v.productId.equals(productId)))
           .watch();
 
-  Future<List<ProductVariant>> getVariantsByProduct(int productId) =>
-      (select(productVariants)
-            ..where((v) => v.productId.equals(productId)))
-          .get();
+  Future<List<ProductVariant>> getVariantsByProduct(int productId) async {
+    return (select(productVariants)
+          ..where((v) => v.productId.equals(productId)))
+        .get();
+  }
 
   Future<int> insertVariant(ProductVariantsCompanion entry) =>
       into(productVariants).insert(entry);
@@ -182,6 +188,42 @@ class PosifyDatabase extends _$PosifyDatabase {
 
   Future<Product?> getProductBySku(String sku) =>
       (select(products)..where((p) => p.sku.equals(sku))).getSingleOrNull();
+
+  Future<ProductWithVariants?> getProductWithVariants(int id) async {
+    final product = await (select(products)..where((p) => p.id.equals(id))).getSingleOrNull();
+    if (product == null) return null;
+    
+    final variants = await (select(productVariants)..where((p) => p.productId.equals(id))).get();
+    return ProductWithVariants(product: product, variants: variants);
+  }
+
+  Stream<List<ProductWithVariants>> watchAllProductsWithVariants() {
+    final query = select(products).join([
+      leftOuterJoin(
+        productVariants,
+        productVariants.productId.equalsExp(products.id),
+      ),
+    ]);
+
+    return query.watch().map((rows) {
+      final results = <int, ProductWithVariants>{};
+
+      for (final row in rows) {
+        final product = row.readTable(products);
+        final variant = row.readTableOrNull(productVariants);
+
+        final entry = results.putIfAbsent(
+          product.id,
+          () => ProductWithVariants(product: product, variants: []),
+        );
+
+        if (variant != null) {
+          entry.variants.add(variant);
+        }
+      }
+      return results.values.toList();
+    });
+  }
 
   Future<Shift?> getOpenShift() =>
       (select(shifts)..where((s) => s.status.equals('open'))).getSingleOrNull();
@@ -275,12 +317,36 @@ class PosifyDatabase extends _$PosifyDatabase {
   )..orderBy([(t) => OrderingTerm.desc(t.createdAt)])).watch();
 
   // ===== All Shifts =====
-  Future<List<Shift>> getAllShifts() =>
-      (select(shifts)..orderBy([(s) => OrderingTerm.desc(s.startTime)])).get();
+  Future<List<ShiftWithEmployee>> getAllShifts() async {
+    final query = select(shifts).join([
+      innerJoin(employees, employees.id.equalsExp(shifts.employeeId)),
+    ])
+      ..orderBy([OrderingTerm.desc(shifts.startTime)]);
 
-  Stream<List<Shift>> watchAllShifts() => (select(
-    shifts,
-  )..orderBy([(s) => OrderingTerm.desc(s.startTime)])).watch();
+    final rows = await query.get();
+    return rows.map((row) {
+      return ShiftWithEmployee(
+        shift: row.readTable(shifts),
+        employee: row.readTable(employees),
+      );
+    }).toList();
+  }
+
+  Stream<List<ShiftWithEmployee>> watchAllShifts() {
+    final query = select(shifts).join([
+      innerJoin(employees, employees.id.equalsExp(shifts.employeeId)),
+    ])
+      ..orderBy([OrderingTerm.desc(shifts.startTime)]);
+
+    return query.watch().map((rows) {
+      return rows.map((row) {
+        return ShiftWithEmployee(
+          shift: row.readTable(shifts),
+          employee: row.readTable(employees),
+        );
+      }).toList();
+    });
+  }
 
   // ===== Category Management =====
   Future<bool> updateCategory(Category entry) =>
@@ -482,6 +548,25 @@ class PosifyDatabase extends _$PosifyDatabase {
   Future<int> deleteLicense(String code) {
     return (delete(licenses)..where((t) => t.licenseCode.equals(code))).go();
   }
+
+  // ===== Maintenance =====
+  Future<void> clearTransactionalData() async {
+    await transaction(() async {
+      await delete(transactionItems).go();
+      await delete(transactions).go();
+      await delete(shifts).go();
+      await delete(stockAdjustments).go();
+      await delete(productVariants).go();
+      await delete(products).go();
+      // categories, employees, licenses, storeProfile, and printerSettings are preserved
+    });
+  }
+}
+
+class ProductWithVariants {
+  final Product product;
+  final List<ProductVariant> variants;
+  ProductWithVariants({required this.product, required this.variants});
 }
 
 class ProductSales {
@@ -501,6 +586,12 @@ class PaymentMethodSales {
   final int totalAmount;
   final int transactionCount;
   PaymentMethodSales(this.method, this.totalAmount, this.transactionCount);
+}
+
+class ShiftWithEmployee {
+  final Shift shift;
+  final Employee employee;
+  ShiftWithEmployee({required this.shift, required this.employee});
 }
 
 class TransactionWithItems {

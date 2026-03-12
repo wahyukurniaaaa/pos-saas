@@ -2457,6 +2457,18 @@ class $ProductVariantsTable extends ProductVariants
     requiredDuringInsert: false,
     defaultValue: currentDateAndTime,
   );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -2467,6 +2479,7 @@ class $ProductVariantsTable extends ProductVariants
     stock,
     sku,
     createdAt,
+    updatedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2534,6 +2547,12 @@ class $ProductVariantsTable extends ProductVariants
         createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
       );
     }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
     return context;
   }
 
@@ -2575,6 +2594,10 @@ class $ProductVariantsTable extends ProductVariants
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
       )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
     );
   }
 
@@ -2593,6 +2616,7 @@ class ProductVariant extends DataClass implements Insertable<ProductVariant> {
   final int stock;
   final String? sku;
   final DateTime createdAt;
+  final DateTime updatedAt;
   const ProductVariant({
     required this.id,
     required this.productId,
@@ -2602,6 +2626,7 @@ class ProductVariant extends DataClass implements Insertable<ProductVariant> {
     required this.stock,
     this.sku,
     required this.createdAt,
+    required this.updatedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2618,6 +2643,7 @@ class ProductVariant extends DataClass implements Insertable<ProductVariant> {
       map['sku'] = Variable<String>(sku);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
   }
 
@@ -2633,6 +2659,7 @@ class ProductVariant extends DataClass implements Insertable<ProductVariant> {
       stock: Value(stock),
       sku: sku == null && nullToAbsent ? const Value.absent() : Value(sku),
       createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
     );
   }
 
@@ -2650,6 +2677,7 @@ class ProductVariant extends DataClass implements Insertable<ProductVariant> {
       stock: serializer.fromJson<int>(json['stock']),
       sku: serializer.fromJson<String?>(json['sku']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
   }
   @override
@@ -2664,6 +2692,7 @@ class ProductVariant extends DataClass implements Insertable<ProductVariant> {
       'stock': serializer.toJson<int>(stock),
       'sku': serializer.toJson<String?>(sku),
       'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
   }
 
@@ -2676,6 +2705,7 @@ class ProductVariant extends DataClass implements Insertable<ProductVariant> {
     int? stock,
     Value<String?> sku = const Value.absent(),
     DateTime? createdAt,
+    DateTime? updatedAt,
   }) => ProductVariant(
     id: id ?? this.id,
     productId: productId ?? this.productId,
@@ -2685,6 +2715,7 @@ class ProductVariant extends DataClass implements Insertable<ProductVariant> {
     stock: stock ?? this.stock,
     sku: sku.present ? sku.value : this.sku,
     createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
   );
   ProductVariant copyWithCompanion(ProductVariantsCompanion data) {
     return ProductVariant(
@@ -2698,6 +2729,7 @@ class ProductVariant extends DataClass implements Insertable<ProductVariant> {
       stock: data.stock.present ? data.stock.value : this.stock,
       sku: data.sku.present ? data.sku.value : this.sku,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
   }
 
@@ -2711,7 +2743,8 @@ class ProductVariant extends DataClass implements Insertable<ProductVariant> {
           ..write('price: $price, ')
           ..write('stock: $stock, ')
           ..write('sku: $sku, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
           ..write(')'))
         .toString();
   }
@@ -2726,6 +2759,7 @@ class ProductVariant extends DataClass implements Insertable<ProductVariant> {
     stock,
     sku,
     createdAt,
+    updatedAt,
   );
   @override
   bool operator ==(Object other) =>
@@ -2738,7 +2772,8 @@ class ProductVariant extends DataClass implements Insertable<ProductVariant> {
           other.price == this.price &&
           other.stock == this.stock &&
           other.sku == this.sku &&
-          other.createdAt == this.createdAt);
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
 }
 
 class ProductVariantsCompanion extends UpdateCompanion<ProductVariant> {
@@ -2750,6 +2785,7 @@ class ProductVariantsCompanion extends UpdateCompanion<ProductVariant> {
   final Value<int> stock;
   final Value<String?> sku;
   final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
   const ProductVariantsCompanion({
     this.id = const Value.absent(),
     this.productId = const Value.absent(),
@@ -2759,6 +2795,7 @@ class ProductVariantsCompanion extends UpdateCompanion<ProductVariant> {
     this.stock = const Value.absent(),
     this.sku = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
   });
   ProductVariantsCompanion.insert({
     this.id = const Value.absent(),
@@ -2769,6 +2806,7 @@ class ProductVariantsCompanion extends UpdateCompanion<ProductVariant> {
     this.stock = const Value.absent(),
     this.sku = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
   }) : productId = Value(productId),
        name = Value(name),
        optionValue = Value(optionValue);
@@ -2781,6 +2819,7 @@ class ProductVariantsCompanion extends UpdateCompanion<ProductVariant> {
     Expression<int>? stock,
     Expression<String>? sku,
     Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -2791,6 +2830,7 @@ class ProductVariantsCompanion extends UpdateCompanion<ProductVariant> {
       if (stock != null) 'stock': stock,
       if (sku != null) 'sku': sku,
       if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
     });
   }
 
@@ -2803,6 +2843,7 @@ class ProductVariantsCompanion extends UpdateCompanion<ProductVariant> {
     Value<int>? stock,
     Value<String?>? sku,
     Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
   }) {
     return ProductVariantsCompanion(
       id: id ?? this.id,
@@ -2813,6 +2854,7 @@ class ProductVariantsCompanion extends UpdateCompanion<ProductVariant> {
       stock: stock ?? this.stock,
       sku: sku ?? this.sku,
       createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 
@@ -2843,6 +2885,9 @@ class ProductVariantsCompanion extends UpdateCompanion<ProductVariant> {
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
     return map;
   }
 
@@ -2856,7 +2901,8 @@ class ProductVariantsCompanion extends UpdateCompanion<ProductVariant> {
           ..write('price: $price, ')
           ..write('stock: $stock, ')
           ..write('sku: $sku, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
           ..write(')'))
         .toString();
   }
@@ -4726,6 +4772,20 @@ class $StockAdjustmentsTable extends StockAdjustments
       'REFERENCES products (id)',
     ),
   );
+  static const VerificationMeta _variantIdMeta = const VerificationMeta(
+    'variantId',
+  );
+  @override
+  late final GeneratedColumn<int> variantId = GeneratedColumn<int>(
+    'variant_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES product_variants (id)',
+    ),
+  );
   static const VerificationMeta _employeeIdMeta = const VerificationMeta(
     'employeeId',
   );
@@ -4787,6 +4847,7 @@ class $StockAdjustmentsTable extends StockAdjustments
   List<GeneratedColumn> get $columns => [
     id,
     productId,
+    variantId,
     employeeId,
     previousStock,
     newStock,
@@ -4815,6 +4876,12 @@ class $StockAdjustmentsTable extends StockAdjustments
       );
     } else if (isInserting) {
       context.missing(_productIdMeta);
+    }
+    if (data.containsKey('variant_id')) {
+      context.handle(
+        _variantIdMeta,
+        variantId.isAcceptableOrUnknown(data['variant_id']!, _variantIdMeta),
+      );
     }
     if (data.containsKey('employee_id')) {
       context.handle(
@@ -4874,6 +4941,10 @@ class $StockAdjustmentsTable extends StockAdjustments
         DriftSqlType.int,
         data['${effectivePrefix}product_id'],
       )!,
+      variantId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}variant_id'],
+      ),
       employeeId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}employee_id'],
@@ -4906,6 +4977,7 @@ class $StockAdjustmentsTable extends StockAdjustments
 class StockAdjustment extends DataClass implements Insertable<StockAdjustment> {
   final int id;
   final int productId;
+  final int? variantId;
   final int employeeId;
   final int previousStock;
   final int newStock;
@@ -4914,6 +4986,7 @@ class StockAdjustment extends DataClass implements Insertable<StockAdjustment> {
   const StockAdjustment({
     required this.id,
     required this.productId,
+    this.variantId,
     required this.employeeId,
     required this.previousStock,
     required this.newStock,
@@ -4925,6 +4998,9 @@ class StockAdjustment extends DataClass implements Insertable<StockAdjustment> {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['product_id'] = Variable<int>(productId);
+    if (!nullToAbsent || variantId != null) {
+      map['variant_id'] = Variable<int>(variantId);
+    }
     map['employee_id'] = Variable<int>(employeeId);
     map['previous_stock'] = Variable<int>(previousStock);
     map['new_stock'] = Variable<int>(newStock);
@@ -4937,6 +5013,9 @@ class StockAdjustment extends DataClass implements Insertable<StockAdjustment> {
     return StockAdjustmentsCompanion(
       id: Value(id),
       productId: Value(productId),
+      variantId: variantId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(variantId),
       employeeId: Value(employeeId),
       previousStock: Value(previousStock),
       newStock: Value(newStock),
@@ -4953,6 +5032,7 @@ class StockAdjustment extends DataClass implements Insertable<StockAdjustment> {
     return StockAdjustment(
       id: serializer.fromJson<int>(json['id']),
       productId: serializer.fromJson<int>(json['productId']),
+      variantId: serializer.fromJson<int?>(json['variantId']),
       employeeId: serializer.fromJson<int>(json['employeeId']),
       previousStock: serializer.fromJson<int>(json['previousStock']),
       newStock: serializer.fromJson<int>(json['newStock']),
@@ -4966,6 +5046,7 @@ class StockAdjustment extends DataClass implements Insertable<StockAdjustment> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'productId': serializer.toJson<int>(productId),
+      'variantId': serializer.toJson<int?>(variantId),
       'employeeId': serializer.toJson<int>(employeeId),
       'previousStock': serializer.toJson<int>(previousStock),
       'newStock': serializer.toJson<int>(newStock),
@@ -4977,6 +5058,7 @@ class StockAdjustment extends DataClass implements Insertable<StockAdjustment> {
   StockAdjustment copyWith({
     int? id,
     int? productId,
+    Value<int?> variantId = const Value.absent(),
     int? employeeId,
     int? previousStock,
     int? newStock,
@@ -4985,6 +5067,7 @@ class StockAdjustment extends DataClass implements Insertable<StockAdjustment> {
   }) => StockAdjustment(
     id: id ?? this.id,
     productId: productId ?? this.productId,
+    variantId: variantId.present ? variantId.value : this.variantId,
     employeeId: employeeId ?? this.employeeId,
     previousStock: previousStock ?? this.previousStock,
     newStock: newStock ?? this.newStock,
@@ -4995,6 +5078,7 @@ class StockAdjustment extends DataClass implements Insertable<StockAdjustment> {
     return StockAdjustment(
       id: data.id.present ? data.id.value : this.id,
       productId: data.productId.present ? data.productId.value : this.productId,
+      variantId: data.variantId.present ? data.variantId.value : this.variantId,
       employeeId: data.employeeId.present
           ? data.employeeId.value
           : this.employeeId,
@@ -5012,6 +5096,7 @@ class StockAdjustment extends DataClass implements Insertable<StockAdjustment> {
     return (StringBuffer('StockAdjustment(')
           ..write('id: $id, ')
           ..write('productId: $productId, ')
+          ..write('variantId: $variantId, ')
           ..write('employeeId: $employeeId, ')
           ..write('previousStock: $previousStock, ')
           ..write('newStock: $newStock, ')
@@ -5025,6 +5110,7 @@ class StockAdjustment extends DataClass implements Insertable<StockAdjustment> {
   int get hashCode => Object.hash(
     id,
     productId,
+    variantId,
     employeeId,
     previousStock,
     newStock,
@@ -5037,6 +5123,7 @@ class StockAdjustment extends DataClass implements Insertable<StockAdjustment> {
       (other is StockAdjustment &&
           other.id == this.id &&
           other.productId == this.productId &&
+          other.variantId == this.variantId &&
           other.employeeId == this.employeeId &&
           other.previousStock == this.previousStock &&
           other.newStock == this.newStock &&
@@ -5047,6 +5134,7 @@ class StockAdjustment extends DataClass implements Insertable<StockAdjustment> {
 class StockAdjustmentsCompanion extends UpdateCompanion<StockAdjustment> {
   final Value<int> id;
   final Value<int> productId;
+  final Value<int?> variantId;
   final Value<int> employeeId;
   final Value<int> previousStock;
   final Value<int> newStock;
@@ -5055,6 +5143,7 @@ class StockAdjustmentsCompanion extends UpdateCompanion<StockAdjustment> {
   const StockAdjustmentsCompanion({
     this.id = const Value.absent(),
     this.productId = const Value.absent(),
+    this.variantId = const Value.absent(),
     this.employeeId = const Value.absent(),
     this.previousStock = const Value.absent(),
     this.newStock = const Value.absent(),
@@ -5064,6 +5153,7 @@ class StockAdjustmentsCompanion extends UpdateCompanion<StockAdjustment> {
   StockAdjustmentsCompanion.insert({
     this.id = const Value.absent(),
     required int productId,
+    this.variantId = const Value.absent(),
     required int employeeId,
     required int previousStock,
     required int newStock,
@@ -5077,6 +5167,7 @@ class StockAdjustmentsCompanion extends UpdateCompanion<StockAdjustment> {
   static Insertable<StockAdjustment> custom({
     Expression<int>? id,
     Expression<int>? productId,
+    Expression<int>? variantId,
     Expression<int>? employeeId,
     Expression<int>? previousStock,
     Expression<int>? newStock,
@@ -5086,6 +5177,7 @@ class StockAdjustmentsCompanion extends UpdateCompanion<StockAdjustment> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (productId != null) 'product_id': productId,
+      if (variantId != null) 'variant_id': variantId,
       if (employeeId != null) 'employee_id': employeeId,
       if (previousStock != null) 'previous_stock': previousStock,
       if (newStock != null) 'new_stock': newStock,
@@ -5097,6 +5189,7 @@ class StockAdjustmentsCompanion extends UpdateCompanion<StockAdjustment> {
   StockAdjustmentsCompanion copyWith({
     Value<int>? id,
     Value<int>? productId,
+    Value<int?>? variantId,
     Value<int>? employeeId,
     Value<int>? previousStock,
     Value<int>? newStock,
@@ -5106,6 +5199,7 @@ class StockAdjustmentsCompanion extends UpdateCompanion<StockAdjustment> {
     return StockAdjustmentsCompanion(
       id: id ?? this.id,
       productId: productId ?? this.productId,
+      variantId: variantId ?? this.variantId,
       employeeId: employeeId ?? this.employeeId,
       previousStock: previousStock ?? this.previousStock,
       newStock: newStock ?? this.newStock,
@@ -5122,6 +5216,9 @@ class StockAdjustmentsCompanion extends UpdateCompanion<StockAdjustment> {
     }
     if (productId.present) {
       map['product_id'] = Variable<int>(productId.value);
+    }
+    if (variantId.present) {
+      map['variant_id'] = Variable<int>(variantId.value);
     }
     if (employeeId.present) {
       map['employee_id'] = Variable<int>(employeeId.value);
@@ -5146,6 +5243,7 @@ class StockAdjustmentsCompanion extends UpdateCompanion<StockAdjustment> {
     return (StringBuffer('StockAdjustmentsCompanion(')
           ..write('id: $id, ')
           ..write('productId: $productId, ')
+          ..write('variantId: $variantId, ')
           ..write('employeeId: $employeeId, ')
           ..write('previousStock: $previousStock, ')
           ..write('newStock: $newStock, ')
@@ -7521,6 +7619,7 @@ typedef $$ProductVariantsTableCreateCompanionBuilder =
       Value<int> stock,
       Value<String?> sku,
       Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
     });
 typedef $$ProductVariantsTableUpdateCompanionBuilder =
     ProductVariantsCompanion Function({
@@ -7532,6 +7631,7 @@ typedef $$ProductVariantsTableUpdateCompanionBuilder =
       Value<int> stock,
       Value<String?> sku,
       Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
     });
 
 final class $$ProductVariantsTableReferences
@@ -7589,6 +7689,30 @@ final class $$ProductVariantsTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$StockAdjustmentsTable, List<StockAdjustment>>
+  _stockAdjustmentsRefsTable(_$PosifyDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.stockAdjustments,
+        aliasName: $_aliasNameGenerator(
+          db.productVariants.id,
+          db.stockAdjustments.variantId,
+        ),
+      );
+
+  $$StockAdjustmentsTableProcessedTableManager get stockAdjustmentsRefs {
+    final manager = $$StockAdjustmentsTableTableManager(
+      $_db,
+      $_db.stockAdjustments,
+    ).filter((f) => f.variantId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _stockAdjustmentsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$ProductVariantsTableFilterComposer
@@ -7635,6 +7759,11 @@ class $$ProductVariantsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
   $$ProductsTableFilterComposer get productId {
     final $$ProductsTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -7674,6 +7803,31 @@ class $$ProductVariantsTableFilterComposer
           }) => $$TransactionItemsTableFilterComposer(
             $db: $db,
             $table: $db.transactionItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> stockAdjustmentsRefs(
+    Expression<bool> Function($$StockAdjustmentsTableFilterComposer f) f,
+  ) {
+    final $$StockAdjustmentsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.stockAdjustments,
+      getReferencedColumn: (t) => t.variantId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$StockAdjustmentsTableFilterComposer(
+            $db: $db,
+            $table: $db.stockAdjustments,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -7725,6 +7879,11 @@ class $$ProductVariantsTableOrderingComposer
 
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -7784,6 +7943,9 @@ class $$ProductVariantsTableAnnotationComposer
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
   $$ProductsTableAnnotationComposer get productId {
     final $$ProductsTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -7831,6 +7993,31 @@ class $$ProductVariantsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> stockAdjustmentsRefs<T extends Object>(
+    Expression<T> Function($$StockAdjustmentsTableAnnotationComposer a) f,
+  ) {
+    final $$StockAdjustmentsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.stockAdjustments,
+      getReferencedColumn: (t) => t.variantId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$StockAdjustmentsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.stockAdjustments,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$ProductVariantsTableTableManager
@@ -7846,7 +8033,11 @@ class $$ProductVariantsTableTableManager
           $$ProductVariantsTableUpdateCompanionBuilder,
           (ProductVariant, $$ProductVariantsTableReferences),
           ProductVariant,
-          PrefetchHooks Function({bool productId, bool transactionItemsRefs})
+          PrefetchHooks Function({
+            bool productId,
+            bool transactionItemsRefs,
+            bool stockAdjustmentsRefs,
+          })
         > {
   $$ProductVariantsTableTableManager(
     _$PosifyDatabase db,
@@ -7871,6 +8062,7 @@ class $$ProductVariantsTableTableManager
                 Value<int> stock = const Value.absent(),
                 Value<String?> sku = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
               }) => ProductVariantsCompanion(
                 id: id,
                 productId: productId,
@@ -7880,6 +8072,7 @@ class $$ProductVariantsTableTableManager
                 stock: stock,
                 sku: sku,
                 createdAt: createdAt,
+                updatedAt: updatedAt,
               ),
           createCompanionCallback:
               ({
@@ -7891,6 +8084,7 @@ class $$ProductVariantsTableTableManager
                 Value<int> stock = const Value.absent(),
                 Value<String?> sku = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
               }) => ProductVariantsCompanion.insert(
                 id: id,
                 productId: productId,
@@ -7900,6 +8094,7 @@ class $$ProductVariantsTableTableManager
                 stock: stock,
                 sku: sku,
                 createdAt: createdAt,
+                updatedAt: updatedAt,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -7910,11 +8105,16 @@ class $$ProductVariantsTableTableManager
               )
               .toList(),
           prefetchHooksCallback:
-              ({productId = false, transactionItemsRefs = false}) {
+              ({
+                productId = false,
+                transactionItemsRefs = false,
+                stockAdjustmentsRefs = false,
+              }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
                     if (transactionItemsRefs) db.transactionItems,
+                    if (stockAdjustmentsRefs) db.stockAdjustments,
                   ],
                   addJoins:
                       <
@@ -7973,6 +8173,27 @@ class $$ProductVariantsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (stockAdjustmentsRefs)
+                        await $_getPrefetchedData<
+                          ProductVariant,
+                          $ProductVariantsTable,
+                          StockAdjustment
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ProductVariantsTableReferences
+                              ._stockAdjustmentsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ProductVariantsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).stockAdjustmentsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.variantId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -7993,7 +8214,11 @@ typedef $$ProductVariantsTableProcessedTableManager =
       $$ProductVariantsTableUpdateCompanionBuilder,
       (ProductVariant, $$ProductVariantsTableReferences),
       ProductVariant,
-      PrefetchHooks Function({bool productId, bool transactionItemsRefs})
+      PrefetchHooks Function({
+        bool productId,
+        bool transactionItemsRefs,
+        bool stockAdjustmentsRefs,
+      })
     >;
 typedef $$ShiftsTableCreateCompanionBuilder =
     ShiftsCompanion Function({
@@ -9726,6 +9951,7 @@ typedef $$StockAdjustmentsTableCreateCompanionBuilder =
     StockAdjustmentsCompanion Function({
       Value<int> id,
       required int productId,
+      Value<int?> variantId,
       required int employeeId,
       required int previousStock,
       required int newStock,
@@ -9736,6 +9962,7 @@ typedef $$StockAdjustmentsTableUpdateCompanionBuilder =
     StockAdjustmentsCompanion Function({
       Value<int> id,
       Value<int> productId,
+      Value<int?> variantId,
       Value<int> employeeId,
       Value<int> previousStock,
       Value<int> newStock,
@@ -9769,6 +9996,28 @@ final class $$StockAdjustmentsTableReferences
       $_db.products,
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_productIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $ProductVariantsTable _variantIdTable(_$PosifyDatabase db) =>
+      db.productVariants.createAlias(
+        $_aliasNameGenerator(
+          db.stockAdjustments.variantId,
+          db.productVariants.id,
+        ),
+      );
+
+  $$ProductVariantsTableProcessedTableManager? get variantId {
+    final $_column = $_itemColumn<int>('variant_id');
+    if ($_column == null) return null;
+    final manager = $$ProductVariantsTableTableManager(
+      $_db,
+      $_db.productVariants,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_variantIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
@@ -9843,6 +10092,29 @@ class $$StockAdjustmentsTableFilterComposer
           }) => $$ProductsTableFilterComposer(
             $db: $db,
             $table: $db.products,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ProductVariantsTableFilterComposer get variantId {
+    final $$ProductVariantsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.variantId,
+      referencedTable: $db.productVariants,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProductVariantsTableFilterComposer(
+            $db: $db,
+            $table: $db.productVariants,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -9933,6 +10205,29 @@ class $$StockAdjustmentsTableOrderingComposer
     return composer;
   }
 
+  $$ProductVariantsTableOrderingComposer get variantId {
+    final $$ProductVariantsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.variantId,
+      referencedTable: $db.productVariants,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProductVariantsTableOrderingComposer(
+            $db: $db,
+            $table: $db.productVariants,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
   $$EmployeesTableOrderingComposer get employeeId {
     final $$EmployeesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -10006,6 +10301,29 @@ class $$StockAdjustmentsTableAnnotationComposer
     return composer;
   }
 
+  $$ProductVariantsTableAnnotationComposer get variantId {
+    final $$ProductVariantsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.variantId,
+      referencedTable: $db.productVariants,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProductVariantsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.productVariants,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
   $$EmployeesTableAnnotationComposer get employeeId {
     final $$EmployeesTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -10043,7 +10361,11 @@ class $$StockAdjustmentsTableTableManager
           $$StockAdjustmentsTableUpdateCompanionBuilder,
           (StockAdjustment, $$StockAdjustmentsTableReferences),
           StockAdjustment,
-          PrefetchHooks Function({bool productId, bool employeeId})
+          PrefetchHooks Function({
+            bool productId,
+            bool variantId,
+            bool employeeId,
+          })
         > {
   $$StockAdjustmentsTableTableManager(
     _$PosifyDatabase db,
@@ -10062,6 +10384,7 @@ class $$StockAdjustmentsTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<int> productId = const Value.absent(),
+                Value<int?> variantId = const Value.absent(),
                 Value<int> employeeId = const Value.absent(),
                 Value<int> previousStock = const Value.absent(),
                 Value<int> newStock = const Value.absent(),
@@ -10070,6 +10393,7 @@ class $$StockAdjustmentsTableTableManager
               }) => StockAdjustmentsCompanion(
                 id: id,
                 productId: productId,
+                variantId: variantId,
                 employeeId: employeeId,
                 previousStock: previousStock,
                 newStock: newStock,
@@ -10080,6 +10404,7 @@ class $$StockAdjustmentsTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 required int productId,
+                Value<int?> variantId = const Value.absent(),
                 required int employeeId,
                 required int previousStock,
                 required int newStock,
@@ -10088,6 +10413,7 @@ class $$StockAdjustmentsTableTableManager
               }) => StockAdjustmentsCompanion.insert(
                 id: id,
                 productId: productId,
+                variantId: variantId,
                 employeeId: employeeId,
                 previousStock: previousStock,
                 newStock: newStock,
@@ -10102,64 +10428,80 @@ class $$StockAdjustmentsTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({productId = false, employeeId = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [],
-              addJoins:
-                  <
-                    T extends TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic
-                    >
-                  >(state) {
-                    if (productId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.productId,
-                                referencedTable:
-                                    $$StockAdjustmentsTableReferences
-                                        ._productIdTable(db),
-                                referencedColumn:
-                                    $$StockAdjustmentsTableReferences
-                                        ._productIdTable(db)
-                                        .id,
-                              )
-                              as T;
-                    }
-                    if (employeeId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.employeeId,
-                                referencedTable:
-                                    $$StockAdjustmentsTableReferences
-                                        ._employeeIdTable(db),
-                                referencedColumn:
-                                    $$StockAdjustmentsTableReferences
-                                        ._employeeIdTable(db)
-                                        .id,
-                              )
-                              as T;
-                    }
+          prefetchHooksCallback:
+              ({productId = false, variantId = false, employeeId = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (productId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.productId,
+                                    referencedTable:
+                                        $$StockAdjustmentsTableReferences
+                                            ._productIdTable(db),
+                                    referencedColumn:
+                                        $$StockAdjustmentsTableReferences
+                                            ._productIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (variantId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.variantId,
+                                    referencedTable:
+                                        $$StockAdjustmentsTableReferences
+                                            ._variantIdTable(db),
+                                    referencedColumn:
+                                        $$StockAdjustmentsTableReferences
+                                            ._variantIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (employeeId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.employeeId,
+                                    referencedTable:
+                                        $$StockAdjustmentsTableReferences
+                                            ._employeeIdTable(db),
+                                    referencedColumn:
+                                        $$StockAdjustmentsTableReferences
+                                            ._employeeIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
 
-                    return state;
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [];
                   },
-              getPrefetchedDataCallback: (items) async {
-                return [];
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -10176,7 +10518,7 @@ typedef $$StockAdjustmentsTableProcessedTableManager =
       $$StockAdjustmentsTableUpdateCompanionBuilder,
       (StockAdjustment, $$StockAdjustmentsTableReferences),
       StockAdjustment,
-      PrefetchHooks Function({bool productId, bool employeeId})
+      PrefetchHooks Function({bool productId, bool variantId, bool employeeId})
     >;
 typedef $$PrinterSettingsTableCreateCompanionBuilder =
     PrinterSettingsCompanion Function({

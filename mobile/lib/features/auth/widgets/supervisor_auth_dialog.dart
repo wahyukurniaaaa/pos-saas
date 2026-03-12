@@ -81,104 +81,111 @@ class _SupervisorAuthDialogState extends ConsumerState<SupervisorAuthDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.orange.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        Navigator.of(context).pop(null);
+      },
+      child: Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.security_rounded,
+                  color: Colors.orange,
+                  size: 40,
+                ),
               ),
-              child: const Icon(
-                Icons.security_rounded,
-                color: Colors.orange,
-                size: 40,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Otorisasi Supervisor',
-              style: GoogleFonts.inter(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                color: AppTheme.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              widget.actionDescription,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                color: AppTheme.textSecondary,
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // PIN dots
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(6, (i) {
-                final filled = i < _pin.length;
-                return Container(
-                  width: 16,
-                  height: 16,
-                  margin: const EdgeInsets.symmetric(horizontal: 6),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: filled ? AppTheme.primaryColor : Colors.transparent,
-                    border: Border.all(
-                      color: filled
-                          ? AppTheme.primaryColor
-                          : AppTheme.borderColor,
-                      width: 2,
-                    ),
-                  ),
-                );
-              }),
-            ),
-
-            if (_errorMessage != null) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               Text(
-                _errorMessage!,
+                'Otorisasi Supervisor',
                 style: GoogleFonts.inter(
-                  color: AppTheme.errorColor,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                widget.actionDescription,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  color: AppTheme.textSecondary,
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(height: 24),
+    
+              // PIN dots
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(6, (i) {
+                  final filled = i < _pin.length;
+                  return Container(
+                    width: 16,
+                    height: 16,
+                    margin: const EdgeInsets.symmetric(horizontal: 6),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: filled ? AppTheme.primaryColor : Colors.transparent,
+                      border: Border.all(
+                        color: filled
+                            ? AppTheme.primaryColor
+                            : AppTheme.borderColor,
+                        width: 2,
+                      ),
+                    ),
+                  );
+                }),
+              ),
+    
+              if (_errorMessage != null) ...[
+                const SizedBox(height: 12),
+                Text(
+                  _errorMessage!,
+                  style: GoogleFonts.inter(
+                    color: AppTheme.errorColor,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+    
+              const SizedBox(height: 24),
+    
+              // Numpad
+              if (_isVerifying)
+                const Padding(
+                  padding: EdgeInsets.all(20),
+                  child: CircularProgressIndicator(),
+                )
+              else
+                _buildNumpad(),
+    
+              const SizedBox(height: 16),
+    
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(null),
+                child: Text(
+                  'Batal',
+                  style: GoogleFonts.inter(
+                    color: AppTheme.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
-
-            const SizedBox(height: 24),
-
-            // Numpad
-            if (_isVerifying)
-              const Padding(
-                padding: EdgeInsets.all(20),
-                child: CircularProgressIndicator(),
-              )
-            else
-              _buildNumpad(),
-
-            const SizedBox(height: 16),
-
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text(
-                'Batal',
-                style: GoogleFonts.inter(
-                  color: AppTheme.textSecondary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

@@ -30,15 +30,15 @@ class ShiftHistoryScreen extends ConsumerWidget {
         foregroundColor: Colors.white,
         elevation: 0,
       ),
-      body: ResponsiveCenter(child: StreamBuilder<List<Shift>>(
+      body: ResponsiveCenter(child: StreamBuilder<List<ShiftWithEmployee>>(
         stream: db.watchAllShifts(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          final shifts = snapshot.data ?? [];
+          final entries = snapshot.data ?? [];
 
-          if (shifts.isEmpty) {
+          if (entries.isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -63,9 +63,11 @@ class ShiftHistoryScreen extends ConsumerWidget {
 
           return ListView.builder(
             padding: const EdgeInsets.all(16),
-            itemCount: shifts.length,
+            itemCount: entries.length,
             itemBuilder: (context, index) {
-              final shift = shifts[index];
+              final entry = entries[index];
+              final shift = entry.shift;
+              final employee = entry.employee;
               final isOpen = shift.status == 'open';
 
               return Card(
@@ -110,10 +112,11 @@ class ShiftHistoryScreen extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Shift #${shift.id}',
+                                  employee.name,
                                   style: GoogleFonts.inter(
-                                    fontWeight: FontWeight.w600,
+                                    fontWeight: FontWeight.w700,
                                     fontSize: 15,
+                                    color: AppTheme.textPrimary,
                                   ),
                                 ),
                                 const SizedBox(height: 2),

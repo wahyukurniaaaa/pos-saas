@@ -9,6 +9,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:posify_app/core/services/backup_service.dart';
 import 'package:path/path.dart' as p;
+import 'package:posify_app/core/providers/database_provider.dart';
+import 'package:posify_app/features/pos/providers/pos_providers.dart';
 import 'package:posify_app/core/widgets/responsive_layout.dart';
 
 class DatabaseSettingsScreen extends ConsumerStatefulWidget {
@@ -251,6 +253,61 @@ class _DatabaseSettingsScreenState
     }
   }
 
+  Future<void> _handleResetData() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Hapus Data Transaksi?'),
+        content: const Text(
+          'Seluruh data Produk, Stok, Shift, dan Transaksi akan dihapus permanen. Kategori dan Akun Karyawan akan dipertahankan. Lanjutkan?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.dangerColor,
+            ),
+            child: const Text('Ya, Hapus Data'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    setState(() => _isLoading = true);
+    try {
+      final db = ref.read(databaseProvider);
+      await db.clearTransactionalData();
+
+      // Invalidate providers to refresh UI
+      ref.invalidate(productProvider);
+      ref.invalidate(categoryProvider); // Although preserved, refresh just in case
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Data transaksi berhasil dibersihkan! ✅'),
+          backgroundColor: AppTheme.successColor,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal menghapus data: $e'),
+          backgroundColor: AppTheme.dangerColor,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -320,7 +377,28 @@ class _DatabaseSettingsScreenState
           ),
           const SizedBox(height: 16),
           _buildRecoveryKeyButton(),
+          const SizedBox(height: 16),
+          _buildResetDataButton(),
         ],
+      ),
+    );
+  }
+
+  Widget _buildResetDataButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: _handleResetData,
+        icon: const Icon(Icons.delete_sweep_rounded, color: AppTheme.dangerColor),
+        label: const Text(
+          'Bersihkan Data Transaksi & Produk',
+          style: TextStyle(color: AppTheme.dangerColor),
+        ),
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.all(16),
+          side: BorderSide(color: AppTheme.dangerColor.withValues(alpha: 0.3)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
       ),
     );
   }

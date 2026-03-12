@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
@@ -124,12 +123,10 @@ class ReceiptService {
     final screenshotController = ScreenshotController();
 
     // 1. Generate Image
-    final Uint8List? imageBytes = await screenshotController.captureFromWidget(
+    final imageBytes = await screenshotController.captureFromWidget(
       WhatsAppReceiptWidget(data: data, storeProfile: profile),
       delay: const Duration(milliseconds: 100),
     );
-
-    if (imageBytes == null) throw Exception('Gagal membuat gambar struk');
 
     // 2. Save to Temp
     final tempDir = await getTemporaryDirectory();

@@ -114,17 +114,12 @@ class _ShiftOpeningModalState extends ConsumerState<ShiftOpeningModal> {
               ),
             ),
             const SizedBox(height: 24),
-            ElevatedButton(
+            ElevatedButton.icon(
               onPressed: _isSubmitting ? null : _submit,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryColor,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: _isSubmitting
+              icon: _isSubmitting
+                  ? const SizedBox.shrink()
+                  : const Icon(Icons.point_of_sale_rounded),
+              label: _isSubmitting
                   ? const SizedBox(
                       width: 20,
                       height: 20,
@@ -134,12 +129,21 @@ class _ShiftOpeningModalState extends ConsumerState<ShiftOpeningModal> {
                       ),
                     )
                   : Text(
-                      'Buka Shift',
+                      'Buka Shift Sekarang',
                       style: GoogleFonts.inter(
-                        fontSize: 16,
+                        fontSize: 15,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                elevation: 0,
+              ),
             ),
           ],
         ),
