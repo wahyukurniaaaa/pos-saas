@@ -19,7 +19,7 @@ class _PosDashboardScreenState extends ConsumerState<PosDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50, // Soft background for Stitch style
+      backgroundColor: AppTheme.backgroundLight,
       body: IndexedStack(
         index: _currentTabIndex,
         children: const [
@@ -33,7 +33,7 @@ class _PosDashboardScreenState extends ConsumerState<PosDashboardScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           border: Border(
-            top: BorderSide(color: Colors.grey.shade200, width: 1.0),
+            top: BorderSide(color: AppTheme.borderColor.withValues(alpha: 0.5)),
           ),
           boxShadow: [
             BoxShadow(
@@ -46,15 +46,8 @@ class _PosDashboardScreenState extends ConsumerState<PosDashboardScreen> {
         child: BottomNavigationBar(
           currentIndex: _currentTabIndex,
           onTap: (i) => setState(() => _currentTabIndex = i),
-          selectedItemColor: AppTheme.primaryColor,
-          unselectedItemColor: AppTheme.textSecondary,
           backgroundColor: Colors.transparent,
           elevation: 0,
-          type: BottomNavigationBarType.fixed,
-          selectedFontSize: 12,
-          unselectedFontSize: 12,
-          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
-          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
           items: const [
             BottomNavigationBarItem(
               icon: Padding(

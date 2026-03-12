@@ -307,7 +307,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                           width: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: Colors.white,
+                            color: AppTheme.textOnPrimary,
                           ),
                         )
                       : Text(
@@ -343,7 +343,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
         child: Text(
           method,
           style: GoogleFonts.poppins(
-            color: isSelected ? Colors.white : AppTheme.textSecondary,
+            color: isSelected ? AppTheme.textOnPrimary : AppTheme.textSecondary,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
           ),
         ),
@@ -455,12 +455,12 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: change > 0
-                ? AppTheme.neutralSlate.withValues(alpha: 0.1)
+                ? AppTheme.secondaryColor.withValues(alpha: 0.1)
                 : AppTheme.backgroundLight,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: change > 0
-                  ? AppTheme.neutralSlate.withValues(alpha: 0.3)
+                  ? AppTheme.secondaryColor.withValues(alpha: 0.3)
                   : AppTheme.borderColor,
             ),
           ),
@@ -472,7 +472,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                 style: GoogleFonts.poppins(
                   fontWeight: FontWeight.w600,
                   color: change > 0
-                      ? AppTheme.neutralSlate
+                      ? AppTheme.secondaryColor
                       : AppTheme.textSecondary,
                 ),
               ),
@@ -482,7 +482,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
                   color: change > 0
-                      ? AppTheme.neutralSlate
+                      ? AppTheme.secondaryColor
                       : AppTheme.textSecondary,
                 ),
               ),
