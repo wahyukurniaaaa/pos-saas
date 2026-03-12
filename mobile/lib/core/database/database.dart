@@ -430,6 +430,55 @@ class PosifyDatabase extends _$PosifyDatabase {
     return grouped.entries.map((e) => DailySales(e.key, e.value)).toList();
   }
 
+  Future<int> getTotalTransactions(DateTime start, DateTime end) async {
+    final query = selectOnly(transactions)
+      ..addColumns([transactions.id.count()])
+      ..where(transactions.createdAt.isBetweenValues(start, end))
+      ..where(transactions.paymentStatus.equals('paid'));
+
+    final result = await query.getSingle();
+    return result.read(transactions.id.count()) ?? 0;
+  }
+
+  Future<List<PaymentMethodSales>> getPaymentMethodBreakdown(
+    DateTime start,
+    DateTime end,
+  ) async {
+    final countExp = transactions.id.count();
+    final amountExp = transactions.totalAmount.sum();
+    final query = selectOnly(transactions)
+      ..addColumns([transactions.paymentMethod, countExp, amountExp])
+      ..where(transactions.createdAt.isBetweenValues(start, end))
+      ..where(transactions.paymentStatus.equals('paid'))
+      ..groupBy([transactions.paymentMethod]);
+
+    final result = await query.get();
+    return result.map((row) {
+      return PaymentMethodSales(
+        row.read(transactions.paymentMethod) ?? 'unknown',
+        row.read(amountExp) ?? 0,
+        row.read(countExp) ?? 0,
+      );
+    }).toList();
+  }
+
+  Future<List<DailySales>> getHourlySales(DateTime start, DateTime end) async {
+    final list =
+        await (select(transactions)
+              ..where((t) => t.createdAt.isBetweenValues(start, end))
+              ..where((t) => t.paymentStatus.equals('paid'))
+              ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
+            .get();
+
+    final Map<String, int> grouped = {};
+    for (final t in list) {
+      final hourStr = DateFormat('HH:00').format(t.createdAt);
+      grouped[hourStr] = (grouped[hourStr] ?? 0) + t.totalAmount;
+    }
+
+    return grouped.entries.map((e) => DailySales(e.key, e.value)).toList();
+  }
+
   Future<int> deleteLicense(String code) {
     return (delete(licenses)..where((t) => t.licenseCode.equals(code))).go();
   }
@@ -445,6 +494,13 @@ class DailySales {
   final String dateStr;
   final int totalAmount;
   DailySales(this.dateStr, this.totalAmount);
+}
+
+class PaymentMethodSales {
+  final String method;
+  final int totalAmount;
+  final int transactionCount;
+  PaymentMethodSales(this.method, this.totalAmount, this.transactionCount);
 }
 
 class TransactionWithItems {

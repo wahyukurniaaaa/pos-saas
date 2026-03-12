@@ -6,6 +6,7 @@ class AppTheme {
 
   // Brand Colors (Stitch Core Style Guide)
   static const Color primaryColor = Color(0xFF0F766E); // Tosca Green (Teal 700)
+  static const Color secondaryColor = Color(0xFFF59E0B); // Amber 500
   static const Color successColor = Color(0xFF10B981);
   static const Color dangerColor = Color(0xFFEF4444);
   static const Color neutralSlate = Color(0xFF334155); // Slate 700
