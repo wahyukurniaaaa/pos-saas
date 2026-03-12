@@ -104,7 +104,7 @@ Berikut adalah representasi visual sketsa (wireframe) kasar untuk aplikasi POSif
 |                                       |
 |     [ 💳 BAYAR - Rp 11.000 ]          |
 +---------------------------------------+
-| 🏠 POS    |  📦 Stok   | ⚙️ Setting   |
+| 🏠 Kasir | 🧾 Riwayat | 📦 Stok | ⚙️ Setting |
 +---------------------------------------+
 ```
 
@@ -134,7 +134,7 @@ Berikut adalah representasi visual sketsa (wireframe) kasar untuk aplikasi POSif
 |                                       |
 | [      SELESAIKAN PEMBAYARAN        ] |
 +---------------------------------------+
-| 🏠 POS    |  📦 Stok   | ⚙️ Setting   |
+| 🏠 Kasir | 🧾 Riwayat | 📦 Stok | ⚙️ Setting |
 +---------------------------------------+
 ```
 
@@ -211,7 +211,7 @@ Berikut adalah representasi visual sketsa (wireframe) kasar untuk aplikasi POSif
 |                                       |
 |  [         ➕ TAMBAH PRODUK        ]  |
 +---------------------------------------+
-| 🏠 POS    |  📦 Stok   | ⚙️ Setting   |
+| 🏠 Kasir | 🧾 Riwayat | 📦 Stok | ⚙️ Setting |
 +---------------------------------------+
 ```
 
@@ -361,7 +361,7 @@ Berikut adalah representasi visual sketsa (wireframe) kasar untuk aplikasi POSif
 |  🔒 Logout Sistem                     |
 |                                       |
 +---------------------------------------+
-| 🏠 POS    |  📦 Stok   | ⚙️ Setting   |
+| 🏠 Kasir | 🧾 Riwayat | 📦 Stok | ⚙️ Setting |
 +---------------------------------------+
 ```
 

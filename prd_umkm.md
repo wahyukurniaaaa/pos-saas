@@ -185,9 +185,9 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
 
 Input Kode Lisensi \-\> Validasi Backend Go \-\> Generate Device Fingerprint \-\> Simpan Token ke SQLite \-\> Mode Offline Aktif.
 
-### **14.2. Alur Transaksi Kasir**
+### **14.2. Alur Transaksi & Navigasi Utama**
 
-PIN Login Karyawan (L3/L2/L1) \-\> Dashboard Utama \-\> [Opsional] Buka Shift \-\> Scan Barcode \-\> Tekan Tombol BAYAR \-\> [Opsional] Input Data Pelanggan (WhatsApp/Nama) \-\> Pilih Metode Bayar \-\> Selesaikan Pembayaran \-\> Update Stok \-\> Tampil Animasi Sukses \-\> Pilih [Cetak Struk] atau [Bagikan ke WhatsApp].
+PIN Login Karyawan (L3/L2/L1) -> Dashboard Utama (4 Tab: Kasir, Riwayat, Stok, Setting) -> [Opsional] Buka Shift -> Scan Barcode -> Tekan Tombol BAYAR -> [Opsional] Input Data Pelanggan (WhatsApp/Nama) -> Pilih Metode Bayar -> Selesaikan Pembayaran -> Update Stok -> Tampil Animasi Sukses -> Pilih [Cetak Struk] atau [Bagikan ke WhatsApp]. Riwayat transaksi dapat diakses langsung dari navbar tanpa masuk ke menu Setting.
 
 ### **14.3. Alur Stock Opname (Penyesuaian Stok)**
 
