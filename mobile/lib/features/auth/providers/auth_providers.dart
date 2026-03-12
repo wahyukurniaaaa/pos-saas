@@ -98,9 +98,14 @@ class LicenseNotifier extends AsyncNotifier<License?> {
         data: {'license_code': code, 'device_fingerprint': deviceId},
       );
 
-      if (response.data['status'] == 'success' &&
-          response.data['data'] != null &&
-          response.data['data']['is_active'] == true) {
+      final data = response.data;
+      final isSuccess = (data is Map && data['status'] == 'success') ||
+          (data is Map && data['success'] == true) ||
+          (data is Map &&
+              data['data'] is Map &&
+              data['data']['is_active'] == true);
+
+      if (isSuccess) {
         // Success! Update local timestamp
         await db.updateLicenseVerification(code);
       } else {
@@ -135,20 +140,21 @@ class LicenseNotifier extends AsyncNotifier<License?> {
 
       if (!ref.mounted) return false;
 
-      if (response.data['status'] == 'success') {
-        // 2. Save to Local SQLite
-        try {
-          await db.insertLicense(
-            LicensesCompanion.insert(
-              licenseCode: code,
-              deviceFingerprint: Value(deviceId),
-              activationDate: Value(DateTime.now()),
-              status: const Value('active'),
-            ),
-          );
-        } catch (insertErr) {
-          // Duplicate license code — already exists in local DB, continue
-        }
+      final data = response.data;
+      final isSuccess = (data is Map && data['status'] == 'success') ||
+          (data is Map && data['success'] == true) ||
+          response.statusCode == 200;
+
+      if (isSuccess) {
+        // 2. Save/Update to Local SQLite (Upsert)
+        await db.into(db.licenses).insertOnConflictUpdate(
+              LicensesCompanion.insert(
+                licenseCode: code,
+                deviceFingerprint: Value(deviceId),
+                activationDate: Value(DateTime.now()),
+                status: const Value('active'),
+              ),
+            );
 
         // 3. Read back dari DB dan update state
         final newLicense = await db.getLocalLicense();
@@ -156,10 +162,11 @@ class LicenseNotifier extends AsyncNotifier<License?> {
         return true;
       }
 
-      state = AsyncValue.error(
-        response.data['message'] ?? 'Aktivasi gagal',
-        StackTrace.current,
-      );
+      final errorMsg = (data is Map)
+          ? (data['message'] ?? 'Aktivasi gagal')
+          : 'Aktivasi gagal: Server mengembalikan status ${response.statusCode}';
+
+      state = AsyncValue.error(errorMsg, StackTrace.current);
       return false;
     } on DioException catch (e) {
       if (!ref.mounted) return false;

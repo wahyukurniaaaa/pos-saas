@@ -2464,10 +2464,9 @@ class $ProductVariantsTable extends ProductVariants
   late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
     'updated_at',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
   );
   @override
   List<GeneratedColumn> get $columns => [
@@ -2597,7 +2596,7 @@ class $ProductVariantsTable extends ProductVariants
       updatedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}updated_at'],
-      )!,
+      ),
     );
   }
 
@@ -2616,7 +2615,7 @@ class ProductVariant extends DataClass implements Insertable<ProductVariant> {
   final int stock;
   final String? sku;
   final DateTime createdAt;
-  final DateTime updatedAt;
+  final DateTime? updatedAt;
   const ProductVariant({
     required this.id,
     required this.productId,
@@ -2626,7 +2625,7 @@ class ProductVariant extends DataClass implements Insertable<ProductVariant> {
     required this.stock,
     this.sku,
     required this.createdAt,
-    required this.updatedAt,
+    this.updatedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2643,7 +2642,9 @@ class ProductVariant extends DataClass implements Insertable<ProductVariant> {
       map['sku'] = Variable<String>(sku);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
-    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<DateTime>(updatedAt);
+    }
     return map;
   }
 
@@ -2659,7 +2660,9 @@ class ProductVariant extends DataClass implements Insertable<ProductVariant> {
       stock: Value(stock),
       sku: sku == null && nullToAbsent ? const Value.absent() : Value(sku),
       createdAt: Value(createdAt),
-      updatedAt: Value(updatedAt),
+      updatedAt: updatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(updatedAt),
     );
   }
 
@@ -2677,7 +2680,7 @@ class ProductVariant extends DataClass implements Insertable<ProductVariant> {
       stock: serializer.fromJson<int>(json['stock']),
       sku: serializer.fromJson<String?>(json['sku']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
-      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
     );
   }
   @override
@@ -2692,7 +2695,7 @@ class ProductVariant extends DataClass implements Insertable<ProductVariant> {
       'stock': serializer.toJson<int>(stock),
       'sku': serializer.toJson<String?>(sku),
       'createdAt': serializer.toJson<DateTime>(createdAt),
-      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
     };
   }
 
@@ -2705,7 +2708,7 @@ class ProductVariant extends DataClass implements Insertable<ProductVariant> {
     int? stock,
     Value<String?> sku = const Value.absent(),
     DateTime? createdAt,
-    DateTime? updatedAt,
+    Value<DateTime?> updatedAt = const Value.absent(),
   }) => ProductVariant(
     id: id ?? this.id,
     productId: productId ?? this.productId,
@@ -2715,7 +2718,7 @@ class ProductVariant extends DataClass implements Insertable<ProductVariant> {
     stock: stock ?? this.stock,
     sku: sku.present ? sku.value : this.sku,
     createdAt: createdAt ?? this.createdAt,
-    updatedAt: updatedAt ?? this.updatedAt,
+    updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
   );
   ProductVariant copyWithCompanion(ProductVariantsCompanion data) {
     return ProductVariant(
@@ -2785,7 +2788,7 @@ class ProductVariantsCompanion extends UpdateCompanion<ProductVariant> {
   final Value<int> stock;
   final Value<String?> sku;
   final Value<DateTime> createdAt;
-  final Value<DateTime> updatedAt;
+  final Value<DateTime?> updatedAt;
   const ProductVariantsCompanion({
     this.id = const Value.absent(),
     this.productId = const Value.absent(),
@@ -2843,7 +2846,7 @@ class ProductVariantsCompanion extends UpdateCompanion<ProductVariant> {
     Value<int>? stock,
     Value<String?>? sku,
     Value<DateTime>? createdAt,
-    Value<DateTime>? updatedAt,
+    Value<DateTime?>? updatedAt,
   }) {
     return ProductVariantsCompanion(
       id: id ?? this.id,
@@ -7619,7 +7622,7 @@ typedef $$ProductVariantsTableCreateCompanionBuilder =
       Value<int> stock,
       Value<String?> sku,
       Value<DateTime> createdAt,
-      Value<DateTime> updatedAt,
+      Value<DateTime?> updatedAt,
     });
 typedef $$ProductVariantsTableUpdateCompanionBuilder =
     ProductVariantsCompanion Function({
@@ -7631,7 +7634,7 @@ typedef $$ProductVariantsTableUpdateCompanionBuilder =
       Value<int> stock,
       Value<String?> sku,
       Value<DateTime> createdAt,
-      Value<DateTime> updatedAt,
+      Value<DateTime?> updatedAt,
     });
 
 final class $$ProductVariantsTableReferences
@@ -8062,7 +8065,7 @@ class $$ProductVariantsTableTableManager
                 Value<int> stock = const Value.absent(),
                 Value<String?> sku = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
               }) => ProductVariantsCompanion(
                 id: id,
                 productId: productId,
@@ -8084,7 +8087,7 @@ class $$ProductVariantsTableTableManager
                 Value<int> stock = const Value.absent(),
                 Value<String?> sku = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
               }) => ProductVariantsCompanion.insert(
                 id: id,
                 productId: productId,
