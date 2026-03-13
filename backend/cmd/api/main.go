@@ -25,11 +25,23 @@ func main() {
 
 	app := fiber.New()
 
+	// Get allowed origins from environment (comma-separated)
+	allowedOriginsEnv := os.Getenv("ALLOWED_ORIGINS")
+
 	// Global Middlewares
 	app.Use(logger.New())
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "*",
-		AllowHeaders: "Origin, Content-Type, Accept, X-App-Client-Key",
+		// Use * for development, or specific origins from env for production
+		AllowOrigins: func() string {
+			if allowedOriginsEnv == "" {
+				return "*" // Default for development
+			}
+			return allowedOriginsEnv
+		}(),
+		AllowMethods:     "GET,POST,PUT,DELETE,OPTIONS",
+		AllowHeaders:     "Origin,Content-Type,Accept,X-App-Client-Key,X-Admin-Secret-Key",
+		ExposeHeaders:    "Content-Length",
+		AllowCredentials: true,
 	}))
 
 	// API Routes Group

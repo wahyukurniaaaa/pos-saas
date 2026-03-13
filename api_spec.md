@@ -158,4 +158,4 @@ Jika `device_fingerprint` yang datang tidak cocok dengan yang sudah direkam sebe
 
 ## 🛠️ Security & Rate Limiting Strategy di Fiber Go
 * **Rate Limiting:** Menggunakan middleware `fiber/v2/middleware/limiter` (Maksimal 5 request per menit per IP) khusus untuk *endpoint* `/activate` guna mencegah serangan *Brute Force* tebak kode lisensi.
-* **Database:** SQLite atau PostgreSQL (tergantung target *production* backend nanti). Data *License Code* akan disimpan dalam bentuk HASH (seperti *password*) jika memungkinkan, atau *plaintext* aman karena berfungsi layaknya kupon sekali pakai.
+* **Database:** **PostgreSQL** (via GORM). Data *License Code* disimpan dalam bentuk HASH (seperti *password*) jika memungkinkan, atau *plaintext* aman karena berfungsi layaknya kupon sekali pakai.

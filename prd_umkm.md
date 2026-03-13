@@ -107,9 +107,10 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
 
 ## **6\. Arsitektur Teknis & Tech Stack**
 
-* **Backend:** **Go (Fiber)** untuk server generator & aktivasi lisensi.  
-* **Database App:** **SQLite (via Drift ORM)** (Lokal) & **Supabase** (Master lisensi & akun owner).  
-* **Mobile Framework:** **Flutter** (Target Android APK).  
+* **Backend:** **Go (Fiber)** untuk server generator & aktivasi lisensi.
+* **Database Backend:** **PostgreSQL** untuk database lisensi (melalui GORM).
+* **Database App:** **SQLite (via Drift ORM)** (Lokal) & **Supabase** (Master lisensi & akun owner).
+* **Mobile Framework:** **Flutter** (Target Android APK).
 * **Integrasi:** Google Drive API (Backup) & ESC/POS (Printing).
 
 ## **7\. Fase Pengembangan (Roadmap)**
