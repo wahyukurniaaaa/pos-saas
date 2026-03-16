@@ -1,0 +1,24 @@
+name: Supabase Keep Alive
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Berjalan setiap hari jam 00:00 UTC
+  workflow_dispatch: # Memungkinkan untuk dijalankan secara manual dari tab Actions
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase Database
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_DATABASE_URL }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "Error: SUPABASE_DATABASE_URL secret is tidak ditemukan."
+            echo "Harap tambahkan secret di Repository Settings -> Secrets and variables -> Actions"
+            exit 1
+          fi
+          
+          # Melakukan query sederhana untuk menjaga database tetap aktif
+          # psql sudah terinstal secara default di ubuntu-latest
+          psql "$DATABASE_URL" -c "SELECT 1;"
