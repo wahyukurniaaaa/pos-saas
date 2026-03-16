@@ -8,8 +8,10 @@ class AppConstants {
   static const String packageName = 'com.posify.umkm';
 
   // API
-  static String get baseUrl =>
-      dotenv.get('BASE_URL', fallback: 'http://10.0.2.2:3000/api/v1');
+  static String get baseUrl {
+    final url = dotenv.get('BASE_URL', fallback: 'http://10.0.2.2:3000/api/v1');
+    return url.endsWith('/') ? url : '$url/';
+  }
   static String get appClientKey => dotenv.get('APP_CLIENT_KEY', fallback: '');
 
   // PIN

@@ -376,6 +376,9 @@ class _LicenseActivationScreenState
     final success = result.$1;
     final String? serverError = result.$2;
 
+    debugPrint('Activation Success: $success');
+    debugPrint('Activation Error: $serverError');
+
     if (success) {
       // AppBootstrap akan otomatis navigate ke screen berikutnya
       return;

@@ -94,7 +94,7 @@ class LicenseNotifier extends AsyncNotifier<License?> {
 
     try {
       final response = await dio.post(
-        '/license/verify',
+        'license/verify',
         data: {'license_code': code, 'device_fingerprint': deviceId},
       );
 
@@ -119,7 +119,11 @@ class LicenseNotifier extends AsyncNotifier<License?> {
   }
 
   Future<(bool, String?)> activate(String code) async {
-    state = const AsyncValue.loading();
+    // NOTE: Do NOT set state = AsyncValue.loading() here.
+    // AppBootstrap watches licenseProvider, so setting loading state would
+    // cause it to rebuild a fresh LicenseActivationScreen (unmounting the
+    // current one) → setState would never run → error message never shows.
+    // Loading state is handled locally in the screen via _isLoading flag.
     final db = ref.read(databaseProvider);
     final dio = ref.read(dioProvider);
 
@@ -129,7 +133,7 @@ class LicenseNotifier extends AsyncNotifier<License?> {
 
       // 1. Call Backend Go API
       final response = await dio.post(
-        '/license/activate',
+        'license/activate',
         data: {
           'license_code': code,
           'device_fingerprint': deviceId,
@@ -166,19 +170,31 @@ class LicenseNotifier extends AsyncNotifier<License?> {
           ? (data['message']?.toString() ?? 'Aktivasi gagal')
           : 'Aktivasi gagal: Server mengembalikan status ${response.statusCode}';
 
-      state = AsyncValue.error(errorMsg, StackTrace.current);
+      // Keep state as data(null) – do NOT set error state.
+      // AppBootstrap watches this provider, and setting error would
+      // rebuild a fresh LicenseActivationScreen, wiping local error state.
+      if (ref.mounted) state = const AsyncValue.data(null);
       return (false, errorMsg);
     } on DioException catch (e) {
       if (!ref.mounted) return (false, null);
-      final responseData = e.response?.data;
+      
+      var responseData = e.response?.data;
+      if (responseData is String) {
+        try {
+          responseData = jsonDecode(responseData);
+        } catch (_) {}
+      }
+
       final msg = (responseData is Map && responseData['message'] != null)
           ? responseData['message'].toString()
           : 'Gagal menghubungi server (${e.response?.statusCode ?? "Unknown"})';
-      state = AsyncValue.error(msg, StackTrace.current);
+      // Keep state as data(null) – avoid triggering AppBootstrap rebuild.
+      if (ref.mounted) state = const AsyncValue.data(null);
       return (false, msg);
     } catch (e, st) {
       if (!ref.mounted) return (false, null);
-      state = AsyncValue.error(e.toString(), st);
+      // Keep state as data(null) – avoid triggering AppBootstrap rebuild.
+      state = const AsyncValue.data(null);
       return (false, e.toString());
     }
   }
