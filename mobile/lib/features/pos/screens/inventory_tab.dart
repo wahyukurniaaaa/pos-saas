@@ -23,7 +23,8 @@ final _currency = NumberFormat.currency(
 );
 
 class InventoryTab extends ConsumerStatefulWidget {
-  const InventoryTab({super.key});
+  final bool showBackButton;
+  const InventoryTab({super.key, this.showBackButton = false});
 
   @override
   ConsumerState<InventoryTab> createState() => _InventoryTabState();
@@ -62,13 +63,37 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'Manajemen Stok',
-                        style: GoogleFonts.poppins(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
-                          color: AppTheme.textPrimary,
-                        ),
+                      Row(
+                        children: [
+                          if (widget.showBackButton)
+                            Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: InkWell(
+                                onTap: () => Navigator.pop(context),
+                                borderRadius: BorderRadius.circular(20),
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.primaryColor.withValues(alpha: 0.08),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.arrow_back_ios_new_rounded,
+                                    size: 18,
+                                    color: AppTheme.primaryColor,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          Text(
+                            'Manajemen Stok',
+                            style: GoogleFonts.poppins(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w800,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
+                        ],
                       ),
                       if (!isCashier)
                         Container(
