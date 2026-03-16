@@ -7,6 +7,7 @@ import 'features/auth/screens/owner_setup_screen.dart';
 import 'features/auth/screens/pin_login_screen.dart';
 import 'features/auth/screens/employee_selection_screen.dart';
 import 'features/pos/screens/pos_dashboard_screen.dart';
+import 'features/dashboard/screens/owner_dashboard_screen.dart';
 import 'features/auth/providers/auth_providers.dart';
 import 'features/auth/providers/owner_provider.dart';
 import 'core/database/database.dart';
@@ -42,6 +43,7 @@ class PosifyApp extends StatelessWidget {
         },
         '/employee-selection': (context) => const EmployeeSelectionScreen(),
         '/pos': (context) => const PosDashboardScreen(),
+        '/dashboard': (context) => const OwnerDashboardScreen(),
       },
     );
   }

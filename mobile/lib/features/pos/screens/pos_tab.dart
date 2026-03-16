@@ -24,7 +24,8 @@ final _currency = NumberFormat.currency(
 );
 
 class PosTab extends ConsumerStatefulWidget {
-  const PosTab({super.key});
+  final bool showBackButton;
+  const PosTab({super.key, this.showBackButton = false});
 
   @override
   ConsumerState<PosTab> createState() => _PosTabState();
@@ -55,7 +56,7 @@ class _PosTabState extends ConsumerState<PosTab> {
 
     return Column(
       children: [
-        _buildAppBar(cashierName, hasOpenShift),
+        _buildAppBar(cashierName, hasOpenShift, widget.showBackButton),
         Expanded(
           child: hasOpenShift
               ? (isDesktop ? _buildDesktopLayout() : _buildMobileLayout())
@@ -157,7 +158,7 @@ class _PosTabState extends ConsumerState<PosTab> {
     );
   }
 
-  Widget _buildAppBar(String cashierName, bool hasOpenShift) {
+  Widget _buildAppBar(String cashierName, bool hasOpenShift, bool showBackButton) {
     return Container(
       padding: const EdgeInsets.only(bottom: 24),
       decoration: BoxDecoration(
@@ -184,6 +185,19 @@ class _PosTabState extends ConsumerState<PosTab> {
                 children: [
                   Row(
                     children: [
+                      if (showBackButton)
+                        IconButton(
+                          icon: const Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                          tooltip: 'Kembali ke Dashboard',
+                          onPressed: () => Navigator.pop(context),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                      if (showBackButton) const SizedBox(width: 8),
                       Container(
                         width: 40,
                         height: 40,

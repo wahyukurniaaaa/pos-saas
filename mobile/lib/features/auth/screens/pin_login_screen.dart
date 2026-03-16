@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -79,8 +79,12 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen>
     if (!mounted) return;
 
     if (employee != null) {
-      // Success – navigate to POS dashboard
-      Navigator.pushReplacementNamed(context, '/pos');
+      // Route based on role
+      final role = employee.role;
+      final route = (role == 'owner' || role == 'supervisor')
+          ? '/dashboard'
+          : '/pos';
+      Navigator.pushReplacementNamed(context, route);
     } else {
       // Failed PIN
       _shakeController.forward(from: 0);
