@@ -1,12 +1,14 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   AppTheme._();
 
-  // Brand Colors (Stitch Core Style Guide)
-  static const Color primaryColor = Color(0xFF0F766E); // Tosca Green (Teal 700)
-  static const Color secondaryColor = Color(0xFFF59E0B); // Amber 500
+  // Brand Colors (Stitch Core Style Guide - Updated to Navy/Yellow)
+  static const Color primaryColor = Color(0xFF141F9C); // Navy
+  static const Color secondaryColor = Color(0xFFFADF61); // Yellow
+  static const Color tertiaryColor = Color(0xFF5C77F7); // Cornflower
+  static const Color infoColor = Color(0xFF75C8EF); // Sky
   static const Color successColor = Color(0xFF10B981);
   static const Color dangerColor = Color(0xFFEF4444);
   static const Color neutralSlate = Color(0xFF334155); // Slate 700
@@ -15,7 +17,7 @@ class AppTheme {
   static const Color backgroundDark = Color(0xFF121320);
 
   // Legacy compat mapping
-  static const Color primaryDark = Color(0xFF115E59); // Teal 800
+  static const Color primaryDark = Color(0xFF0F176E); // Darker Navy
   static const Color errorColor = dangerColor;
   static const Color scaffoldBg = backgroundLight;
   static const Color cardBg = Colors.white;
@@ -29,13 +31,13 @@ class AppTheme {
       brightness: Brightness.light,
       colorSchemeSeed: primaryColor,
       scaffoldBackgroundColor: scaffoldBg,
-      textTheme: GoogleFonts.interTextTheme(),
+      textTheme: GoogleFonts.poppinsTextTheme(),
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.white,
         foregroundColor: primaryColor,
         elevation: 0,
         centerTitle: false,
-        titleTextStyle: GoogleFonts.inter(
+        titleTextStyle: GoogleFonts.poppins(
           fontSize: 20,
           fontWeight: FontWeight.w700,
           color: primaryColor,
@@ -51,7 +53,7 @@ class AppTheme {
             borderRadius: BorderRadius.circular(8), // 8px (0.5rem lg)
           ),
           elevation: 0,
-          textStyle: GoogleFonts.inter(
+          textStyle: GoogleFonts.poppins(
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
@@ -80,12 +82,12 @@ class AppTheme {
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: errorColor),
         ),
-        labelStyle: GoogleFonts.inter(
+        labelStyle: GoogleFonts.poppins(
           color: textSecondary,
           fontSize: 14,
           fontWeight: FontWeight.w500,
         ),
-        hintStyle: GoogleFonts.inter(
+        hintStyle: GoogleFonts.poppins(
           color: textSecondary.withValues(alpha: 0.5),
         ),
       ),
@@ -102,12 +104,12 @@ class AppTheme {
         selectedItemColor: primaryColor,
         unselectedItemColor: Color(0xFF94A3B8), // slate-400
         showUnselectedLabels: true,
-        selectedLabelStyle: GoogleFonts.inter(
+        selectedLabelStyle: GoogleFonts.poppins(
           fontSize: 10,
           fontWeight: FontWeight.bold,
           letterSpacing: 1.0,
         ),
-        unselectedLabelStyle: GoogleFonts.inter(
+        unselectedLabelStyle: GoogleFonts.poppins(
           fontSize: 10,
           fontWeight: FontWeight.bold,
           letterSpacing: 1.0,

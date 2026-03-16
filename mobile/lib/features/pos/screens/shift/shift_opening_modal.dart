@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
@@ -60,7 +60,7 @@ class _ShiftOpeningModalState extends ConsumerState<ShiftOpeningModal> {
               children: [
                 Text(
                   'Buka Kasir',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
                     color: AppTheme.textPrimary,
@@ -76,7 +76,7 @@ class _ShiftOpeningModalState extends ConsumerState<ShiftOpeningModal> {
             const SizedBox(height: 8),
             Text(
               'Masukkan modal laci awal (cash) untuk hari ini. Modal ini akan digunakan untuk kembalian uang tunai.',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontSize: 14,
                 color: AppTheme.textSecondary,
                 height: 1.5,
@@ -85,7 +85,7 @@ class _ShiftOpeningModalState extends ConsumerState<ShiftOpeningModal> {
             const SizedBox(height: 24),
             Text(
               'Modal Laci Awal',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: AppTheme.textPrimary,
@@ -97,7 +97,7 @@ class _ShiftOpeningModalState extends ConsumerState<ShiftOpeningModal> {
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
                 prefixText: 'Rp ',
-                prefixStyle: GoogleFonts.inter(
+                prefixStyle: GoogleFonts.poppins(
                   fontWeight: FontWeight.w600,
                   fontSize: 16,
                   color: AppTheme.textPrimary,
@@ -130,7 +130,7 @@ class _ShiftOpeningModalState extends ConsumerState<ShiftOpeningModal> {
                     )
                   : Text(
                       'Buka Shift Sekarang',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
                       ),

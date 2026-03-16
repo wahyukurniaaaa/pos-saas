@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -94,7 +94,7 @@ class _LicenseActivationScreenState
                       // Title
                       Text(
                         'POSify',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           fontSize: 32,
                           fontWeight: FontWeight.w800,
                           color: Colors.white,
@@ -104,7 +104,7 @@ class _LicenseActivationScreenState
                       const SizedBox(height: 6),
                       Text(
                         'Lisensi Seumur Hidup',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
                           color: Colors.white.withValues(alpha: 0.8),
@@ -133,7 +133,7 @@ class _LicenseActivationScreenState
                             children: [
                               Text(
                                 'Masukkan Kode Lisensi',
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.poppins(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                   color: AppTheme.textPrimary,
@@ -142,7 +142,7 @@ class _LicenseActivationScreenState
                               const SizedBox(height: 4),
                               Text(
                                 'Kode dikirim ke email saat pembelian',
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.poppins(
                                   fontSize: 13,
                                   color: AppTheme.textSecondary,
                                 ),
@@ -230,7 +230,7 @@ class _LicenseActivationScreenState
                                         Expanded(
                                           child: Text(
                                             _errorMessage!,
-                                            style: GoogleFonts.inter(
+                                            style: GoogleFonts.poppins(
                                               fontSize: 13,
                                               color: AppTheme.errorColor,
                                               fontWeight: FontWeight.w500,
@@ -279,7 +279,7 @@ class _LicenseActivationScreenState
                                             const SizedBox(width: 8),
                                             Text(
                                               'AKTIFKAN PERANGKAT INI',
-                                              style: GoogleFonts.inter(
+                                              style: GoogleFonts.poppins(
                                                 fontSize: 15,
                                                 fontWeight: FontWeight.w700,
                                                 letterSpacing: 0.5,
@@ -330,7 +330,7 @@ class _LicenseActivationScreenState
                               const SizedBox(width: 6),
                               Text(
                                 'Butuh internet saat Aktivasi & Verifikasi (7 hari)',
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.poppins(
                                   fontSize: 12,
                                   color: Colors.white.withValues(alpha: 0.7),
                                 ),
@@ -340,7 +340,7 @@ class _LicenseActivationScreenState
                           const SizedBox(height: 4),
                           Text(
                             'Maksimal offline 7 hari sebelum verifikasi ulang',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               fontSize: 10,
                               color: Colors.white.withValues(alpha: 0.5),
                             ),

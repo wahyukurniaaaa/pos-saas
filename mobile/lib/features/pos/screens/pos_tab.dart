@@ -15,6 +15,7 @@ import 'package:posify_app/features/pos/screens/shift/shift_opening_modal.dart';
 import 'package:posify_app/features/pos/screens/barcode_scanner_modal.dart';
 import 'package:posify_app/core/widgets/product_image.dart';
 import '../providers/pos_providers.dart';
+import 'inventory_tab.dart' as inventory;
 
 final _currency = NumberFormat.currency(
   locale: 'id_ID',
@@ -70,7 +71,7 @@ class _PosTabState extends ConsumerState<PosTab> {
         Expanded(
           child: Column(
             children: [
-              _buildSearchBar(),
+              const SizedBox(height: 16),
               _buildCategoryChips(),
               Expanded(child: _buildProductGrid()),
             ],
@@ -89,7 +90,7 @@ class _PosTabState extends ConsumerState<PosTab> {
       children: [
         Column(
           children: [
-            _buildSearchBar(),
+            const SizedBox(height: 16),
             _buildCategoryChips(),
             Expanded(child: _buildProductGrid()),
             if (hasItems) const SizedBox(height: 80), // Padding only when cart has items
@@ -114,7 +115,7 @@ class _PosTabState extends ConsumerState<PosTab> {
           const SizedBox(height: 16),
           Text(
             'Kasir Belum Buka',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 20,
               fontWeight: FontWeight.w700,
               color: AppTheme.textPrimary,
@@ -123,7 +124,7 @@ class _PosTabState extends ConsumerState<PosTab> {
           const SizedBox(height: 8),
           Text(
             'Silakan buka shift untuk mulai bertransaksi',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 14,
               color: AppTheme.textSecondary,
             ),
@@ -158,146 +159,159 @@ class _PosTabState extends ConsumerState<PosTab> {
 
   Widget _buildAppBar(String cashierName, bool hasOpenShift) {
     return Container(
-      color: AppTheme.primaryColor,
+      padding: const EdgeInsets.only(bottom: 24),
+      decoration: BoxDecoration(
+        color: AppTheme.primaryColor,
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(40)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-          child: Row(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CircleAvatar(
-                radius: 16,
-                backgroundColor: Colors.white24,
-                child: Text(
-                  cashierName.isNotEmpty ? cashierName[0].toUpperCase() : 'K',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
+              // User info row
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.person, color: Colors.white, size: 20),
+                      ),
+                      const SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Selamat Pagi,',
+                            style: GoogleFonts.poppins(
+                              color: Colors.white.withValues(alpha: 0.7),
+                              fontSize: 12,
+                            ),
+                          ),
+                          Text(
+                            cashierName,
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  cashierName,
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () {
-                    if (hasOpenShift) {
-                      _showShiftReport(context, cashierName);
-                    } else {
-                      showDialog(
-                        context: context,
-                        builder: (context) => const ShiftOpeningModal(),
-                      );
-                    }
-                  },
-                  borderRadius: BorderRadius.circular(20),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: hasOpenShift
-                          ? AppTheme.successColor.withValues(alpha: 0.2)
-                          : AppTheme.errorColor.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: hasOpenShift
-                            ? AppTheme.successColor.withValues(alpha: 0.5)
-                            : AppTheme.errorColor.withValues(alpha: 0.5),
+                  // Current Shift Status
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        if (hasOpenShift) {
+                          _showShiftReport(context, cashierName);
+                        } else {
+                          showDialog(
+                            context: context,
+                            builder: (context) => const ShiftOpeningModal(),
+                          );
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          hasOpenShift ? Icons.storefront_rounded : Icons.lock_outline_rounded,
+                          color: Colors.white,
+                          size: 20,
+                        ),
                       ),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 6,
-                          height: 6,
-                          decoration: BoxDecoration(
-                            color: hasOpenShift
-                                ? AppTheme.successColor
-                                : AppTheme.errorColor,
-                            shape: BoxShape.circle,
+                  ),
+                ],
+              ),
+              if (hasOpenShift) ...[
+                const SizedBox(height: 24),
+                Text(
+                  'Kasir Utama',
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Search Bar inside Header
+                TextField(
+                  controller: _searchController,
+                  onChanged: (v) {
+                    setState(() {});
+                    ref.read(productProvider.notifier).setSearch(v.isEmpty ? null : v);
+                  },
+                  style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
+                  decoration: InputDecoration(
+                    hintText: 'Cari menu...',
+                    hintStyle: GoogleFonts.poppins(
+                      color: Colors.white.withValues(alpha: 0.5),
+                      fontSize: 14,
+                    ),
+                    prefixIcon: Icon(
+                      Icons.search_rounded,
+                      color: Colors.white.withValues(alpha: 0.5),
+                      size: 20,
+                    ),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear, size: 18, color: Colors.white),
+                            onPressed: () {
+                              _searchController.clear();
+                              ref.read(productProvider.notifier).setSearch(null);
+                            },
+                          )
+                        : IconButton(
+                            icon: Icon(
+                              Icons.qr_code_scanner_rounded,
+                              size: 20,
+                              color: Colors.white.withValues(alpha: 0.5),
+                            ),
+                            onPressed: () => BarcodeScannerModal.show(context),
                           ),
-                        ),
-                        const SizedBox(width: 5),
-                        Text(
-                          hasOpenShift ? 'Shift Buka' : 'Shift Tutup',
-                          style: GoogleFonts.inter(
-                            fontSize: 11,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
+                    filled: true,
+                    fillColor: Colors.white.withValues(alpha: 0.1),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(color: Colors.white24, width: 1),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(color: Colors.white24, width: 1),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(color: Colors.white, width: 1.5),
                     ),
                   ),
                 ),
-              ),
+              ],
             ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSearchBar() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: TextField(
-        controller: _searchController,
-        onChanged: (v) {
-          setState(() {}); // Rebuild for suffix icon visibility
-          ref.read(productProvider.notifier).setSearch(v.isEmpty ? null : v);
-        },
-        decoration: InputDecoration(
-          hintText: 'Cari produk atau SKU...',
-          hintStyle: GoogleFonts.inter(
-            fontSize: 14,
-            color: AppTheme.textSecondary,
-          ),
-          prefixIcon: const Icon(
-            Icons.search_rounded,
-            size: 20,
-            color: AppTheme.textSecondary,
-          ),
-          suffixIcon: _searchController.text.isNotEmpty
-              ? IconButton(
-                  icon: const Icon(Icons.clear, size: 18),
-                  onPressed: () {
-                    _searchController.clear();
-                    ref.read(productProvider.notifier).setSearch(null);
-                  },
-                )
-              : IconButton(
-                  icon: const Icon(
-                    Icons.qr_code_scanner_rounded,
-                    size: 20,
-                    color: AppTheme.textSecondary,
-                  ),
-                  onPressed: () => BarcodeScannerModal.show(context),
-                ),
-          filled: true,
-          fillColor: Colors.white,
-          contentPadding: const EdgeInsets.symmetric(vertical: 12),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppTheme.primaryColor),
           ),
         ),
       ),
@@ -308,13 +322,13 @@ class _PosTabState extends ConsumerState<PosTab> {
     final categoriesAsync = ref.watch(categoryProvider);
 
     return SizedBox(
-      height: 44,
+      height: 48,
       child: categoriesAsync.when(
         loading: () => const SizedBox(),
         error: (error, stackTrace) => const SizedBox(),
         data: (cats) => ListView(
           scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
           children: [
             _buildChip(null, 'Semua'),
             ...cats.map((c) => _buildChip(c.id, c.name)),
@@ -327,33 +341,36 @@ class _PosTabState extends ConsumerState<PosTab> {
   Widget _buildChip(int? id, String label) {
     final isSelected = _selectedCategoryId == id;
     return Padding(
-      padding: const EdgeInsets.only(right: 8),
-      child: FilterChip(
-        label: Text(
-          label,
-          style: GoogleFonts.inter(
-            fontSize: 13,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-          ),
-        ),
-        selected: isSelected,
-        onSelected: (_) {
+      padding: const EdgeInsets.only(right: 12),
+      child: GestureDetector(
+        onTap: () {
           setState(() => _selectedCategoryId = id);
           ref.read(productProvider.notifier).setCategory(id);
         },
-        selectedColor: AppTheme.primaryColor,
-        checkmarkColor: Colors.white,
-        showCheckmark: false,
-        labelStyle: TextStyle(
-          color: isSelected ? Colors.white : AppTheme.textSecondary,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: isSelected ? AppTheme.tertiaryColor : Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isSelected ? 0.15 : 0.05),
+                blurRadius: isSelected ? 8 : 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Text(
+            label,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: isSelected ? Colors.white : AppTheme.textSecondary,
+            ),
+          ),
         ),
-        backgroundColor: Colors.white,
-        side: BorderSide(
-          color: isSelected ? AppTheme.primaryColor : Colors.grey.shade200,
-          width: isSelected ? 2 : 1,
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
     );
   }
@@ -379,9 +396,29 @@ class _PosTabState extends ConsumerState<PosTab> {
                 const SizedBox(height: 8),
                 Text(
                   'Belum ada produk',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     color: AppTheme.textSecondary,
                     fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                OutlinedButton.icon(
+                  onPressed: () {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (ctx) => const inventory.AddProductSheet(),
+                    );
+                  },
+                  icon: const Icon(Icons.add_rounded, size: 18),
+                  label: const Text('Tambah Produk'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.primaryColor,
+                    side: BorderSide(color: AppTheme.primaryColor.withValues(alpha: 0.3), width: 1.5),
+                    backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.05),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
               ],
@@ -407,10 +444,6 @@ class _PosTabState extends ConsumerState<PosTab> {
   Widget _buildProductCard(Product product) {
     final hasVariants = product.hasVariants;
     final isOutOfStock = !hasVariants && product.stock <= 0;
-    // For simple products, check if any cart item matches
-    final inCart = hasVariants
-        ? false // Variants can have multiple lines, don't highlight card
-        : ref.watch(cartProvider).any((i) => i.cartKey == '${product.id}');
 
     return GestureDetector(
       onTap: isOutOfStock
@@ -426,10 +459,10 @@ class _PosTabState extends ConsumerState<PosTab> {
         duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: inCart ? AppTheme.primaryColor : Colors.grey.shade100,
-            width: inCart ? 2 : 1,
+            color: Colors.grey.shade100,
+            width: 1,
           ),
           boxShadow: [
             BoxShadow(
@@ -442,33 +475,33 @@ class _PosTabState extends ConsumerState<PosTab> {
         child: Stack(
           children: [
             Padding(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(16),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withValues(alpha: 0.05),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: AppTheme.infoColor.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Center(
                       child: ProductImage(
                         imageUri: product.imageUri,
                         categoryId: product.categoryId,
-                        borderRadius: 10,
-                        iconSize: 32,
+                        borderRadius: 16,
+                        iconSize: 24,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 16),
                   Text(
                     product.name,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: AppTheme.textPrimary,
                       height: 1.2,
@@ -476,22 +509,27 @@ class _PosTabState extends ConsumerState<PosTab> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    hasVariants ? 'Lihat Varian' : _currency.format(product.price),
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
+                    _currency.format(product.price),
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: AppTheme.primaryColor,
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    hasVariants ? 'Berbagai pilihan' : 'Stok: ${product.stock}',
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: isOutOfStock
-                          ? AppTheme.errorColor
-                          : AppTheme.textSecondary,
+                  const Spacer(),
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.add,
+                        size: 16,
+                        color: AppTheme.tertiaryColor,
+                      ),
                     ),
                   ),
                 ],
@@ -501,7 +539,7 @@ class _PosTabState extends ConsumerState<PosTab> {
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.8),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(24),
                 ),
                 alignment: Alignment.center,
                 child: Container(
@@ -515,7 +553,7 @@ class _PosTabState extends ConsumerState<PosTab> {
                   ),
                   child: Text(
                     'Habis',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       color: Colors.white,
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
@@ -535,25 +573,12 @@ class _PosTabState extends ConsumerState<PosTab> {
                   ),
                   child: Text(
                     'Varian',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       color: Colors.white,
                       fontSize: 9,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                ),
-              )
-            else if (inCart)
-              Positioned(
-                top: 8,
-                right: 8,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(
-                    color: AppTheme.primaryColor,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.check, color: Colors.white, size: 12),
                 ),
               ),
           ],
@@ -587,135 +612,167 @@ class CartPanel extends ConsumerWidget {
       children: [
         // Header
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          padding: const EdgeInsets.fromLTRB(24, 20, 16, 20),
           decoration: BoxDecoration(
-            border: Border(bottom: BorderSide(color: Colors.grey.shade100)),
+            color: Colors.white,
+            border: Border(bottom: BorderSide(color: Colors.grey.shade100, width: 1)),
           ),
           child: Row(
             children: [
-              const Icon(
-                Icons.shopping_cart_rounded,
-                size: 20,
-                color: AppTheme.primaryColor,
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.shopping_basket_rounded,
+                  size: 18,
+                  color: AppTheme.primaryColor,
+                ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               Text(
                 'Keranjang Belanja',
-                style: GoogleFonts.inter(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 18,
+                  color: AppTheme.textPrimary,
                 ),
               ),
               const Spacer(),
               if (cartItems.isNotEmpty)
-                TextButton(
+                TextButton.icon(
                   onPressed: () => ref.read(cartProvider.notifier).clearCart(),
+                  icon: const Icon(Icons.delete_sweep_rounded, size: 16),
+                  label: const Text('Bersihkan'),
                   style: TextButton.styleFrom(
                     foregroundColor: AppTheme.errorColor,
-                    padding: EdgeInsets.zero,
-                    minimumSize: const Size(0, 0),
-                  ),
-                  child: Text(
-                    'Hapus Semua',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    textStyle: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w700),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
                   ),
                 ),
             ],
           ),
         ),
 
-        // Items
+        // Items List
         Expanded(
           child: cartItems.isEmpty
               ? Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        Icons.shopping_cart_outlined,
-                        size: 48,
-                        color: Colors.grey.shade300,
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade50,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.shopping_cart_outlined,
+                          size: 64,
+                          color: Colors.grey.shade300,
+                        ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
                       Text(
-                        'Belum ada item',
-                        style: GoogleFonts.inter(
+                        'Keranjang Anda kosong',
+                        style: GoogleFonts.poppins(
                           color: AppTheme.textSecondary,
-                          fontSize: 14,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Silakan pilih produk untuk memulai',
+                        style: GoogleFonts.poppins(
+                          color: AppTheme.textSecondary.withValues(alpha: 0.6),
+                          fontSize: 13,
                         ),
                       ),
                     ],
                   ),
                 )
-              : ListView.separated(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
+              : ListView.builder(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
                   itemCount: cartItems.length,
-                  separatorBuilder: (context, index) =>
-                      Divider(color: Colors.grey.shade100),
                   itemBuilder: (context, index) =>
                       _buildCartItem(context, ref, cartItems[index]),
                 ),
         ),
 
-        // Summary & Checkout
+        // Summary Section
         if (cartItems.isNotEmpty)
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.fromLTRB(24, 20, 24, MediaQuery.of(context).padding.bottom + 20),
             decoration: BoxDecoration(
               color: Colors.white,
-              border: Border(top: BorderSide(color: Colors.grey.shade100)),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.02),
-                  blurRadius: 10,
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 20,
                   offset: const Offset(0, -5),
                 ),
               ],
             ),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Subtotal',
-                      style: GoogleFonts.inter(
+                      'Total Pembayaran',
+                      style: GoogleFonts.poppins(
                         fontSize: 14,
+                        fontWeight: FontWeight.w500,
                         color: AppTheme.textSecondary,
                       ),
                     ),
                     Text(
                       _currency.format(subtotal),
-                      style: GoogleFonts.inter(
-                        fontSize: 16,
+                      style: GoogleFonts.poppins(
+                        fontSize: 20,
                         fontWeight: FontWeight.w700,
+                        color: AppTheme.primaryColor,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
                 SizedBox(
                   width: double.infinity,
-                  height: 48,
+                  height: 56,
                   child: ElevatedButton(
-                    onPressed: () => _showPaymentDialog(context, ref, subtotal),
+                    onPressed: () {
+                      Navigator.pop(context); // Close bottom sheet
+                      _showPaymentDialog(context, ref, subtotal);
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.primaryColor,
-                      foregroundColor: Colors.white,
+                      foregroundColor: AppTheme.secondaryColor, // Yellow text
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                       elevation: 0,
                     ),
-                    child: Text(
-                      'Lanjut Pembayaran',
-                      style: GoogleFonts.inter(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 14,
-                      ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.payment_rounded, size: 20),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Checkout Sekarang',
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -727,61 +784,110 @@ class CartPanel extends ConsumerWidget {
   }
 
   Widget _buildCartItem(BuildContext context, WidgetRef ref, CartItem item) {
-    final currency = NumberFormat.currency(
-      locale: 'id_ID',
-      symbol: 'Rp ',
-      decimalDigits: 0,
-    );
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ProductImage(
-            imageUri: item.product.imageUri,
-            categoryId: item.product.categoryId,
-            width: 48,
-            height: 48,
-            borderRadius: 8,
-            iconSize: 24,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.shade100, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
-          const SizedBox(width: 12),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Image Container
+          Hero(
+            tag: 'cart_img_${item.cartKey}',
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: ProductImage(
+                imageUri: item.product.imageUri,
+                categoryId: item.product.categoryId,
+                width: 64,
+                height: 64,
+                borderRadius: 14,
+                iconSize: 28,
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          
+          // Info Info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   item.product.name,
-                  maxLines: 2,
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
                     fontWeight: FontWeight.w600,
+                    color: AppTheme.textPrimary,
                   ),
                 ),
                 if (item.variant != null)
-                  Text(
-                    '${item.variant!.name}: ${item.variant!.optionValue}',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      color: AppTheme.textSecondary,
-                      fontStyle: FontStyle.italic,
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Text(
+                      '${item.variant!.name}: ${item.variant!.optionValue}',
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: AppTheme.primaryColor.withValues(alpha: 0.7),
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 Text(
-                  currency.format(item.effectivePrice),
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
+                  _currency.format(item.effectivePrice),
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
                     color: AppTheme.primaryColor,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
             ),
           ),
+          
           const SizedBox(width: 8),
-          _CartQtyAction(item: item),
+
+          // Actions
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              GestureDetector(
+                onTap: () => ref.read(cartProvider.notifier).removeFromCart(item.cartKey),
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: AppTheme.errorColor.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.close_rounded, size: 14, color: AppTheme.errorColor),
+                ),
+              ),
+              const SizedBox(height: 12),
+              _CartQtyAction(item: item),
+            ],
+          ),
         ],
       ),
     );
@@ -831,16 +937,16 @@ class _CartQtyActionState extends ConsumerState<_CartQtyAction> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      height: 32,
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade200),
-        borderRadius: BorderRadius.circular(8),
+        color: AppTheme.primaryColor.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildActionIcon(
-            Icons.remove,
+            Icons.remove_rounded,
             () {
               if (widget.item.quantity > 0) {
                 final newQty = widget.item.quantity - 1;
@@ -850,17 +956,20 @@ class _CartQtyActionState extends ConsumerState<_CartQtyAction> {
                 _controller.text = '$newQty';
               }
             },
+            isLeft: true,
           ),
-          SizedBox(
-            width: 44,
+          Container(
+            width: 36,
+            alignment: Alignment.center,
             child: TextField(
               controller: _controller,
               textAlign: TextAlign.center,
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              style: GoogleFonts.inter(
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w800,
+                fontSize: 13,
+                color: AppTheme.primaryColor,
               ),
               onTap: () {
                 _controller.selection = TextSelection(
@@ -877,7 +986,7 @@ class _CartQtyActionState extends ConsumerState<_CartQtyAction> {
             ),
           ),
           _buildActionIcon(
-            Icons.add,
+            Icons.add_rounded,
             () {
               final newQty = widget.item.quantity + 1;
               ref
@@ -885,18 +994,25 @@ class _CartQtyActionState extends ConsumerState<_CartQtyAction> {
                   .updateQuantity(widget.item.cartKey, newQty);
               _controller.text = '$newQty';
             },
+            isLeft: false,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildActionIcon(IconData icon, VoidCallback onTap) {
+  Widget _buildActionIcon(IconData icon, VoidCallback onTap, {required bool isLeft}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(4),
-        child: Icon(icon, size: 16, color: AppTheme.textPrimary),
+        width: 32,
+        height: 32,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: AppTheme.primaryColor.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Icon(icon, size: 16, color: AppTheme.primaryColor),
       ),
     );
   }
@@ -915,109 +1031,99 @@ class CartBottomSticky extends ConsumerWidget {
     final totalItems = cartItems.fold(0, (sum, item) => sum + item.quantity);
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
       decoration: BoxDecoration(
         color: Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 30,
+            offset: const Offset(0, -10),
           ),
         ],
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: SafeArea(
         top: false,
-        child: InkWell(
-          onTap: () {
-            // Open Cart Bottom Sheet
-            showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              backgroundColor: Colors.transparent,
-              builder: (ctx) => Container(
-                height: MediaQuery.of(context).size.height * 0.85,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                ),
-                child: const CartPanel(), // Reuse the CartPanel widget!
-              ),
-            );
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: AppTheme.primaryColor,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    const Icon(
-                      Icons.shopping_cart_rounded,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                    Positioned(
-                      right: 0,
-                      top: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(2),
-                        decoration: const BoxDecoration(
-                          color: AppTheme.errorColor,
-                          shape: BoxShape.circle,
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 12,
-                          minHeight: 12,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '$totalItems item di keranjang',
-                      style: GoogleFonts.inter(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    Text(
-                      _currency.format(subtotal),
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-                const Spacer(),
-                Text(
-                  'Lihat',
-                  style: GoogleFonts.inter(
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              // Open Cart Bottom Sheet
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (ctx) => Container(
+                  height: MediaQuery.of(context).size.height * 0.85,
+                  decoration: const BoxDecoration(
                     color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
                   ),
+                  child: const CartPanel(), // Reuse the CartPanel widget!
                 ),
-                const SizedBox(width: 4),
-                const Icon(
-                  Icons.chevron_right_rounded,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ],
+              );
+            },
+            borderRadius: BorderRadius.circular(24),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              decoration: BoxDecoration(
+                color: AppTheme.secondaryColor, // Yellow
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.secondaryColor.withValues(alpha: 0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '$totalItems item' '${totalItems > 1 ? 's' : ''}',
+                        style: GoogleFonts.poppins(
+                          color: AppTheme.primaryColor.withValues(alpha: 0.8),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Text(
+                        _currency.format(subtotal),
+                        style: GoogleFonts.poppins(
+                          color: AppTheme.primaryColor,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Checkout',
+                        style: GoogleFonts.poppins(
+                          color: AppTheme.primaryColor,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Icon(
+                        Icons.shopping_cart_rounded,
+                        color: AppTheme.primaryColor.withValues(alpha: 0.8),
+                        size: 20,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

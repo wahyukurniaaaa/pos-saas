@@ -179,7 +179,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                   children: [
                     Text(
                       'Pembayaran',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
                         color: AppTheme.textPrimary,
@@ -203,52 +203,69 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                     children: [
                       // Total to Pay
                       Container(
-                        padding: const EdgeInsets.all(24),
+                        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
                         decoration: BoxDecoration(
-                          color: AppTheme.primaryColor.withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: AppTheme.primaryColor.withValues(alpha: 0.2),
+                          gradient: LinearGradient(
+                            colors: [
+                              AppTheme.primaryColor,
+                              AppTheme.primaryColor.withValues(alpha: 0.8),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
                           ),
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                              blurRadius: 15,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
                         ),
                         child: Column(
                           children: [
                             Text(
                               'Total Tagihan',
-                              style: GoogleFonts.inter(
-                                color: AppTheme.primaryColor,
+                              style: GoogleFonts.poppins(
+                                color: Colors.white.withValues(alpha: 0.9),
                                 fontWeight: FontWeight.w500,
+                                fontSize: 14,
                               ),
                             ),
                             const SizedBox(height: 8),
                             Text(
                               _currency.format(finalTotal),
-                              style: GoogleFonts.inter(
-                                fontSize: 32,
+                              style: GoogleFonts.poppins(
+                                fontSize: 36,
                                 fontWeight: FontWeight.w800,
-                                color: AppTheme.primaryColor,
+                                color: Colors.white,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 28),
 
                       // Payment Methods
                       Text(
                         'Metode Pembayaran',
-                        style: GoogleFonts.inter(
-                          fontWeight: FontWeight.w600,
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w700,
                           fontSize: 16,
+                          color: AppTheme.textPrimary,
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 12,
-                        runSpacing: 12,
-                        children: _methods
-                            .map((method) => _buildMethodChip(method))
-                            .toList(),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          _buildMethodChip('Tunai'),
+                          const SizedBox(width: 8),
+                          _buildMethodChip('QRIS'),
+                          const SizedBox(width: 8),
+                          _buildMethodChip('Debit'),
+                          const SizedBox(width: 8),
+                          _buildMethodChip('Kasbon'),
+                        ],
                       ),
 
                       const SizedBox(height: 24),
@@ -312,7 +329,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                         )
                       : Text(
                           'Konfirmasi & Cetak Struk',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                           ),
@@ -328,23 +345,64 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
 
   Widget _buildMethodChip(String method) {
     final isSelected = _selectedMethod == method;
-    return InkWell(
-      onTap: () => setState(() => _selectedMethod = method),
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primaryColor : Colors.white,
-          border: Border.all(
-            color: isSelected ? AppTheme.primaryColor : AppTheme.borderColor,
+    IconData icon;
+    switch (method) {
+      case 'QRIS':
+        icon = Icons.qr_code_2_rounded;
+        break;
+      case 'Debit':
+        icon = Icons.credit_card_rounded;
+        break;
+      case 'Kasbon':
+        icon = Icons.receipt_long_rounded;
+        break;
+      case 'Tunai':
+      default:
+        icon = Icons.payments_rounded;
+    }
+
+    return Expanded(
+      child: InkWell(
+        onTap: () => setState(() => _selectedMethod = method),
+        borderRadius: BorderRadius.circular(16),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          decoration: BoxDecoration(
+            color: isSelected ? AppTheme.primaryColor : Colors.white,
+            border: Border.all(
+              color: isSelected ? AppTheme.primaryColor : Colors.grey.shade200,
+              width: 1.5,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: isSelected ? [
+              BoxShadow(
+                color: AppTheme.primaryColor.withValues(alpha: 0.2),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              )
+            ] : null,
           ),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Text(
-          method,
-          style: GoogleFonts.inter(
-            color: isSelected ? Colors.white : AppTheme.textSecondary,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                color: isSelected ? Colors.white : AppTheme.textSecondary,
+                size: 28,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                method,
+                style: GoogleFonts.poppins(
+                  color: isSelected ? Colors.white : AppTheme.textPrimary,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                  fontSize: 12,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
           ),
         ),
       ),
@@ -358,25 +416,39 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
       children: [
         // Received Amount
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           decoration: BoxDecoration(
             color: Colors.white,
-            border: Border.all(color: AppTheme.borderColor),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.3), width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.primaryColor.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Terima Tunai',
-                style: GoogleFonts.inter(color: AppTheme.textSecondary),
+                'Uang Diterima',
+                style: GoogleFonts.poppins(
+                  color: AppTheme.textSecondary,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-              Text(
-                _currency.format(_cashReceived),
-                style: GoogleFonts.inter(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.textPrimary,
+              Expanded(
+                child: Text(
+                  _cashReceivedString.isEmpty ? '0' : _currency.format(_cashReceived),
+                  textAlign: TextAlign.right,
+                  style: GoogleFonts.poppins(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.textPrimary,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -385,38 +457,40 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
         const SizedBox(height: 16),
 
         // Quick Cash
-        Row(
-          children: _quickCashOptions
-              .map(
-                (amt) => Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                      right: amt == _quickCashOptions.last ? 0 : 8,
-                    ),
-                    child: OutlinedButton(
-                      onPressed: () => _onQuickCashPress(amt),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        side: const BorderSide(color: AppTheme.borderColor),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        foregroundColor: AppTheme.textPrimary,
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: _quickCashOptions.map((amt) {
+              final isExact = amt == finalTotal;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: InkWell(
+                  onTap: () => _onQuickCashPress(amt),
+                  borderRadius: BorderRadius.circular(12),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: isExact ? AppTheme.primaryColor.withValues(alpha: 0.1) : Colors.white,
+                      border: Border.all(
+                        color: isExact ? AppTheme.primaryColor : Colors.grey.shade200,
+                        width: isExact ? 1.5 : 1,
                       ),
-                      child: Text(
-                        amt == finalTotal
-                            ? 'Uang Pas'
-                            : _currency.format(amt).replaceAll('Rp ', ''),
-                        style: GoogleFonts.inter(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
-                        ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      isExact ? 'Uang Pas' : _currency.format(amt).replaceAll('Rp ', ''),
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                        color: isExact ? AppTheme.primaryColor : AppTheme.textSecondary,
                       ),
                     ),
                   ),
                 ),
-              )
-              .toList(),
+              );
+            }).toList(),
+          ),
         ),
         const SizedBox(height: 16),
 
@@ -469,7 +543,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
             children: [
               Text(
                 'Kembalian',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontWeight: FontWeight.w600,
                   color: change > 0
                       ? AppTheme.neutralSlate
@@ -478,7 +552,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
               ),
               Text(
                 _currency.format(change),
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
                   color: change > 0
@@ -494,22 +568,35 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
   }
 
   Widget _buildKey(String label, {Color? color, Color? textColor}) {
-    return InkWell(
-      onTap: () => _onNumpadPress(label),
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        decoration: BoxDecoration(
-          color: color ?? Colors.white,
-          border: Border.all(color: AppTheme.borderColor),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          label,
-          style: GoogleFonts.inter(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: textColor ?? AppTheme.textPrimary,
+    final isAction = label == 'C' || label == 'DEL' || label == '000';
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _onNumpadPress(label),
+        borderRadius: BorderRadius.circular(12),
+        child: Ink(
+          decoration: BoxDecoration(
+            color: color ?? (isAction ? Colors.grey.shade50 : Colors.white),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade200),
+            boxShadow: [
+              if (!isAction)
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.02),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+            ],
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: GoogleFonts.poppins(
+                fontSize: isAction ? 18 : 24,
+                fontWeight: isAction ? FontWeight.w700 : FontWeight.w600,
+                color: textColor ?? (isAction ? AppTheme.textSecondary : AppTheme.textPrimary),
+              ),
+            ),
           ),
         ),
       ),
@@ -539,7 +626,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
           Text(
             'Siapkan mesin EDC atau minta Pelanggan scan kode QR. Tekan Konfirmasi jika pembayaran berhasil.',
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               color: AppTheme.textSecondary,
               height: 1.5,
             ),
@@ -555,48 +642,62 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
       children: [
         Text(
           'Informasi Pelanggan (CRM)',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 16),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 16),
         ),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppTheme.borderColor),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.grey.shade100, width: 2),
           ),
           child: Column(
             children: [
-              TextField(
+              TextFormField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
                 decoration: InputDecoration(
                   labelText: 'Nomor WhatsApp',
-                  prefixIcon: const Icon(Icons.phone),
+                  labelStyle: GoogleFonts.poppins(color: AppTheme.textSecondary, fontSize: 14),
+                  prefixIcon: const Icon(Icons.phone_outlined, color: AppTheme.primaryColor),
                   hintText: '08123456789',
+                  hintStyle: GoogleFonts.poppins(color: Colors.grey.shade400, fontSize: 14),
+                  filled: true,
+                  fillColor: Colors.grey.shade50,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none,
                   ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppTheme.borderColor),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(color: AppTheme.primaryColor, width: 1.5),
                   ),
                 ),
               ),
               const SizedBox(height: 16),
-              TextField(
+              TextFormField(
                 controller: _nameController,
                 textCapitalization: TextCapitalization.words,
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
                 decoration: InputDecoration(
                   labelText: 'Nama Pelanggan (Opsional)',
-                  prefixIcon: const Icon(Icons.person),
+                  labelStyle: GoogleFonts.poppins(color: AppTheme.textSecondary, fontSize: 14),
+                  prefixIcon: const Icon(Icons.person_outline, color: AppTheme.primaryColor),
                   hintText: 'Budi Santoso',
+                  hintStyle: GoogleFonts.poppins(color: Colors.grey.shade400, fontSize: 14),
+                  filled: true,
+                  fillColor: Colors.grey.shade50,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none,
                   ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppTheme.borderColor),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(color: AppTheme.primaryColor, width: 1.5),
                   ),
                 ),
               ),

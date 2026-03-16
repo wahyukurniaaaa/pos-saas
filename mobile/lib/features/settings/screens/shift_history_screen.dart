@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
@@ -24,7 +24,7 @@ class ShiftHistoryScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(
           'Riwayat Sesi Shift',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
         ),
         backgroundColor: AppTheme.primaryColor,
         foregroundColor: Colors.white,
@@ -51,7 +51,7 @@ class ShiftHistoryScreen extends ConsumerWidget {
                   const SizedBox(height: 16),
                   Text(
                     'Belum ada riwayat shift',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       color: AppTheme.textSecondary,
                       fontSize: 16,
                     ),
@@ -113,7 +113,7 @@ class ShiftHistoryScreen extends ConsumerWidget {
                               children: [
                                 Text(
                                   employee.name,
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.poppins(
                                     fontWeight: FontWeight.w700,
                                     fontSize: 15,
                                     color: AppTheme.textPrimary,
@@ -122,7 +122,7 @@ class ShiftHistoryScreen extends ConsumerWidget {
                                 const SizedBox(height: 2),
                                 Text(
                                   dateFmt.format(shift.startTime),
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.poppins(
                                     fontSize: 12,
                                     color: AppTheme.textSecondary,
                                   ),
@@ -145,7 +145,7 @@ class ShiftHistoryScreen extends ConsumerWidget {
                             ),
                             child: Text(
                               isOpen ? 'BUKA' : 'TUTUP',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
                                 color: isOpen
@@ -193,12 +193,12 @@ class ShiftHistoryScreen extends ConsumerWidget {
       children: [
         Text(
           label,
-          style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textSecondary),
+          style: GoogleFonts.poppins(fontSize: 11, color: AppTheme.textSecondary),
         ),
         const SizedBox(height: 2),
         Text(
           value,
-          style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600),
+          style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600),
         ),
       ],
     );

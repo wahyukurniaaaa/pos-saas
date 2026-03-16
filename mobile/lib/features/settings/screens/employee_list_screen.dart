@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
@@ -15,57 +15,81 @@ class EmployeeListScreen extends ConsumerWidget {
     final db = ref.watch(databaseProvider);
 
     return Scaffold(
+      backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
         title: Text(
           'Daftar Karyawan',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w800, fontSize: 18),
         ),
-        backgroundColor: AppTheme.primaryColor,
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white,
+        foregroundColor: AppTheme.textPrimary,
         elevation: 0,
+        centerTitle: false,
+        shape: Border(bottom: BorderSide(color: Colors.grey.shade200, width: 1)),
       ),
-      body: ResponsiveCenter(child: StreamBuilder<List<Employee>>(
-        stream: db.watchAllEmployees(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          final employees = snapshot.data ?? [];
+      body: ResponsiveCenter(
+        child: StreamBuilder<List<Employee>>(
+          stream: db.watchAllEmployees(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor));
+            }
+            final employees = snapshot.data ?? [];
 
-          if (employees.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.people_outline,
-                    size: 64,
-                    color: AppTheme.textSecondary.withValues(alpha: 0.5),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Belum ada karyawan',
-                    style: GoogleFonts.inter(
-                      color: AppTheme.textSecondary,
-                      fontSize: 16,
+            if (employees.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.group_add_rounded,
+                        size: 64,
+                        color: AppTheme.primaryColor,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            );
-          }
+                    const SizedBox(height: 24),
+                    Text(
+                      'Belum Ada Karyawan',
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Tambahkan karyawan untuk membantu\nmengelola toko Anda.',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        color: AppTheme.textSecondary,
+                        height: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: employees.length,
-            itemBuilder: (context, index) {
-              final emp = employees[index];
-              return _EmployeeCard(employee: emp);
-            },
-          );
-        },
-      )),
-      floatingActionButton: FloatingActionButton(
+            return ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+              itemCount: employees.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final emp = employees[index];
+                return _EmployeeCard(employee: emp);
+              },
+            );
+          },
+        ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.push(
             context,
@@ -73,7 +97,18 @@ class EmployeeListScreen extends ConsumerWidget {
           );
         },
         backgroundColor: AppTheme.primaryColor,
-        child: const Icon(Icons.add, color: Colors.white),
+        elevation: 4,
+        highlightElevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        icon: const Icon(Icons.add_rounded, color: AppTheme.secondaryColor),
+        label: Text(
+          'Tambah Karyawan',
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w700,
+            fontSize: 14,
+            color: AppTheme.secondaryColor,
+          ),
+        ),
       ),
     );
   }
@@ -102,7 +137,7 @@ class _EmployeeCard extends StatelessWidget {
       case 'owner':
         return AppTheme.primaryColor;
       case 'supervisor':
-        return Colors.orange;
+        return Colors.orange.shade700;
       case 'cashier':
         return AppTheme.successColor;
       default:
@@ -112,45 +147,26 @@ class _EmployeeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      margin: const EdgeInsets.only(bottom: 8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey.shade200),
+    bool isInactive = employee.status == 'inactive';
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: CircleAvatar(
-          backgroundColor: _getRoleColor(employee.role).withValues(alpha: 0.1),
-          child: Icon(Icons.person, color: _getRoleColor(employee.role)),
-        ),
-        title: Text(
-          employee.name,
-          style: GoogleFonts.inter(fontWeight: FontWeight.w600),
-        ),
-        subtitle: Row(
-          children: [
-            Container(
-              margin: const EdgeInsets.only(top: 4),
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: _getRoleColor(employee.role).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(
-                _getRoleLabel(employee.role),
-                style: GoogleFonts.inter(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  color: _getRoleColor(employee.role),
-                ),
-              ),
-            ),
-          ],
-        ),
-        trailing: TextButton(
-          onPressed: () {
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () {
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -158,11 +174,107 @@ class _EmployeeCard extends StatelessWidget {
               ),
             );
           },
-          child: Text(
-            'Edit',
-            style: GoogleFonts.inter(
-              color: AppTheme.primaryColor,
-              fontWeight: FontWeight.w600,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                // Avatar
+                Stack(
+                  alignment: Alignment.bottomRight,
+                  children: [
+                    Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: isInactive ? Colors.grey.shade200 : _getRoleColor(employee.role).withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isInactive ? Colors.grey.shade300 : _getRoleColor(employee.role).withValues(alpha: 0.2),
+                          width: 2,
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.person_rounded,
+                        color: isInactive ? Colors.grey.shade400 : _getRoleColor(employee.role),
+                        size: 28,
+                      ),
+                    ),
+                    if (isInactive)
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: AppTheme.errorColor,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                        ),
+                        child: const Icon(Icons.block_rounded, size: 10, color: Colors.white),
+                      ),
+                  ],
+                ),
+                const SizedBox(width: 16),
+                
+                // Employee Info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        employee.name,
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
+                          color: isInactive ? Colors.grey.shade500 : AppTheme.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: isInactive ? Colors.grey.shade100 : _getRoleColor(employee.role).withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              _getRoleLabel(employee.role),
+                              style: GoogleFonts.poppins(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: isInactive ? Colors.grey.shade500 : _getRoleColor(employee.role),
+                              ),
+                            ),
+                          ),
+                          if (isInactive) ...[
+                            const SizedBox(width: 8),
+                            Text(
+                              'Nonaktif',
+                              style: GoogleFonts.poppins(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: AppTheme.errorColor,
+                              ),
+                            ),
+                          ]
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // Edit Button
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.edit_rounded,
+                    size: 18,
+                    color: Colors.grey.shade500,
+                  ),
+                )
+              ],
             ),
           ),
         ),

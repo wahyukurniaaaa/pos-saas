@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -108,7 +108,7 @@ class _BarcodeScannerModalState extends ConsumerState<BarcodeScannerModal> {
               children: [
                 Text(
                   'Scan Barcode / SKU',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -167,7 +167,7 @@ class _BarcodeScannerModalState extends ConsumerState<BarcodeScannerModal> {
                       ),
                       child: Text(
                         'Arahkan kamera ke barcode produk',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           color: Colors.white,
                           fontSize: 14,
                         ),

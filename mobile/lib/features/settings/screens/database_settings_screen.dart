@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -315,7 +315,7 @@ class _DatabaseSettingsScreenState
       appBar: AppBar(
         title: Text(
           'Manajemen Database',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
         ),
         elevation: 0,
         backgroundColor: Colors.white,
@@ -365,12 +365,12 @@ class _DatabaseSettingsScreenState
         children: [
           Text(
             'Backup Lokal',
-            style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold),
+            style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
             'Data Anda dienkripsi dengan AES-256 dan disimpan secara lokal di perangkat ini.',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               color: AppTheme.textSecondary,
               fontSize: 14,
             ),
@@ -428,14 +428,14 @@ class _DatabaseSettingsScreenState
                     children: [
                       Text(
                         'Kunci Pemulihan (Recovery Key)',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           fontWeight: FontWeight.bold,
                           color: Colors.purple[900],
                         ),
                       ),
                       Text(
                         'Penting untuk pindah ke HP baru',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           fontSize: 12,
                           color: Colors.purple[700],
                         ),
@@ -465,7 +465,7 @@ class _DatabaseSettingsScreenState
           const SizedBox(height: 16),
           Text(
             'Belum ada backup',
-            style: GoogleFonts.inter(color: AppTheme.textSecondary),
+            style: GoogleFonts.poppins(color: AppTheme.textSecondary),
           ),
         ],
       ),
@@ -495,7 +495,7 @@ class _DatabaseSettingsScreenState
             ),
             title: Text(
               filename,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontWeight: FontWeight.w600,
                 fontSize: 13,
               ),
@@ -504,7 +504,7 @@ class _DatabaseSettingsScreenState
             ),
             subtitle: Text(
               '$date • $size KB',
-              style: GoogleFonts.inter(fontSize: 12),
+              style: GoogleFonts.poppins(fontSize: 12),
             ),
             trailing: PopupMenuButton(
               itemBuilder: (context) => [

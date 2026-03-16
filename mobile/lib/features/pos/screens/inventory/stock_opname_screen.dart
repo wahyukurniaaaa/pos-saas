@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
@@ -130,7 +130,7 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
       appBar: AppBar(
         title: Text(
           'Penyesuaian Stok (Opname)',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
         ),
         backgroundColor: AppTheme.primaryColor,
         foregroundColor: Colors.white,
@@ -140,7 +140,7 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
             onPressed: _isSaving ? null : _saveOpname,
             child: Text(
               'Simpan',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontWeight: FontWeight.w700,
               ),
@@ -162,7 +162,7 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
                     decoration: InputDecoration(
                       hintText: 'Cari Produk / SKU',
                       hintStyle:
-                          GoogleFonts.inter(color: AppTheme.textSecondary),
+                          GoogleFonts.poppins(color: AppTheme.textSecondary),
                       prefixIcon: const Icon(
                         Icons.search,
                         color: AppTheme.textSecondary,
@@ -191,7 +191,7 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
                     return Center(
                       child: Text(
                         'Tidak ada produk ditemukan',
-                        style: GoogleFonts.inter(color: AppTheme.textSecondary),
+                        style: GoogleFonts.poppins(color: AppTheme.textSecondary),
                       ),
                     );
                   }
@@ -244,14 +244,14 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
                                       children: [
                                         Text(
                                           product.name,
-                                          style: GoogleFonts.inter(
+                                          style: GoogleFonts.poppins(
                                             fontWeight: FontWeight.w700,
                                             fontSize: 16,
                                           ),
                                         ),
                                         Text(
                                           'SKU: ${product.sku}',
-                                          style: GoogleFonts.inter(
+                                          style: GoogleFonts.poppins(
                                             fontSize: 12,
                                             color: AppTheme.textSecondary,
                                           ),
@@ -307,7 +307,7 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
                 children: [
                   Text(
                     'Alasan Perubahan (Untuk Log Audit)',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
                       color: AppTheme.textSecondary,
@@ -319,7 +319,7 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
                     decoration: InputDecoration(
                       hintText: 'Contoh: Barang rusak/hilang',
                       hintStyle:
-                          GoogleFonts.inter(color: AppTheme.textSecondary),
+                          GoogleFonts.poppins(color: AppTheme.textSecondary),
                       filled: true,
                       fillColor: Colors.grey.shade50,
                       border: OutlineInputBorder(
@@ -350,7 +350,7 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
       children: [
         Text(
           label,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.poppins(
             fontSize: 13,
             fontWeight: FontWeight.bold,
             color: AppTheme.textPrimary,
@@ -365,14 +365,14 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
                 children: [
                   Text(
                     'Di Sistem',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       fontSize: 11,
                       color: AppTheme.textSecondary,
                     ),
                   ),
                   Text(
                     '$systemStock',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
                     ),
@@ -405,7 +405,7 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
                   child: Text(
                     '$physical',
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
                     ),
@@ -430,14 +430,14 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
                 children: [
                   Text(
                     'Selisih',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       fontSize: 11,
                       color: AppTheme.textSecondary,
                     ),
                   ),
                   Text(
                     diff > 0 ? '+$diff' : '$diff',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
                       color: diff == 0

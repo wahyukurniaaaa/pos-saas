@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
@@ -16,7 +16,7 @@ class ImportProductScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(
           'Impor Produk',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
         ),
         backgroundColor: AppTheme.primaryColor,
         foregroundColor: Colors.white,
@@ -36,7 +36,7 @@ class ImportProductScreen extends ConsumerWidget {
             Text(
               'Impor Produk dari CSV',
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
               ),
@@ -46,7 +46,7 @@ class ImportProductScreen extends ConsumerWidget {
               'Gunakan file CSV dengan format berikut:\n'
               'Nama, SKU, Harga, Stok, ID Kategori',
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 color: AppTheme.textSecondary,
                 fontSize: 14,
               ),

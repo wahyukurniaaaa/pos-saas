@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
@@ -107,7 +107,7 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
       appBar: AppBar(
         title: Text(
           'Detail Transaksi',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
         ),
         backgroundColor: isVoid ? AppTheme.errorColor : AppTheme.primaryColor,
         foregroundColor: Colors.white,
@@ -142,7 +142,7 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
                           ),
                           child: Text(
                             'TRANSAKSI DIBATALKAN (VOID)',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               color: AppTheme.errorColor,
                               fontWeight: FontWeight.bold,
                             ),
@@ -152,7 +152,7 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
                       ],
                       Text(
                         txn.receiptNumber,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           fontSize: 20,
                           fontWeight: FontWeight.w800,
                         ),
@@ -160,7 +160,7 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
                       const SizedBox(height: 8),
                       Text(
                         dateFmt.format(txn.createdAt),
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           color: AppTheme.textSecondary,
                           fontSize: 14,
                         ),
@@ -171,13 +171,13 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
                         children: [
                           Text(
                             'Metode Bayar:',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               color: AppTheme.textSecondary,
                             ),
                           ),
                           Text(
                             txn.paymentMethod.toUpperCase(),
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -192,7 +192,7 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
               // Items List
               Text(
                 'Rincian Pembelian',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),
@@ -216,15 +216,15 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
                         e.item.variantName != null
                             ? '${e.product.name} - ${e.item.variantName}'
                             : e.product.name,
-                        style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
                       ),
                       subtitle: Text(
                         '${e.item.quantity} x ${currency.format(e.item.priceAtTransaction)}',
-                        style: GoogleFonts.inter(fontSize: 12),
+                        style: GoogleFonts.poppins(fontSize: 12),
                       ),
                       trailing: Text(
                         currency.format(e.item.subtotal),
-                        style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
                       ),
                     );
                   },
@@ -258,14 +258,14 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
                         children: [
                           Text(
                             'Total',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               fontSize: 16,
                               fontWeight: FontWeight.w800,
                             ),
                           ),
                           Text(
                             currency.format(txn.totalAmount),
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               fontSize: 18,
                               fontWeight: FontWeight.w800,
                               color: AppTheme.primaryColor,
@@ -357,7 +357,7 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  textStyle: GoogleFonts.inter(
+                  textStyle: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),
@@ -394,10 +394,10 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: GoogleFonts.inter(color: AppTheme.textSecondary)),
+          Text(label, style: GoogleFonts.poppins(color: AppTheme.textSecondary)),
           Text(
             currency.format(amount),
-            style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
           ),
         ],
       ),

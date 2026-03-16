@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
@@ -62,7 +62,7 @@ class PaymentSuccessScreen extends ConsumerWidget {
                 Text(
                   'TRANSAKSI BERHASIL',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 24,
                     fontWeight: FontWeight.w800,
                     color: AppTheme.textPrimary,
@@ -141,7 +141,7 @@ class PaymentSuccessScreen extends ConsumerWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    textStyle: GoogleFonts.inter(
+                    textStyle: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
@@ -188,7 +188,7 @@ class PaymentSuccessScreen extends ConsumerWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    textStyle: GoogleFonts.inter(
+                    textStyle: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
@@ -209,7 +209,7 @@ class PaymentSuccessScreen extends ConsumerWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    textStyle: GoogleFonts.inter(
+                    textStyle: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
@@ -232,7 +232,7 @@ class PaymentSuccessScreen extends ConsumerWidget {
         children: [
           Text(
             label,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: isTotal ? 16 : 14,
               color: isTotal ? AppTheme.textPrimary : AppTheme.textSecondary,
               fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
@@ -240,7 +240,7 @@ class PaymentSuccessScreen extends ConsumerWidget {
           ),
           Text(
             value,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: isTotal ? 20 : 14,
               color: isTotal ? AppTheme.primaryColor : AppTheme.textPrimary,
               fontWeight: isTotal ? FontWeight.w800 : FontWeight.w600,

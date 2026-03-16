@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
@@ -154,7 +154,7 @@ class _PrinterSettingsScreenState extends ConsumerState<PrinterSettingsScreen> {
       appBar: AppBar(
         title: Text(
           'Pengaturan Printer',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
         ),
         backgroundColor: AppTheme.primaryColor,
         foregroundColor: Colors.white,
@@ -192,7 +192,7 @@ class _PrinterSettingsScreenState extends ConsumerState<PrinterSettingsScreen> {
                         _connected
                             ? 'Printer Terhubung'
                             : 'Printer Tidak Terhubung',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           fontWeight: FontWeight.w700,
                           fontSize: 16,
                           color: AppTheme.textPrimary,
@@ -202,7 +202,7 @@ class _PrinterSettingsScreenState extends ConsumerState<PrinterSettingsScreen> {
                         const SizedBox(height: 4),
                         Text(
                           _selectedDevice!.name ?? 'Unknown Device',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             fontSize: 14,
                             color: AppTheme.textSecondary,
                           ),
@@ -228,7 +228,7 @@ class _PrinterSettingsScreenState extends ConsumerState<PrinterSettingsScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Text(
               'Perangkat Bluetooth Tersedia',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
                 color: AppTheme.textSecondary,
@@ -243,7 +243,7 @@ class _PrinterSettingsScreenState extends ConsumerState<PrinterSettingsScreen> {
                 ? Center(
                     child: Text(
                       'Tidak ada perangkat bluetooth',
-                      style: GoogleFonts.inter(color: AppTheme.textSecondary),
+                      style: GoogleFonts.poppins(color: AppTheme.textSecondary),
                     ),
                   )
                 : ListView.builder(
@@ -272,13 +272,13 @@ class _PrinterSettingsScreenState extends ConsumerState<PrinterSettingsScreen> {
                           ),
                           title: Text(
                             device.name ?? 'Unknown',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               fontWeight: FontWeight.w500,
                             ),
                           ),
                           subtitle: Text(
                             device.address ?? '',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               fontSize: 12,
                               color: AppTheme.textSecondary,
                             ),
@@ -322,7 +322,7 @@ class _PrinterSettingsScreenState extends ConsumerState<PrinterSettingsScreen> {
               ),
               child: Text(
                 'Uji Cetak',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),

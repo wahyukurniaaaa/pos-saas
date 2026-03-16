@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
@@ -29,7 +29,7 @@ class TransactionHistoryScreen extends ConsumerWidget {
         automaticallyImplyLeading: Navigator.canPop(context),
         title: Text(
           'Riwayat Transaksi',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
         ),
         backgroundColor: AppTheme.primaryColor,
         foregroundColor: Colors.white,
@@ -66,7 +66,7 @@ class TransactionHistoryScreen extends ConsumerWidget {
                               const SizedBox(height: 16),
                               Text(
                                 'Belum ada transaksi',
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.poppins(
                                   color: AppTheme.textSecondary,
                                   fontSize: 16,
                                 ),
@@ -116,7 +116,7 @@ class TransactionHistoryScreen extends ConsumerWidget {
                               ),
                               title: Text(
                                 txn.receiptNumber,
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.poppins(
                                   fontWeight: FontWeight.w600,
                                   fontSize: 14,
                                 ),
@@ -127,7 +127,7 @@ class TransactionHistoryScreen extends ConsumerWidget {
                                   const SizedBox(height: 4),
                                   Text(
                                     '${dateFmt.format(txn.createdAt)} | ${currency.format(txn.totalAmount)} (${txn.paymentMethod})',
-                                    style: GoogleFonts.inter(
+                                    style: GoogleFonts.poppins(
                                       fontSize: 12,
                                       color: AppTheme.textSecondary,
                                     ),
@@ -146,7 +146,7 @@ class TransactionHistoryScreen extends ConsumerWidget {
                                     ),
                                     child: Text(
                                       isVoid ? 'VOID' : 'LUNAS',
-                                      style: GoogleFonts.inter(
+                                      style: GoogleFonts.poppins(
                                         fontSize: 11,
                                         fontWeight: FontWeight.w600,
                                         color: isVoid
@@ -168,7 +168,7 @@ class TransactionHistoryScreen extends ConsumerWidget {
                                 },
                                 child: Text(
                                   'Detail',
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.poppins(
                                     color: AppTheme.primaryColor,
                                     fontWeight: FontWeight.w600,
                                     fontSize: 12,
@@ -247,7 +247,7 @@ class TransactionHistoryScreen extends ConsumerWidget {
           return FilterChip(
             label: Text(
               filter.label,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontSize: 13,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 color: isSelected ? Colors.white : AppTheme.textSecondary,

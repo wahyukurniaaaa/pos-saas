@@ -30,61 +30,83 @@ class _PosDashboardScreenState extends ConsumerState<PosDashboardScreen> {
         ],
       ),
       bottomNavigationBar: Container(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border(
-            top: BorderSide(color: Colors.grey.shade200, width: 1.0),
-          ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 10,
-              offset: const Offset(0, -4),
+              blurRadius: 20,
+              offset: const Offset(0, -10),
             ),
           ],
         ),
-        child: BottomNavigationBar(
-          currentIndex: _currentTabIndex,
-          onTap: (i) => setState(() => _currentTabIndex = i),
-          selectedItemColor: AppTheme.primaryColor,
-          unselectedItemColor: AppTheme.textSecondary,
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          type: BottomNavigationBarType.fixed,
-          selectedFontSize: 12,
-          unselectedFontSize: 12,
-          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
-          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
-          items: const [
-            BottomNavigationBarItem(
-              icon: Padding(
-                padding: EdgeInsets.only(bottom: 4),
-                child: Icon(Icons.point_of_sale_rounded),
-              ),
-              label: 'Kasir',
-            ),
-            BottomNavigationBarItem(
-              icon: Padding(
-                padding: EdgeInsets.only(bottom: 4),
-                child: Icon(Icons.receipt_long_rounded),
-              ),
-              label: 'Riwayat',
-            ),
-            BottomNavigationBarItem(
-              icon: Padding(
-                padding: EdgeInsets.only(bottom: 4),
-                child: Icon(Icons.inventory_2_rounded),
-              ),
-              label: 'Stok',
-            ),
-            BottomNavigationBarItem(
-              icon: Padding(
-                padding: EdgeInsets.only(bottom: 4),
-                child: Icon(Icons.settings_rounded),
-              ),
-              label: 'Setting',
-            ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildNavItem(0, Icons.home_rounded, 'Kasir'),
+            _buildNavItem(1, Icons.history_rounded, 'Riwayat'),
+            _buildNavItem(2, Icons.inventory_2_rounded, 'Produk'),
+            _buildNavItem(3, Icons.settings_rounded, 'Setting'),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem(int index, IconData icon, String label) {
+    final isSelected = _currentTabIndex == index;
+    final color = isSelected ? AppTheme.primaryColor : const Color(0xFF94A3B8); // slate-400
+
+    return Expanded(
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => setState(() => _currentTabIndex = index),
+        child: SizedBox(
+          height: 64,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Top indicator line
+              Positioned(
+                top: 0,
+                left: 16,
+                right: 16,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  height: 3,
+                  decoration: BoxDecoration(
+                    color: isSelected ? AppTheme.primaryColor : Colors.transparent,
+                    borderRadius: const BorderRadius.vertical(bottom: Radius.circular(3)),
+                  ),
+                ),
+              ),
+              // Icon and Label
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    margin: const EdgeInsets.only(bottom: 4),
+                    child: Icon(
+                      icon,
+                      color: color,
+                      size: isSelected ? 26 : 24,
+                    ),
+                  ),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 10,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -30,7 +30,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
       appBar: AppBar(
         title: Text(
           'Riwayat',
-          style: GoogleFonts.inter(
+          style: GoogleFonts.poppins(
             fontWeight: FontWeight.w700,
             color: AppTheme.primaryColor,
           ),
@@ -89,7 +89,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
                               children: [
                                 Text(
                                   _getListTitle(currentFilter),
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.poppins(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w700,
                                     color: AppTheme.textPrimary,
@@ -97,7 +97,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
                                 ),
                                 Text(
                                   '${txns.length}',
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.poppins(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
                                     color: AppTheme.textSecondary,
@@ -186,7 +186,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
           return FilterChip(
             label: Text(
               filter.label,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontSize: 13,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 color: isSelected ? Colors.white : AppTheme.textSecondary,
@@ -245,7 +245,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
           const SizedBox(height: 16),
           Text(
             'Belum ada shift aktif',
-            style: GoogleFonts.inter(fontSize: 16, color: AppTheme.textSecondary),
+            style: GoogleFonts.poppins(fontSize: 16, color: AppTheme.textSecondary),
           ),
         ],
       ),
@@ -262,7 +262,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
             const SizedBox(height: 12),
             Text(
               'Belum ada transaksi di shift ini',
-              style: GoogleFonts.inter(color: AppTheme.textSecondary),
+              style: GoogleFonts.poppins(color: AppTheme.textSecondary),
             ),
           ],
         ),
@@ -318,7 +318,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
                 children: [
                   Text(
                     profile?.name ?? 'Toko Saya',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       color: AppTheme.textPrimary,
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
@@ -326,7 +326,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
                   ),
                   Text(
                     dateRangeVisible,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       color: AppTheme.textPrimary,
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -343,7 +343,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
                 ),
                 child: Text(
                   filter.label,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: AppTheme.textSecondary,
@@ -355,7 +355,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
           const SizedBox(height: 16),
           Text(
             'Omzet',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: AppTheme.primaryColor,
@@ -364,7 +364,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
           const SizedBox(height: 4),
           Text(
             currency.format(totalSale),
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 32,
               fontWeight: FontWeight.w800,
               color: AppTheme.primaryColor,
@@ -373,7 +373,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
           const SizedBox(height: 20),
           Text(
             'Metode Pembayaran',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 15,
               fontWeight: FontWeight.w700,
               color: AppTheme.textPrimary,
@@ -383,7 +383,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
           if (paymentTotals.isEmpty)
              Text(
               'Belum ada pembayaran',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontSize: 13, 
                 color: AppTheme.textSecondary, 
                 fontStyle: FontStyle.italic
@@ -397,7 +397,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
                 children: [
                   Text(
                     e.key.toUpperCase(),
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: AppTheme.textPrimary,
@@ -405,7 +405,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
                   ),
                   Text(
                     currency.format(e.value),
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: AppTheme.textSecondary,
@@ -449,18 +449,40 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        txn.receiptNumber,
-                        style: GoogleFonts.inter(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 15,
-                          color: AppTheme.textPrimary,
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              txn.receiptNumber,
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 16,
+                                color: AppTheme.textPrimary,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: isVoid ? AppTheme.errorColor.withValues(alpha: 0.1) : AppTheme.successColor.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              isVoid ? 'VOID' : 'BERHASIL',
+                              style: GoogleFonts.poppins(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: isVoid ? AppTheme.errorColor : AppTheme.successColor,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 6),
                       Text(
                         dateFmt.format(txn.createdAt),
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           fontSize: 13,
                           color: AppTheme.textSecondary,
                         ),
@@ -473,7 +495,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
                           Expanded(
                             child: Text(
                               'Pegawai: ${session?.name ?? 'User'}',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                 fontSize: 13,
                                 color: AppTheme.textSecondary,
                               ),
@@ -489,7 +511,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
                           const SizedBox(width: 4),
                           Text(
                             'Shift: #${txn.shiftId}',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               fontSize: 13,
                               color: AppTheme.textSecondary,
                             ),
@@ -499,14 +521,28 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
                     ],
                   ),
                 ),
-                Text(
-                  currency.format(txn.totalAmount),
-                  style: GoogleFonts.inter(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15,
-                    color: isVoid ? AppTheme.errorColor : AppTheme.textPrimary,
-                    decoration: isVoid ? TextDecoration.lineThrough : null,
-                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      'Total Belanja',
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        color: AppTheme.textSecondary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      currency.format(txn.totalAmount),
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 18,
+                        color: isVoid ? AppTheme.errorColor : AppTheme.primaryColor,
+                        decoration: isVoid ? TextDecoration.lineThrough : null,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -520,7 +556,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
                   child: OutlinedButton.icon(
                     onPressed: isVoid ? null : () => _handlePrint(ref, txn),
                     icon: const Icon(Icons.print_outlined, size: 18),
-                    label: Text('Print', style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 13)),
+                    label: Text('Print', style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 13)),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppTheme.primaryColor,
                       side: BorderSide(color: AppTheme.primaryColor.withValues(alpha: 0.2)),
@@ -534,7 +570,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
                   child: ElevatedButton.icon(
                     onPressed: isVoid ? null : () => _handleRefund(context, ref, txn),
                     icon: const Icon(Icons.undo_rounded, size: 18),
-                    label: Text('Refund', style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 13)),
+                    label: Text('Refund', style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 13)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.primaryColor,
                       foregroundColor: Colors.white,
@@ -585,8 +621,8 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Refund Transaksi?', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
-        content: Text('Apakah Anda yakin ingin membatalkan transaksi ${txn.receiptNumber}? Stok akan dikembalikan.', style: GoogleFonts.inter()),
+        title: Text('Refund Transaksi?', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+        content: Text('Apakah Anda yakin ingin membatalkan transaksi ${txn.receiptNumber}? Stok akan dikembalikan.', style: GoogleFonts.poppins()),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
           TextButton(

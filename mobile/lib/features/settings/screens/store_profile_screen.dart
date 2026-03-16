@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -68,12 +68,9 @@ class _StoreProfileScreenState extends ConsumerState<StoreProfileScreen> {
   Future<void> _pickImage() async {
     final picker = ImagePicker();
     try {
-      // Typically we'd show a modal to pick from Camera or Gallery.
-      // For simplicity, we just pick from gallery here.
       final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
       if (pickedFile != null) {
-        // Copy to app dir so it persists
         final appDir = await getApplicationDocumentsDirectory();
         final fileName =
             'logo_${DateTime.now().millisecondsSinceEpoch}${p.extension(pickedFile.path)}';
@@ -138,6 +135,7 @@ class _StoreProfileScreenState extends ConsumerState<StoreProfileScreen> {
           const SnackBar(
             content: Text('Profil toko berhasil disimpan'),
             backgroundColor: AppTheme.successColor,
+            behavior: SnackBarBehavior.floating,
           ),
         );
         Navigator.pop(context);
@@ -148,6 +146,7 @@ class _StoreProfileScreenState extends ConsumerState<StoreProfileScreen> {
           SnackBar(
             content: Text('Terjadi kesalahan: $e'),
             backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -158,20 +157,48 @@ class _StoreProfileScreenState extends ConsumerState<StoreProfileScreen> {
     }
   }
 
+  InputDecoration _inputDecoration(String labelText, String hintText, IconData icon) {
+    return InputDecoration(
+      labelText: labelText,
+      hintText: hintText,
+      labelStyle: GoogleFonts.poppins(color: AppTheme.textSecondary, fontWeight: FontWeight.w500),
+      hintStyle: GoogleFonts.poppins(color: Colors.grey.shade400),
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: Colors.grey.shade200),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: Colors.grey.shade200),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: AppTheme.primaryColor, width: 2),
+      ),
+      prefixIcon: Icon(icon, color: AppTheme.primaryColor.withValues(alpha: 0.7)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
         title: Text(
           'Profil Toko',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w800, fontSize: 18),
         ),
-        backgroundColor: AppTheme.primaryColor,
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white,
+        foregroundColor: AppTheme.textPrimary,
         elevation: 0,
+        centerTitle: false,
+        shape: Border(bottom: BorderSide(color: Colors.grey.shade200, width: 1)),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
           : ResponsiveCenter(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(24),
@@ -180,84 +207,111 @@ class _StoreProfileScreenState extends ConsumerState<StoreProfileScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Logo Section
-                      Center(
-                        child: GestureDetector(
-                          onTap: _pickImage,
-                          child: Container(
-                            width: 120,
-                            height: 120,
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade100,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.grey.shade300,
-                                width: 2,
-                                style: BorderStyle.solid,
-                              ),
-                            ),
-                            child: _logoUri != null && _logoUri!.isNotEmpty
-                                ? ClipOval(
-                                    child: Image.file(
-                                      File(_logoUri!),
-                                      fit: BoxFit.cover,
+                      // Logo Section Group
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: Colors.grey.shade100),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.02),
+                              blurRadius: 10, offset: const Offset(0, 4)
+                            )
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            GestureDetector(
+                                onTap: _pickImage,
+                                child: Stack(
+                                  alignment: Alignment.bottomRight,
+                                  children: [
+                                    Container(
                                       width: 120,
                                       height: 120,
-                                    ),
-                                  )
-                                : Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.add_photo_alternate_rounded,
-                                        size: 40,
-                                        color: Colors.grey.shade400,
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        'Pilih Logo',
-                                        style: GoogleFonts.inter(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.grey.shade500,
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey.shade50,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                                          width: 4,
                                         ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                                            blurRadius: 12,
+                                            offset: const Offset(0, 4),
+                                          ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
-                          ),
-                        ),
+                                      child: _logoUri != null && _logoUri!.isNotEmpty
+                                          ? ClipOval(
+                                              child: Image.file(
+                                                File(_logoUri!),
+                                                fit: BoxFit.cover,
+                                              ),
+                                            )
+                                          : Column(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Icon(
+                                                  Icons.storefront_rounded,
+                                                  size: 32,
+                                                  color: AppTheme.primaryColor.withValues(alpha: 0.5),
+                                                ),
+                                                const SizedBox(height: 8),
+                                                Text(
+                                                  'Logo Toko',
+                                                  style: GoogleFonts.poppins(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: AppTheme.primaryColor.withValues(alpha: 0.7),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: const BoxDecoration(
+                                        color: AppTheme.secondaryColor,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.camera_alt_rounded,
+                                        color: AppTheme.primaryColor,
+                                        size: 16,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              Text(
+                                'Informasi ini akan ditampilkan pada header\ncetak nota / struk pembelanjaan.',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 13,
+                                  color: AppTheme.textSecondary,
+                                  height: 1.5,
+                                ),
+                              ),
+                          ],
+                        )
                       ),
-                      const SizedBox(height: 32),
-
-                      // Format Info
-                      Text(
-                        'Informasi Toko',
-                        style: GoogleFonts.inter(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: AppTheme.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Informasi ini akan ditampilkan pada header cetak nota/struk pembelanjaan pelanggan.',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          color: AppTheme.textSecondary,
-                        ),
-                      ),
+                      
                       const SizedBox(height: 24),
 
                       // Fields
                       TextFormField(
                         controller: _nameController,
-                        decoration: InputDecoration(
-                          labelText: 'Nama Toko *',
-                          hintText: 'Misal: Warung Kopi Posify',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          prefixIcon: const Icon(Icons.storefront_rounded),
+                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                        decoration: _inputDecoration(
+                          'Nama Toko *',
+                          'Misal: Warung Kopi Posify',
+                          Icons.store_mall_directory_rounded,
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
@@ -270,58 +324,64 @@ class _StoreProfileScreenState extends ConsumerState<StoreProfileScreen> {
                       TextFormField(
                         controller: _phoneController,
                         keyboardType: TextInputType.phone,
-                        decoration: InputDecoration(
-                          labelText: 'Nomor Telepon (Opsional)',
-                          hintText: 'Misal: 08123456789',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          prefixIcon: const Icon(Icons.phone_rounded),
+                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                        decoration: _inputDecoration(
+                          'Nomor Telepon (Opsional)',
+                          'Misal: 08123456789',
+                          Icons.phone_rounded,
                         ),
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _addressController,
                         maxLines: 3,
-                        decoration: InputDecoration(
-                          labelText: 'Alamat Toko (Opsional)',
-                          hintText: 'Misal: Jl. Raya Posify No. 1, Jakarta',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          prefixIcon: const Icon(Icons.location_on_rounded),
+                        style: GoogleFonts.poppins(fontWeight: FontWeight.w500, fontSize: 14),
+                        decoration: _inputDecoration(
+                          'Alamat Toko (Opsional)',
+                          'Misal: Jl. Raya Posify No. 1, Jakarta',
+                          Icons.location_on_rounded,
                         ),
                       ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 40),
 
                       // Save Button
-                      ElevatedButton(
-                        onPressed: _isSaving ? null : _saveProfile,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryColor,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                      SizedBox(
+                        height: 56,
+                        child: ElevatedButton(
+                          onPressed: _isSaving ? null : _saveProfile,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.primaryColor,
+                            foregroundColor: AppTheme.secondaryColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            elevation: 0,
                           ),
-                          elevation: 0,
+                          child: _isSaving
+                              ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    color: AppTheme.secondaryColor,
+                                    strokeWidth: 3,
+                                  ),
+                                )
+                              : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(Icons.save_rounded, size: 20),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Simpan Pengaturan',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                         ),
-                        child: _isSaving
-                            ? const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : Text(
-                                'Simpan Pengaturan',
-                                style: GoogleFonts.inter(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                ),
-                              ),
                       ),
                     ],
                   ),
