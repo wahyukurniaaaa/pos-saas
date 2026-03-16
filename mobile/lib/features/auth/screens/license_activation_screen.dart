@@ -26,6 +26,7 @@ class _LicenseActivationScreenState
   bool _isLoading = false;
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -201,7 +202,46 @@ class _LicenseActivationScreenState
                                   return null;
                                 },
                               ),
-                              const SizedBox(height: 24),
+                                if (_errorMessage != null) ...[
+                                  const SizedBox(height: 12),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 10,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          AppTheme.errorColor.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: AppTheme.errorColor.withValues(
+                                          alpha: 0.3,
+                                        ),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.error_outline_rounded,
+                                          color: AppTheme.errorColor,
+                                          size: 18,
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: Text(
+                                            _errorMessage!,
+                                            style: GoogleFonts.inter(
+                                              fontSize: 13,
+                                              color: AppTheme.errorColor,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                                const SizedBox(height: 24),
 
                               // Activate Button
                               SizedBox(
@@ -321,31 +361,43 @@ class _LicenseActivationScreenState
   Future<void> _activateLicense() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
-    final success = await ref
+    final result = await ref
         .read(licenseProvider.notifier)
         .activate(_licenseController.text.trim());
 
     if (!mounted) return;
     setState(() => _isLoading = false);
 
+    final success = result.$1;
+    final String? serverError = result.$2;
+
     if (success) {
       // AppBootstrap akan otomatis navigate ke screen berikutnya
-      // karena licenseProvider state sudah diupdate secara reaktif.
       return;
     } else {
-      final error = ref.read(licenseProvider);
-      final msg = error.maybeWhen(
-        error: (e, _) => e.toString(),
-        orElse: () => 'Aktivasi gagal. Periksa kode atau koneksi Anda.',
-      );
+      final msg = serverError ?? 'Aktivasi gagal. Periksa kode atau koneksi Anda.';
 
+      setState(() => _errorMessage = msg);
+
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(msg),
+          content: Row(
+            children: [
+              const Icon(Icons.error_outline_rounded, color: Colors.white),
+              const SizedBox(width: 10),
+              Expanded(child: Text(msg)),
+            ],
+          ),
           backgroundColor: AppTheme.errorColor,
           behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          margin: const EdgeInsets.all(16),
         ),
       );
     }

@@ -118,7 +118,7 @@ class LicenseNotifier extends AsyncNotifier<License?> {
     }
   }
 
-  Future<bool> activate(String code) async {
+  Future<(bool, String?)> activate(String code) async {
     state = const AsyncValue.loading();
     final db = ref.read(databaseProvider);
     final dio = ref.read(dioProvider);
@@ -138,7 +138,7 @@ class LicenseNotifier extends AsyncNotifier<License?> {
         },
       );
 
-      if (!ref.mounted) return false;
+      if (!ref.mounted) return (false, null);
 
       final data = response.data;
       final isSuccess = (data is Map && data['status'] == 'success') ||
@@ -159,24 +159,27 @@ class LicenseNotifier extends AsyncNotifier<License?> {
         // 3. Read back dari DB dan update state
         final newLicense = await db.getLocalLicense();
         if (ref.mounted) state = AsyncValue.data(newLicense);
-        return true;
+        return (true, null);
       }
 
       final errorMsg = (data is Map)
-          ? (data['message'] ?? 'Aktivasi gagal')
+          ? (data['message']?.toString() ?? 'Aktivasi gagal')
           : 'Aktivasi gagal: Server mengembalikan status ${response.statusCode}';
 
       state = AsyncValue.error(errorMsg, StackTrace.current);
-      return false;
+      return (false, errorMsg);
     } on DioException catch (e) {
-      if (!ref.mounted) return false;
-      final msg = e.response?.data?['message'] ?? 'Gagal menghubungi server';
+      if (!ref.mounted) return (false, null);
+      final responseData = e.response?.data;
+      final msg = (responseData is Map && responseData['message'] != null)
+          ? responseData['message'].toString()
+          : 'Gagal menghubungi server (${e.response?.statusCode ?? "Unknown"})';
       state = AsyncValue.error(msg, StackTrace.current);
-      return false;
+      return (false, msg);
     } catch (e, st) {
-      if (!ref.mounted) return false;
+      if (!ref.mounted) return (false, null);
       state = AsyncValue.error(e.toString(), st);
-      return false;
+      return (false, e.toString());
     }
   }
 }

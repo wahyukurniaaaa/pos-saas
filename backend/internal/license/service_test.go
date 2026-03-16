@@ -41,7 +41,7 @@ func (m *MockRepository) UpdateDevice(device *models.LicenseDevice) error {
 
 func TestActivate_SuccessFirstTime(t *testing.T) {
 	mockRepo := new(MockRepository)
-	svc := license.NewService(mockRepo)
+	svc := license.NewService(mockRepo, nil)
 
 	req := license.ActivateRequest{
 		LicenseCode:       "VALID-CODE",
@@ -75,7 +75,7 @@ func TestActivate_SuccessFirstTime(t *testing.T) {
 
 func TestActivate_FailNotFound(t *testing.T) {
 	mockRepo := new(MockRepository)
-	svc := license.NewService(mockRepo)
+	svc := license.NewService(mockRepo, nil)
 
 	req := license.ActivateRequest{LicenseCode: "INVALID"}
 
@@ -89,7 +89,7 @@ func TestActivate_FailNotFound(t *testing.T) {
 
 func TestActivate_FailUsedByOtherDevice(t *testing.T) {
 	mockRepo := new(MockRepository)
-	svc := license.NewService(mockRepo)
+	svc := license.NewService(mockRepo, nil)
 
 	req := license.ActivateRequest{
 		LicenseCode:       "USED-CODE",
@@ -116,7 +116,7 @@ func TestActivate_FailUsedByOtherDevice(t *testing.T) {
 
 func TestActivate_SuccessSameDeviceRetry(t *testing.T) {
 	mockRepo := new(MockRepository)
-	svc := license.NewService(mockRepo)
+	svc := license.NewService(mockRepo, nil)
 
 	req := license.ActivateRequest{
 		LicenseCode:       "USED-CODE",
@@ -146,7 +146,7 @@ func TestActivate_SuccessSameDeviceRetry(t *testing.T) {
 
 func TestVerify_FailBanned(t *testing.T) {
 	mockRepo := new(MockRepository)
-	svc := license.NewService(mockRepo)
+	svc := license.NewService(mockRepo, nil)
 
 	req := license.VerifyRequest{
 		LicenseCode:       "BANNED-CODE",
