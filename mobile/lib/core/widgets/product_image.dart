@@ -26,7 +26,7 @@ class ProductImage extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: AppTheme.primaryColor.withValues(alpha: 0.05),
+        color: AppTheme.infoColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(borderRadius),
       ),
       child: imageUri != null && imageUri!.isNotEmpty
@@ -81,7 +81,7 @@ class ProductImage extends StatelessWidget {
     return Center(
       child: Icon(
         getCategoryIcon(categoryId),
-        color: AppTheme.primaryColor.withValues(alpha: 0.4),
+        color: AppTheme.tertiaryColor.withValues(alpha: 0.5),
         size: size,
       ),
     );

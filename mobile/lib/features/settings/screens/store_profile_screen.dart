@@ -1,4 +1,4 @@
-﻿import 'dart:io';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -350,8 +350,8 @@ class _StoreProfileScreenState extends ConsumerState<StoreProfileScreen> {
                         child: ElevatedButton(
                           onPressed: _isSaving ? null : _saveProfile,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primaryColor,
-                            foregroundColor: AppTheme.secondaryColor,
+                            backgroundColor: AppTheme.secondaryColor,
+                            foregroundColor: AppTheme.primaryColor,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),
@@ -362,7 +362,7 @@ class _StoreProfileScreenState extends ConsumerState<StoreProfileScreen> {
                                   width: 24,
                                   height: 24,
                                   child: CircularProgressIndicator(
-                                    color: AppTheme.secondaryColor,
+                                    color: AppTheme.primaryColor,
                                     strokeWidth: 3,
                                   ),
                                 )

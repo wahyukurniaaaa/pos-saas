@@ -71,11 +71,29 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                         ),
                       ),
                       if (!isCashier)
-                        IconButton(
-                          icon: const Icon(Icons.add_circle, color: AppTheme.primaryColor, size: 28),
-                          onPressed: () => _showAddProductSheet(context),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: AppTheme.secondaryColor,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.secondaryColor.withValues(alpha: 0.4),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(24),
+                              onTap: () => _showAddProductSheet(context),
+                              child: const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Icon(Icons.add_rounded, color: AppTheme.primaryColor, size: 28),
+                              ),
+                            ),
+                          ),
                         ),
                     ],
                   ),
@@ -126,7 +144,7 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
-                        borderSide: const BorderSide(color: AppTheme.primaryColor),
+                        borderSide: const BorderSide(color: AppTheme.tertiaryColor, width: 2),
                       ),
                     ),
                   ),

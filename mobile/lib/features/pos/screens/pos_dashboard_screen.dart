@@ -76,7 +76,7 @@ class _PosDashboardScreenState extends ConsumerState<PosDashboardScreen> {
                   duration: const Duration(milliseconds: 200),
                   height: 3,
                   decoration: BoxDecoration(
-                    color: isSelected ? AppTheme.primaryColor : Colors.transparent,
+                    color: isSelected ? AppTheme.secondaryColor : Colors.transparent,
                     borderRadius: const BorderRadius.vertical(bottom: Radius.circular(3)),
                   ),
                 ),
@@ -88,10 +88,19 @@ class _PosDashboardScreenState extends ConsumerState<PosDashboardScreen> {
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     margin: const EdgeInsets.only(bottom: 4),
+                    padding: isSelected
+                        ? const EdgeInsets.symmetric(horizontal: 16, vertical: 4)
+                        : EdgeInsets.zero,
+                    decoration: isSelected
+                        ? BoxDecoration(
+                            color: AppTheme.secondaryColor,
+                            borderRadius: BorderRadius.circular(16),
+                          )
+                        : null,
                     child: Icon(
                       icon,
-                      color: color,
-                      size: isSelected ? 26 : 24,
+                      color: isSelected ? AppTheme.primaryColor : color,
+                      size: isSelected ? 24 : 24,
                     ),
                   ),
                   Text(

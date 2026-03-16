@@ -208,7 +208,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                           gradient: LinearGradient(
                             colors: [
                               AppTheme.primaryColor,
-                              AppTheme.primaryColor.withValues(alpha: 0.8),
+                              AppTheme.tertiaryColor,
                             ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
@@ -648,9 +648,9 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppTheme.infoColor.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.grey.shade100, width: 2),
+            border: Border.all(color: AppTheme.infoColor.withValues(alpha: 0.1), width: 2),
           ),
           child: Column(
             children: [
@@ -661,11 +661,11 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                 decoration: InputDecoration(
                   labelText: 'Nomor WhatsApp',
                   labelStyle: GoogleFonts.poppins(color: AppTheme.textSecondary, fontSize: 14),
-                  prefixIcon: const Icon(Icons.phone_outlined, color: AppTheme.primaryColor),
+                  prefixIcon: const Icon(Icons.phone_outlined, color: AppTheme.tertiaryColor),
                   hintText: '08123456789',
                   hintStyle: GoogleFonts.poppins(color: Colors.grey.shade400, fontSize: 14),
                   filled: true,
-                  fillColor: Colors.grey.shade50,
+                  fillColor: Colors.white,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -673,7 +673,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: AppTheme.primaryColor, width: 1.5),
+                    borderSide: const BorderSide(color: AppTheme.tertiaryColor, width: 1.5),
                   ),
                 ),
               ),
@@ -685,11 +685,11 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                 decoration: InputDecoration(
                   labelText: 'Nama Pelanggan (Opsional)',
                   labelStyle: GoogleFonts.poppins(color: AppTheme.textSecondary, fontSize: 14),
-                  prefixIcon: const Icon(Icons.person_outline, color: AppTheme.primaryColor),
+                  prefixIcon: const Icon(Icons.person_outline, color: AppTheme.tertiaryColor),
                   hintText: 'Budi Santoso',
                   hintStyle: GoogleFonts.poppins(color: Colors.grey.shade400, fontSize: 14),
                   filled: true,
-                  fillColor: Colors.grey.shade50,
+                  fillColor: Colors.white,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -697,7 +697,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: AppTheme.primaryColor, width: 1.5),
+                    borderSide: const BorderSide(color: AppTheme.tertiaryColor, width: 1.5),
                   ),
                 ),
               ),

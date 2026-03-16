@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
@@ -296,8 +296,8 @@ class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _saveEmployee,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryColor,
-                    foregroundColor: AppTheme.secondaryColor,
+                    backgroundColor: AppTheme.secondaryColor,
+                    foregroundColor: AppTheme.primaryColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -309,7 +309,7 @@ class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
                           width: 24,
                           child: CircularProgressIndicator(
                             strokeWidth: 3,
-                            color: AppTheme.secondaryColor,
+                            color: AppTheme.primaryColor,
                           ),
                         )
                       : Row(

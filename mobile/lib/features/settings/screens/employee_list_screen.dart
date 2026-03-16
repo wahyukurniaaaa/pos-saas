@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
@@ -96,17 +96,17 @@ class EmployeeListScreen extends ConsumerWidget {
             MaterialPageRoute(builder: (context) => const EmployeeFormScreen()),
           );
         },
-        backgroundColor: AppTheme.primaryColor,
+        backgroundColor: AppTheme.secondaryColor,
         elevation: 4,
         highlightElevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        icon: const Icon(Icons.add_rounded, color: AppTheme.secondaryColor),
+        icon: const Icon(Icons.add_rounded, color: AppTheme.primaryColor),
         label: Text(
           'Tambah Karyawan',
           style: GoogleFonts.poppins(
             fontWeight: FontWeight.w700,
             fontSize: 14,
-            color: AppTheme.secondaryColor,
+            color: AppTheme.primaryColor,
           ),
         ),
       ),

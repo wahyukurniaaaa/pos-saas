@@ -352,7 +352,7 @@ class _PosTabState extends ConsumerState<PosTab> {
           padding: const EdgeInsets.symmetric(horizontal: 24),
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: isSelected ? AppTheme.tertiaryColor : Colors.white,
+            color: isSelected ? AppTheme.secondaryColor : Colors.white,
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
@@ -366,8 +366,8 @@ class _PosTabState extends ConsumerState<PosTab> {
             label,
             style: GoogleFonts.poppins(
               fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: isSelected ? Colors.white : AppTheme.textSecondary,
+              fontWeight: FontWeight.w700,
+              color: isSelected ? AppTheme.primaryColor : AppTheme.textSecondary,
             ),
           ),
         ),
@@ -849,8 +849,8 @@ class CartPanel extends ConsumerWidget {
                       '${item.variant!.name}: ${item.variant!.optionValue}',
                       style: GoogleFonts.poppins(
                         fontSize: 12,
-                        color: AppTheme.primaryColor.withValues(alpha: 0.7),
-                        fontWeight: FontWeight.w500,
+                        color: AppTheme.tertiaryColor,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -939,7 +939,7 @@ class _CartQtyActionState extends ConsumerState<_CartQtyAction> {
     return Container(
       height: 32,
       decoration: BoxDecoration(
-        color: AppTheme.primaryColor.withValues(alpha: 0.05),
+        color: AppTheme.infoColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -969,7 +969,7 @@ class _CartQtyActionState extends ConsumerState<_CartQtyAction> {
               style: GoogleFonts.poppins(
                 fontWeight: FontWeight.w800,
                 fontSize: 13,
-                color: AppTheme.primaryColor,
+                color: AppTheme.tertiaryColor,
               ),
               onTap: () {
                 _controller.selection = TextSelection(
