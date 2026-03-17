@@ -46,7 +46,7 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
     final isCashier = session?.role == 'cashier';
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -54,8 +54,12 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
             Container(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
               decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+                color: Theme.of(context).colorScheme.surface,
+                border: Border(
+                  bottom: BorderSide(
+                    color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
+                  ),
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,7 +94,7 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                             style: GoogleFonts.poppins(
                               fontSize: 24,
                               fontWeight: FontWeight.w800,
-                              color: AppTheme.textPrimary,
+                              color: Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
                         ],
@@ -133,12 +137,12 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                       hintText: 'Cari produk atau SKU...',
                       hintStyle: GoogleFonts.poppins(
                         fontSize: 14,
-                        color: AppTheme.textSecondary,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
-                      prefixIcon: const Icon(
+                      prefixIcon: Icon(
                         Icons.search_rounded,
                         size: 20,
-                        color: AppTheme.textSecondary,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                       suffixIcon: _searchController.text.isNotEmpty
                           ? IconButton(
@@ -157,7 +161,7 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                               onPressed: () => BarcodeScannerModal.show(context),
                             ),
                       filled: true,
-                      fillColor: Colors.grey.shade50,
+                      fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
                       contentPadding: const EdgeInsets.symmetric(vertical: 12),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
@@ -165,11 +169,17 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(color: Colors.grey.shade200, width: 1),
+                        borderSide: BorderSide(
+                          color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
+                          width: 1,
+                        ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
-                        borderSide: const BorderSide(color: AppTheme.tertiaryColor, width: 2),
+                        borderSide: BorderSide(
+                          color: Theme.of(context).colorScheme.tertiary,
+                          width: 2,
+                        ),
                       ),
                     ),
                   ),

@@ -164,9 +164,9 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                 ? 600
                 : double.infinity,
           ),
-          decoration: const BoxDecoration(
-            color: AppTheme.backgroundLight,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -182,7 +182,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                       style: GoogleFonts.poppins(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
-                        color: AppTheme.textPrimary,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     IconButton(
@@ -252,7 +252,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                         style: GoogleFonts.poppins(
                           fontWeight: FontWeight.w700,
                           fontSize: 16,
-                          color: AppTheme.textPrimary,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -286,7 +286,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.05),
@@ -369,7 +369,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
-            color: isSelected ? AppTheme.primaryColor : Colors.white,
+            color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.surface,
             border: Border.all(
               color: isSelected ? AppTheme.primaryColor : Colors.grey.shade200,
               width: 1.5,
@@ -395,7 +395,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
               Text(
                 method,
                 style: GoogleFonts.poppins(
-                  color: isSelected ? Colors.white : AppTheme.textPrimary,
+                  color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface,
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
                   fontSize: 12,
                 ),
@@ -418,7 +418,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.3), width: 1.5),
             boxShadow: [
@@ -443,11 +443,11 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                 child: Text(
                   _cashReceivedString.isEmpty ? '0' : _currency.format(_cashReceived),
                   textAlign: TextAlign.right,
-                  style: GoogleFonts.poppins(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                    color: AppTheme.textPrimary,
-                  ),
+                    style: GoogleFonts.poppins(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -576,9 +576,9 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
         borderRadius: BorderRadius.circular(12),
         child: Ink(
           decoration: BoxDecoration(
-            color: color ?? (isAction ? Colors.grey.shade50 : Colors.white),
+            color: color ?? (isAction ? Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5) : Theme.of(context).colorScheme.surface),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade200),
+            border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
             boxShadow: [
               if (!isAction)
                 BoxShadow(
@@ -607,9 +607,9 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.borderColor),
+        border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [
@@ -665,15 +665,19 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                   hintText: '08123456789',
                   hintStyle: GoogleFonts.poppins(color: Colors.grey.shade400, fontSize: 14),
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: Theme.of(context).colorScheme.surface,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide.none,
+                    borderSide: BorderSide(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: AppTheme.tertiaryColor, width: 1.5),
+                    borderSide: BorderSide(color: Theme.of(context).colorScheme.tertiary, width: 1.5),
                   ),
                 ),
               ),
@@ -681,23 +685,33 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
               TextFormField(
                 controller: _nameController,
                 textCapitalization: TextCapitalization.words,
-                style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w500,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
                 decoration: InputDecoration(
                   labelText: 'Nama Pelanggan (Opsional)',
-                  labelStyle: GoogleFonts.poppins(color: AppTheme.textSecondary, fontSize: 14),
-                  prefixIcon: const Icon(Icons.person_outline, color: AppTheme.tertiaryColor),
+                  labelStyle: GoogleFonts.poppins(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontSize: 14,
+                  ),
+                  prefixIcon: Icon(Icons.person_outline, color: Theme.of(context).colorScheme.tertiary),
                   hintText: 'Budi Santoso',
                   hintStyle: GoogleFonts.poppins(color: Colors.grey.shade400, fontSize: 14),
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: Theme.of(context).colorScheme.surface,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide.none,
+                    borderSide: BorderSide(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: AppTheme.tertiaryColor, width: 1.5),
+                    borderSide: BorderSide(color: Theme.of(context).colorScheme.tertiary, width: 1.5),
                   ),
                 ),
               ),

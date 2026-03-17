@@ -1,0 +1,1 @@
+C:\Users\wahyu\AppData\Local\Python\pythoncore-3.14-64\python.exe: can't open file 'C:\\www\\pos-umkm-saas\\mobile\\.agent\\skills\\mobile-design\\scripts\\mobile_audit.py': [Errno 2] No such file or directory

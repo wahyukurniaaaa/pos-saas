@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:posify_app/core/database/database.dart';
@@ -63,7 +63,7 @@ class WhatsAppReceiptWidget extends StatelessWidget {
               Text(
                 'NO. STRUK:',
                 style: GoogleFonts.poppins(
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: AppTheme.textSecondary,
                 ),
@@ -71,7 +71,7 @@ class WhatsAppReceiptWidget extends StatelessWidget {
               Text(
                 data.transaction.receiptNumber,
                 style: GoogleFonts.poppins(
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: AppTheme.textPrimary,
                 ),
@@ -93,7 +93,7 @@ class WhatsAppReceiptWidget extends StatelessWidget {
               Text(
                 date,
                 style: GoogleFonts.poppins(
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: AppTheme.textPrimary,
                 ),
@@ -212,9 +212,9 @@ class WhatsAppReceiptWidget extends StatelessWidget {
             'POSIFY - Solusi POS Pintar',
             textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              color: AppTheme.primaryColor.withValues(alpha: 0.5),
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.primaryColor.withValues(alpha: 0.6),
             ),
           ),
         ],

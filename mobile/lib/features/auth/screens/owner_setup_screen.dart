@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
@@ -69,8 +70,8 @@ class _OwnerSetupScreenState extends ConsumerState<OwnerSetupScreen> {
                     Text(
                       'Lengkapi data untuk memulai',
                       style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 14,
+                        color: Colors.white.withValues(alpha: 0.8),
                       ),
                     ),
                   ],
@@ -81,9 +82,9 @@ class _OwnerSetupScreenState extends ConsumerState<OwnerSetupScreen> {
               Expanded(
                 child: Container(
                   width: double.infinity,
-                  decoration: const BoxDecoration(
-                    color: AppTheme.scaffoldBg,
-                    borderRadius: BorderRadius.vertical(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                    borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(28),
                     ),
                   ),
@@ -202,7 +203,12 @@ class _OwnerSetupScreenState extends ConsumerState<OwnerSetupScreen> {
                             width: double.infinity,
                             height: 52,
                             child: ElevatedButton.icon(
-                              onPressed: _isLoading ? null : _saveOwnerSetup,
+                              onPressed: _isLoading
+                                  ? null
+                                  : () {
+                                      HapticFeedback.lightImpact();
+                                      _saveOwnerSetup();
+                                    },
                               icon: _isLoading
                                   ? const SizedBox(
                                       width: 20,
@@ -228,6 +234,7 @@ class _OwnerSetupScreenState extends ConsumerState<OwnerSetupScreen> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppTheme.primaryColor,
                                 foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -255,9 +262,9 @@ class _OwnerSetupScreenState extends ConsumerState<OwnerSetupScreen> {
         Text(
           label,
           style: GoogleFonts.poppins(
-            fontSize: 14,
+            fontSize: 15,
             fontWeight: FontWeight.w600,
-            color: AppTheme.textPrimary,
+            color: Theme.of(context).textTheme.titleSmall?.color,
           ),
         ),
       ],

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -116,7 +116,7 @@ class _LicenseActivationScreenState
                       Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: Theme.of(context).cardTheme.color,
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
@@ -133,19 +133,19 @@ class _LicenseActivationScreenState
                             children: [
                               Text(
                                 'Masukkan Kode Lisensi',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppTheme.textPrimary,
-                                ),
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Theme.of(context).textTheme.titleMedium?.color,
+                                  ),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 'Kode dikirim ke email saat pembelian',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 13,
-                                  color: AppTheme.textSecondary,
-                                ),
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 13,
+                                    color: Theme.of(context).textTheme.bodySmall?.color,
+                                  ),
                               ),
                               const SizedBox(height: 16),
 
@@ -174,12 +174,12 @@ class _LicenseActivationScreenState
                                     fontSize: 16,
                                     letterSpacing: 1.5,
                                   ),
-                                  prefixIcon: const Icon(
-                                    Icons.vpn_key_rounded,
-                                    color: AppTheme.primaryColor,
-                                  ),
-                                  filled: true,
-                                  fillColor: AppTheme.scaffoldBg,
+                                    prefixIcon: const Icon(
+                                      Icons.vpn_key_rounded,
+                                      color: AppTheme.primaryColor,
+                                    ),
+                                    filled: true,
+                                    fillColor: Theme.of(context).inputDecorationTheme.fillColor,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                     borderSide: BorderSide.none,
@@ -306,7 +306,7 @@ class _LicenseActivationScreenState
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(
                             horizontal: 20,
-                            vertical: 12,
+                            vertical: 16,
                           ),
                           backgroundColor: Colors.white.withValues(alpha: 0.1),
                           shape: RoundedRectangleBorder(
@@ -328,23 +328,23 @@ class _LicenseActivationScreenState
                                 color: Colors.white.withValues(alpha: 0.7),
                               ),
                               const SizedBox(width: 6),
-                              Text(
-                                'Butuh internet saat Aktivasi & Verifikasi (7 hari)',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 12,
-                                  color: Colors.white.withValues(alpha: 0.7),
+                                Text(
+                                  'Butuh internet saat Aktivasi & Verifikasi (7 hari)',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    color: Colors.white.withValues(alpha: 0.8),
+                                  ),
                                 ),
-                              ),
                             ],
                           ),
                           const SizedBox(height: 4),
-                          Text(
-                            'Maksimal offline 7 hari sebelum verifikasi ulang',
-                            style: GoogleFonts.poppins(
-                              fontSize: 10,
-                              color: Colors.white.withValues(alpha: 0.5),
+                            Text(
+                              'Maksimal offline 7 hari sebelum verifikasi ulang',
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                color: Colors.white.withValues(alpha: 0.6),
+                              ),
                             ),
-                          ),
                         ],
                       ),
                     ],

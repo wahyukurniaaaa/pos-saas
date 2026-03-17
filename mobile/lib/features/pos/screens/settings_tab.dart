@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
@@ -24,17 +24,21 @@ class SettingsTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           'Pengaturan',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w800, fontSize: 18),
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w800,
+            fontSize: 18,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
         ),
-        backgroundColor: Colors.white,
-        foregroundColor: AppTheme.textPrimary,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
         elevation: 0,
         centerTitle: false,
-        shape: Border(bottom: BorderSide(color: Colors.grey.shade200, width: 1)),
+        shape: Border(bottom: BorderSide(color: Theme.of(context).dividerColor.withValues(alpha: 0.1), width: 1)),
       ),
       body: ResponsiveCenter(
         child: Consumer(
@@ -50,6 +54,7 @@ class SettingsTab extends ConsumerWidget {
                 // Toko & Karyawan
                 if (isOwner)
                   _buildSection(
+                    context: context,
                     title: 'Toko & Karyawan',
                     items: [
                       _SettingsItem(
@@ -70,6 +75,7 @@ class SettingsTab extends ConsumerWidget {
 
                 // Produk
                 _buildSection(
+                  context: context,
                   title: 'Produk',
                   items: [
                     _SettingsItem(
@@ -85,6 +91,7 @@ class SettingsTab extends ConsumerWidget {
 
                 // Laporan & Riwayat
                 _buildSection(
+                  context: context,
                   title: 'Laporan & Riwayat',
                   items: [
                     if (isAtLeastSupervisor)
@@ -112,6 +119,7 @@ class SettingsTab extends ConsumerWidget {
 
                 // Konfigurasi Sistem
                 _buildSection(
+                  context: context,
                   title: 'Konfigurasi Sistem',
                   items: [
                     _SettingsItem(
@@ -141,6 +149,7 @@ class SettingsTab extends ConsumerWidget {
 
                 // Akun
                 _buildSection(
+                  context: context,
                   title: 'Keamanan & Akun',
                   items: [
                     _SettingsItem(
@@ -172,7 +181,7 @@ class SettingsTab extends ConsumerWidget {
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: Colors.grey.shade400,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                     ),
                   ),
                 ),
@@ -185,7 +194,7 @@ class SettingsTab extends ConsumerWidget {
     );
   }
 
-  Widget _buildSection({required String title, required List<_SettingsItem> items}) {
+  Widget _buildSection({required BuildContext context, required String title, required List<_SettingsItem> items}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
       child: Column(
@@ -199,15 +208,15 @@ class SettingsTab extends ConsumerWidget {
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.5,
-                color: AppTheme.textSecondary.withValues(alpha: 0.7),
+                color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
               ),
             ),
           ),
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.grey.shade200, width: 1),
+              border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.1), width: 1),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.02),
@@ -222,7 +231,7 @@ class SettingsTab extends ConsumerWidget {
                   children: [
                     item,
                     if (!item.isLast)
-                      Divider(height: 1, indent: 64, color: Colors.grey.shade100),
+                      Divider(height: 1, indent: 64, color: Theme.of(context).dividerColor.withValues(alpha: 0.05)),
                   ],
                 );
               }).toList(),
@@ -269,20 +278,20 @@ class _SettingsItem extends StatelessWidget {
                 height: 40,
                 decoration: BoxDecoration(
                   color: !isEnabled
-                      ? Colors.grey.shade100
+                      ? Theme.of(context).colorScheme.surfaceContainerHighest
                       : isDestructive
                           ? AppTheme.errorColor.withValues(alpha: 0.1)
-                          : AppTheme.primaryColor.withValues(alpha: 0.08),
+                          : Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   icon,
                   size: 20,
                   color: !isEnabled
-                      ? Colors.grey.shade400
+                      ? Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.4)
                       : isDestructive
                           ? AppTheme.errorColor
-                          : AppTheme.primaryColor,
+                          : Theme.of(context).colorScheme.primary,
                 ),
               ),
               const SizedBox(width: 16),
@@ -296,10 +305,10 @@ class _SettingsItem extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                         fontSize: 15,
                         color: !isEnabled
-                            ? Colors.grey.shade400
+                            ? Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.4)
                             : isDestructive
                                 ? AppTheme.errorColor
-                                : AppTheme.textPrimary,
+                                : Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -307,7 +316,7 @@ class _SettingsItem extends StatelessWidget {
                       subtitle,
                       style: GoogleFonts.poppins(
                         fontSize: 12,
-                        color: isEnabled ? AppTheme.textSecondary : Colors.grey.shade400,
+                        color: isEnabled ? Theme.of(context).colorScheme.onSurfaceVariant : Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
                       ),
                     ),
                   ],
@@ -316,7 +325,7 @@ class _SettingsItem extends StatelessWidget {
               Icon(
                 Icons.chevron_right_rounded,
                 size: 20,
-                color: isEnabled ? Colors.grey.shade400 : Colors.grey.shade200,
+                color: isEnabled ? Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.3) : Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.1),
               ),
             ],
           ),

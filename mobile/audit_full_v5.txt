@@ -1,0 +1,32 @@
+
+[MOBILE AUDIT] 67 mobile files checked
+--------------------------------------------------
+[!] ISSUES (291):
+  - [Touch Target] whatsapp_receipt_widget.dart: Touch target size 24px < 44px minimum (iOS: 44pt, Android: 48dp)
+  - [Touch Target] whatsapp_receipt_widget.dart: Touch target size 16px < 44px minimum (iOS: 44pt, Android: 48dp)
+  - [Touch Target] whatsapp_receipt_widget.dart: Touch target size 16px < 44px minimum (iOS: 44pt, Android: 48dp)
+  - [Touch Target] whatsapp_receipt_widget.dart: Touch target size 16px < 44px minimum (iOS: 44pt, Android: 48dp)
+  - [Touch Target] whatsapp_receipt_widget.dart: Touch target size 16px < 44px minimum (iOS: 44pt, Android: 48dp)
+  - [Touch Target] whatsapp_receipt_widget.dart: Touch target size 24px < 44px minimum (iOS: 44pt, Android: 48dp)
+  - [Touch Target] employee_selection_screen.dart: Touch target size 16px < 44px minimum (iOS: 44pt, Android: 48dp)
+  - [Touch Target] employee_selection_screen.dart: Touch target size 12px < 44px minimum (iOS: 44pt, Android: 48dp)
+  - [Touch Target] license_activation_screen.dart: Touch target size 20px < 44px minimum (iOS: 44pt, Android: 48dp)
+  - [Touch Target] license_activation_screen.dart: Touch target size 16px < 44px minimum (iOS: 44pt, Android: 48dp)
+[*] WARNINGS (170):
+  - [Haptics] dart_plugin_registrant.dart: Important actions without haptic feedback. Consider adding haptic confirmation.
+  - [Color] dart_plugin_registrant.dart: No dark mode support detected. Consider useColorScheme for system dark mode.
+  - [Testing] dart_plugin_registrant.dart: No testing framework detected. Consider Jest (unit) + Detox/Maestro (E2E) for mobile.
+  - [Color] main.dart: No dark mode support detected. Consider useColorScheme for system dark mode.
+  - [Testing] main.dart: No testing framework detected. Consider Jest (unit) + Detox/Maestro (E2E) for mobile.
+  - [Color] app_constants.dart: No dark mode support detected. Consider useColorScheme for system dark mode.
+  - [Testing] app_constants.dart: No testing framework detected. Consider Jest (unit) + Detox/Maestro (E2E) for mobile.
+  - [Color] database_provider.dart: No dark mode support detected. Consider useColorScheme for system dark mode.
+  - [Testing] database_provider.dart: No testing framework detected. Consider Jest (unit) + Detox/Maestro (E2E) for mobile.
+  - [Color] dio_provider.dart: No dark mode support detected. Consider useColorScheme for system dark mode.
+  - [Testing] dio_provider.dart: No testing framework detected. Consider Jest (unit) + Detox/Maestro (E2E) for mobile.
+  - [Color] receipt_provider.dart: No dark mode support detected. Consider useColorScheme for system dark mode.
+  - [Testing] receipt_provider.dart: No testing framework detected. Consider Jest (unit) + Detox/Maestro (E2E) for mobile.
+  - [Haptics] backup_service.dart: Important actions without haptic feedback. Consider adding haptic confirmation.
+  - [Color] backup_service.dart: No dark mode support detected. Consider useColorScheme for system dark mode.
+[+] PASSED CHECKS: 60
+STATUS: FAIL

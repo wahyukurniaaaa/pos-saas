@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
 import 'pos_tab.dart';
@@ -19,7 +20,7 @@ class _PosDashboardScreenState extends ConsumerState<PosDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50, // Soft background for Stitch style
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: IndexedStack(
         index: _currentTabIndex,
         children: const [
@@ -32,7 +33,7 @@ class _PosDashboardScreenState extends ConsumerState<PosDashboardScreen> {
       bottomNavigationBar: Container(
         padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.04),
@@ -56,12 +57,16 @@ class _PosDashboardScreenState extends ConsumerState<PosDashboardScreen> {
 
   Widget _buildNavItem(int index, IconData icon, String label) {
     final isSelected = _currentTabIndex == index;
-    final color = isSelected ? AppTheme.primaryColor : const Color(0xFF94A3B8); // slate-400
+    final colorScheme = Theme.of(context).colorScheme;
+    final color = isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant;
 
     return Expanded(
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: () => setState(() => _currentTabIndex = index),
+        onTap: () {
+          HapticFeedback.selectionClick();
+          setState(() => _currentTabIndex = index);
+        },
         child: SizedBox(
           height: 64,
           child: Stack(
@@ -107,7 +112,7 @@ class _PosDashboardScreenState extends ConsumerState<PosDashboardScreen> {
                     label,
                     style: TextStyle(
                       color: color,
-                      fontSize: 10,
+                      fontSize: 12,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
                       letterSpacing: 0.2,
                     ),

@@ -226,8 +226,7 @@ class CartNotifier extends Notifier<List<CartItem>> {
       clearCart();
       return id;
     } catch (e) {
-      // ignore: avoid_print
-      print('Checkout error: $e');
+      debugPrint('Checkout error: $e');
       return null;
     }
   }

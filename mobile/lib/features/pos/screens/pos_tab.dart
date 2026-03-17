@@ -74,7 +74,16 @@ class _PosTabState extends ConsumerState<PosTab> {
             ],
           ),
         ),
-        Container(width: 320, color: Colors.white, child: const CartPanel()),
+        Container(
+          width: 380,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            border: Border(
+              left: BorderSide(color: Theme.of(context).dividerColor),
+            ),
+          ),
+          child: const CartPanel(),
+        ),
       ],
     );
   }
@@ -112,7 +121,7 @@ class _PosTabState extends ConsumerState<PosTab> {
     return Container(
       padding: const EdgeInsets.only(bottom: 24),
       decoration: BoxDecoration(
-        color: AppTheme.primaryColor,
+        color: Theme.of(context).colorScheme.primary,
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(40)),
         boxShadow: [
           BoxShadow(
@@ -817,7 +826,7 @@ class CartPanel extends ConsumerWidget {
                       Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade50,
+                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -830,7 +839,7 @@ class CartPanel extends ConsumerWidget {
                       Text(
                         'Keranjang Anda kosong',
                         style: GoogleFonts.poppins(
-                          color: AppTheme.textSecondary,
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
@@ -887,7 +896,7 @@ class CartPanel extends ConsumerWidget {
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: AppTheme.textSecondary,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                     Text(
@@ -895,7 +904,7 @@ class CartPanel extends ConsumerWidget {
                       style: GoogleFonts.poppins(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
-                        color: AppTheme.primaryColor,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
                   ],
@@ -946,9 +955,12 @@ class CartPanel extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade100, width: 1.5),
+        border: Border.all(
+          color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
@@ -998,7 +1010,7 @@ class CartPanel extends ConsumerWidget {
                   style: GoogleFonts.poppins(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: AppTheme.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 if (item.variant != null)
@@ -1018,7 +1030,15 @@ class CartPanel extends ConsumerWidget {
                   _currency.format(item.effectivePrice),
                   style: GoogleFonts.poppins(
                     fontSize: 14,
-                    color: AppTheme.primaryColor,
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                Text(
+                  _currency.format(item.effectivePrice),
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: Theme.of(context).colorScheme.primary,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -1102,10 +1122,10 @@ class _CartQtyActionState extends ConsumerState<_CartQtyAction> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 32,
+      height: 44,
       decoration: BoxDecoration(
         color: AppTheme.infoColor.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(22),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1120,7 +1140,7 @@ class _CartQtyActionState extends ConsumerState<_CartQtyAction> {
             }
           }, isLeft: true),
           Container(
-            width: 36,
+            width: 40,
             alignment: Alignment.center,
             child: TextField(
               controller: _controller,
@@ -1130,7 +1150,7 @@ class _CartQtyActionState extends ConsumerState<_CartQtyAction> {
               style: GoogleFonts.poppins(
                 fontWeight: FontWeight.w800,
                 fontSize: 13,
-                color: AppTheme.tertiaryColor,
+                color: Theme.of(context).colorScheme.tertiary,
               ),
               onTap: () {
                 _controller.selection = TextSelection(
@@ -1166,14 +1186,14 @@ class _CartQtyActionState extends ConsumerState<_CartQtyAction> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 32,
-        height: 32,
+        width: 44,
+        height: 44,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: AppTheme.primaryColor.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(20),
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(22),
         ),
-        child: Icon(icon, size: 16, color: AppTheme.primaryColor),
+        child: Icon(icon, size: 18, color: Theme.of(context).colorScheme.primary),
       ),
     );
   }
@@ -1198,9 +1218,9 @@ class CartBottomSticky extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         builder: (ctx) => Container(
           height: MediaQuery.of(context).size.height * 0.85,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
           ),
           child: const CartPanel(), // Reuse the CartPanel widget!
         ),
@@ -1210,7 +1230,7 @@ class CartBottomSticky extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
         boxShadow: [
           BoxShadow(
@@ -1231,7 +1251,7 @@ class CartBottomSticky extends ConsumerWidget {
               height: 4,
               margin: const EdgeInsets.only(bottom: 12),
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
+                color: Theme.of(context).dividerColor,
                 borderRadius: BorderRadius.circular(4),
               ),
             ),
@@ -1252,11 +1272,11 @@ class CartBottomSticky extends ConsumerWidget {
                       vertical: 16,
                     ),
                     decoration: BoxDecoration(
-                      color: AppTheme.secondaryColor, // Yellow
+                      color: Theme.of(context).colorScheme.secondary, // Yellow
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.secondaryColor.withValues(alpha: 0.3),
+                          color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.3),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -1296,7 +1316,7 @@ class CartBottomSticky extends ConsumerWidget {
                             Text(
                               'Checkout',
                               style: GoogleFonts.poppins(
-                                color: AppTheme.primaryColor,
+                                color: Theme.of(context).colorScheme.primary,
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -1304,7 +1324,7 @@ class CartBottomSticky extends ConsumerWidget {
                             const SizedBox(height: 4),
                             Icon(
                               Icons.shopping_cart_rounded,
-                              color: AppTheme.primaryColor.withValues(
+                              color: Theme.of(context).colorScheme.primary.withValues(
                                 alpha: 0.8,
                               ),
                               size: 20,

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
@@ -61,7 +61,7 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
             backgroundColor: AppTheme.successColor,
           ),
         );
-        _loadData(); // Reload to show VOID status
+        _loadData();
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -75,6 +75,8 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     if (_isLoading) {
       return const Scaffold(
         body: ResponsiveCenter(
@@ -109,8 +111,8 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
           'Detail Transaksi',
           style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
         ),
-        backgroundColor: isVoid ? AppTheme.errorColor : AppTheme.primaryColor,
-        foregroundColor: Colors.white,
+        backgroundColor: isVoid ? AppTheme.errorColor : cs.primary,
+        foregroundColor: isVoid ? Colors.white : cs.onPrimary,
         elevation: 0,
       ),
       body: ResponsiveCenter(
@@ -119,16 +121,20 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Header Info
+              // Header Info Card
               Card(
+                color: cs.surface,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: Colors.grey.shade200),
+                  side: BorderSide(
+                    color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (isVoid) ...[
                         Container(
@@ -155,13 +161,14 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
                         style: GoogleFonts.poppins(
                           fontSize: 20,
                           fontWeight: FontWeight.w800,
+                          color: cs.onSurface,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         dateFmt.format(txn.createdAt),
                         style: GoogleFonts.poppins(
-                          color: AppTheme.textSecondary,
+                          color: cs.onSurfaceVariant,
                           fontSize: 14,
                         ),
                       ),
@@ -172,13 +179,14 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
                           Text(
                             'Metode Bayar:',
                             style: GoogleFonts.poppins(
-                              color: AppTheme.textSecondary,
+                              color: cs.onSurfaceVariant,
                             ),
                           ),
                           Text(
                             txn.paymentMethod.toUpperCase(),
                             style: GoogleFonts.poppins(
                               fontWeight: FontWeight.w600,
+                              color: cs.onSurface,
                             ),
                           ),
                         ],
@@ -187,6 +195,7 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
                   ),
                 ),
               ),
+
               const SizedBox(height: 16),
 
               // Items List
@@ -195,14 +204,18 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
+                  color: cs.onSurface,
                 ),
               ),
               const SizedBox(height: 8),
               Card(
+                color: cs.surface,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: Colors.grey.shade200),
+                  side: BorderSide(
+                    color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: ListView.separated(
                   shrinkWrap: true,
@@ -216,38 +229,52 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
                         e.item.variantName != null
                             ? '${e.product.name} - ${e.item.variantName}'
                             : e.product.name,
-                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
+                          color: cs.onSurface,
+                        ),
                       ),
                       subtitle: Text(
                         '${e.item.quantity} x ${currency.format(e.item.priceAtTransaction)}',
-                        style: GoogleFonts.poppins(fontSize: 12),
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: cs.onSurfaceVariant,
+                        ),
                       ),
                       trailing: Text(
                         currency.format(e.item.subtotal),
-                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
+                          color: cs.onSurface,
+                        ),
                       ),
                     );
                   },
                 ),
               ),
+
               const SizedBox(height: 16),
 
-              // Summary
+              // Summary Card
               Card(
+                color: cs.surface,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: Colors.grey.shade200),
+                  side: BorderSide(
+                    color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     children: [
-                      _buildSummaryRow('Subtotal', txn.subtotal, currency),
+                      _buildSummaryRow(context, 'Subtotal', txn.subtotal, currency),
                       if (txn.taxAmount > 0)
-                        _buildSummaryRow('Pajak', txn.taxAmount, currency),
+                        _buildSummaryRow(context, 'Pajak', txn.taxAmount, currency),
                       if (txn.serviceChargeAmount > 0)
                         _buildSummaryRow(
+                          context,
                           'Service Charge',
                           txn.serviceChargeAmount,
                           currency,
@@ -261,6 +288,7 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
                             style: GoogleFonts.poppins(
                               fontSize: 16,
                               fontWeight: FontWeight.w800,
+                              color: cs.onSurface,
                             ),
                           ),
                           Text(
@@ -268,7 +296,7 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
                             style: GoogleFonts.poppins(
                               fontSize: 18,
                               fontWeight: FontWeight.w800,
-                              color: AppTheme.primaryColor,
+                              color: cs.primary,
                             ),
                           ),
                         ],
@@ -280,14 +308,12 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
 
               const SizedBox(height: 32),
 
-              // Action Buttons
+              // Print Button
               OutlinedButton.icon(
                 onPressed: () async {
                   try {
                     final db = ref.read(databaseProvider);
                     final receiptService = ref.read(receiptServiceProvider);
-
-                    // Fetch profile and data already available in state
                     final profile = await db.getStoreProfile();
 
                     if (_txnData != null) {
@@ -312,13 +338,14 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
                 label: const Text('CETAK ULANG STRUK'),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  foregroundColor: AppTheme.primaryColor,
-                  side: const BorderSide(color: AppTheme.primaryColor),
+                  foregroundColor: cs.primary,
+                  side: BorderSide(color: cs.primary),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
               ),
+
               const SizedBox(height: 16),
 
               // Share to WhatsApp Button
@@ -327,7 +354,6 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
                   try {
                     final db = ref.read(databaseProvider);
                     final receiptService = ref.read(receiptServiceProvider);
-
                     final profile = await db.getStoreProfile();
 
                     if (_txnData != null) {
@@ -350,7 +376,7 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
                 icon: const Icon(Icons.share_rounded, color: Colors.white),
                 label: const Text('BAGIKAN KE WHATSAPP'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF25D366), // WhatsApp Green
+                  backgroundColor: const Color(0xFF25D366),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   elevation: 0,
@@ -380,6 +406,7 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
                   ),
                 ),
               ],
+
               const SizedBox(height: 32),
             ],
           ),
@@ -388,16 +415,28 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
     );
   }
 
-  Widget _buildSummaryRow(String label, int amount, NumberFormat currency) {
+  Widget _buildSummaryRow(
+    BuildContext context,
+    String label,
+    int amount,
+    NumberFormat currency,
+  ) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: GoogleFonts.poppins(color: AppTheme.textSecondary)),
+          Text(
+            label,
+            style: GoogleFonts.poppins(color: cs.onSurfaceVariant),
+          ),
           Text(
             currency.format(amount),
-            style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+            style: GoogleFonts.poppins(
+              fontWeight: FontWeight.w600,
+              color: cs.onSurface,
+            ),
           ),
         ],
       ),

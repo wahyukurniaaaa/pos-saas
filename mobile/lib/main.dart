@@ -29,6 +29,8 @@ class PosifyApp extends StatelessWidget {
       title: 'POSify',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
       home: const AppBootstrap(),
       routes: {
         '/license': (context) => const LicenseActivationScreen(),

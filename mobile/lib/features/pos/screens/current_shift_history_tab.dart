@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -26,20 +26,20 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
     );
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           'Riwayat',
           style: GoogleFonts.poppins(
             fontWeight: FontWeight.w700,
-            color: AppTheme.primaryColor,
+            color: Theme.of(context).colorScheme.primary,
           ),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: AppTheme.textPrimary),
+            icon: Icon(Icons.refresh_rounded, color: Theme.of(context).colorScheme.onSurface),
             onPressed: () {
               ref.invalidate(databaseProvider);
               ref.invalidate(historyFilterProvider);
@@ -82,25 +82,25 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
                         return ListView(
                           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                           children: [
-                            _buildSummaryCard(txns, currency, openShift, profile, currentFilter),
+                            _buildSummaryCard(context, txns, currency, openShift, profile, currentFilter),
                             const SizedBox(height: 24),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
-                                  _getListTitle(currentFilter),
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppTheme.textPrimary,
+                                  Text(
+                                    _getListTitle(currentFilter),
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700,
+                                      color: Theme.of(context).colorScheme.onSurface,
+                                    ),
                                   ),
-                                ),
                                 Text(
                                   '${txns.length}',
                                   style: GoogleFonts.poppins(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
-                                    color: AppTheme.textSecondary,
+                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                                   ),
                                 ),
                               ],
@@ -172,7 +172,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
 
     return Container(
       height: 60,
-      color: Colors.white,
+      color: Theme.of(context).colorScheme.surface,
       child: ListView.separated(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         scrollDirection: Axis.horizontal,
@@ -189,7 +189,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
               style: GoogleFonts.poppins(
                 fontSize: 13,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected ? Colors.white : AppTheme.textSecondary,
+                color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
             selected: isSelected,
@@ -220,13 +220,13 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
                 ref.read(historyFilterProvider.notifier).setFilter(filter);
               }
             },
-            backgroundColor: AppTheme.backgroundLight,
-            selectedColor: AppTheme.primaryColor,
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            selectedColor: Theme.of(context).colorScheme.primary,
             checkmarkColor: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
               side: BorderSide(
-                color: isSelected ? AppTheme.primaryColor : Colors.grey.shade200,
+                color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).dividerColor.withValues(alpha: 0.1),
               ),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -271,6 +271,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
   }
 
   Widget _buildSummaryCard(
+    BuildContext context,
     List<Transaction> txns, 
     NumberFormat currency, 
     Shift? openShift, 
@@ -319,7 +320,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
                   Text(
                     profile?.name ?? 'Toko Saya',
                     style: GoogleFonts.poppins(
-                      color: AppTheme.textPrimary,
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
@@ -327,7 +328,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
                   Text(
                     dateRangeVisible,
                     style: GoogleFonts.poppins(
-                      color: AppTheme.textPrimary,
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
@@ -337,16 +338,16 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(100),
-                  border: Border.all(color: AppTheme.borderColor),
+                  border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.2)),
                 ),
                 child: Text(
                   filter.label,
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: AppTheme.textSecondary,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
               ),
@@ -376,7 +377,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
             style: GoogleFonts.poppins(
               fontSize: 15,
               fontWeight: FontWeight.w700,
-              color: AppTheme.textPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 12),
@@ -385,7 +386,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
               'Belum ada pembayaran',
               style: GoogleFonts.poppins(
                 fontSize: 13, 
-                color: AppTheme.textSecondary, 
+                color: Theme.of(context).colorScheme.onSurfaceVariant, 
                 fontStyle: FontStyle.italic
               ),
             )
@@ -400,7 +401,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: AppTheme.textPrimary,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   Text(
@@ -408,7 +409,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: AppTheme.textSecondary,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -427,7 +428,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -436,7 +437,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
             offset: const Offset(0, 4),
           ),
         ],
-        border: Border.all(color: AppTheme.borderColor.withValues(alpha: 0.5)),
+        border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
       ),
       child: Column(
         children: [
@@ -458,7 +459,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
                               style: GoogleFonts.poppins(
                                 fontWeight: FontWeight.w800,
                                 fontSize: 16,
-                                color: AppTheme.textPrimary,
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
                             ),
                           ),
@@ -484,7 +485,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
                         dateFmt.format(txn.createdAt),
                         style: GoogleFonts.poppins(
                           fontSize: 13,
-                          color: AppTheme.textSecondary,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -538,7 +539,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
                       style: GoogleFonts.poppins(
                         fontWeight: FontWeight.w800,
                         fontSize: 18,
-                        color: isVoid ? AppTheme.errorColor : AppTheme.primaryColor,
+                        color: isVoid ? AppTheme.errorColor : Theme.of(context).colorScheme.primary,
                         decoration: isVoid ? TextDecoration.lineThrough : null,
                       ),
                     ),
@@ -558,8 +559,8 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
                     icon: const Icon(Icons.print_outlined, size: 18),
                     label: Text('Print', style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 13)),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppTheme.primaryColor,
-                      side: BorderSide(color: AppTheme.primaryColor.withValues(alpha: 0.2)),
+                      foregroundColor: Theme.of(context).colorScheme.primary,
+                      side: BorderSide(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2)),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       padding: const EdgeInsets.symmetric(vertical: 10),
                     ),
@@ -572,7 +573,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
                     icon: const Icon(Icons.undo_rounded, size: 18),
                     label: Text('Refund', style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 13)),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryColor,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
                       foregroundColor: Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
