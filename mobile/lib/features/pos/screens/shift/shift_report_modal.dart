@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
@@ -279,30 +279,41 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: () {
-                              if (_formKey.currentState!.validate()) {
-                                final actualCash =
-                                    int.parse(_actualCashController.text);
-                                _showEndShiftConfirmation(
-                                  context,
-                                  activeShift.id,
-                                  actualCash,
-                                  expectedDrawer.toInt(),
-                                );
-                              }
-                            },
+                            onPressed: _isSubmitting
+                                ? null
+                                : () {
+                                    if (_formKey.currentState!.validate()) {
+                                      final actualCash =
+                                          int.parse(_actualCashController.text);
+                                      _showEndShiftConfirmation(
+                                        context,
+                                        activeShift.id,
+                                        actualCash,
+                                        expectedDrawer.toInt(),
+                                      );
+                                    }
+                                  },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppTheme.dangerColor,
                               foregroundColor: Colors.white,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                             ),
-                            child: Text(
-                              'Kalkulasi & Tutup Shift',
-                              style: GoogleFonts.poppins(
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
+                            child: _isSubmitting
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : Text(
+                                    'Kalkulasi & Tutup Shift',
+                                    style: GoogleFonts.poppins(
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
                           ),
                         ),
                       ],
@@ -454,7 +465,6 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
               if (!mounted) return;
               setState(() => _isSubmitting = false);
 
-              if (!mounted) return;
               if (success) {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -482,16 +492,7 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.dangerColor,
             ),
-            child: _isSubmitting
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
-                    ),
-                  )
-                : const Text('Ya, Tutup Shift'),
+            child: const Text('Ya, Tutup Shift'),
           ),
         ],
       ),

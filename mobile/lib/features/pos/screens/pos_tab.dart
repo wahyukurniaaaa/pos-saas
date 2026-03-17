@@ -32,9 +32,6 @@ class PosTab extends ConsumerStatefulWidget {
   ConsumerState<PosTab> createState() => _PosTabState();
 }
 
-
-
-
 class _PosTabState extends ConsumerState<PosTab> {
   final _searchController = TextEditingController();
   int? _selectedCategoryId;
@@ -59,9 +56,7 @@ class _PosTabState extends ConsumerState<PosTab> {
       children: [
         _buildAppBar(cashierName, hasOpenShift, widget.showBackButton),
         Expanded(
-          child: hasOpenShift
-              ? (isDesktop ? _buildDesktopLayout() : _buildMobileLayout())
-              : _buildClosedShiftLayout(),
+          child: isDesktop ? _buildDesktopLayout() : _buildMobileLayout(),
         ),
       ],
     );
@@ -95,7 +90,8 @@ class _PosTabState extends ConsumerState<PosTab> {
             const SizedBox(height: 16),
             _buildCategoryChips(),
             Expanded(child: _buildProductGrid()),
-            if (hasItems) const SizedBox(height: 80), // Padding only when cart has items
+            if (hasItems)
+              const SizedBox(height: 80), // Padding only when cart has items
           ],
         ),
         const Positioned(
@@ -108,58 +104,11 @@ class _PosTabState extends ConsumerState<PosTab> {
     );
   }
 
-  Widget _buildClosedShiftLayout() {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.lock_outline, size: 64, color: Colors.grey.shade400),
-          const SizedBox(height: 16),
-          Text(
-            'Kasir Belum Buka',
-            style: GoogleFonts.poppins(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: AppTheme.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Silakan buka shift untuk mulai bertransaksi',
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              color: AppTheme.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 24),
-          SizedBox(
-            width: 200,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => const ShiftOpeningModal(),
-                );
-              },
-              icon: const Icon(Icons.point_of_sale_rounded),
-              label: const Text('Buka Kasir'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryColor,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                elevation: 0,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAppBar(String cashierName, bool hasOpenShift, bool showBackButton) {
+  Widget _buildAppBar(
+    String cashierName,
+    bool hasOpenShift,
+    bool showBackButton,
+  ) {
     return Container(
       padding: const EdgeInsets.only(bottom: 24),
       decoration: BoxDecoration(
@@ -206,7 +155,11 @@ class _PosTabState extends ConsumerState<PosTab> {
                           color: Colors.white.withValues(alpha: 0.2),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.person, color: Colors.white, size: 20),
+                        child: const Icon(
+                          Icons.person,
+                          color: Colors.white,
+                          size: 20,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Column(
@@ -253,7 +206,9 @@ class _PosTabState extends ConsumerState<PosTab> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(
-                          hasOpenShift ? Icons.storefront_rounded : Icons.lock_outline_rounded,
+                          hasOpenShift
+                              ? Icons.storefront_rounded
+                              : Icons.lock_outline_rounded,
                           color: Colors.white,
                           size: 20,
                         ),
@@ -262,70 +217,86 @@ class _PosTabState extends ConsumerState<PosTab> {
                   ),
                 ],
               ),
-              if (hasOpenShift) ...[
-                const SizedBox(height: 24),
-                Text(
-                  'Kasir Utama',
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
+              const SizedBox(height: 24),
+              Text(
+                'Kasir Utama',
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
                 ),
-                const SizedBox(height: 16),
-                // Search Bar inside Header
-                TextField(
-                  controller: _searchController,
-                  onChanged: (v) {
-                    setState(() {});
-                    ref.read(productProvider.notifier).setSearch(v.isEmpty ? null : v);
-                  },
-                  style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
-                  decoration: InputDecoration(
-                    hintText: 'Cari menu...',
-                    hintStyle: GoogleFonts.poppins(
-                      color: Colors.white.withValues(alpha: 0.5),
-                      fontSize: 14,
-                    ),
-                    prefixIcon: Icon(
-                      Icons.search_rounded,
-                      color: Colors.white.withValues(alpha: 0.5),
-                      size: 20,
-                    ),
-                    suffixIcon: _searchController.text.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear, size: 18, color: Colors.white),
-                            onPressed: () {
-                              _searchController.clear();
-                              ref.read(productProvider.notifier).setSearch(null);
-                            },
-                          )
-                        : IconButton(
-                            icon: Icon(
-                              Icons.qr_code_scanner_rounded,
-                              size: 20,
-                              color: Colors.white.withValues(alpha: 0.5),
-                            ),
-                            onPressed: () => BarcodeScannerModal.show(context),
+              ),
+              const SizedBox(height: 16),
+              // Search Bar inside Header
+              TextField(
+                controller: _searchController,
+                onChanged: (v) {
+                  setState(() {});
+                  ref
+                      .read(productProvider.notifier)
+                      .setSearch(v.isEmpty ? null : v);
+                },
+                style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
+                decoration: InputDecoration(
+                  hintText: 'Cari menu...',
+                  hintStyle: GoogleFonts.poppins(
+                    color: Colors.white.withValues(alpha: 0.5),
+                    fontSize: 14,
+                  ),
+                  prefixIcon: Icon(
+                    Icons.search_rounded,
+                    color: Colors.white.withValues(alpha: 0.5),
+                    size: 20,
+                  ),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(
+                            Icons.clear,
+                            size: 18,
+                            color: Colors.white,
                           ),
-                    filled: true,
-                    fillColor: Colors.white.withValues(alpha: 0.1),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(color: Colors.white24, width: 1),
+                          onPressed: () {
+                            _searchController.clear();
+                            ref.read(productProvider.notifier).setSearch(null);
+                          },
+                        )
+                      : IconButton(
+                          icon: Icon(
+                            Icons.qr_code_scanner_rounded,
+                            size: 20,
+                            color: Colors.white.withValues(alpha: 0.5),
+                          ),
+                          onPressed: () => BarcodeScannerModal.show(context),
+                        ),
+                  filled: true,
+                  fillColor: Colors.white.withValues(alpha: 0.1),
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 14,
+                    horizontal: 16,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(
+                      color: Colors.white24,
+                      width: 1,
                     ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(color: Colors.white24, width: 1),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(
+                      color: Colors.white24,
+                      width: 1,
                     ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(color: Colors.white, width: 1.5),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(
+                      color: Colors.white,
+                      width: 1.5,
                     ),
                   ),
                 ),
-              ],
+              ),
             ],
           ),
         ),
@@ -382,7 +353,9 @@ class _PosTabState extends ConsumerState<PosTab> {
             style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.w700,
-              color: isSelected ? AppTheme.primaryColor : AppTheme.textSecondary,
+              color: isSelected
+                  ? AppTheme.primaryColor
+                  : AppTheme.textSecondary,
             ),
           ),
         ),
@@ -436,8 +409,9 @@ class _PosTabState extends ConsumerState<PosTab> {
                         color: AppTheme.primaryColor.withValues(alpha: 0.3),
                         width: 1.5,
                       ),
-                      backgroundColor:
-                          AppTheme.primaryColor.withValues(alpha: 0.05),
+                      backgroundColor: AppTheme.primaryColor.withValues(
+                        alpha: 0.05,
+                      ),
                       padding: const EdgeInsets.symmetric(
                         horizontal: 20,
                         vertical: 12,
@@ -453,8 +427,7 @@ class _PosTabState extends ConsumerState<PosTab> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              const ImportProductScreen(),
+                          builder: (context) => const ImportProductScreen(),
                         ),
                       );
                     },
@@ -515,10 +488,7 @@ class _PosTabState extends ConsumerState<PosTab> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: Colors.grey.shade100,
-            width: 1,
-          ),
+          border: Border.all(color: Colors.grey.shade100, width: 1),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.02),
@@ -537,10 +507,14 @@ class _PosTabState extends ConsumerState<PosTab> {
                   child: Container(
                     width: double.infinity,
                     decoration: const BoxDecoration(
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(24),
+                      ),
                     ),
                     child: ClipRRect(
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(24),
+                      ),
                       child: ProductImage(
                         imageUri: product.imageUri,
                         categoryId: product.categoryId,
@@ -633,7 +607,10 @@ class _PosTabState extends ConsumerState<PosTab> {
                 top: 8,
                 right: 8,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 5,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.orange.shade600,
                     borderRadius: BorderRadius.circular(6),
@@ -782,7 +759,9 @@ class CartPanel extends ConsumerWidget {
           padding: const EdgeInsets.fromLTRB(24, 20, 16, 20),
           decoration: BoxDecoration(
             color: Colors.white,
-            border: Border(bottom: BorderSide(color: Colors.grey.shade100, width: 1)),
+            border: Border(
+              bottom: BorderSide(color: Colors.grey.shade100, width: 1),
+            ),
           ),
           child: Row(
             children: [
@@ -815,7 +794,10 @@ class CartPanel extends ConsumerWidget {
                   label: const Text('Bersihkan'),
                   style: TextButton.styleFrom(
                     foregroundColor: AppTheme.errorColor,
-                    textStyle: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w700),
+                    textStyle: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                   ),
                 ),
@@ -873,10 +855,17 @@ class CartPanel extends ConsumerWidget {
         // Summary Section
         if (cartItems.isNotEmpty)
           Container(
-            padding: EdgeInsets.fromLTRB(24, 20, 24, MediaQuery.of(context).padding.bottom + 20),
+            padding: EdgeInsets.fromLTRB(
+              24,
+              20,
+              24,
+              MediaQuery.of(context).padding.bottom + 20,
+            ),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.05),
@@ -993,7 +982,7 @@ class CartPanel extends ConsumerWidget {
             ),
           ),
           const SizedBox(width: 16),
-          
+
           // Info Info
           Expanded(
             child: Column(
@@ -1033,7 +1022,7 @@ class CartPanel extends ConsumerWidget {
               ],
             ),
           ),
-          
+
           const SizedBox(width: 8),
 
           // Actions
@@ -1041,14 +1030,20 @@ class CartPanel extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               GestureDetector(
-                onTap: () => ref.read(cartProvider.notifier).removeFromCart(item.cartKey),
+                onTap: () => ref
+                    .read(cartProvider.notifier)
+                    .removeFromCart(item.cartKey),
                 child: Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
                     color: AppTheme.errorColor.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.close_rounded, size: 14, color: AppTheme.errorColor),
+                  child: const Icon(
+                    Icons.close_rounded,
+                    size: 14,
+                    color: AppTheme.errorColor,
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -1112,19 +1107,15 @@ class _CartQtyActionState extends ConsumerState<_CartQtyAction> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _buildActionIcon(
-            Icons.remove_rounded,
-            () {
-              if (widget.item.quantity > 0) {
-                final newQty = widget.item.quantity - 1;
-                ref
-                    .read(cartProvider.notifier)
-                    .updateQuantity(widget.item.cartKey, newQty);
-                _controller.text = '$newQty';
-              }
-            },
-            isLeft: true,
-          ),
+          _buildActionIcon(Icons.remove_rounded, () {
+            if (widget.item.quantity > 0) {
+              final newQty = widget.item.quantity - 1;
+              ref
+                  .read(cartProvider.notifier)
+                  .updateQuantity(widget.item.cartKey, newQty);
+              _controller.text = '$newQty';
+            }
+          }, isLeft: true),
           Container(
             width: 36,
             alignment: Alignment.center,
@@ -1152,23 +1143,23 @@ class _CartQtyActionState extends ConsumerState<_CartQtyAction> {
               onChanged: _updateQty,
             ),
           ),
-          _buildActionIcon(
-            Icons.add_rounded,
-            () {
-              final newQty = widget.item.quantity + 1;
-              ref
-                  .read(cartProvider.notifier)
-                  .updateQuantity(widget.item.cartKey, newQty);
-              _controller.text = '$newQty';
-            },
-            isLeft: false,
-          ),
+          _buildActionIcon(Icons.add_rounded, () {
+            final newQty = widget.item.quantity + 1;
+            ref
+                .read(cartProvider.notifier)
+                .updateQuantity(widget.item.cartKey, newQty);
+            _controller.text = '$newQty';
+          }, isLeft: false),
         ],
       ),
     );
   }
 
-  Widget _buildActionIcon(IconData icon, VoidCallback onTap, {required bool isLeft}) {
+  Widget _buildActionIcon(
+    IconData icon,
+    VoidCallback onTap, {
+    required bool isLeft,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -1197,8 +1188,24 @@ class CartBottomSticky extends ConsumerWidget {
 
     final totalItems = cartItems.fold(0, (sum, item) => sum + item.quantity);
 
+    void openCartSheet() {
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (ctx) => Container(
+          height: MediaQuery.of(context).size.height * 0.85,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+          ),
+          child: const CartPanel(), // Reuse the CartPanel widget!
+        ),
+      );
+    }
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
@@ -1212,87 +1219,102 @@ class CartBottomSticky extends ConsumerWidget {
       ),
       child: SafeArea(
         top: false,
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () {
-              // Open Cart Bottom Sheet
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                builder: (ctx) => Container(
-                  height: MediaQuery.of(context).size.height * 0.85,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-                  ),
-                  child: const CartPanel(), // Reuse the CartPanel widget!
-                ),
-              );
-            },
-            borderRadius: BorderRadius.circular(24),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Drag visual handle
+            Container(
+              width: 48,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 12),
               decoration: BoxDecoration(
-                color: AppTheme.secondaryColor, // Yellow
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.secondaryColor.withValues(alpha: 0.3),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '$totalItems item' '${totalItems > 1 ? 's' : ''}',
-                        style: GoogleFonts.poppins(
-                          color: AppTheme.primaryColor.withValues(alpha: 0.8),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      Text(
-                        _currency.format(subtotal),
-                        style: GoogleFonts.poppins(
-                          color: AppTheme.primaryColor,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Checkout',
-                        style: GoogleFonts.poppins(
-                          color: AppTheme.primaryColor,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Icon(
-                        Icons.shopping_cart_rounded,
-                        color: AppTheme.primaryColor.withValues(alpha: 0.8),
-                        size: 20,
-                      ),
-                    ],
-                  ),
-                ],
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(4),
               ),
             ),
-          ),
+            GestureDetector(
+              onVerticalDragEnd: (details) {
+                if ((details.primaryVelocity ?? 0) < 0) {
+                  openCartSheet();
+                }
+              },
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: openCartSheet,
+                  borderRadius: BorderRadius.circular(24),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 16,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppTheme.secondaryColor, // Yellow
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.secondaryColor.withValues(alpha: 0.3),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '$totalItems item'
+                              '${totalItems > 1 ? 's' : ''}',
+                              style: GoogleFonts.poppins(
+                                color: AppTheme.primaryColor.withValues(
+                                  alpha: 0.8,
+                                ),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            Text(
+                              _currency.format(subtotal),
+                              style: GoogleFonts.poppins(
+                                color: AppTheme.primaryColor,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Checkout',
+                              style: GoogleFonts.poppins(
+                                color: AppTheme.primaryColor,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Icon(
+                              Icons.shopping_cart_rounded,
+                              color: AppTheme.primaryColor.withValues(
+                                alpha: 0.8,
+                              ),
+                              size: 20,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -1300,6 +1322,15 @@ class CartBottomSticky extends ConsumerWidget {
 }
 
 void _showPaymentDialog(BuildContext context, WidgetRef ref, double amount) {
+  final activeShift = ref.read(openShiftProvider).value;
+  if (activeShift == null) {
+    showDialog(
+      context: context,
+      builder: (context) => const ShiftOpeningModal(),
+    );
+    return;
+  }
+
   final isDesktop = MediaQuery.of(context).size.width > 800;
 
   if (isDesktop) {
@@ -1373,7 +1404,11 @@ class _VariantPickerSheetState extends ConsumerState<_VariantPickerSheet> {
 
   Future<void> _loadVariants() async {
     final variants = await widget.db.getVariantsByProduct(widget.product.id);
-    if (mounted) setState(() { _variants = variants; _loading = false; });
+    if (mounted)
+      setState(() {
+        _variants = variants;
+        _loading = false;
+      });
   }
 
   @override
@@ -1393,7 +1428,9 @@ class _VariantPickerSheetState extends ConsumerState<_VariantPickerSheet> {
                 clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(
                   color: AppTheme.primaryColor.withValues(alpha: 0.05),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(20),
+                  ),
                 ),
                 child: ProductImage(
                   imageUri: widget.product.imageUri,
@@ -1485,7 +1522,9 @@ class _VariantPickerSheetState extends ConsumerState<_VariantPickerSheet> {
                     child: Center(
                       child: Text(
                         'Belum ada varian untuk produk ini.',
-                        style: GoogleFonts.poppins(color: AppTheme.textSecondary),
+                        style: GoogleFonts.poppins(
+                          color: AppTheme.textSecondary,
+                        ),
                       ),
                     ),
                   )
@@ -1497,10 +1536,9 @@ class _VariantPickerSheetState extends ConsumerState<_VariantPickerSheet> {
                     separatorBuilder: (_, _) => const SizedBox(height: 10),
                     itemBuilder: (_, i) {
                       final v = _variants[i];
-                      final effectivePrice =
-                          (v.price != null && v.price! > 0)
-                              ? v.price!
-                              : widget.product.price;
+                      final effectivePrice = (v.price != null && v.price! > 0)
+                          ? v.price!
+                          : widget.product.price;
                       final isOutOfStock = v.stock <= 0;
 
                       return Material(
@@ -1525,26 +1563,33 @@ class _VariantPickerSheetState extends ConsumerState<_VariantPickerSheet> {
                               border: Border.all(
                                 color: isOutOfStock
                                     ? Colors.grey.shade200
-                                    : AppTheme.primaryColor.withValues(alpha: 0.2),
+                                    : AppTheme.primaryColor.withValues(
+                                        alpha: 0.2,
+                                      ),
                                 width: 1.5,
                               ),
                               borderRadius: BorderRadius.circular(16),
                               color: isOutOfStock
                                   ? Colors.grey.shade50
                                   : Colors.white,
-                              boxShadow: isOutOfStock ? null : [
-                                BoxShadow(
-                                  color: AppTheme.primaryColor.withValues(alpha: 0.05),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
+                              boxShadow: isOutOfStock
+                                  ? null
+                                  : [
+                                      BoxShadow(
+                                        color: AppTheme.primaryColor.withValues(
+                                          alpha: 0.05,
+                                        ),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
                             ),
                             child: Row(
                               children: [
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         '${v.name}: ${v.optionValue}',
@@ -1568,7 +1613,9 @@ class _VariantPickerSheetState extends ConsumerState<_VariantPickerSheet> {
                                           ),
                                           const SizedBox(width: 4),
                                           Text(
-                                            isOutOfStock ? 'Stok Habis' : 'Stok: ${v.stock}',
+                                            isOutOfStock
+                                                ? 'Stok Habis'
+                                                : 'Stok: ${v.stock}',
                                             style: GoogleFonts.poppins(
                                               fontSize: 12,
                                               fontWeight: FontWeight.w500,
@@ -1590,7 +1637,9 @@ class _VariantPickerSheetState extends ConsumerState<_VariantPickerSheet> {
                                   decoration: BoxDecoration(
                                     color: isOutOfStock
                                         ? Colors.grey.shade200
-                                        : AppTheme.primaryColor.withValues(alpha: 0.1),
+                                        : AppTheme.primaryColor.withValues(
+                                            alpha: 0.1,
+                                          ),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Text(
@@ -1621,4 +1670,3 @@ class _VariantPickerSheetState extends ConsumerState<_VariantPickerSheet> {
     );
   }
 }
-
