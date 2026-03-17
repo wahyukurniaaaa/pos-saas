@@ -6,6 +6,7 @@ import '../../features/pos/providers/pos_providers.dart';
 
 class ProductImage extends ConsumerWidget {
   final String? imageUri;
+  final String? productName;
   final int? categoryId;
   final double? width;
   final double? height;
@@ -16,6 +17,7 @@ class ProductImage extends ConsumerWidget {
   const ProductImage({
     super.key,
     this.imageUri,
+    this.productName,
     this.categoryId,
     this.width,
     this.height,
@@ -26,18 +28,19 @@ class ProductImage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Read categories to get the category name for string matching
-    final categoriesAsync = ref.watch(categoryProvider);
-    String? categoryName;
+    // 1. Get keywords from product name first (highest precision)
+    String? matchedName = productName?.toLowerCase();
 
-    if (categoryId != null && categoriesAsync.value != null) {
-      try {
-        final category = categoriesAsync.value!.firstWhere(
-          (c) => c.id == categoryId,
-        );
-        categoryName = category.name.toLowerCase();
-      } catch (_) {
-        // Category not found
+    // 2. If no match from name, fallback to category name
+    if (matchedName == null || _isGeneric(matchedName)) {
+      final categoriesAsync = ref.watch(categoryProvider);
+      if (categoryId != null && categoriesAsync.value != null) {
+        try {
+          final category = categoriesAsync.value!.firstWhere(
+            (c) => c.id == categoryId,
+          );
+          matchedName = category.name.toLowerCase();
+        } catch (_) {}
       }
     }
 
@@ -59,7 +62,7 @@ class ProductImage extends ConsumerWidget {
                 width: width,
                 height: height,
                 errorBuilder: (context, error, stackTrace) =>
-                    _buildImagePlaceholder(categoryName, iconSize),
+                    _buildImagePlaceholder(matchedName, iconSize),
                 loadingBuilder: (context, child, loadingProgress) {
                   if (loadingProgress == null) return child;
                   return Center(
@@ -79,8 +82,14 @@ class ProductImage extends ConsumerWidget {
                 },
               ),
             )
-          : _buildImagePlaceholder(categoryName, iconSize),
+          : _buildImagePlaceholder(matchedName, iconSize),
     );
+  }
+
+  bool _isGeneric(String name) {
+    // If name is too short or doesn't match any of our sector keywords, 
+    // we consider it generic and try category fallback
+    return getCategoryIcon(name) == Icons.inventory_2_rounded;
   }
 
   static IconData getCategoryIcon(String? name) {

@@ -517,6 +517,7 @@ class _PosTabState extends ConsumerState<PosTab> {
                       ),
                       child: ProductImage(
                         imageUri: product.imageUri,
+                        productName: product.name,
                         categoryId: product.categoryId,
                         borderRadius: 0,
                         iconSize: 48,
@@ -672,6 +673,7 @@ class _PosTabState extends ConsumerState<PosTab> {
                       borderRadius: BorderRadius.circular(24),
                       child: ProductImage(
                         imageUri: product.imageUri,
+                        productName: product.name,
                         categoryId: product.categoryId,
                         fit: BoxFit.contain,
                         borderRadius: 24,
@@ -973,6 +975,7 @@ class CartPanel extends ConsumerWidget {
               ),
               child: ProductImage(
                 imageUri: item.product.imageUri,
+                productName: item.product.name,
                 categoryId: item.product.categoryId,
                 width: 64,
                 height: 64,
@@ -1434,6 +1437,7 @@ class _VariantPickerSheetState extends ConsumerState<_VariantPickerSheet> {
                 ),
                 child: ProductImage(
                   imageUri: widget.product.imageUri,
+                  productName: widget.product.name,
                   categoryId: widget.product.categoryId,
                   width: double.infinity,
                   height: 240,

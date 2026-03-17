@@ -284,6 +284,7 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                               child: Center(
                                 child: ProductImage(
                                   imageUri: p.imageUri,
+                                  productName: p.name,
                                   categoryId: p.categoryId,
                                   borderRadius: 16,
                                   iconSize: 28,
