@@ -111,3 +111,19 @@ When you run the app for the very first time:
   sqlite3 posify-license.db "UPDATE licenses SET device_fingerprint = NULL, activation_date = NULL WHERE license_code = 'POS-L1-A8F9K2-X1Y2Z3';"
   ```
 - **"Connection Refused" when activating license:** Make sure the Go backend is running (`go run cmd/api/main.go`). Also check your `.env` in the `mobile` folder to ensure the `BASE_URL` is pointing to the correct address (use `10.0.2.2` for Android Emulators).
+
+---
+
+## 🎯 Next Development Pipeline
+
+### Fitur Peningkat Omzet & Retensi (Loyalty & CRM)
+Karena fitur pengiriman struk digital via WhatsApp sudah ada (mengumpulkan data nomor telepon):
+- **Manajemen Promo / Diskon:** Kemampuan membuat promo otomatis (cth: "Diskon 10% untuk produk kopi" atau "Beli 2 Gratis 1").
+- **Poin Membership (Loyalty Program):** Mengumpulkan poin berdasarkan nominal belanja yang ditautkan ke tabel `customer`. Poin bisa ditukar diskon.
+- **Manajemen Piutang / Kasbon:** Pencatatan limit utang pelanggan dan sistem pengingat tagihan otomatis via WhatsApp.
+
+### Fitur Operasional Kasir Lanjutan (F&B / Ritel)
+Fokus pada *edge-cases* operasional yang lebih kompleks (sejalan dengan roadmap menuju SaaS):
+- **Manajemen Resep / BOM (Bill of Materials):** Memotong stok bahan baku mentah (misalnya 15gr Kopi, 1 Cup) alih-alih stok barang jadi.
+- **Save Order / Split Bill:** Opsi menahan pesanan sebelum checkout/pembayaran ("pesan dulu, bayar belakangan" atau patungan).
+- **Multi-Printer Routing:** Bisa memisahkan order masakan ke dapur (Kitchen Station) dan kasir, berdasarkan kategori barang.
