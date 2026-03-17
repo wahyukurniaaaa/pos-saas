@@ -118,6 +118,8 @@ class ProductImage extends ConsumerWidget {
         n.contains('food') ||
         n.contains('nasi') ||
         n.contains('mie') ||
+        n.contains('bakso') ||
+        n.contains('soto') ||
         n.contains('ayam') ||
         n.contains('ikan') ||
         n.contains('daging') ||
@@ -125,6 +127,7 @@ class ProductImage extends ConsumerWidget {
         n.contains('sayur') ||
         n.contains('sate') ||
         n.contains('gorengan') ||
+        n.contains('bakmi') ||
         n.contains('resto')) {
       return Icons.restaurant_rounded;
     }
@@ -153,7 +156,15 @@ class ProductImage extends ConsumerWidget {
         n.contains('keripik') ||
         n.contains('cokelat') ||
         n.contains('dessert') ||
-        n.contains('jajanan')) {
+        n.contains('jajanan') ||
+        n.contains('tahu') ||
+        n.contains('tempe') ||
+        n.contains('cilok') ||
+        n.contains('seblak') ||
+        n.contains('pempek') ||
+        n.contains('batagor') ||
+        n.contains('siomay') ||
+        n.contains('gejrot')) {
       return Icons.cookie_rounded;
     }
 
