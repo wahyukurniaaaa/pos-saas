@@ -1,4 +1,4 @@
-# POSify MVP - Remaining Work & Pending Tasks
+# POSify MVP - Completed Work & Pending Tasks
 
 Dokumen ini berisi daftar rinci fungsi dan tugas tersisa yang diperlukan untuk menyelesaikan **Minimum Viable Product (MVP) POSify**. Semua antarmuka utama sudah diintegrasikan, namun fitur-fitur berikut membutuhkan logika/package tambahan. Dokumen ini sengaja ditempatkan di root project agar mudah di-*commit* ke Git dan diakses dari laptop lain.
 
@@ -13,10 +13,10 @@ Layar dashboard yang dapat diakses Owner/Manager untuk melihat performa penjuala
 - Query database Drift agregasi data (misal: mencari `SUM(total_amount)` per hari atau per bulan).
 
 **Scope of Work (SoW):**
-- [ ] Buat layout UI dengan filter waktu (Hari ini, 7 Hari Terakhir, Bulan Ini).
-- [ ] Buat fungsi pemanggilan API ke backend (jika online) atau hitung agregat lokal via *Drift* di kelas `PosifyDatabase`.
-- [ ] Tampilkan Top 5 Produk Terlaris berdasarkan relasi di tabel `transaction_items` dan `products`.
-- [ ] Tampilkan Line chart/Bar chart rekap penjualan.
+- [x] Buat layout UI dengan filter waktu (Hari ini, 7 Hari Terakhir, Bulan Ini).
+- [x] Buat fungsi pemanggilan API ke backend (jika online) atau hitung agregat lokal via *Drift* di kelas `PosifyDatabase`.
+- [x] Tampilkan Top 5 Produk Terlaris berdasarkan relasi di tabel `transaction_items` dan `products`.
+- [x] Tampilkan Line chart/Bar chart rekap penjualan.
 
 ---
 
@@ -29,11 +29,11 @@ Fitur ini mempermudah merchant yang memiliki ratusan produk untuk langsung melak
 - Package parser CSV ke Dart map/list: `csv`.
 
 **Scope of Work (SoW):**
-- [ ] Implementasi UI BottomSheet atau Modal baru yang meminta akses *Storage/Files*.
-- [ ] Meng-handle file CSV *parser* dan melakukan iterasi iterasi baris per baris.
-- [ ] Menampilkan *Preview* data kepada user (cth: "Ditemukan 150 Produk. Yakin simpan?").
-- [ ] Melakukan `insertMulty` atau looping *batch insert* ke dalam tabel `products` (Drift).
-- [ ] Membuat error handling apabila format CSV gagal (kolom wajib kurang formanya, format harga teks/huruf, dsb).
+- [x] Implementasi UI BottomSheet atau Modal baru yang meminta akses *Storage/Files*.
+- [x] Meng-handle file CSV *parser* dan melakukan iterasi iterasi baris per baris.
+- [x] Menampilkan *Preview* data kepada user (cth: "Ditemukan 150 Produk. Yakin simpan?").
+- [x] Melakukan `insertMulty` atau looping *batch insert* ke dalam tabel `products` (Drift).
+- [x] Membuat error handling apabila format CSV gagal (kolom wajib kurang formanya, format harga teks/huruf, dsb).
 
 ---
 
