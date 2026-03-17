@@ -30,9 +30,9 @@ class ProductImage extends ConsumerWidget {
     final categoriesAsync = ref.watch(categoryProvider);
     String? categoryName;
 
-    if (categoryId != null && categoriesAsync.valueOrNull != null) {
+    if (categoryId != null && categoriesAsync.value != null) {
       try {
-        final category = categoriesAsync.valueOrNull!.firstWhere(
+        final category = categoriesAsync.value!.firstWhere(
           (c) => c.id == categoryId,
         );
         categoryName = category.name.toLowerCase();
@@ -243,7 +243,7 @@ class ProductImage extends ConsumerWidget {
         n.contains('fotokopi') ||
         n.contains('kantor') ||
         n.contains('print')) {
-      return Icons.edit_document_rounded;
+      return Icons.edit_note_rounded;
     }
 
     // 12. Jasa & Layanan (Services - e.g. Salon, Laundry)
