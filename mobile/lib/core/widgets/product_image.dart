@@ -5,19 +5,21 @@ import '../theme/app_theme.dart';
 class ProductImage extends StatelessWidget {
   final String? imageUri;
   final int? categoryId;
-  final double width;
-  final double height;
+  final double? width;
+  final double? height;
   final double borderRadius;
   final double iconSize;
+  final BoxFit fit;
 
   const ProductImage({
     super.key,
     this.imageUri,
     this.categoryId,
-    this.width = double.infinity,
-    this.height = double.infinity,
+    this.width,
+    this.height,
     this.borderRadius = 8,
     this.iconSize = 24,
+    this.fit = BoxFit.cover,
   });
 
   @override
@@ -36,7 +38,7 @@ class ProductImage extends StatelessWidget {
                 image: imageUri!.startsWith('http')
                     ? NetworkImage(imageUri!) as ImageProvider
                     : FileImage(File(imageUri!)),
-                fit: BoxFit.cover,
+                fit: fit,
                 width: width,
                 height: height,
                 errorBuilder: (context, error, stackTrace) =>

@@ -201,7 +201,7 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    if (!isCashier)
+                    if (!isCashier) ...[
                       SizedBox(
                         width: 200,
                         child: ElevatedButton.icon(
@@ -219,6 +219,32 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                           ),
                         ),
                       ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: 200,
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const ImportProductScreen(),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.file_upload_outlined, size: 18),
+                          label: const Text('Import CSV'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppTheme.textSecondary,
+                            side: BorderSide(color: Colors.grey.shade300),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               );

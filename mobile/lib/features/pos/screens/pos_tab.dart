@@ -16,6 +16,7 @@ import 'package:posify_app/features/pos/screens/barcode_scanner_modal.dart';
 import 'package:posify_app/core/widgets/product_image.dart';
 import '../providers/pos_providers.dart';
 import 'inventory_tab.dart' as inventory;
+import 'inventory/import_product_screen.dart';
 
 final _currency = NumberFormat.currency(
   locale: 'id_ID',
@@ -397,6 +398,7 @@ class _PosTabState extends ConsumerState<PosTab> {
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(child: Text('Error: $e')),
       data: (products) {
+        final isCashier = ref.watch(sessionProvider).value?.role == 'cashier';
         if (products.isEmpty) {
           return Center(
             child: Column(
@@ -415,26 +417,62 @@ class _PosTabState extends ConsumerState<PosTab> {
                     fontSize: 14,
                   ),
                 ),
-                const SizedBox(height: 16),
-                OutlinedButton.icon(
-                  onPressed: () {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      builder: (ctx) => const inventory.AddProductSheet(),
-                    );
-                  },
-                  icon: const Icon(Icons.add_rounded, size: 18),
-                  label: const Text('Tambah Produk'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppTheme.primaryColor,
-                    side: BorderSide(color: AppTheme.primaryColor.withValues(alpha: 0.3), width: 1.5),
-                    backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.05),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                if (!isCashier) ...[
+                  const SizedBox(height: 16),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (ctx) => const inventory.AddProductSheet(),
+                      );
+                    },
+                    icon: const Icon(Icons.add_rounded, size: 18),
+                    label: const Text('Tambah Produk'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.primaryColor,
+                      side: BorderSide(
+                        color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                        width: 1.5,
+                      ),
+                      backgroundColor:
+                          AppTheme.primaryColor.withValues(alpha: 0.05),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              const ImportProductScreen(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.file_upload_outlined, size: 18),
+                    label: const Text('Import CSV'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.textSecondary,
+                      side: BorderSide(color: Colors.grey.shade300, width: 1),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           );
@@ -444,7 +482,7 @@ class _PosTabState extends ConsumerState<PosTab> {
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: isDesktop ? 4 : 2,
-            childAspectRatio: 0.9,
+            childAspectRatio: 0.75,
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
           ),
@@ -460,6 +498,9 @@ class _PosTabState extends ConsumerState<PosTab> {
     final isOutOfStock = !hasVariants && product.stock <= 0;
 
     return GestureDetector(
+      onLongPress: product.imageUri != null && product.imageUri!.isNotEmpty
+          ? () => _showImagePreview(context, product)
+          : null,
       onTap: isOutOfStock
           ? null
           : () {
@@ -488,66 +529,78 @@ class _PosTabState extends ConsumerState<PosTab> {
         ),
         child: Stack(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: AppTheme.infoColor.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(16),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: Container(
+                    width: double.infinity,
+                    decoration: const BoxDecoration(
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
                     ),
-                    child: Center(
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
                       child: ProductImage(
                         imageUri: product.imageUri,
                         categoryId: product.categoryId,
-                        borderRadius: 16,
-                        iconSize: 24,
+                        borderRadius: 0,
+                        iconSize: 48,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    product.name,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.textPrimary,
-                      height: 1.2,
+                ),
+                Expanded(
+                  flex: 2,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          product.name,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.textPrimary,
+                            height: 1.2,
+                          ),
+                        ),
+                        const Spacer(),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                _currency.format(product.price),
+                                style: GoogleFonts.poppins(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppTheme.primaryColor,
+                                ),
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: const BoxDecoration(
+                                color: AppTheme.tertiaryColor,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.add_rounded,
+                                size: 18,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _currency.format(product.price),
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.primaryColor,
-                    ),
-                  ),
-                  const Spacer(),
-                  Align(
-                    alignment: Alignment.bottomRight,
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.add,
-                        size: 16,
-                        color: AppTheme.tertiaryColor,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
             if (isOutOfStock)
               Container(
@@ -595,6 +648,106 @@ class _PosTabState extends ConsumerState<PosTab> {
                   ),
                 ),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showImagePreview(BuildContext context, Product product) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(20),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            GestureDetector(
+              onTap: () => Navigator.pop(ctx),
+              child: Container(
+                width: double.infinity,
+                height: double.infinity,
+                color: Colors.transparent,
+              ),
+            ),
+            Hero(
+              tag: 'product_image_${product.id}',
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height * 0.7,
+                      maxWidth: MediaQuery.of(context).size.width * 0.9,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child: ProductImage(
+                        imageUri: product.imageUri,
+                        categoryId: product.categoryId,
+                        fit: BoxFit.contain,
+                        borderRadius: 24,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          product.name,
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 18,
+                            color: AppTheme.textPrimary,
+                          ),
+                        ),
+                        Text(
+                          _currency.format(product.price),
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                            color: AppTheme.primaryColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Positioned(
+              top: 0,
+              right: 0,
+              child: IconButton(
+                onPressed: () => Navigator.pop(ctx),
+                icon: const Icon(
+                  Icons.close_rounded,
+                  color: Colors.white,
+                  size: 32,
+                ),
+              ),
+            ),
           ],
         ),
       ),

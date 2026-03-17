@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
@@ -44,7 +44,7 @@ class ImportProductScreen extends ConsumerWidget {
             const SizedBox(height: 8),
             Text(
               'Gunakan file CSV dengan format berikut:\n'
-              'Nama, SKU, Harga, Stok, ID Kategori',
+              'Nama, SKU, Harga, Stok, ID Kategori, Image URI',
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 color: AppTheme.textSecondary,

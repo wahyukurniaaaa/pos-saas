@@ -85,6 +85,9 @@ class ImportProductNotifier extends Notifier<ImportProductState> {
             int.tryParse(row.length > 3 ? row[3].toString() : '0') ?? 0;
         final categoryId =
             int.tryParse(row.length > 4 ? row[4].toString() : '1') ?? 1;
+        final imageUri = (row.length > 5 && row[5].toString().trim().isNotEmpty)
+            ? row[5].toString().trim()
+            : null;
 
         companions.add(
           ProductsCompanion.insert(
@@ -93,6 +96,7 @@ class ImportProductNotifier extends Notifier<ImportProductState> {
             price: pricePrice,
             stock: Value(stockStock),
             categoryId: categoryId,
+            imageUri: Value(imageUri),
           ),
         );
       }
