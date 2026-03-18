@@ -328,13 +328,15 @@ class _LicenseActivationScreenState
                                 color: Colors.white.withValues(alpha: 0.7),
                               ),
                               const SizedBox(width: 6),
-                                Text(
+                              Flexible(
+                                child: Text(
                                   'Butuh internet saat Aktivasi & Verifikasi (7 hari)',
                                   style: GoogleFonts.poppins(
-                                    fontSize: 14,
+                                    fontSize: 13,
                                     color: Colors.white.withValues(alpha: 0.8),
                                   ),
                                 ),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 4),

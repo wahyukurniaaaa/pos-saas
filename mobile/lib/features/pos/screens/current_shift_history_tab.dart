@@ -79,37 +79,53 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
                           return _buildNoShiftState();
                         }
 
-                        return ListView(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                          children: [
-                            _buildSummaryCard(context, txns, currency, openShift, profile, currentFilter),
-                            const SizedBox(height: 24),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                  Text(
-                                    _getListTitle(currentFilter),
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w700,
-                                      color: Theme.of(context).colorScheme.onSurface,
+                        return CustomScrollView(
+                          slivers: [
+                            SliverPadding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                              sliver: SliverToBoxAdapter(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    _buildSummaryCard(context, txns, currency, openShift, profile, currentFilter),
+                                    const SizedBox(height: 24),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                          Text(
+                                            _getListTitle(currentFilter),
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w700,
+                                              color: Theme.of(context).colorScheme.onSurface,
+                                            ),
+                                          ),
+                                        Text(
+                                          '${txns.length}',
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ),
-                                Text(
-                                  '${txns.length}',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                  ),
+                                    const SizedBox(height: 16),
+                                    if (txns.isEmpty) _buildEmptyState(),
+                                  ],
                                 ),
-                              ],
+                              ),
                             ),
-                            const SizedBox(height: 16),
-                            if (txns.isEmpty)
-                              _buildEmptyState()
-                            else
-                              ...txns.map((txn) => _buildTransactionCard(context, ref, txn, currency)),
+                            if (txns.isNotEmpty)
+                              SliverPadding(
+                                padding: const EdgeInsets.only(left: 20, right: 20, bottom: 16),
+                                sliver: SliverList.builder(
+                                  itemCount: txns.length,
+                                  itemBuilder: (context, index) {
+                                    return _buildTransactionCard(context, ref, txns[index], currency);
+                                  },
+                                ),
+                              ),
                           ],
                         );
                       },

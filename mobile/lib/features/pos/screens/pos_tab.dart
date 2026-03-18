@@ -44,11 +44,8 @@ class _PosTabState extends ConsumerState<PosTab> {
 
   @override
   Widget build(BuildContext context) {
-    final sessionAsync = ref.watch(sessionProvider);
-    final cashierName = sessionAsync.value?.name ?? 'Kasir';
-
-    final shiftAsync = ref.watch(openShiftProvider);
-    final hasOpenShift = shiftAsync.value != null;
+    final cashierName = ref.watch(sessionProvider.select((s) => s.value?.name)) ?? 'Kasir';
+    final hasOpenShift = ref.watch(openShiftProvider.select((s) => s.value != null));
 
     final isDesktop = MediaQuery.of(context).size.width >= 768;
 
@@ -240,7 +237,7 @@ class _PosTabState extends ConsumerState<PosTab> {
               TextField(
                 controller: _searchController,
                 onChanged: (v) {
-                  setState(() {});
+                  // Removed setState(() {}) to avoid full screen rebuild
                   ref
                       .read(productProvider.notifier)
                       .setSearch(v.isEmpty ? null : v);
@@ -257,26 +254,31 @@ class _PosTabState extends ConsumerState<PosTab> {
                     color: Colors.white.withValues(alpha: 0.5),
                     size: 20,
                   ),
-                  suffixIcon: _searchController.text.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(
-                            Icons.clear,
-                            size: 18,
-                            color: Colors.white,
-                          ),
-                          onPressed: () {
-                            _searchController.clear();
-                            ref.read(productProvider.notifier).setSearch(null);
-                          },
-                        )
-                      : IconButton(
-                          icon: Icon(
-                            Icons.qr_code_scanner_rounded,
-                            size: 20,
-                            color: Colors.white.withValues(alpha: 0.5),
-                          ),
-                          onPressed: () => BarcodeScannerModal.show(context),
-                        ),
+                  suffixIcon: ValueListenableBuilder<TextEditingValue>(
+                    valueListenable: _searchController,
+                    builder: (context, value, child) {
+                      return value.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(
+                                Icons.clear,
+                                size: 18,
+                                color: Colors.white,
+                              ),
+                              onPressed: () {
+                                _searchController.clear();
+                                ref.read(productProvider.notifier).setSearch(null);
+                              },
+                            )
+                          : IconButton(
+                              icon: Icon(
+                                Icons.qr_code_scanner_rounded,
+                                size: 20,
+                                color: Colors.white.withValues(alpha: 0.5),
+                              ),
+                              onPressed: () => BarcodeScannerModal.show(context),
+                            );
+                    },
+                  ),
                   filled: true,
                   fillColor: Colors.white.withValues(alpha: 0.1),
                   contentPadding: const EdgeInsets.symmetric(

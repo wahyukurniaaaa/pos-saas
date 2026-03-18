@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
@@ -140,7 +140,7 @@ class _TaxServiceSettingsScreenState
               SizedBox(
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: ref.watch(storeControllerProvider).isLoading
+                  onPressed: ref.watch(storeControllerProvider.select((s) => s.isLoading))
                       ? null
                       : _save,
                   style: ElevatedButton.styleFrom(
@@ -150,7 +150,7 @@ class _TaxServiceSettingsScreenState
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: ref.watch(storeControllerProvider).isLoading
+                  child: ref.watch(storeControllerProvider.select((s) => s.isLoading))
                       ? const CircularProgressIndicator(color: Colors.white)
                       : Text(
                           'Simpan Pengaturan',

@@ -151,13 +151,14 @@ class LicenseNotifier extends AsyncNotifier<License?> {
 
       if (isSuccess) {
         // 2. Save/Update to Local SQLite (Upsert)
-        await db.into(db.licenses).insertOnConflictUpdate(
+        await db.into(db.licenses).insert(
               LicensesCompanion.insert(
                 licenseCode: code,
                 deviceFingerprint: Value(deviceId),
                 activationDate: Value(DateTime.now()),
                 status: const Value('active'),
               ),
+              mode: InsertMode.insertOrReplace,
             );
 
         // 3. Read back dari DB dan update state

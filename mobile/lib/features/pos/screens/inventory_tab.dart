@@ -42,8 +42,7 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
   @override
   Widget build(BuildContext context) {
     final productsAsync = ref.watch(productProvider);
-    final session = ref.watch(sessionProvider).value;
-    final isCashier = session?.role == 'cashier';
+    final isCashier = ref.watch(sessionProvider.select((s) => s.value?.role)) == 'cashier';
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -130,7 +129,7 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                   TextField(
                     controller: _searchController,
                     onChanged: (v) {
-                      setState(() {});
+                      // Removed setState(() {}) to avoid full screen rebuild
                       ref.read(productProvider.notifier).setSearch(v.isEmpty ? null : v);
                     },
                     decoration: InputDecoration(
@@ -144,22 +143,27 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                         size: 20,
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
-                      suffixIcon: _searchController.text.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear, size: 18),
-                              onPressed: () {
-                                _searchController.clear();
-                                ref.read(productProvider.notifier).setSearch(null);
-                              },
-                            )
-                          : IconButton(
-                              icon: const Icon(
-                                Icons.qr_code_scanner_rounded,
-                                size: 20,
-                                color: AppTheme.textSecondary,
-                              ),
-                              onPressed: () => BarcodeScannerModal.show(context),
-                            ),
+                      suffixIcon: ValueListenableBuilder<TextEditingValue>(
+                        valueListenable: _searchController,
+                        builder: (context, value, child) {
+                          return value.text.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(Icons.clear, size: 18),
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    ref.read(productProvider.notifier).setSearch(null);
+                                  },
+                                )
+                              : IconButton(
+                                  icon: const Icon(
+                                    Icons.qr_code_scanner_rounded,
+                                    size: 20,
+                                    color: AppTheme.textSecondary,
+                                  ),
+                                  onPressed: () => BarcodeScannerModal.show(context),
+                                );
+                        },
+                      ),
                       filled: true,
                       fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
                       contentPadding: const EdgeInsets.symmetric(vertical: 12),
