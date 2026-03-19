@@ -29,6 +29,7 @@ class _KpiData {
   final bool? deltaPositive;
   final IconData icon;
   final Color color;
+  final VoidCallback? onTap;
   const _KpiData({
     required this.label,
     required this.value,
@@ -37,6 +38,7 @@ class _KpiData {
     this.deltaPositive,
     required this.icon,
     required this.color,
+    this.onTap,
   });
 }
 
@@ -165,6 +167,7 @@ class _OwnerDashboardScreenState extends ConsumerState<OwnerDashboardScreen> {
             deltaPositive: trxD >= 0,
             icon: Icons.receipt_long_rounded,
             color: AppTheme.tertiaryColor,
+            onTap: () => _nav(const TransactionHistoryScreen()),
           ),
           _KpiData(
             label: 'Rata-rata/Trx',
@@ -557,12 +560,6 @@ class _OwnerDashboardScreenState extends ConsumerState<OwnerDashboardScreen> {
         onTap: () => _nav(const SalesAnalyticsScreen()),
       ),
       _ActionItem(
-        icon: Icons.receipt_long_rounded,
-        label: 'Transaksi',
-        color: Colors.orange,
-        onTap: () => _nav(const TransactionHistoryScreen()),
-      ),
-      _ActionItem(
         icon: Icons.people_rounded,
         label: 'Karyawan',
         color: Colors.teal,
@@ -612,7 +609,7 @@ class _OwnerDashboardScreenState extends ConsumerState<OwnerDashboardScreen> {
           icon: Icons.settings_rounded,
           label: 'Pengaturan',
           color: Colors.blueGrey,
-          onTap: () => _nav(const DatabaseSettingsScreen()), // Temporarily pointing to DB settings
+          onTap: () => _nav(const TaxServiceSettingsScreen()),
         ),
       ],
     ];
@@ -738,96 +735,99 @@ class _KpiCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 155,
-      margin: EdgeInsets.only(left: isFirst ? 0 : 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 14,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(7),
-                decoration: BoxDecoration(
-                  color: data.color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(data.icon, size: 16, color: data.color),
-              ),
-              if (data.delta != null)
+    return GestureDetector(
+      onTap: data.onTap,
+      child: Container(
+        width: 155,
+        margin: EdgeInsets.only(left: isFirst ? 0 : 10),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 14,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 2,
-                  ),
+                  padding: const EdgeInsets.all(7),
                   decoration: BoxDecoration(
-                    color:
-                        (data.deltaPositive! ? Colors.green : Colors.red)
-                            .withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    color: data.color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
                   ),
+                  child: Icon(data.icon, size: 16, color: data.color),
+                ),
+                if (data.delta != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color:
+                          (data.deltaPositive! ? Colors.green : Colors.red)
+                              .withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      data.delta!,
+                      style: GoogleFonts.poppins(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w700,
+                        color: data.deltaPositive! ? Colors.green : Colors.red,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  data.label,
+                  style: GoogleFonts.poppins(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                    color: AppTheme.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
                   child: Text(
-                    data.delta!,
+                    data.value,
                     style: GoogleFonts.poppins(
-                      fontSize: 9,
-                      fontWeight: FontWeight.w700,
-                      color: data.deltaPositive! ? Colors.green : Colors.red,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: AppTheme.textPrimary,
                     ),
                   ),
                 ),
-            ],
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                data.label,
-                style: GoogleFonts.poppins(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w500,
-                  color: AppTheme.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 2),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  data.value,
-                  style: GoogleFonts.poppins(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
-                    color: AppTheme.textPrimary,
+                if (data.subtitle != null)
+                  Text(
+                    data.subtitle!,
+                    style: GoogleFonts.poppins(
+                      fontSize: 9,
+                      color: AppTheme.textSecondary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-              ),
-              if (data.subtitle != null)
-                Text(
-                  data.subtitle!,
-                  style: GoogleFonts.poppins(
-                    fontSize: 9,
-                    color: AppTheme.textSecondary,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
