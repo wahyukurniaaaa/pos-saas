@@ -27,9 +27,9 @@ class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
   bool get _isEditing => widget.employee != null;
 
   final _roles = [
-    {'value': 'owner', 'label': 'Owner (Level 1)'},
-    {'value': 'supervisor', 'label': 'Supervisor (Level 2)'},
-    {'value': 'cashier', 'label': 'Kasir (Level 3)'},
+    {'value': 'owner', 'label': 'Owner'},
+    {'value': 'supervisor', 'label': 'Supervisor'},
+    {'value': 'cashier', 'label': 'Kasir'},
   ];
 
   final _statuses = [
@@ -215,7 +215,7 @@ class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
                     DropdownButtonFormField<String>(
                       initialValue: _selectedRole,
                       icon: const Icon(Icons.keyboard_arrow_down_rounded),
-                      decoration: _inputDecoration('Level Akses', '', Icons.security_rounded),
+                      decoration: _inputDecoration('Role Akses', '', Icons.security_rounded),
                       items: _roles.map((r) {
                         return DropdownMenuItem(
                           value: r['value'],

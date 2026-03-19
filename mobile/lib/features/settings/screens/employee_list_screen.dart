@@ -122,11 +122,11 @@ class _EmployeeCard extends StatelessWidget {
   String _getRoleLabel(String role) {
     switch (role) {
       case 'owner':
-        return 'Owner (Level 1)';
+        return 'Owner';
       case 'supervisor':
-        return 'Supervisor (Level 2)';
+        return 'Supervisor';
       case 'cashier':
-        return 'Kasir (Level 3)';
+        return 'Kasir';
       default:
         return role;
     }
