@@ -18,6 +18,7 @@ import 'package:posify_app/features/pos/screens/settings/printer_settings_screen
 import 'package:posify_app/features/settings/screens/customers/customer_list_screen.dart';
 import 'package:posify_app/features/settings/screens/suppliers/supplier_list_screen.dart';
 import 'package:posify_app/features/pos/screens/inventory/global_stock_history_screen.dart';
+import 'package:posify_app/features/pos/screens/settings_tab.dart';
 import 'package:intl/intl.dart';
 
 // ─── KPI data ──────────────────────────────────────────────────────────────────
@@ -609,7 +610,7 @@ class _OwnerDashboardScreenState extends ConsumerState<OwnerDashboardScreen> {
           icon: Icons.settings_rounded,
           label: 'Pengaturan',
           color: Colors.blueGrey,
-          onTap: () => _nav(const TaxServiceSettingsScreen()),
+          onTap: () => _nav(const SettingsTab()),
         ),
       ],
     ];
