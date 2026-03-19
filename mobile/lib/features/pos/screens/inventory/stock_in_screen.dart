@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/features/pos/providers/pos_providers.dart';
 import 'package:posify_app/core/widgets/responsive_layout.dart';
-
 
 // Args to pass to StockInScreen
 class StockInArgs {
@@ -95,7 +95,7 @@ class _StockInScreenState extends ConsumerState<StockInScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error: $e'),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: AppTheme.dangerColor,
           ),
         );
       }
@@ -115,9 +115,17 @@ class _StockInScreenState extends ConsumerState<StockInScreen> {
       appBar: AppBar(
         title: Text(
           'Stock In — Stok Masuk',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w800, color: Colors.white),
         ),
-        backgroundColor: AppTheme.primaryColor,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [AppTheme.successColor, AppTheme.successColor.withValues(alpha: 0.8)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         foregroundColor: Colors.white,
         elevation: 0,
       ),
@@ -125,26 +133,28 @@ class _StockInScreenState extends ConsumerState<StockInScreen> {
         child: Form(
           key: _formKey,
           child: ListView(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
             children: [
               // Product info card
               _buildProductCard(),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
               // Stock preview chip
               _buildStockPreview(newStockPreview),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
 
-              // Quantity
-              _buildSectionLabel('Jumlah Barang Masuk *'),
-              const SizedBox(height: 8),
+              _buildSectionLabel('Informasi Stok Masuk'),
+              const SizedBox(height: 12),
+              
               TextFormField(
                 controller: _qtyController,
                 keyboardType: TextInputType.number,
                 onChanged: (_) => setState(() {}),
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 18),
                 decoration: _inputDecoration(
-                  hint: 'e.g. 50',
-                  prefix: const Icon(Icons.add_box_rounded, color: AppTheme.primaryColor),
+                  hint: 'e.g. 10',
+                  label: 'Jumlah Barang Masuk *',
+                  prefix: const Icon(Icons.add_circle_outline_rounded, color: AppTheme.successColor),
                 ),
                 validator: (v) {
                   final n = int.tryParse(v ?? '');
@@ -152,96 +162,103 @@ class _StockInScreenState extends ConsumerState<StockInScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
 
-              // Cost
-              _buildSectionLabel('Harga Beli / Satuan (Opsional)'),
-              const SizedBox(height: 8),
               TextFormField(
                 controller: _costController,
                 keyboardType: TextInputType.number,
                 decoration: _inputDecoration(
-                  hint: 'Rp 0',
+                  hint: 'Contoh: 50.000',
+                  label: 'Harga Beli / Satuan (Opsional)',
                   prefix: const Icon(Icons.payments_outlined, color: AppTheme.secondaryColor),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
 
-              // Supplier
-              _buildSectionLabel('Supplier (Opsional)'),
-              const SizedBox(height: 8),
-              suppliersAsync.when(
-                loading: () => const CircularProgressIndicator(),
-                error: (e, _) => Text('$e'),
-                data: (supplierList) => DropdownButtonFormField<Supplier?>(
-                  initialValue: _selectedSupplier,
-                  isExpanded: true,
-                  decoration: _inputDecoration(
-                    hint: 'Pilih supplier...',
-                    prefix: const Icon(Icons.local_shipping_outlined, color: AppTheme.secondaryColor),
+              _buildSectionLabel('Detail Transaksi'),
+              const SizedBox(height: 12),
+
+              DropdownButtonFormField<Supplier?>(
+                isExpanded: true,
+                decoration: _inputDecoration(
+                  hint: 'Pilih supplier...',
+                  label: 'Supplier (Asal Barang)',
+                  prefix: const Icon(Icons.local_shipping_outlined, color: AppTheme.secondaryColor),
+                ),
+                dropdownColor: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                items: [
+                  const DropdownMenuItem<Supplier?>(
+                    value: null,
+                    child: Text('Tanpa Supplier'),
                   ),
-                  items: [
-                    const DropdownMenuItem<Supplier?>(
-                      value: null,
-                      child: Text('Tanpa Supplier'),
-                    ),
-                    ...supplierList.map((s) => DropdownMenuItem<Supplier?>(
+                  ...suppliersAsync.maybeWhen(
+                    data: (list) => list.map((s) => DropdownMenuItem<Supplier?>(
                           value: s,
                           child: Text(s.name, overflow: TextOverflow.ellipsis),
                         )),
-                  ],
-                  onChanged: (s) => setState(() => _selectedSupplier = s),
-                ),
+                    orElse: () => [],
+                  ),
+                ],
+                onChanged: (s) => setState(() => _selectedSupplier = s),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
 
-              // Invoice ref
-              _buildSectionLabel('Nomor Faktur / Referensi (Opsional)'),
-              const SizedBox(height: 8),
               TextFormField(
                 controller: _invoiceController,
                 decoration: _inputDecoration(
-                  hint: 'e.g. INV-2025-001',
+                  hint: 'Referensi / No. Invoice',
+                  label: 'No. Faktur (Opsional)',
                   prefix: const Icon(Icons.receipt_long_outlined, color: AppTheme.tertiaryColor),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
 
-              // Note
-              _buildSectionLabel('Catatan (Opsional)'),
-              const SizedBox(height: 8),
               TextFormField(
                 controller: _noteController,
                 maxLines: 3,
                 decoration: _inputDecoration(
-                  hint: 'Catatan tambahan...',
+                  hint: 'Berikan alasan stok masuk...',
+                  label: 'Catatan Tambahan',
                   prefix: const Icon(Icons.notes_rounded, color: AppTheme.textSecondary),
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 40),
 
-              ElevatedButton.icon(
-                onPressed: _isSaving ? null : _save,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryColor,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  elevation: 0,
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.successColor.withValues(alpha: 0.2),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
                 ),
-                icon: _isSaving
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                      )
-                    : const Icon(Icons.save_rounded),
-                label: Text(
-                  _isSaving ? 'Menyimpan...' : 'Simpan Stock In',
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 16),
+                child: ElevatedButton.icon(
+                  onPressed: _isSaving ? null : _save,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.successColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    elevation: 0,
+                  ),
+                  icon: _isSaving
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 3, color: Colors.white),
+                        )
+                      : const Icon(Icons.check_circle_rounded, size: 20),
+                  label: Text(
+                    _isSaving ? 'MEMPROSES...' : 'SIMPAN STOK MASUK',
+                    style: GoogleFonts.poppins(fontWeight: FontWeight.w800, fontSize: 16, letterSpacing: 1),
+                  ),
                 ),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 50),
             ],
           ),
         ),
@@ -254,22 +271,30 @@ class _StockInScreenState extends ConsumerState<StockInScreen> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade100),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppTheme.successColor.withValues(alpha: 0.1)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 12, offset: const Offset(0, 4)),
+          BoxShadow(
+            color: AppTheme.successColor.withValues(alpha: 0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
         ],
       ),
       child: Row(
         children: [
           Container(
-            width: 56,
-            height: 56,
+            width: 64,
+            height: 64,
             decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(16),
+              gradient: LinearGradient(
+                colors: [AppTheme.successColor.withValues(alpha: 0.1), AppTheme.successColor.withValues(alpha: 0.05)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(20),
             ),
-            child: const Icon(Icons.inventory_2_rounded, color: AppTheme.primaryColor, size: 28),
+            child: const Icon(Icons.inventory_2_rounded, color: AppTheme.successColor, size: 32),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -278,21 +303,41 @@ class _StockInScreenState extends ConsumerState<StockInScreen> {
               children: [
                 Text(
                   product.name,
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 15),
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 17,
+                    color: AppTheme.textPrimary,
+                    letterSpacing: -0.5,
+                  ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
                 if (variant != null)
-                  Text(
-                    '${variant!.name}: ${variant!.optionValue}',
-                    style: GoogleFonts.poppins(fontSize: 13, color: AppTheme.textSecondary),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Text(
+                      '${variant!.name}: ${variant!.optionValue}',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        color: AppTheme.textSecondary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
-                Text(
-                  'Stok saat ini: $currentStock unit',
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    color: currentStock <= 0 ? AppTheme.errorColor : AppTheme.textSecondary,
-                    fontWeight: FontWeight.w600,
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppTheme.successColor.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    'Stok saat ini: $currentStock unit',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: AppTheme.successColor,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ],
@@ -304,49 +349,60 @@ class _StockInScreenState extends ConsumerState<StockInScreen> {
   }
 
   Widget _buildStockPreview(int newStock) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+    return Container(
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppTheme.successColor.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.successColor.withValues(alpha: 0.3)),
+        color: AppTheme.successColor.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppTheme.successColor.withValues(alpha: 0.15)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.trending_up_rounded, color: AppTheme.successColor),
-          const SizedBox(width: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppTheme.successColor.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.trending_up_rounded, color: AppTheme.successColor, size: 28),
+          ),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Stok sesudah input:',
-                  style: GoogleFonts.poppins(fontSize: 12, color: AppTheme.textSecondary),
+                  'Estimasi Stok Akhir',
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    color: AppTheme.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 Text(
                   '$newStock unit',
                   style: GoogleFonts.poppins(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w900,
                     color: AppTheme.successColor,
+                    letterSpacing: -1,
                   ),
                 ),
               ],
             ),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
-              color: AppTheme.successColor.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(8),
+              color: AppTheme.successColor,
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
               '+${_qtyController.text.isEmpty ? 0 : (int.tryParse(_qtyController.text) ?? 0)}',
               style: GoogleFonts.poppins(
-                fontWeight: FontWeight.w800,
-                color: AppTheme.successColor,
-                fontSize: 16,
+                fontWeight: FontWeight.w900,
+                color: Colors.white,
+                fontSize: 18,
               ),
             ),
           ),
@@ -356,35 +412,45 @@ class _StockInScreenState extends ConsumerState<StockInScreen> {
   }
 
   Widget _buildSectionLabel(String label) {
-    return Text(
-      label,
-      style: GoogleFonts.poppins(
-        fontWeight: FontWeight.w700,
-        fontSize: 13,
-        color: AppTheme.textPrimary,
+    return Padding(
+      padding: const EdgeInsets.only(left: 4),
+      child: Text(
+        label.toUpperCase(),
+        style: GoogleFonts.poppins(
+          fontWeight: FontWeight.w800,
+          fontSize: 12,
+          color: AppTheme.textSecondary,
+          letterSpacing: 1.2,
+        ),
       ),
     );
   }
 
-  InputDecoration _inputDecoration({required String hint, Widget? prefix}) {
+  InputDecoration _inputDecoration({required String hint, String? label, Widget? prefix}) {
     return InputDecoration(
+      labelText: label,
+      labelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 14),
       hintText: hint,
       hintStyle: GoogleFonts.poppins(color: Colors.grey.shade400, fontSize: 14),
       prefixIcon: prefix,
       filled: true,
       fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(18),
         borderSide: BorderSide(color: Colors.grey.shade200),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(18),
         borderSide: BorderSide(color: Colors.grey.shade200),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppTheme.primaryColor, width: 1.5),
+        borderRadius: BorderRadius.circular(18),
+        borderSide: const BorderSide(color: AppTheme.successColor, width: 2),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(18),
+        borderSide: const BorderSide(color: AppTheme.dangerColor, width: 1),
       ),
     );
   }

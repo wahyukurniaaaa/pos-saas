@@ -75,19 +75,22 @@ final productProvider = AsyncNotifierProvider<ProductNotifier, List<Product>>(
 
 // ===== Product with Variants Provider (for Inventory/Opname) =====
 
-class ProductWithVariantsNotifier
-    extends AsyncNotifier<List<ProductWithVariants>> {
+class ProductWithVariantsNotifier extends AsyncNotifier<List<ProductWithVariants>> {
   @override
   Future<List<ProductWithVariants>> build() async {
     final db = ref.watch(databaseProvider);
-    // Directly stream for real-time updates in opname
-    db.watchAllProductsWithVariants().listen((data) {
+    
+    // Start watching the stream for updates
+    final subscription = db.watchAllProductsWithVariants().listen((data) {
       if (ref.mounted) {
         state = AsyncValue.data(data);
       }
     });
 
-    return db.watchAllProductsWithVariants().first;
+    ref.onDispose(() => subscription.cancel());
+
+    // Pull initial data directly for the build phase
+    return await db.getAllProductsWithVariants();
   }
 }
 
@@ -320,4 +323,37 @@ class SupplierNotifier extends AsyncNotifier<List<Supplier>> {
 
 final supplierProvider = AsyncNotifierProvider<SupplierNotifier, List<Supplier>>(
   SupplierNotifier.new,
+);
+
+// ===== Stock History Provider =====
+
+class StockHistoryNotifier extends AsyncNotifier<List<StockTransactionWithProduct>> {
+  @override
+  Future<List<StockTransactionWithProduct>> build() async {
+    final db = ref.watch(databaseProvider);
+    
+    // Watch stream for updates
+    db.watchAllStockTransactionsWithProduct().listen((data) {
+      if (ref.mounted) state = AsyncValue.data(data);
+    });
+
+    // Initial data
+    final query = db.select(db.stockTransactions).join([
+      drift.innerJoin(db.products, db.products.id.equalsExp(db.stockTransactions.productId)),
+      drift.leftOuterJoin(db.productVariants, db.productVariants.id.equalsExp(db.stockTransactions.variantId)),
+    ])..orderBy([drift.OrderingTerm.desc(db.stockTransactions.createdAt)]);
+
+    final rows = await query.get();
+    return rows.map((row) {
+      return StockTransactionWithProduct(
+        transaction: row.readTable(db.stockTransactions),
+        product: row.readTable(db.products),
+        variant: row.readTableOrNull(db.productVariants),
+      );
+    }).toList();
+  }
+}
+
+final stockHistoryProvider = AsyncNotifierProvider<StockHistoryNotifier, List<StockTransactionWithProduct>>(
+  StockHistoryNotifier.new,
 );

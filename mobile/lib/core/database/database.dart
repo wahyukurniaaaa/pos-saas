@@ -21,6 +21,18 @@ import 'tables/printer_settings_table.dart';
 
 part 'database.g.dart';
 
+class StockTransactionWithProduct {
+  final StockTransaction transaction;
+  final Product product;
+  final ProductVariant? variant;
+
+  StockTransactionWithProduct({
+    required this.transaction,
+    required this.product,
+    this.variant,
+  });
+}
+
 @DriftDatabase(
   tables: [
     Licenses,
@@ -218,6 +230,16 @@ class PosifyDatabase extends _$PosifyDatabase {
     return ProductWithVariants(product: product, variants: variants);
   }
 
+  Future<List<ProductWithVariants>> getAllProductsWithVariants() async {
+    final allProducts = await getAllProducts();
+    final allVariants = await getAllVariants();
+    
+    return allProducts.map((p) {
+      final productVariants = allVariants.where((v) => v.productId == p.id).toList();
+      return ProductWithVariants(product: p, variants: productVariants);
+    }).toList();
+  }
+
   Stream<List<ProductWithVariants>> watchAllProductsWithVariants() {
     final query = select(products).join([
       leftOuterJoin(
@@ -331,9 +353,23 @@ class PosifyDatabase extends _$PosifyDatabase {
               ..where((v) => v.id.equals(variantId)))
             .getSingleOrNull();
         if (variant == null) throw Exception('Variant not found');
+        
+        final product = await (select(products)
+              ..where((p) => p.id.equals(productId)))
+            .getSingleOrNull();
+        if (product == null) throw Exception('Product not found');
+
         final newStock = variant.stock + quantity;
+        final newProductStock = product.stock + quantity;
+
+        // Update variant stock
         await (update(productVariants)..where((v) => v.id.equals(variantId)))
             .write(ProductVariantsCompanion(stock: Value(newStock)));
+            
+        // Updates main product aggregate stock
+        await (update(products)..where((p) => p.id.equals(productId)))
+            .write(ProductsCompanion(stock: Value(newProductStock)));
+
         await into(stockTransactions).insert(StockTransactionsCompanion.insert(
           productId: productId,
           variantId: Value(variantId),
@@ -439,6 +475,24 @@ class PosifyDatabase extends _$PosifyDatabase {
   }
 
   // ===== Stock Card (Full log for a product) =====
+  Stream<List<StockTransactionWithProduct>> watchAllStockTransactionsWithProduct() {
+    final query = select(stockTransactions).join([
+      innerJoin(products, products.id.equalsExp(stockTransactions.productId)),
+      leftOuterJoin(productVariants, productVariants.id.equalsExp(stockTransactions.variantId)),
+    ])
+      ..orderBy([OrderingTerm.desc(stockTransactions.createdAt)]);
+
+    return query.watch().map((rows) {
+      return rows.map((row) {
+        return StockTransactionWithProduct(
+          transaction: row.readTable(stockTransactions),
+          product: row.readTable(products),
+          variant: row.readTableOrNull(productVariants),
+        );
+      }).toList();
+    });
+  }
+
   Future<List<StockTransaction>> getStockCard(int productId, {int? variantId}) {
     final query = select(stockTransactions)
       ..where((t) => t.productId.equals(productId))
