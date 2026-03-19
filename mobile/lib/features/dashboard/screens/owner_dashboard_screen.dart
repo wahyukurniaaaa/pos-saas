@@ -599,6 +599,22 @@ class _OwnerDashboardScreenState extends ConsumerState<OwnerDashboardScreen> {
         color: Colors.blueGrey,
         onTap: () => _nav(const PrinterSettingsScreen()),
       ),
+      if (isOwner) ...[
+        _ActionItem(
+          icon: Icons.kitchen_rounded,
+          label: 'Bahan Baku',
+          color: Colors.green,
+          onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Fitur Bahan Baku akan segera hadir!')),
+          ),
+        ),
+        _ActionItem(
+          icon: Icons.settings_rounded,
+          label: 'Pengaturan',
+          color: Colors.blueGrey,
+          onTap: () => _nav(const DatabaseSettingsScreen()), // Temporarily pointing to DB settings
+        ),
+      ],
     ];
 
     return GridView.builder(
