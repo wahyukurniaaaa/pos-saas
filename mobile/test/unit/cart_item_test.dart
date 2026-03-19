@@ -12,6 +12,7 @@ void main() {
       stock: 10,
       sku: 'SKU123',
       hasVariants: false,
+      lowStockThreshold: 0,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );

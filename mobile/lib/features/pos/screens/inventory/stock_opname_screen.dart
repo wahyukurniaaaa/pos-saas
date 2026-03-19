@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
@@ -6,8 +6,8 @@ import 'package:posify_app/core/database/database.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/features/pos/providers/pos_providers.dart';
-import 'package:posify_app/features/auth/providers/owner_provider.dart';
 import 'package:posify_app/core/widgets/responsive_layout.dart';
+import 'package:intl/intl.dart';
 
 class StockOpnameScreen extends ConsumerStatefulWidget {
   const StockOpnameScreen({super.key});
@@ -29,7 +29,16 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
     super.dispose();
   }
   Future<void> _saveOpname() async {
-    if (_physicalStock.isEmpty) return;
+    if (_physicalStock.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Tidak ada perubahan stok untuk disimpan'),
+          backgroundColor: Colors.blue,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
 
     final reason = _reasonController.text.trim();
     if (reason.isEmpty) {
@@ -45,55 +54,57 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
 
     setState(() => _isSaving = true);
     final db = ref.read(databaseProvider);
-    final session = ref.read(sessionProvider).value;
-    final currentEmployeeId = session?.id ?? 1;
 
     try {
-      for (final entry in _physicalStock.entries) {
-        final key = entry.key;
-        final physicalValue = entry.value;
+      await db.transaction(() async {
+        for (final entry in _physicalStock.entries) {
+          final key = entry.key;
+          final physicalValue = entry.value;
 
-        if (key.startsWith('p_')) {
-          final id = int.parse(key.replaceFirst('p_', ''));
-          final productWithV = (await db.getAllProducts())
-              .where((p) => p.id == id)
-              .firstOrNull;
+          if (key.startsWith('p_')) {
+            final id = int.parse(key.replaceFirst('p_', ''));
+            // Use specific getter for efficiency
+            final product = await db.getProduct(id);
 
-          if (productWithV != null && physicalValue != productWithV.stock) {
-            await db.insertStockAdjustment(
-              StockAdjustmentsCompanion.insert(
-                productId: productWithV.id,
-                employeeId: currentEmployeeId,
-                previousStock: productWithV.stock,
-                newStock: physicalValue,
-                reason: reason,
-              ),
-            );
-            await db.updateProduct(
-              productWithV.copyWith(stock: physicalValue),
-            );
-          }
-        } else if (key.startsWith('v_')) {
-          final id = int.parse(key.replaceFirst('v_', ''));
-          // Get variant and its product
-          final allVariants = await db.getAllVariants();
-          final variant = allVariants.where((v) => v.id == id).firstOrNull;
+            if (product != null && physicalValue != product.stock) {
+              await db.insertStockTransaction(
+                StockTransactionsCompanion.insert(
+                  productId: product.id,
+                  type: 'ADJUST',
+                  quantity: physicalValue - product.stock,
+                  previousStock: product.stock,
+                  newStock: physicalValue,
+                  reason: drift.Value(reason),
+                  createdAt: DateTime.now().toIso8601String(),
+                ),
+              );
+              await db.updateProduct(
+                product.copyWith(stock: physicalValue),
+              );
+            }
+          } else if (key.startsWith('v_')) {
+            final id = int.parse(key.replaceFirst('v_', ''));
+            // Use specific getter for efficiency
+            final variant = await db.getVariant(id);
 
-          if (variant != null && physicalValue != variant.stock) {
-            await db.insertStockAdjustment(
-              StockAdjustmentsCompanion.insert(
-                productId: variant.productId,
-                variantId: drift.Value(variant.id),
-                employeeId: currentEmployeeId,
-                previousStock: variant.stock,
-                newStock: physicalValue,
-                reason: reason,
-              ),
-            );
-            await db.updateVariant(variant.copyWith(stock: physicalValue));
+            if (variant != null && physicalValue != variant.stock) {
+              await db.insertStockTransaction(
+                StockTransactionsCompanion.insert(
+                  productId: variant.productId,
+                  variantId: drift.Value(variant.id),
+                  type: 'ADJUST',
+                  quantity: physicalValue - variant.stock,
+                  previousStock: variant.stock,
+                  newStock: physicalValue,
+                  reason: drift.Value(reason),
+                  createdAt: DateTime.now().toIso8601String(),
+                ),
+              );
+              await db.updateVariant(variant.copyWith(stock: physicalValue));
+            }
           }
         }
-      }
+      });
 
       if (!mounted) return;
       ref.invalidate(productWithVariantsProvider);
@@ -113,6 +124,7 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
           SnackBar(
             content: Text('Gagal menyimpan: $e'),
             backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -137,11 +149,11 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
         elevation: 0,
         actions: [
           TextButton(
-            onPressed: _isSaving ? null : _saveOpname,
+            onPressed: (_isSaving || _physicalStock.isEmpty) ? null : _saveOpname,
             child: Text(
               'Simpan',
               style: GoogleFonts.poppins(
-                color: Colors.white,
+                color: (_isSaving || _physicalStock.isEmpty) ? Colors.white60 : Colors.white,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -345,16 +357,52 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
     final physical = _physicalStock[key] ?? systemStock;
     final diff = physical - systemStock;
 
+    // Parse IDs for fetching last adjust date
+    final isVariant = key.startsWith('v_');
+    final id = int.parse(key.replaceFirst(isVariant ? 'v_' : 'p_', ''));
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: GoogleFonts.poppins(
-            fontSize: 13,
-            fontWeight: FontWeight.bold,
-            color: AppTheme.textPrimary,
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+            ),
+            FutureBuilder<String?>(
+              future: ref.read(databaseProvider).getLastAdjustDate(
+                    isVariant ? 0 : id, // If variant, we need its specific product ID or we filter by variant in DB
+                    variantId: isVariant ? id : null,
+                  ),
+              builder: (context, snapshot) {
+                if (snapshot.hasData && snapshot.data != null) {
+                  try {
+                    final date = DateTime.parse(snapshot.data!);
+                    final formatted = DateFormat('dd MMM yyyy').format(date);
+                    return Text(
+                      'Opname Terakhir: $formatted',
+                      style: GoogleFonts.poppins(
+                        fontSize: 10,
+                        color: AppTheme.primaryColor.withValues(alpha: 0.7),
+                        fontStyle: FontStyle.italic,
+                      ),
+                    );
+                  } catch (_) {
+                    return const SizedBox.shrink();
+                  }
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+          ],
         ),
         const SizedBox(height: 8),
         Row(

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:drift/drift.dart' as drift;
 import 'package:intl/intl.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:posify_app/features/pos/providers/shift_provider.dart';
 import 'package:posify_app/features/settings/providers/store_provider.dart';
+import 'package:posify_app/core/database/database.dart';
+import 'package:posify_app/core/providers/database_provider.dart';
 import '../../providers/pos_providers.dart';
 import 'payment_success_screen.dart';
 
@@ -25,7 +28,6 @@ class PaymentModal extends ConsumerStatefulWidget {
 
 class _PaymentModalState extends ConsumerState<PaymentModal> {
   String _selectedMethod = 'Tunai';
-  final List<String> _methods = ['Tunai', 'QRIS', 'Debit', 'Kasbon'];
 
   // Numpad state for manual entry
   String _cashReceivedString = '';
@@ -33,6 +35,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
   // Customer info controllers
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
+  Customer? _selectedCustomer;
 
   // Quick cash options
   late List<double> _quickCashOptions;
@@ -636,7 +639,68 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
     );
   }
 
+  Future<void> _saveNewCustomer() async {
+    final name = _nameController.text.trim();
+    final phone = _phoneController.text.trim();
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Nama pelanggan wajib diisi!')),
+      );
+      return;
+    }
+
+    try {
+      final db = ref.read(databaseProvider);
+      final id = await db.insertCustomer(
+        CustomersCompanion.insert(
+          name: name,
+          phone: drift.Value(phone.isNotEmpty ? phone : null),
+          createdAt: DateTime.now().toIso8601String(),
+          updatedAt: DateTime.now().toIso8601String(),
+        ),
+      );
+      
+      final newCustomer = await (db.select(db.customers)..where((c) => c.id.equals(id))).getSingle();
+      
+      if (mounted) {
+        setState(() {
+          _selectedCustomer = newCustomer;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Member "$name" berhasil didaftarkan!'),
+            backgroundColor: AppTheme.successColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      
+      ref.invalidate(customerProvider);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal menyimpan member: $e'), backgroundColor: AppTheme.errorColor),
+        );
+      }
+    }
+  }
+
   Widget _buildCustomerInfoSection() {
+    final customers = ref.watch(customerProvider).value ?? [];
+
+    // Calculate suggestions based on text input and current selection
+    final nQuery = _nameController.text.trim().toLowerCase();
+    final pQuery = _phoneController.text.trim().toLowerCase();
+    final showSuggestions = (nQuery.isNotEmpty || pQuery.isNotEmpty) && _selectedCustomer == null;
+    
+    final suggestions = showSuggestions
+        ? customers.where((c) {
+            bool matchName = nQuery.isEmpty || c.name.toLowerCase().contains(nQuery);
+            bool matchPhone = pQuery.isEmpty || (c.phone != null && c.phone!.contains(pQuery));
+            return matchName && matchPhone;
+          }).take(4).toList()
+        : <Customer>[];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -658,6 +722,12 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
                 style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+                onChanged: (val) {
+                  if (_selectedCustomer != null) {
+                    _selectedCustomer = null; 
+                  }
+                  setState(() {});
+                },
                 decoration: InputDecoration(
                   labelText: 'Nomor WhatsApp',
                   labelStyle: GoogleFonts.poppins(color: AppTheme.textSecondary, fontSize: 14),
@@ -685,12 +755,18 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
               TextFormField(
                 controller: _nameController,
                 textCapitalization: TextCapitalization.words,
+                onChanged: (val) {
+                  if (_selectedCustomer != null) {
+                    _selectedCustomer = null;
+                  }
+                  setState(() {});
+                },
                 style: GoogleFonts.poppins(
                   fontWeight: FontWeight.w500,
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
                 decoration: InputDecoration(
-                  labelText: 'Nama Pelanggan (Opsional)',
+                  labelText: 'Nama Pelanggan / Member (Opsional)',
                   labelStyle: GoogleFonts.poppins(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 14,
@@ -715,6 +791,133 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                   ),
                 ),
               ),
+              if (_selectedCustomer != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.check_circle, color: AppTheme.successColor, size: 16),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Member Terpilih: ${_selectedCustomer!.name}',
+                        style: GoogleFonts.poppins(color: AppTheme.successColor, fontSize: 13, fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                ),
+              if (showSuggestions && suggestions.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, color: AppTheme.textSecondary.withValues(alpha: 0.8), size: 16),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Pencarian member: Tidak ditemukan',
+                        style: GoogleFonts.poppins(color: AppTheme.textSecondary, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                )
+              else if (showSuggestions && suggestions.isNotEmpty)
+                Container(
+                  margin: const EdgeInsets.only(top: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    padding: EdgeInsets.zero,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: suggestions.length,
+                    separatorBuilder: (_, __) => Divider(color: Colors.grey.shade100, height: 1),
+                    itemBuilder: (context, index) {
+                      final option = suggestions[index];
+                      return ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
+                          child: Text(
+                            option.name.substring(0, 1).toUpperCase(),
+                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primaryColor),
+                          ),
+                        ),
+                        title: Text(
+                          option.name,
+                          style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 14),
+                        ),
+                        subtitle: option.phone != null
+                            ? Text(option.phone!, style: GoogleFonts.poppins(fontSize: 12, color: AppTheme.textSecondary))
+                            : null,
+                        onTap: () {
+                          setState(() {
+                            _selectedCustomer = option;
+                            _phoneController.text = option.phone ?? '';
+                            _nameController.text = option.name;
+                          });
+                          // Move focus away to collapse keyboard safely
+                          FocusScope.of(context).unfocus();
+                        },
+                      );
+                    },
+                  ),
+                ),
+              if (_selectedCustomer == null && (_nameController.text.isNotEmpty || _phoneController.text.isNotEmpty))
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: TextButton.icon(
+                    onPressed: _saveNewCustomer,
+                    icon: const Icon(Icons.person_add_alt_1_rounded, size: 18),
+                    label: Text(
+                      'Daftarkan Sebagai Member Baru',
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                        color: AppTheme.primaryColor,
+                      ),
+                    ),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                ),
+              if (_selectedCustomer != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.check_circle_rounded, color: Colors.green, size: 14),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Member Terdaftar',
+                          style: GoogleFonts.poppins(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.green,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
@@ -749,6 +952,19 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
       final shiftId = shiftOpt.id;
       // final subtotal = ref.read(cartProvider.notifier).subtotal; // No longer needed directly here
 
+      // Custom Create Customer logic if they type name/phone but it's not selected
+      int? assignedCustomerId = _selectedCustomer?.id;
+      final enteredName = _nameController.text.trim();
+      final enteredPhone = _phoneController.text.trim();
+      
+      if (assignedCustomerId == null && (enteredName.isNotEmpty || enteredPhone.isNotEmpty)) {
+        // Create a new customer record automatically
+      }
+      
+      // Customer is only saved if the user explicitly clicked the "Daftarkan Member Baru" button.
+      // Otherwise, the name and phone are just attached to the transaction record without creating a Member.
+
+
       // 1. Process Checkout in Database
       final transactionId = await ref
           .read(cartProvider.notifier)
@@ -757,12 +973,9 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
             paymentMethod: _selectedMethod.toLowerCase(),
             taxAmount: tax,
             serviceCharge: service,
-            customerPhone: _phoneController.text.isNotEmpty
-                ? _phoneController.text
-                : null,
-            customerName: _nameController.text.isNotEmpty
-                ? _nameController.text
-                : null,
+            customerPhone: enteredPhone.isNotEmpty ? enteredPhone : null,
+            customerName: enteredName.isNotEmpty ? enteredName : null,
+            customerId: assignedCustomerId,
           );
 
       if (!mounted) return;

@@ -16,7 +16,7 @@ class EmployeeSelectionScreen extends ConsumerWidget {
     final db = ref.watch(databaseProvider);
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Colors.grey.shade50,
       body: SafeArea(
         child: Center(
           child: ResponsiveCenter(
@@ -116,7 +116,7 @@ class _EmployeeCard extends StatelessWidget {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
+          color: Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: Theme.of(context).dividerColor.withValues(alpha: 0.1),

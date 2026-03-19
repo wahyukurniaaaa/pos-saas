@@ -22,6 +22,7 @@ void main() {
     stock: 10,
     sku: 'sku1',
     hasVariants: false,
+    lowStockThreshold: 0,
     createdAt: DateTime.now(),
     updatedAt: DateTime.now(),
   );
@@ -34,6 +35,7 @@ void main() {
     stock: 5,
     sku: 'sku2',
     hasVariants: false,
+    lowStockThreshold: 0,
     createdAt: DateTime.now(),
     updatedAt: DateTime.now(),
   );

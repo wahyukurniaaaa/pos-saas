@@ -10,6 +10,7 @@ class Products extends Table {
   BoolColumn get hasVariants =>
       boolean().withDefault(const Constant(false))(); // true = Variable Product
   IntColumn get stock => integer().withDefault(const Constant(0))();
+  IntColumn get lowStockThreshold => integer().withDefault(const Constant(0))();
   TextColumn get imageUri => text().nullable()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();

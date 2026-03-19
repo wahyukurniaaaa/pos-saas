@@ -15,6 +15,9 @@ import 'package:posify_app/features/settings/screens/category_management_screen.
 import 'package:posify_app/features/settings/screens/tax_service_settings_screen.dart';
 import 'package:posify_app/features/settings/screens/database_settings_screen.dart';
 import 'package:posify_app/features/pos/screens/settings/printer_settings_screen.dart';
+import 'package:posify_app/features/settings/screens/customers/customer_list_screen.dart';
+import 'package:posify_app/features/settings/screens/suppliers/supplier_list_screen.dart';
+import 'package:posify_app/features/pos/screens/inventory/global_stock_history_screen.dart';
 import 'package:intl/intl.dart';
 
 // ─── KPI data ──────────────────────────────────────────────────────────────────
@@ -264,6 +267,13 @@ class _OwnerDashboardScreenState extends ConsumerState<OwnerDashboardScreen> {
                         onTap: () => _nav(const TransactionHistoryScreen()),
                       ),
                       _MenuTile(
+                        icon: Icons.history_rounded,
+                        label: 'Histori Mutasi Stok',
+                        subtitle: 'Kartu stok masuk, keluar & opname',
+                        color: Colors.green,
+                        onTap: () => _nav(const GlobalStockHistoryScreen()),
+                      ),
+                      _MenuTile(
                         icon: Icons.access_time_rounded,
                         label: 'Riwayat Shift',
                         subtitle: 'Daftar sesi shift karyawan',
@@ -285,7 +295,7 @@ class _OwnerDashboardScreenState extends ConsumerState<OwnerDashboardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _label('TOKO & KARYAWAN'),
+                      _label('MASTER DATA & KARYAWAN'),
                       const SizedBox(height: 12),
                       _menuCard([
                         _MenuTile(
@@ -294,6 +304,20 @@ class _OwnerDashboardScreenState extends ConsumerState<OwnerDashboardScreen> {
                           subtitle: 'Nama, alamat & logo',
                           color: AppTheme.primaryColor,
                           onTap: () => _nav(const StoreProfileScreen()),
+                        ),
+                        _MenuTile(
+                          icon: Icons.people_outline_rounded,
+                          label: 'Kelola Pelanggan (Member)',
+                          subtitle: 'Database & program loyalitas',
+                          color: AppTheme.tertiaryColor,
+                          onTap: () => _nav(const CustomerListScreen()),
+                        ),
+                        _MenuTile(
+                          icon: Icons.business_rounded,
+                          label: 'Kelola Supplier',
+                          subtitle: 'Daftar pemasok barang',
+                          color: Colors.amber,
+                          onTap: () => _nav(const SupplierListScreen()),
                         ),
                         _MenuTile(
                           icon: Icons.people_rounded,
@@ -517,7 +541,7 @@ class _OwnerDashboardScreenState extends ConsumerState<OwnerDashboardScreen> {
       ),
       _ActionItem(
         icon: Icons.inventory_2_rounded,
-        label: 'Produk',
+        label: 'Stok & Produk',
         color: AppTheme.tertiaryColor,
         onTap: () => Navigator.push(
           context,
@@ -538,13 +562,24 @@ class _OwnerDashboardScreenState extends ConsumerState<OwnerDashboardScreen> {
         color: Colors.orange,
         onTap: () => _nav(const TransactionHistoryScreen()),
       ),
-      if (isOwner)
-        _ActionItem(
-          icon: Icons.people_rounded,
-          label: 'Karyawan',
-          color: Colors.teal,
-          onTap: () => _nav(const EmployeeListScreen()),
-        ),
+      _ActionItem(
+        icon: Icons.people_rounded,
+        label: 'Karyawan',
+        color: Colors.teal,
+        onTap: () => _nav(const EmployeeListScreen()),
+      ),
+      _ActionItem(
+        icon: Icons.people_outline_rounded,
+        label: 'Pelanggan',
+        color: AppTheme.tertiaryColor,
+        onTap: () => _nav(const CustomerListScreen()),
+      ),
+      _ActionItem(
+        icon: Icons.business_rounded,
+        label: 'Supplier',
+        color: Colors.amber,
+        onTap: () => _nav(const SupplierListScreen()),
+      ),
       if (isOwner)
         _ActionItem(
           icon: Icons.store_mall_directory_rounded,

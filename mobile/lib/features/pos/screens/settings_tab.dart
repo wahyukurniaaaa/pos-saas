@@ -12,6 +12,8 @@ import 'package:posify_app/features/reports/screens/sales_analytics_screen.dart'
 import 'package:posify_app/features/settings/screens/category_management_screen.dart';
 import 'package:posify_app/features/settings/screens/tax_service_settings_screen.dart';
 import 'package:posify_app/features/settings/screens/database_settings_screen.dart';
+import 'package:posify_app/features/settings/screens/customers/customer_list_screen.dart';
+import 'package:posify_app/features/settings/screens/suppliers/supplier_list_screen.dart';
 import 'package:posify_app/core/widgets/responsive_layout.dart';
 
 class SettingsTab extends ConsumerWidget {
@@ -88,6 +90,28 @@ class SettingsTab extends ConsumerWidget {
                     ),
                   ],
                 ),
+
+                // Mitra Bisnis
+                if (isAtLeastSupervisor)
+                  _buildSection(
+                    context: context,
+                    title: 'Mitra & Pelanggan',
+                    items: [
+                      _SettingsItem(
+                        icon: Icons.people_rounded,
+                        title: 'Manajemen Pelanggan',
+                        subtitle: 'Kelola data pelanggan & member',
+                        onTap: () => _navigate(context, const CustomerListScreen()),
+                      ),
+                      _SettingsItem(
+                        icon: Icons.local_shipping_rounded,
+                        title: 'Manajemen Supplier',
+                        subtitle: 'Kelola data supplier',
+                        onTap: () => _navigate(context, const SupplierListScreen()),
+                        isLast: true,
+                      ),
+                    ],
+                  ),
 
                 // Laporan & Riwayat
                 _buildSection(

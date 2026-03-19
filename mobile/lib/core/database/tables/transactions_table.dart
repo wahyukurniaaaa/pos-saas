@@ -6,6 +6,7 @@ class Transactions extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get receiptNumber => text().unique()();
   IntColumn get shiftId => integer().references(Shifts, #id)();
+  IntColumn get customerId => integer().nullable()();
   IntColumn get subtotal => integer()();
   IntColumn get taxAmount => integer().withDefault(const Constant(0))();
   IntColumn get serviceChargeAmount =>

@@ -177,6 +177,7 @@ class CartNotifier extends Notifier<List<CartItem>> {
     required double serviceCharge,
     String? customerPhone,
     String? customerName,
+    int? customerId,
   }) async {
     try {
       if (state.isEmpty) return null;
@@ -198,6 +199,7 @@ class CartNotifier extends Notifier<List<CartItem>> {
         paymentMethod: paymentMethod,
         customerPhone: drift.Value(customerPhone),
         customerName: drift.Value(customerName),
+        customerId: drift.Value(customerId),
       );
 
       final itemsParams = state.map((item) {
@@ -284,4 +286,38 @@ class HistoryFilterNotifier extends Notifier<HistoryFilter> {
 
 final historyFilterProvider = NotifierProvider<HistoryFilterNotifier, HistoryFilter>(
   HistoryFilterNotifier.new,
+);
+
+// ===== Customer Provider =====
+
+class CustomerNotifier extends AsyncNotifier<List<Customer>> {
+  @override
+  Future<List<Customer>> build() async {
+    final db = ref.watch(databaseProvider);
+    db.watchAllCustomers().listen((data) {
+      if (ref.mounted) state = AsyncValue.data(data);
+    });
+    return db.watchAllCustomers().first;
+  }
+}
+
+final customerProvider = AsyncNotifierProvider<CustomerNotifier, List<Customer>>(
+  CustomerNotifier.new,
+);
+
+// ===== Supplier Provider =====
+
+class SupplierNotifier extends AsyncNotifier<List<Supplier>> {
+  @override
+  Future<List<Supplier>> build() async {
+    final db = ref.watch(databaseProvider);
+    db.watchAllSuppliers().listen((data) {
+      if (ref.mounted) state = AsyncValue.data(data);
+    });
+    return db.watchAllSuppliers().first;
+  }
+}
+
+final supplierProvider = AsyncNotifierProvider<SupplierNotifier, List<Supplier>>(
+  SupplierNotifier.new,
 );

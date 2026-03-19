@@ -1036,14 +1036,6 @@ class CartPanel extends ConsumerWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                Text(
-                  _currency.format(item.effectivePrice),
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    color: Theme.of(context).colorScheme.primary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
               ],
             ),
           ),

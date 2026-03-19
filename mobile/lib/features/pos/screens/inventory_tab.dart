@@ -13,6 +13,7 @@ import 'package:posify_app/features/pos/screens/barcode_scanner_modal.dart';
 import 'package:image_picker/image_picker.dart';
 import 'inventory/stock_opname_screen.dart';
 import 'inventory/import_product_screen.dart';
+import 'inventory/stock_card_screen.dart';
 import 'package:posify_app/core/widgets/responsive_layout.dart';
 import 'package:posify_app/core/widgets/product_image.dart';
 
@@ -351,13 +352,25 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                                         style: GoogleFonts.poppins(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w600,
-                                          color: p.stock > 0
-                                              ? AppTheme.textSecondary
-                                              : AppTheme.errorColor,
+                                          color: p.stock <= 0
+                                              ? AppTheme.errorColor
+                                              : (p.lowStockThreshold > 0 && p.stock <= p.lowStockThreshold)
+                                                  ? Colors.orange.shade600
+                                                  : AppTheme.textSecondary,
                                         ),
                                       ),
                                     ],
                                   ),
+                                  if (p.lowStockThreshold > 0 && p.stock <= p.lowStockThreshold)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 2),
+                                      child: Row(children: [
+                                        Icon(Icons.warning_amber_rounded, size: 12, color: Colors.orange.shade600),
+                                        const SizedBox(width: 2),
+                                        Text('Stok rendah!',
+                                          style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.orange.shade600)),
+                                      ]),
+                                    ),
                                   if (p.hasVariants)
                                     Padding(
                                       padding: const EdgeInsets.only(top: 6),
@@ -392,15 +405,37 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                                     color: AppTheme.primaryColor,
                                   ),
                                 ),
-                                const SizedBox(height: 12),
-                                if (!isCashier)
+                                const SizedBox(height: 8),
+                                // Kartu Stok button (always visible)
+                                InkWell(
+                                  onTap: () => Navigator.push(context, MaterialPageRoute(
+                                    builder: (_) => StockCardScreen(product: p),
+                                  )),
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.secondaryColor.withValues(alpha: 0.12),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: AppTheme.secondaryColor.withValues(alpha: 0.3)),
+                                    ),
+                                    child: Text(
+                                      '📋 Kartu Stok',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppTheme.secondaryColor,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                if (!isCashier) ...[
+                                  const SizedBox(height: 8),
                                   Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       InkWell(
-                                        onTap: () {
-                                          _confirmDelete(context, p);
-                                        },
+                                        onTap: () { _confirmDelete(context, p); },
                                         borderRadius: BorderRadius.circular(8),
                                         child: Container(
                                           padding: const EdgeInsets.all(6),
@@ -408,11 +443,7 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                                             color: AppTheme.errorColor.withValues(alpha: 0.1),
                                             borderRadius: BorderRadius.circular(8),
                                           ),
-                                          child: const Icon(
-                                            Icons.delete_outline,
-                                            size: 16,
-                                            color: AppTheme.errorColor,
-                                          ),
+                                          child: const Icon(Icons.delete_outline, size: 16, color: AppTheme.errorColor),
                                         ),
                                       ),
                                       const SizedBox(width: 8),
@@ -451,6 +482,7 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                                       ),
                                     ],
                                   ),
+                                ],
                               ],
                             ),
                           ],
@@ -881,10 +913,11 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
                   ));
                   ref.invalidate(categoryProvider);
                   setState(() => _selectedCategoryId = id);
-                  if (mounted) Navigator.pop(ctx);
+                  if (context.mounted) Navigator.pop(ctx);
                 } catch (e) {
-                  setStateDialog(() => isSaving = false);
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                  }
                 }
               },
               style: ElevatedButton.styleFrom(
@@ -1241,7 +1274,7 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
                                           if (val && _variantInputs.isEmpty) _addVariantInput();
                                         });
                                       },
-                                      activeColor: Colors.white,
+                                      activeThumbColor: Colors.white,
                                       activeTrackColor: AppTheme.primaryColor,
                                       inactiveThumbColor: Colors.white,
                                     ),

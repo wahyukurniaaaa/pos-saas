@@ -462,7 +462,7 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
                 await BackupService().performAutoBackup();
               }
 
-              if (!mounted) return;
+              if (!context.mounted) return;
               setState(() => _isSubmitting = false);
 
               if (success) {

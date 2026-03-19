@@ -97,7 +97,7 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Colors.grey.shade50,
       body: ResponsiveCenter(child: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -134,7 +134,7 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen>
                   margin: const EdgeInsets.symmetric(horizontal: 24),
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                       color: Theme.of(context).dividerColor.withValues(alpha: 0.1),

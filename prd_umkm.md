@@ -56,12 +56,15 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
 * **Barcode Scanning System:** 
     * **Continuous Scanning:** Scanner tetap terbuka untuk input keranjang belanja yang cepat di menu POS.
     * **Inventory Input:** Integrasi scanner pada form tambah/edit produk untuk mengisi SKU secara otomatis.
-* **Manajemen Stok Lokal:** Pencatatan stok masuk, stok keluar, dan penyesuaian (*stock opname*).  
+* **Manajemen Stok Lokal & Supplier (Stock Card):** 
+    * Pencatatan stok masuk (pembelian dari supplier), stok keluar (rusak/expired), dan penyesuaian (*stock opname*).
+    * Setiap pergerakan stok dicatat di **Kartu Stok** sehingga ada *audit trail* yang jelas (Histori masuk/keluar/terjual).
+    * Notifikasi **Low Stock Alert** jika stok mendekati batas minimum.
 * **Pencatatan Pembayaran (Recording Only):** Memilih status pembayaran (**Tunai, QRIS, Debit, Kredit, Piutang/Bon**). Tidak ada integrasi gateway API untuk menghindari biaya MDR.  
 * **Print & Share Engine:** 
     *   Cetak struk via Bluetooth/USB Thermal (Protokol ESC/POS).
     *   **WhatsApp Hybrid Sharing:** Mengirim struk digital (Image + Text summary) ke WhatsApp pelanggan.
-    *   **CRM Data Collection:** Opsi pengumpulan nomor telepon dan nama pelanggan pada saat checkout untuk database pemasaran.
+    *   **CRM & Database Pelanggan (Member):** Sistem mendata identitas pelanggan untuk pencarian cepat saat *checkout*. Pelanggan terdaftar bisa dianalisis riwayat belanjanya.
 
 ### **4.4. Modul Backup & Restore (Tier 1)**
 
@@ -85,6 +88,7 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
 |  | SKU / Barcode | Alphanumeric, 3 \- 30 karakter. **Harus Unik** (Primary Identifier). |
 |  | Harga Beli / Jual | Numeric. Minimal 0\. Tersedia jika tidak ada varian. |
 |  | Stok | Integer. Default 0\. Tersedia jika tidak ada varian. (Jika ada varian, rekap info). |
+|  | Low Stock | Integer. Batas stok minimum untuk *alert*. Default 0. |
 |  | Foto / Gambar | Path ke Image Device lokal, opsional. (`imageUri`) |
 | **Varian Produk** | Nama Varian | String, opsional. (Contoh: "Besar", "L", "Rasa Coklat"). |
 | (Baru) | SKU Varian | Alphanumeric. Opsional, unik. |
@@ -95,6 +99,9 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
 |  | Role (Level) | Enum: {Owner (L1), Supervisor (L2), Kasir (L3)}. |
 |  | PIN | Numeric, **Tepat 6 digit**. Wajib unik per perangkat. Dilarang menggunakan pola umum (ex: 123456, 000000). Sistem menerapkan *cooldown* / blokir sementara jika 5x berturut-turut gagal login. |
 |  | Foto Profil | Path ke Image Device lokal, opsional. |
+| **Pelanggan (Member)** | Nama | String, wajib. |
+| (Baru) | Telepon (WA) | String, opsional (tapi unik jika ada). |
+|  | Alamat/Email | String, opsional. |
 | **Profil Toko** | Nama Toko | String, max 50 karakter. Wajib diisi. (Untuk Struk). |
 |  | Telp / Alamat | String. Telp Format numerik (opsional). Alamat (opsional). |
 |  | Logo | Path ke Image lokal (`logoUri`). Mendukung cetak logo pada struk thermal. |
@@ -188,11 +195,13 @@ Input Kode Lisensi \-\> Validasi Backend Go \-\> Generate Device Fingerprint \-\
 
 ### **14.2. Alur Transaksi & Navigasi Utama**
 
-PIN Login Karyawan (L3/L2/L1) -> Dashboard Utama (4 Tab: Kasir, Riwayat, Stok, Setting) -> [Opsional] Buka Shift -> Scan Barcode -> Tekan Tombol BAYAR -> [Opsional] Input Data Pelanggan (WhatsApp/Nama) -> Pilih Metode Bayar -> Selesaikan Pembayaran -> Update Stok -> Tampil Animasi Sukses -> Pilih [Cetak Struk] atau [Bagikan ke WhatsApp]. Riwayat transaksi dapat diakses langsung dari navbar tanpa masuk ke menu Setting.
+PIN Login Karyawan (L3/L2/L1) -> Dashboard Utama (4 Tab: Kasir, Riwayat, Stok, Setting) -> [Opsional] Buka Shift -> Scan Barcode -> Tekan Tombol BAYAR -> Cari/Input Data Pelanggan (Member) -> Pilih Metode Bayar -> Selesaikan Pembayaran -> Update Stok & Catat Kartu Stok (SALE) -> Tampil Animasi Sukses -> Pilih [Cetak Struk] atau [Bagikan ke WhatsApp]. Riwayat transaksi dapat diakses langsung dari navbar tanpa masuk ke menu Setting.
 
-### **14.3. Alur Stock Opname (Penyesuaian Stok)**
+### **14.3. Alur Kelola Stok (In/Out/Opname)**
 
-Pilih Produk \-\> Input Jumlah Fisik Aktual \-\> Sistem Hitung Selisih \-\> Supervisor Input Alasan Selisih \-\> Update Stok SQLite \-\> Simpan Log Histori.
+*   **Stock In**: Pilih Produk -> Pilih Supplier -> Input Jumlah Masuk, Harga Beli Baru, & Invoice -> Simpan -> Update Stok Master & Catat ke Kartu Stok (IN) -> Stok Bertambah.
+*   **Stock Out**: Pilih Produk -> Input Jumlah Keluar & Alasan -> Catat ke Kartu Stok (OUT) -> Stok Berkurang.
+*   **Stock Opname**: Pilih Produk \-\> Lihat Stok Sistem -> Input Jumlah Fisik Aktual \-\> Sistem Hitung Selisih \-\> Input Alasan Selisih \-\> Catat ke Kartu Stok (ADJUST) \-\> Update Stok SQLite.
 
 ### **14.4. Alur Input Karyawan (Owner)**
 

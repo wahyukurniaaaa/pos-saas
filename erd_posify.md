@@ -12,17 +12,19 @@ erDiagram
     licenses ||--o| store_profile : "mempunyai data toko"
     employees ||--o{ shifts : "membuka shift"
     employees ||--o{ transactions : "membatalkan (void)"
-    employees ||--o{ stock_adjustments : "melakukan penyesuaian"
+    
+    customers ||--o{ transactions : "melakukan"
+    suppliers ||--o{ stock_transactions : "menyuplai"
     
     shifts ||--o{ transactions : "menampung nota"
     
     categories ||--|{ products : "mengkelompokkan"
     
-    products ||--o{ stock_adjustments : "memiliki riwayat"
+    products ||--o{ stock_transactions : "memiliki riwayat"
     products ||--o{ transaction_items : "dibeli dalam"
     products ||--o{ product_variants : "memiliki ragam"
     product_variants ||--o{ transaction_items : "dibeli (opsional)"
-    product_variants ||--o{ stock_adjustments : "diopname (opsional)"
+    product_variants ||--o{ stock_transactions : "diopname/masuk/keluar (opsional)"
     
     transactions ||--|{ transaction_items : "memiliki detail"
 
@@ -61,6 +63,26 @@ erDiagram
         INTEGER service_charge_percentage "Persen Service (0-100)"
     }
 
+    customers {
+        INTEGER id PK "Auto Increment"
+        TEXT name
+        TEXT phone "Opsional, Unik"
+        TEXT email "Opsional"
+        TEXT address "Opsional"
+        BOOLEAN is_member "Default True"
+        TEXT created_at "ISO 8601"
+        TEXT updated_at "ISO 8601"
+    }
+
+    suppliers {
+        INTEGER id PK "Auto Increment"
+        TEXT name
+        TEXT phone "Opsional"
+        TEXT address "Opsional"
+        TEXT created_at "ISO 8601"
+        TEXT updated_at "ISO 8601"
+    }
+
     categories {
         INTEGER id PK "Auto Increment"
         TEXT name "Unik"
@@ -74,6 +96,7 @@ erDiagram
         INTEGER price "Harga Jual (Jika simple)"
         INTEGER purchase_price "Harga Beli"
         INTEGER stock "Sisa Fisik (Jika simple)"
+        INTEGER low_stock_threshold "Batas stok menipis, Default 0"
         BOOLEAN has_variants "Default False"
         TEXT image_uri "Path lokal gambar"
         TEXT created_at "ISO 8601"
@@ -106,6 +129,7 @@ erDiagram
         INTEGER id PK "Auto Increment"
         TEXT receipt_number "Unik: POS-YYYYMMDD-XXX"
         INTEGER shift_id FK 
+        INTEGER customer_id FK "Nullable"
         INTEGER subtotal "Subtotal Item"
         INTEGER tax_amount "Nominal Pajak"
         INTEGER service_charge_amount "Nominal Biaya Layanan"
@@ -127,15 +151,19 @@ erDiagram
         INTEGER subtotal "Q * Harga"
     }
 
-    stock_adjustments {
+    stock_transactions {
         INTEGER id PK "Auto Increment"
         INTEGER product_id FK
         INTEGER variant_id FK "Nullable"
-        INTEGER employee_id FK "Pelaku opname"
-        INTEGER previous_stock "Stok sistem"
-        INTEGER new_stock "Stok fisik"
-        TEXT reason "Alasan perbedaan"
-        TEXT created_at "Waktu edit"
+        INTEGER supplier_id FK "Nullable (utk IN)"
+        TEXT type "IN / OUT / ADJUST / SALE / VOID"
+        INTEGER quantity "Jml perubahan"
+        INTEGER cost_price "Harga beli saat stok masuk (Nullable)"
+        INTEGER previous_stock "Stok sistem sblmnya"
+        INTEGER new_stock "Stok fisik baru"
+        TEXT reason "Alasan / Note (Opsional)"
+        TEXT reference "No Invoice / No Nota / Bukti (Opsional)"
+        TEXT created_at "ISO 8601"
     }
 
     printer_settings {
@@ -171,8 +199,8 @@ Sebuah transaksi (*receipt*) tidak bisa terjadi jika di device tersebut tidak ad
 - Nilai Pajak (`tax_amount`) dan Service (`service_charge_amount`) di-record per nota secara mutlak (angka rupiahnya) pada saat transaksi final. Ini memastikan rekap harian tidak bocor ketika Owner merubah persentase pajaknya di kemudian hari.
 - Jika transaksi di-*Refund* (batal), maka `payment_status` akan berubah jadi `void`, dan `void_by` mencatat `employee_id` sang *Supervisor* (L2) atau *Owner* (L1) yang memberi ACC pembatalan tersebut.
 
-### f) `stock_adjustments` (Audit Trail)
-Setiap kali terjadi *Stock Opname* (fitur Tab 2) yang menyebabkan stok produk berubah bukan karena laku dijual, perubahan tersebut akan dicatat di tabel ini beserta alasan kenapa angkanya selisih.
+### f) `stock_transactions` (Kartu Stok / Audit Trail)
+Setiap mutasi stok (Pembelian ke supplier, Penyesuaian/Opname, Barang Rusak, atau Penjualan kasir) akan dicatat di sini. Ini memberikan fitur "Kartu Stok" yang komprehensif. Kolom `previous_stock` dan `new_stock` memudahkan pelacakan jika ada inkonsistensi.
 
 ### g) `store_profile` (Informasi Usaha & Konfigurasi Biaya)
 Hanya akan berisi 1 baris (single record). Data `name`, `address`, dan `phone` ini akan dipanggil otomatis oleh *Bluetooth Printer* untuk mencetak Header Nota kertas. 
