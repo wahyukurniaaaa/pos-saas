@@ -876,6 +876,11 @@ class ProductWithVariants {
   final Product product;
   final List<ProductVariant> variants;
   ProductWithVariants({required this.product, required this.variants});
+
+  int get totalStock {
+    if (variants.isEmpty) return product.stock;
+    return variants.fold(0, (sum, v) => sum + v.stock);
+  }
 }
 
 class ProductSales {

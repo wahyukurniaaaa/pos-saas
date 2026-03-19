@@ -29,7 +29,7 @@ class InventoryTab extends ConsumerStatefulWidget {
 class _InventoryTabState extends ConsumerState<InventoryTab> {
   @override
   Widget build(BuildContext context) {
-    final productsAsync = ref.watch(productProvider);
+    final productsAsync = ref.watch(productWithVariantsProvider);
     final isCashier = ref.watch(sessionProvider.select((s) => s.value?.role)) == 'cashier';
 
     return Scaffold(
@@ -75,8 +75,8 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                       error: (_, __) => const SizedBox.shrink(),
                       data: (products) {
                         final totalProducts = products.length;
-                        final lowStock = products.where((p) => p.lowStockThreshold > 0 && p.stock <= p.lowStockThreshold).length;
-                        final outOfStock = products.where((p) => p.stock <= 0).length;
+                        final lowStock = products.where((pwv) => pwv.product.lowStockThreshold > 0 && pwv.totalStock <= pwv.product.lowStockThreshold).length;
+                        final outOfStock = products.where((pwv) => pwv.totalStock <= 0).length;
                         return Row(
                           children: [
                             _buildStatChip(Icons.category_outlined, '$totalProducts', 'Produk', Colors.white),
@@ -193,7 +193,7 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
             SliverToBoxAdapter(
               child: productsAsync.when(
                 data: (products) {
-                  final lowStockItems = products.where((p) => p.lowStockThreshold > 0 && p.stock <= p.lowStockThreshold).toList();
+                  final lowStockItems = products.where((pwv) => pwv.product.lowStockThreshold > 0 && pwv.totalStock <= pwv.product.lowStockThreshold).toList();
                   if (lowStockItems.isEmpty) return const SizedBox.shrink();
                   return Padding(
                     padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
@@ -210,7 +210,7 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                             boxShadow: [BoxShadow(color: Colors.orange.withValues(alpha: 0.3), blurRadius: 16, offset: const Offset(0, 6))],
                           ),
                           child: Column(
-                            children: lowStockItems.take(3).map((p) => Padding(
+                            children: lowStockItems.take(3).map((pwv) => Padding(
                               padding: const EdgeInsets.only(bottom: 8),
                               child: Row(children: [
                                 Container(
@@ -219,11 +219,11 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                                   child: const Icon(Icons.inventory_2_outlined, color: Colors.white, size: 16),
                                 ),
                                 const SizedBox(width: 10),
-                                Expanded(child: Text(p.name, style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13))),
+                                Expanded(child: Text(pwv.product.name, style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13))),
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                   decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.25), borderRadius: BorderRadius.circular(8)),
-                                  child: Text('Sisa ${p.stock}', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12)),
+                                  child: Text('Sisa ${pwv.totalStock}', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12)),
                                 ),
                               ]),
                             )).toList()

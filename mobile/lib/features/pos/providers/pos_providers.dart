@@ -76,6 +76,9 @@ final productProvider = AsyncNotifierProvider<ProductNotifier, List<Product>>(
 // ===== Product with Variants Provider (for Inventory/Opname) =====
 
 class ProductWithVariantsNotifier extends AsyncNotifier<List<ProductWithVariants>> {
+  String? _searchQuery;
+  int? _categoryId;
+
   @override
   Future<List<ProductWithVariants>> build() async {
     final db = ref.watch(databaseProvider);
@@ -83,14 +86,35 @@ class ProductWithVariantsNotifier extends AsyncNotifier<List<ProductWithVariants
     // Start watching the stream for updates
     final subscription = db.watchAllProductsWithVariants().listen((data) {
       if (ref.mounted) {
-        state = AsyncValue.data(data);
+        state = AsyncValue.data(_filter(data));
       }
     });
 
     ref.onDispose(() => subscription.cancel());
 
     // Pull initial data directly for the build phase
-    return await db.getAllProductsWithVariants();
+    final initialData = await db.getAllProductsWithVariants();
+    return _filter(initialData);
+  }
+
+  List<ProductWithVariants> _filter(List<ProductWithVariants> data) {
+    return data.where((pwv) {
+      final matchesCategory = _categoryId == null || pwv.product.categoryId == _categoryId;
+      final matchesSearch = _searchQuery == null ||
+          pwv.product.name.toLowerCase().contains(_searchQuery!.toLowerCase()) ||
+          pwv.product.sku.toLowerCase().contains(_searchQuery!.toLowerCase());
+      return matchesCategory && matchesSearch;
+    }).toList();
+  }
+
+  void setSearch(String? query) {
+    _searchQuery = query;
+    ref.invalidateSelf();
+  }
+
+  void setCategory(int? id) {
+    _categoryId = id;
+    ref.invalidateSelf();
   }
 }
 

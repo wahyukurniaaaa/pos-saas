@@ -34,7 +34,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final productsAsync = ref.watch(productProvider);
+    final productsAsync = ref.watch(productWithVariantsProvider);
     final isCashier = ref.watch(sessionProvider.select((s) => s.value?.role)) == 'cashier';
 
     return Scaffold(
@@ -81,7 +81,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
   Widget _buildSearchBar() {
     return TextField(
       controller: _searchController,
-      onChanged: (v) => ref.read(productProvider.notifier).setSearch(v.isEmpty ? null : v),
+      onChanged: (v) => ref.read(productWithVariantsProvider.notifier).setSearch(v.isEmpty ? null : v),
       style: GoogleFonts.poppins(color: Colors.white),
       decoration: InputDecoration(
         hintText: 'Cari produk atau SKU...',
@@ -95,7 +95,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                     icon: const Icon(Icons.clear, color: Colors.white70, size: 18),
                     onPressed: () {
                       _searchController.clear();
-                      ref.read(productProvider.notifier).setSearch(null);
+                      ref.read(productWithVariantsProvider.notifier).setSearch(null);
                     },
                   )
                 : IconButton(
@@ -105,7 +105,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
           },
         ),
         filled: true,
-        fillColor: Colors.white.withValues(alpha: 0.15),
+        fillColor: Colors.white.withOpacity(0.15),
         contentPadding: const EdgeInsets.symmetric(vertical: 12),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
@@ -117,8 +117,8 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
     );
   }
 
-  Widget _buildLowStockBanner(List<Product> products) {
-    final lowStockItems = products.where((p) => p.lowStockThreshold > 0 && p.stock <= p.lowStockThreshold).toList();
+  Widget _buildLowStockBanner(List<ProductWithVariants> products) {
+    final lowStockItems = products.where((pwv) => pwv.product.lowStockThreshold > 0 && pwv.totalStock <= pwv.product.lowStockThreshold).toList();
     if (lowStockItems.isEmpty) return const SizedBox.shrink();
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
@@ -126,13 +126,13 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(colors: [Colors.orange.shade700, Colors.orange.shade500]),
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.orange.withValues(alpha: 0.25), blurRadius: 12, offset: const Offset(0, 4))],
+        boxShadow: [BoxShadow(color: Colors.orange.withOpacity(0.25), blurRadius: 12, offset: const Offset(0, 4))],
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), shape: BoxShape.circle),
+            decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle),
             child: const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 20),
           ),
           const SizedBox(width: 12),
@@ -143,9 +143,9 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                 Text('${lowStockItems.length} Produk Stok Rendah!',
                     style: GoogleFonts.poppins(fontWeight: FontWeight.w800, fontSize: 13, color: Colors.white)),
                 Text(
-                  lowStockItems.map((p) => p.name).take(2).join(', ') +
+                  lowStockItems.map((pwv) => pwv.product.name).take(2).join(', ') +
                       (lowStockItems.length > 2 ? ', +${lowStockItems.length - 2} lainnya' : ''),
-                  style: GoogleFonts.poppins(fontSize: 11, color: Colors.white.withValues(alpha: 0.85)),
+                  style: GoogleFonts.poppins(fontSize: 11, color: Colors.white.withOpacity(0.85)),
                   maxLines: 1, overflow: TextOverflow.ellipsis,
                 ),
               ],
@@ -157,8 +157,10 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
     );
   }
 
-  Widget _buildProductCard(BuildContext context, Product p, bool isCashier) {
-    final isLowStock = p.lowStockThreshold > 0 && p.stock <= p.lowStockThreshold;
+  Widget _buildProductCard(BuildContext context, ProductWithVariants pwv, bool isCashier) {
+    final p = pwv.product;
+    final stock = pwv.totalStock;
+    final isLowStock = p.lowStockThreshold > 0 && stock <= p.lowStockThreshold;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -166,14 +168,14 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: isLowStock ? Colors.orange.shade200 : Colors.grey.shade100, width: 1),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0, 3))],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 3))],
       ),
       child: Row(
         children: [
           Container(
             width: 56, height: 56,
             decoration: BoxDecoration(
-              color: AppTheme.infoColor.withValues(alpha: 0.1),
+              color: AppTheme.infoColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Center(
@@ -202,9 +204,9 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                   children: [
                     Text(p.sku.isEmpty ? 'Tanpa SKU' : p.sku, style: GoogleFonts.poppins(fontSize: 11, color: AppTheme.textSecondary)),
                     Container(width: 3, height: 3, decoration: const BoxDecoration(color: Colors.grey, shape: BoxShape.circle)),
-                    Text('Stok: ${p.stock}',
+                    Text('Stok: $stock',
                       style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w700,
-                        color: p.stock <= 0 ? AppTheme.errorColor : isLowStock ? Colors.orange.shade600 : AppTheme.textSecondary)),
+                        color: stock <= 0 ? AppTheme.errorColor : isLowStock ? Colors.orange.shade600 : AppTheme.textSecondary)),
                   ],
                 ),
                 if (isLowStock) ...[
@@ -238,9 +240,9 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.08),
+                    color: AppTheme.primaryColor.withOpacity(0.08),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.2)),
+                    border: Border.all(color: AppTheme.primaryColor.withOpacity(0.2)),
                   ),
                   child: Text('📋 Kartu Stok', style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.primaryColor)),
                 ),
@@ -248,35 +250,10 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
               if (!isCashier) ...[
                 const SizedBox(height: 8),
                 Row(
-                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    GestureDetector(
-                      onTap: () => _confirmDelete(context, p),
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(color: AppTheme.errorColor.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(8)),
-                        child: const Icon(Icons.delete_outline, size: 16, color: AppTheme.errorColor),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    GestureDetector(
-                      onTap: () => showModalBottomSheet(
-                        context: context, isScrollControlled: true, backgroundColor: Colors.transparent,
-                        builder: (ctx) => Container(
-                          margin: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 20),
-                          decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-                          child: AddProductSheet(product: p),
-                        ),
-                      ),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primaryColor.withValues(alpha: 0.08),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text('Edit', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.primaryColor)),
-                      ),
-                    ),
+                    _buildActionButton(Icons.edit_rounded, Colors.blue, () => _showEditProductSheet(context, p)),
+                    const SizedBox(width: 8),
+                    _buildActionButton(Icons.delete_outline_rounded, Colors.red, () => _showDeleteDialog(context, p)),
                   ],
                 ),
               ],
@@ -287,27 +264,42 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
     );
   }
 
+  Widget _buildActionButton(IconData icon, Color color, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+        child: Icon(icon, size: 16, color: color),
+      ),
+    );
+  }
+
   Widget _buildEmpty(BuildContext context, bool isCashier) {
     return Center(
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey.shade300),
-          const SizedBox(height: 12),
-          Text('Belum ada produk', style: GoogleFonts.poppins(color: AppTheme.textSecondary, fontSize: 15)),
+          Container(
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(color: Colors.grey.shade100, shape: BoxShape.circle),
+            child: Icon(Icons.inventory_2_outlined, size: 80, color: Colors.grey.shade400),
+          ),
+          const SizedBox(height: 24),
+          Text('Belum ada produk', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
+          const SizedBox(height: 8),
+          Text('Mulai tambahkan produk jualan Anda.', style: GoogleFonts.poppins(fontSize: 14, color: AppTheme.textSecondary)),
           if (!isCashier) ...[
-            const SizedBox(height: 20),
-            SizedBox(
-              width: 200,
-              child: ElevatedButton.icon(
-                onPressed: () => _showAddProductSheet(context),
-                icon: const Icon(Icons.add_rounded),
-                label: const Text('Tambah Produk'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryColor, foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), elevation: 0,
-                ),
+            const SizedBox(height: 32),
+            ElevatedButton.icon(
+              onPressed: () => _showAddProductSheet(context),
+              icon: const Icon(Icons.add_rounded),
+              label: const Text('Tambah Produk Pertama'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
           ],
@@ -318,51 +310,26 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
 
   Widget _buildBottomActions(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 15, offset: const Offset(0, -5))],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))],
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+      child: Row(
         children: [
-          SizedBox(
-            width: double.infinity,
+          Expanded(
             child: ElevatedButton.icon(
               onPressed: () => _showAddProductSheet(context),
               icon: const Icon(Icons.add_rounded),
-              label: Text('Tambah Produk Baru', style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 14)),
+              label: Text('Tambah Produk Baru', style: GoogleFonts.poppins(fontWeight: FontWeight.w700)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryColor, foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)), elevation: 0,
+                backgroundColor: AppTheme.primaryColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                elevation: 0,
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _confirmDelete(BuildContext context, Product p) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('Hapus Produk', style: GoogleFonts.poppins(fontWeight: FontWeight.w700)),
-        content: Text('Yakin ingin menghapus "${p.name}"?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
-          ElevatedButton(
-            onPressed: () async {
-              final db = ref.read(databaseProvider);
-              await db.deleteProduct(p);
-              ref.invalidate(productProvider);
-              if (ctx.mounted) Navigator.pop(ctx);
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.errorColor, foregroundColor: Colors.white),
-            child: const Text('Hapus'),
           ),
         ],
       ),
@@ -378,6 +345,40 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
         margin: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 20),
         decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
         child: const AddProductSheet(),
+      ),
+    );
+  }
+
+  void _showEditProductSheet(BuildContext context, Product product) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        margin: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 20),
+        decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+        child: AddProductSheet(product: product),
+      ),
+    );
+  }
+
+  void _showDeleteDialog(BuildContext context, Product product) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Hapus Produk', style: GoogleFonts.poppins(fontWeight: FontWeight.w700)),
+        content: Text('Apakah Anda yakin ingin menghapus "${product.name}"? Semua varian juga akan terhapus.', style: GoogleFonts.poppins()),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: Text('Batal', style: GoogleFonts.poppins(color: AppTheme.textSecondary))),
+          TextButton(
+            onPressed: () async {
+              final db = ref.read(databaseProvider);
+              await db.deleteProduct(product);
+              if (context.mounted) Navigator.pop(context);
+            },
+            child: Text('Hapus', style: GoogleFonts.poppins(color: AppTheme.errorColor, fontWeight: FontWeight.w700)),
+          ),
+        ],
       ),
     );
   }
