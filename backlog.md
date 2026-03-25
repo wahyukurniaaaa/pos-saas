@@ -26,9 +26,10 @@ Berikut adalah backlog fitur untuk pengembangan **Posify Inventory Phase 2 & 3**
 ### 3. Stock Opname & Variance Audit
 *   **Goal**: Pencatatan selisih stok (fisik vs sistem) untuk mencegah kerugian.
 *   **Tasks**:
-    *   [x] `IngredientOpnameScreen`: Audit stok fisik bahan baku dengan kalkulasi selisih otomatis.
-    *   [x] Penyesuaian stok otomatis ke `IngredientStockHistory` (tipe ADJUST).
-    *   [ ] Report: Stock Loss/Waste value summary per periode.
+    *   [x] Create `stock_opname` table and `opname_items`.
+    *   [x] Implement `StockOpnameScreen` and `IngredientOpnameScreen` with DRAFT/COMPLETED flow and auto-adjust.
+    *   [x] Implementation of "Variance Reason" (e.g., Waste, Stolen, Sample).
+    *   [x] Report: Stock Loss/Waste value summary per periode.
 
 
 ---
