@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
+import 'package:drift/drift.dart' as drift;
 import 'package:posify_app/core/database/database.dart';
+import 'package:posify_app/features/auth/providers/owner_provider.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/features/pos/providers/pos_providers.dart';
 import 'package:posify_app/core/widgets/responsive_layout.dart';
@@ -62,10 +64,51 @@ class _IngredientOpnameScreenState extends ConsumerState<IngredientOpnameScreen>
     setState(() => _isSaving = true);
 
     try {
-      await ref.read(databaseProvider).saveIngredientOpname(
-            physicalStockMap: _physicalStock,
-            reason: reason,
+      final db = ref.read(databaseProvider);
+      final employee = ref.read(sessionProvider).value;
+      if (employee == null) {
+        throw Exception('Sesi kasir tidak valid');
+      }
+
+      final ingredients = ref.read(ingredientProvider).value ?? [];
+
+      await db.transaction(() async {
+        final headerId = await db.createDraftOpname(
+          StockOpnameCompanion.insert(
+            opnameNumber: 'OP-${DateTime.now().millisecondsSinceEpoch}',
+            type: 'INGREDIENT',
+            status: 'DRAFT',
+            createdBy: employee.id,
+            notes: drift.Value(reason),
+            createdAt: DateTime.now().toIso8601String(),
+          ),
+        );
+
+        for (final entry in _physicalStock.entries) {
+          final id = entry.key;
+          final physical = entry.value;
+
+          final index = ingredients.indexWhere((i) => i.id == id);
+          if (index == -1) continue;
+          final ingredient = ingredients[index];
+
+          final diff = physical - ingredient.stockQuantity;
+          if (diff == 0.0) continue;
+
+          await db.addOpnameItem(
+            StockOpnameItemsCompanion.insert(
+              stockOpnameId: headerId,
+              ingredientId: drift.Value(id),
+              systemStock: ingredient.stockQuantity,
+              physicalStock: physical,
+              variance: diff,
+              varianceReason: drift.Value(reason),
+            ),
           );
+        }
+
+        await db.submitOpname(headerId);
+      });
 
       if (!mounted) return;
       ref.invalidate(ingredientProvider);

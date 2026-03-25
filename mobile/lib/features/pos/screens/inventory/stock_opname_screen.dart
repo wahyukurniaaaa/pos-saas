@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:posify_app/core/database/database.dart';
 import 'package:drift/drift.dart' as drift;
+import 'package:posify_app/features/auth/providers/owner_provider.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/features/pos/providers/pos_providers.dart';
 import 'package:posify_app/core/widgets/responsive_layout.dart';
@@ -54,9 +55,33 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
 
     setState(() => _isSaving = true);
     final db = ref.read(databaseProvider);
+    final employee = ref.read(sessionProvider).value;
+
+    if (employee == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Sesi kasir tidak valid'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      setState(() => _isSaving = false);
+      return;
+    }
 
     try {
       await db.transaction(() async {
+        final headerId = await db.createDraftOpname(
+          StockOpnameCompanion.insert(
+            opnameNumber: 'OP-${DateTime.now().millisecondsSinceEpoch}',
+            type: 'PRODUCT',
+            status: 'DRAFT',
+            createdBy: employee.id,
+            notes: drift.Value(reason),
+            createdAt: DateTime.now().toIso8601String(),
+          ),
+        );
+
         for (final entry in _physicalStock.entries) {
           final key = entry.key;
           final physicalValue = entry.value;
@@ -67,19 +92,15 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
             final product = await db.getProduct(id);
 
             if (product != null && physicalValue != product.stock) {
-              await db.insertStockTransaction(
-                StockTransactionsCompanion.insert(
-                  productId: product.id,
-                  type: 'ADJUST',
-                  quantity: physicalValue - product.stock,
-                  previousStock: product.stock,
-                  newStock: physicalValue,
-                  reason: drift.Value(reason),
-                  createdAt: DateTime.now().toIso8601String(),
+              await db.addOpnameItem(
+                StockOpnameItemsCompanion.insert(
+                  stockOpnameId: headerId,
+                  productId: drift.Value(product.id),
+                  systemStock: product.stock.toDouble(),
+                  physicalStock: physicalValue.toDouble(),
+                  variance: (physicalValue - product.stock).toDouble(),
+                  varianceReason: drift.Value(reason),
                 ),
-              );
-              await db.updateProduct(
-                product.copyWith(stock: physicalValue),
               );
             }
           } else if (key.startsWith('v_')) {
@@ -88,22 +109,22 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
             final variant = await db.getVariant(id);
 
             if (variant != null && physicalValue != variant.stock) {
-              await db.insertStockTransaction(
-                StockTransactionsCompanion.insert(
-                  productId: variant.productId,
+              await db.addOpnameItem(
+                StockOpnameItemsCompanion.insert(
+                  stockOpnameId: headerId,
+                  productId: drift.Value(variant.productId),
                   variantId: drift.Value(variant.id),
-                  type: 'ADJUST',
-                  quantity: physicalValue - variant.stock,
-                  previousStock: variant.stock,
-                  newStock: physicalValue,
-                  reason: drift.Value(reason),
-                  createdAt: DateTime.now().toIso8601String(),
+                  systemStock: variant.stock.toDouble(),
+                  physicalStock: physicalValue.toDouble(),
+                  variance: (physicalValue - variant.stock).toDouble(),
+                  varianceReason: drift.Value(reason),
                 ),
               );
-              await db.updateVariant(variant.copyWith(stock: physicalValue));
             }
           }
         }
+
+        await db.submitOpname(headerId);
       });
 
       if (!mounted) return;

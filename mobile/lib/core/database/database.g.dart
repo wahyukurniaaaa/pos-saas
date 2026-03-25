@@ -8656,6 +8656,1034 @@ class UnitConversionsCompanion extends UpdateCompanion<UnitConversion> {
   }
 }
 
+class $StockOpnameTable extends StockOpname
+    with TableInfo<$StockOpnameTable, StockOpnameData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $StockOpnameTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _opnameNumberMeta = const VerificationMeta(
+    'opnameNumber',
+  );
+  @override
+  late final GeneratedColumn<String> opnameNumber = GeneratedColumn<String>(
+    'opname_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+    'type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdByMeta = const VerificationMeta(
+    'createdBy',
+  );
+  @override
+  late final GeneratedColumn<int> createdBy = GeneratedColumn<int>(
+    'created_by',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    opnameNumber,
+    type,
+    status,
+    createdBy,
+    notes,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'stock_opname';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<StockOpnameData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('opname_number')) {
+      context.handle(
+        _opnameNumberMeta,
+        opnameNumber.isAcceptableOrUnknown(
+          data['opname_number']!,
+          _opnameNumberMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_opnameNumberMeta);
+    }
+    if (data.containsKey('type')) {
+      context.handle(
+        _typeMeta,
+        type.isAcceptableOrUnknown(data['type']!, _typeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_typeMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('created_by')) {
+      context.handle(
+        _createdByMeta,
+        createdBy.isAcceptableOrUnknown(data['created_by']!, _createdByMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdByMeta);
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  StockOpnameData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return StockOpnameData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      opnameNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}opname_number'],
+      )!,
+      type: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}type'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      createdBy: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}created_by'],
+      )!,
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $StockOpnameTable createAlias(String alias) {
+    return $StockOpnameTable(attachedDatabase, alias);
+  }
+}
+
+class StockOpnameData extends DataClass implements Insertable<StockOpnameData> {
+  final int id;
+  final String opnameNumber;
+  final String type;
+  final String status;
+  final int createdBy;
+  final String? notes;
+  final String createdAt;
+  const StockOpnameData({
+    required this.id,
+    required this.opnameNumber,
+    required this.type,
+    required this.status,
+    required this.createdBy,
+    this.notes,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['opname_number'] = Variable<String>(opnameNumber);
+    map['type'] = Variable<String>(type);
+    map['status'] = Variable<String>(status);
+    map['created_by'] = Variable<int>(createdBy);
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    map['created_at'] = Variable<String>(createdAt);
+    return map;
+  }
+
+  StockOpnameCompanion toCompanion(bool nullToAbsent) {
+    return StockOpnameCompanion(
+      id: Value(id),
+      opnameNumber: Value(opnameNumber),
+      type: Value(type),
+      status: Value(status),
+      createdBy: Value(createdBy),
+      notes: notes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(notes),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory StockOpnameData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return StockOpnameData(
+      id: serializer.fromJson<int>(json['id']),
+      opnameNumber: serializer.fromJson<String>(json['opnameNumber']),
+      type: serializer.fromJson<String>(json['type']),
+      status: serializer.fromJson<String>(json['status']),
+      createdBy: serializer.fromJson<int>(json['createdBy']),
+      notes: serializer.fromJson<String?>(json['notes']),
+      createdAt: serializer.fromJson<String>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'opnameNumber': serializer.toJson<String>(opnameNumber),
+      'type': serializer.toJson<String>(type),
+      'status': serializer.toJson<String>(status),
+      'createdBy': serializer.toJson<int>(createdBy),
+      'notes': serializer.toJson<String?>(notes),
+      'createdAt': serializer.toJson<String>(createdAt),
+    };
+  }
+
+  StockOpnameData copyWith({
+    int? id,
+    String? opnameNumber,
+    String? type,
+    String? status,
+    int? createdBy,
+    Value<String?> notes = const Value.absent(),
+    String? createdAt,
+  }) => StockOpnameData(
+    id: id ?? this.id,
+    opnameNumber: opnameNumber ?? this.opnameNumber,
+    type: type ?? this.type,
+    status: status ?? this.status,
+    createdBy: createdBy ?? this.createdBy,
+    notes: notes.present ? notes.value : this.notes,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  StockOpnameData copyWithCompanion(StockOpnameCompanion data) {
+    return StockOpnameData(
+      id: data.id.present ? data.id.value : this.id,
+      opnameNumber: data.opnameNumber.present
+          ? data.opnameNumber.value
+          : this.opnameNumber,
+      type: data.type.present ? data.type.value : this.type,
+      status: data.status.present ? data.status.value : this.status,
+      createdBy: data.createdBy.present ? data.createdBy.value : this.createdBy,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('StockOpnameData(')
+          ..write('id: $id, ')
+          ..write('opnameNumber: $opnameNumber, ')
+          ..write('type: $type, ')
+          ..write('status: $status, ')
+          ..write('createdBy: $createdBy, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, opnameNumber, type, status, createdBy, notes, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is StockOpnameData &&
+          other.id == this.id &&
+          other.opnameNumber == this.opnameNumber &&
+          other.type == this.type &&
+          other.status == this.status &&
+          other.createdBy == this.createdBy &&
+          other.notes == this.notes &&
+          other.createdAt == this.createdAt);
+}
+
+class StockOpnameCompanion extends UpdateCompanion<StockOpnameData> {
+  final Value<int> id;
+  final Value<String> opnameNumber;
+  final Value<String> type;
+  final Value<String> status;
+  final Value<int> createdBy;
+  final Value<String?> notes;
+  final Value<String> createdAt;
+  const StockOpnameCompanion({
+    this.id = const Value.absent(),
+    this.opnameNumber = const Value.absent(),
+    this.type = const Value.absent(),
+    this.status = const Value.absent(),
+    this.createdBy = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  StockOpnameCompanion.insert({
+    this.id = const Value.absent(),
+    required String opnameNumber,
+    required String type,
+    required String status,
+    required int createdBy,
+    this.notes = const Value.absent(),
+    required String createdAt,
+  }) : opnameNumber = Value(opnameNumber),
+       type = Value(type),
+       status = Value(status),
+       createdBy = Value(createdBy),
+       createdAt = Value(createdAt);
+  static Insertable<StockOpnameData> custom({
+    Expression<int>? id,
+    Expression<String>? opnameNumber,
+    Expression<String>? type,
+    Expression<String>? status,
+    Expression<int>? createdBy,
+    Expression<String>? notes,
+    Expression<String>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (opnameNumber != null) 'opname_number': opnameNumber,
+      if (type != null) 'type': type,
+      if (status != null) 'status': status,
+      if (createdBy != null) 'created_by': createdBy,
+      if (notes != null) 'notes': notes,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  StockOpnameCompanion copyWith({
+    Value<int>? id,
+    Value<String>? opnameNumber,
+    Value<String>? type,
+    Value<String>? status,
+    Value<int>? createdBy,
+    Value<String?>? notes,
+    Value<String>? createdAt,
+  }) {
+    return StockOpnameCompanion(
+      id: id ?? this.id,
+      opnameNumber: opnameNumber ?? this.opnameNumber,
+      type: type ?? this.type,
+      status: status ?? this.status,
+      createdBy: createdBy ?? this.createdBy,
+      notes: notes ?? this.notes,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (opnameNumber.present) {
+      map['opname_number'] = Variable<String>(opnameNumber.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (createdBy.present) {
+      map['created_by'] = Variable<int>(createdBy.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<String>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('StockOpnameCompanion(')
+          ..write('id: $id, ')
+          ..write('opnameNumber: $opnameNumber, ')
+          ..write('type: $type, ')
+          ..write('status: $status, ')
+          ..write('createdBy: $createdBy, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $StockOpnameItemsTable extends StockOpnameItems
+    with TableInfo<$StockOpnameItemsTable, StockOpnameItem> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $StockOpnameItemsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _stockOpnameIdMeta = const VerificationMeta(
+    'stockOpnameId',
+  );
+  @override
+  late final GeneratedColumn<int> stockOpnameId = GeneratedColumn<int>(
+    'stock_opname_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _productIdMeta = const VerificationMeta(
+    'productId',
+  );
+  @override
+  late final GeneratedColumn<int> productId = GeneratedColumn<int>(
+    'product_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _variantIdMeta = const VerificationMeta(
+    'variantId',
+  );
+  @override
+  late final GeneratedColumn<int> variantId = GeneratedColumn<int>(
+    'variant_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _ingredientIdMeta = const VerificationMeta(
+    'ingredientId',
+  );
+  @override
+  late final GeneratedColumn<int> ingredientId = GeneratedColumn<int>(
+    'ingredient_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _systemStockMeta = const VerificationMeta(
+    'systemStock',
+  );
+  @override
+  late final GeneratedColumn<double> systemStock = GeneratedColumn<double>(
+    'system_stock',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _physicalStockMeta = const VerificationMeta(
+    'physicalStock',
+  );
+  @override
+  late final GeneratedColumn<double> physicalStock = GeneratedColumn<double>(
+    'physical_stock',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _varianceMeta = const VerificationMeta(
+    'variance',
+  );
+  @override
+  late final GeneratedColumn<double> variance = GeneratedColumn<double>(
+    'variance',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _varianceReasonMeta = const VerificationMeta(
+    'varianceReason',
+  );
+  @override
+  late final GeneratedColumn<String> varianceReason = GeneratedColumn<String>(
+    'variance_reason',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    stockOpnameId,
+    productId,
+    variantId,
+    ingredientId,
+    systemStock,
+    physicalStock,
+    variance,
+    varianceReason,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'stock_opname_items';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<StockOpnameItem> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('stock_opname_id')) {
+      context.handle(
+        _stockOpnameIdMeta,
+        stockOpnameId.isAcceptableOrUnknown(
+          data['stock_opname_id']!,
+          _stockOpnameIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_stockOpnameIdMeta);
+    }
+    if (data.containsKey('product_id')) {
+      context.handle(
+        _productIdMeta,
+        productId.isAcceptableOrUnknown(data['product_id']!, _productIdMeta),
+      );
+    }
+    if (data.containsKey('variant_id')) {
+      context.handle(
+        _variantIdMeta,
+        variantId.isAcceptableOrUnknown(data['variant_id']!, _variantIdMeta),
+      );
+    }
+    if (data.containsKey('ingredient_id')) {
+      context.handle(
+        _ingredientIdMeta,
+        ingredientId.isAcceptableOrUnknown(
+          data['ingredient_id']!,
+          _ingredientIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('system_stock')) {
+      context.handle(
+        _systemStockMeta,
+        systemStock.isAcceptableOrUnknown(
+          data['system_stock']!,
+          _systemStockMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_systemStockMeta);
+    }
+    if (data.containsKey('physical_stock')) {
+      context.handle(
+        _physicalStockMeta,
+        physicalStock.isAcceptableOrUnknown(
+          data['physical_stock']!,
+          _physicalStockMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_physicalStockMeta);
+    }
+    if (data.containsKey('variance')) {
+      context.handle(
+        _varianceMeta,
+        variance.isAcceptableOrUnknown(data['variance']!, _varianceMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_varianceMeta);
+    }
+    if (data.containsKey('variance_reason')) {
+      context.handle(
+        _varianceReasonMeta,
+        varianceReason.isAcceptableOrUnknown(
+          data['variance_reason']!,
+          _varianceReasonMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  StockOpnameItem map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return StockOpnameItem(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      stockOpnameId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}stock_opname_id'],
+      )!,
+      productId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}product_id'],
+      ),
+      variantId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}variant_id'],
+      ),
+      ingredientId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}ingredient_id'],
+      ),
+      systemStock: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}system_stock'],
+      )!,
+      physicalStock: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}physical_stock'],
+      )!,
+      variance: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}variance'],
+      )!,
+      varianceReason: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}variance_reason'],
+      ),
+    );
+  }
+
+  @override
+  $StockOpnameItemsTable createAlias(String alias) {
+    return $StockOpnameItemsTable(attachedDatabase, alias);
+  }
+}
+
+class StockOpnameItem extends DataClass implements Insertable<StockOpnameItem> {
+  final int id;
+  final int stockOpnameId;
+  final int? productId;
+  final int? variantId;
+  final int? ingredientId;
+  final double systemStock;
+  final double physicalStock;
+  final double variance;
+  final String? varianceReason;
+  const StockOpnameItem({
+    required this.id,
+    required this.stockOpnameId,
+    this.productId,
+    this.variantId,
+    this.ingredientId,
+    required this.systemStock,
+    required this.physicalStock,
+    required this.variance,
+    this.varianceReason,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['stock_opname_id'] = Variable<int>(stockOpnameId);
+    if (!nullToAbsent || productId != null) {
+      map['product_id'] = Variable<int>(productId);
+    }
+    if (!nullToAbsent || variantId != null) {
+      map['variant_id'] = Variable<int>(variantId);
+    }
+    if (!nullToAbsent || ingredientId != null) {
+      map['ingredient_id'] = Variable<int>(ingredientId);
+    }
+    map['system_stock'] = Variable<double>(systemStock);
+    map['physical_stock'] = Variable<double>(physicalStock);
+    map['variance'] = Variable<double>(variance);
+    if (!nullToAbsent || varianceReason != null) {
+      map['variance_reason'] = Variable<String>(varianceReason);
+    }
+    return map;
+  }
+
+  StockOpnameItemsCompanion toCompanion(bool nullToAbsent) {
+    return StockOpnameItemsCompanion(
+      id: Value(id),
+      stockOpnameId: Value(stockOpnameId),
+      productId: productId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(productId),
+      variantId: variantId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(variantId),
+      ingredientId: ingredientId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(ingredientId),
+      systemStock: Value(systemStock),
+      physicalStock: Value(physicalStock),
+      variance: Value(variance),
+      varianceReason: varianceReason == null && nullToAbsent
+          ? const Value.absent()
+          : Value(varianceReason),
+    );
+  }
+
+  factory StockOpnameItem.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return StockOpnameItem(
+      id: serializer.fromJson<int>(json['id']),
+      stockOpnameId: serializer.fromJson<int>(json['stockOpnameId']),
+      productId: serializer.fromJson<int?>(json['productId']),
+      variantId: serializer.fromJson<int?>(json['variantId']),
+      ingredientId: serializer.fromJson<int?>(json['ingredientId']),
+      systemStock: serializer.fromJson<double>(json['systemStock']),
+      physicalStock: serializer.fromJson<double>(json['physicalStock']),
+      variance: serializer.fromJson<double>(json['variance']),
+      varianceReason: serializer.fromJson<String?>(json['varianceReason']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'stockOpnameId': serializer.toJson<int>(stockOpnameId),
+      'productId': serializer.toJson<int?>(productId),
+      'variantId': serializer.toJson<int?>(variantId),
+      'ingredientId': serializer.toJson<int?>(ingredientId),
+      'systemStock': serializer.toJson<double>(systemStock),
+      'physicalStock': serializer.toJson<double>(physicalStock),
+      'variance': serializer.toJson<double>(variance),
+      'varianceReason': serializer.toJson<String?>(varianceReason),
+    };
+  }
+
+  StockOpnameItem copyWith({
+    int? id,
+    int? stockOpnameId,
+    Value<int?> productId = const Value.absent(),
+    Value<int?> variantId = const Value.absent(),
+    Value<int?> ingredientId = const Value.absent(),
+    double? systemStock,
+    double? physicalStock,
+    double? variance,
+    Value<String?> varianceReason = const Value.absent(),
+  }) => StockOpnameItem(
+    id: id ?? this.id,
+    stockOpnameId: stockOpnameId ?? this.stockOpnameId,
+    productId: productId.present ? productId.value : this.productId,
+    variantId: variantId.present ? variantId.value : this.variantId,
+    ingredientId: ingredientId.present ? ingredientId.value : this.ingredientId,
+    systemStock: systemStock ?? this.systemStock,
+    physicalStock: physicalStock ?? this.physicalStock,
+    variance: variance ?? this.variance,
+    varianceReason: varianceReason.present
+        ? varianceReason.value
+        : this.varianceReason,
+  );
+  StockOpnameItem copyWithCompanion(StockOpnameItemsCompanion data) {
+    return StockOpnameItem(
+      id: data.id.present ? data.id.value : this.id,
+      stockOpnameId: data.stockOpnameId.present
+          ? data.stockOpnameId.value
+          : this.stockOpnameId,
+      productId: data.productId.present ? data.productId.value : this.productId,
+      variantId: data.variantId.present ? data.variantId.value : this.variantId,
+      ingredientId: data.ingredientId.present
+          ? data.ingredientId.value
+          : this.ingredientId,
+      systemStock: data.systemStock.present
+          ? data.systemStock.value
+          : this.systemStock,
+      physicalStock: data.physicalStock.present
+          ? data.physicalStock.value
+          : this.physicalStock,
+      variance: data.variance.present ? data.variance.value : this.variance,
+      varianceReason: data.varianceReason.present
+          ? data.varianceReason.value
+          : this.varianceReason,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('StockOpnameItem(')
+          ..write('id: $id, ')
+          ..write('stockOpnameId: $stockOpnameId, ')
+          ..write('productId: $productId, ')
+          ..write('variantId: $variantId, ')
+          ..write('ingredientId: $ingredientId, ')
+          ..write('systemStock: $systemStock, ')
+          ..write('physicalStock: $physicalStock, ')
+          ..write('variance: $variance, ')
+          ..write('varianceReason: $varianceReason')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    stockOpnameId,
+    productId,
+    variantId,
+    ingredientId,
+    systemStock,
+    physicalStock,
+    variance,
+    varianceReason,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is StockOpnameItem &&
+          other.id == this.id &&
+          other.stockOpnameId == this.stockOpnameId &&
+          other.productId == this.productId &&
+          other.variantId == this.variantId &&
+          other.ingredientId == this.ingredientId &&
+          other.systemStock == this.systemStock &&
+          other.physicalStock == this.physicalStock &&
+          other.variance == this.variance &&
+          other.varianceReason == this.varianceReason);
+}
+
+class StockOpnameItemsCompanion extends UpdateCompanion<StockOpnameItem> {
+  final Value<int> id;
+  final Value<int> stockOpnameId;
+  final Value<int?> productId;
+  final Value<int?> variantId;
+  final Value<int?> ingredientId;
+  final Value<double> systemStock;
+  final Value<double> physicalStock;
+  final Value<double> variance;
+  final Value<String?> varianceReason;
+  const StockOpnameItemsCompanion({
+    this.id = const Value.absent(),
+    this.stockOpnameId = const Value.absent(),
+    this.productId = const Value.absent(),
+    this.variantId = const Value.absent(),
+    this.ingredientId = const Value.absent(),
+    this.systemStock = const Value.absent(),
+    this.physicalStock = const Value.absent(),
+    this.variance = const Value.absent(),
+    this.varianceReason = const Value.absent(),
+  });
+  StockOpnameItemsCompanion.insert({
+    this.id = const Value.absent(),
+    required int stockOpnameId,
+    this.productId = const Value.absent(),
+    this.variantId = const Value.absent(),
+    this.ingredientId = const Value.absent(),
+    required double systemStock,
+    required double physicalStock,
+    required double variance,
+    this.varianceReason = const Value.absent(),
+  }) : stockOpnameId = Value(stockOpnameId),
+       systemStock = Value(systemStock),
+       physicalStock = Value(physicalStock),
+       variance = Value(variance);
+  static Insertable<StockOpnameItem> custom({
+    Expression<int>? id,
+    Expression<int>? stockOpnameId,
+    Expression<int>? productId,
+    Expression<int>? variantId,
+    Expression<int>? ingredientId,
+    Expression<double>? systemStock,
+    Expression<double>? physicalStock,
+    Expression<double>? variance,
+    Expression<String>? varianceReason,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (stockOpnameId != null) 'stock_opname_id': stockOpnameId,
+      if (productId != null) 'product_id': productId,
+      if (variantId != null) 'variant_id': variantId,
+      if (ingredientId != null) 'ingredient_id': ingredientId,
+      if (systemStock != null) 'system_stock': systemStock,
+      if (physicalStock != null) 'physical_stock': physicalStock,
+      if (variance != null) 'variance': variance,
+      if (varianceReason != null) 'variance_reason': varianceReason,
+    });
+  }
+
+  StockOpnameItemsCompanion copyWith({
+    Value<int>? id,
+    Value<int>? stockOpnameId,
+    Value<int?>? productId,
+    Value<int?>? variantId,
+    Value<int?>? ingredientId,
+    Value<double>? systemStock,
+    Value<double>? physicalStock,
+    Value<double>? variance,
+    Value<String?>? varianceReason,
+  }) {
+    return StockOpnameItemsCompanion(
+      id: id ?? this.id,
+      stockOpnameId: stockOpnameId ?? this.stockOpnameId,
+      productId: productId ?? this.productId,
+      variantId: variantId ?? this.variantId,
+      ingredientId: ingredientId ?? this.ingredientId,
+      systemStock: systemStock ?? this.systemStock,
+      physicalStock: physicalStock ?? this.physicalStock,
+      variance: variance ?? this.variance,
+      varianceReason: varianceReason ?? this.varianceReason,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (stockOpnameId.present) {
+      map['stock_opname_id'] = Variable<int>(stockOpnameId.value);
+    }
+    if (productId.present) {
+      map['product_id'] = Variable<int>(productId.value);
+    }
+    if (variantId.present) {
+      map['variant_id'] = Variable<int>(variantId.value);
+    }
+    if (ingredientId.present) {
+      map['ingredient_id'] = Variable<int>(ingredientId.value);
+    }
+    if (systemStock.present) {
+      map['system_stock'] = Variable<double>(systemStock.value);
+    }
+    if (physicalStock.present) {
+      map['physical_stock'] = Variable<double>(physicalStock.value);
+    }
+    if (variance.present) {
+      map['variance'] = Variable<double>(variance.value);
+    }
+    if (varianceReason.present) {
+      map['variance_reason'] = Variable<String>(varianceReason.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('StockOpnameItemsCompanion(')
+          ..write('id: $id, ')
+          ..write('stockOpnameId: $stockOpnameId, ')
+          ..write('productId: $productId, ')
+          ..write('variantId: $variantId, ')
+          ..write('ingredientId: $ingredientId, ')
+          ..write('systemStock: $systemStock, ')
+          ..write('physicalStock: $physicalStock, ')
+          ..write('variance: $variance, ')
+          ..write('varianceReason: $varianceReason')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$PosifyDatabase extends GeneratedDatabase {
   _$PosifyDatabase(QueryExecutor e) : super(e);
   $PosifyDatabaseManager get managers => $PosifyDatabaseManager(this);
@@ -8686,6 +9714,10 @@ abstract class _$PosifyDatabase extends GeneratedDatabase {
   late final $UnitConversionsTable unitConversions = $UnitConversionsTable(
     this,
   );
+  late final $StockOpnameTable stockOpname = $StockOpnameTable(this);
+  late final $StockOpnameItemsTable stockOpnameItems = $StockOpnameItemsTable(
+    this,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -8708,6 +9740,8 @@ abstract class _$PosifyDatabase extends GeneratedDatabase {
     productRecipes,
     ingredientStockHistory,
     unitConversions,
+    stockOpname,
+    stockOpnameItems,
   ];
 }
 
@@ -15849,6 +16883,534 @@ typedef $$UnitConversionsTableProcessedTableManager =
       UnitConversion,
       PrefetchHooks Function()
     >;
+typedef $$StockOpnameTableCreateCompanionBuilder =
+    StockOpnameCompanion Function({
+      Value<int> id,
+      required String opnameNumber,
+      required String type,
+      required String status,
+      required int createdBy,
+      Value<String?> notes,
+      required String createdAt,
+    });
+typedef $$StockOpnameTableUpdateCompanionBuilder =
+    StockOpnameCompanion Function({
+      Value<int> id,
+      Value<String> opnameNumber,
+      Value<String> type,
+      Value<String> status,
+      Value<int> createdBy,
+      Value<String?> notes,
+      Value<String> createdAt,
+    });
+
+class $$StockOpnameTableFilterComposer
+    extends Composer<_$PosifyDatabase, $StockOpnameTable> {
+  $$StockOpnameTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get opnameNumber => $composableBuilder(
+    column: $table.opnameNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get createdBy => $composableBuilder(
+    column: $table.createdBy,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$StockOpnameTableOrderingComposer
+    extends Composer<_$PosifyDatabase, $StockOpnameTable> {
+  $$StockOpnameTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get opnameNumber => $composableBuilder(
+    column: $table.opnameNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get createdBy => $composableBuilder(
+    column: $table.createdBy,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$StockOpnameTableAnnotationComposer
+    extends Composer<_$PosifyDatabase, $StockOpnameTable> {
+  $$StockOpnameTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get opnameNumber => $composableBuilder(
+    column: $table.opnameNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<int> get createdBy =>
+      $composableBuilder(column: $table.createdBy, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<String> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$StockOpnameTableTableManager
+    extends
+        RootTableManager<
+          _$PosifyDatabase,
+          $StockOpnameTable,
+          StockOpnameData,
+          $$StockOpnameTableFilterComposer,
+          $$StockOpnameTableOrderingComposer,
+          $$StockOpnameTableAnnotationComposer,
+          $$StockOpnameTableCreateCompanionBuilder,
+          $$StockOpnameTableUpdateCompanionBuilder,
+          (
+            StockOpnameData,
+            BaseReferences<
+              _$PosifyDatabase,
+              $StockOpnameTable,
+              StockOpnameData
+            >,
+          ),
+          StockOpnameData,
+          PrefetchHooks Function()
+        > {
+  $$StockOpnameTableTableManager(_$PosifyDatabase db, $StockOpnameTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$StockOpnameTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$StockOpnameTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$StockOpnameTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> opnameNumber = const Value.absent(),
+                Value<String> type = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<int> createdBy = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<String> createdAt = const Value.absent(),
+              }) => StockOpnameCompanion(
+                id: id,
+                opnameNumber: opnameNumber,
+                type: type,
+                status: status,
+                createdBy: createdBy,
+                notes: notes,
+                createdAt: createdAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String opnameNumber,
+                required String type,
+                required String status,
+                required int createdBy,
+                Value<String?> notes = const Value.absent(),
+                required String createdAt,
+              }) => StockOpnameCompanion.insert(
+                id: id,
+                opnameNumber: opnameNumber,
+                type: type,
+                status: status,
+                createdBy: createdBy,
+                notes: notes,
+                createdAt: createdAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$StockOpnameTableProcessedTableManager =
+    ProcessedTableManager<
+      _$PosifyDatabase,
+      $StockOpnameTable,
+      StockOpnameData,
+      $$StockOpnameTableFilterComposer,
+      $$StockOpnameTableOrderingComposer,
+      $$StockOpnameTableAnnotationComposer,
+      $$StockOpnameTableCreateCompanionBuilder,
+      $$StockOpnameTableUpdateCompanionBuilder,
+      (
+        StockOpnameData,
+        BaseReferences<_$PosifyDatabase, $StockOpnameTable, StockOpnameData>,
+      ),
+      StockOpnameData,
+      PrefetchHooks Function()
+    >;
+typedef $$StockOpnameItemsTableCreateCompanionBuilder =
+    StockOpnameItemsCompanion Function({
+      Value<int> id,
+      required int stockOpnameId,
+      Value<int?> productId,
+      Value<int?> variantId,
+      Value<int?> ingredientId,
+      required double systemStock,
+      required double physicalStock,
+      required double variance,
+      Value<String?> varianceReason,
+    });
+typedef $$StockOpnameItemsTableUpdateCompanionBuilder =
+    StockOpnameItemsCompanion Function({
+      Value<int> id,
+      Value<int> stockOpnameId,
+      Value<int?> productId,
+      Value<int?> variantId,
+      Value<int?> ingredientId,
+      Value<double> systemStock,
+      Value<double> physicalStock,
+      Value<double> variance,
+      Value<String?> varianceReason,
+    });
+
+class $$StockOpnameItemsTableFilterComposer
+    extends Composer<_$PosifyDatabase, $StockOpnameItemsTable> {
+  $$StockOpnameItemsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get stockOpnameId => $composableBuilder(
+    column: $table.stockOpnameId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get productId => $composableBuilder(
+    column: $table.productId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get variantId => $composableBuilder(
+    column: $table.variantId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get ingredientId => $composableBuilder(
+    column: $table.ingredientId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get systemStock => $composableBuilder(
+    column: $table.systemStock,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get physicalStock => $composableBuilder(
+    column: $table.physicalStock,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get variance => $composableBuilder(
+    column: $table.variance,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get varianceReason => $composableBuilder(
+    column: $table.varianceReason,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$StockOpnameItemsTableOrderingComposer
+    extends Composer<_$PosifyDatabase, $StockOpnameItemsTable> {
+  $$StockOpnameItemsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get stockOpnameId => $composableBuilder(
+    column: $table.stockOpnameId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get productId => $composableBuilder(
+    column: $table.productId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get variantId => $composableBuilder(
+    column: $table.variantId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get ingredientId => $composableBuilder(
+    column: $table.ingredientId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get systemStock => $composableBuilder(
+    column: $table.systemStock,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get physicalStock => $composableBuilder(
+    column: $table.physicalStock,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get variance => $composableBuilder(
+    column: $table.variance,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get varianceReason => $composableBuilder(
+    column: $table.varianceReason,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$StockOpnameItemsTableAnnotationComposer
+    extends Composer<_$PosifyDatabase, $StockOpnameItemsTable> {
+  $$StockOpnameItemsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get stockOpnameId => $composableBuilder(
+    column: $table.stockOpnameId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get productId =>
+      $composableBuilder(column: $table.productId, builder: (column) => column);
+
+  GeneratedColumn<int> get variantId =>
+      $composableBuilder(column: $table.variantId, builder: (column) => column);
+
+  GeneratedColumn<int> get ingredientId => $composableBuilder(
+    column: $table.ingredientId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get systemStock => $composableBuilder(
+    column: $table.systemStock,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get physicalStock => $composableBuilder(
+    column: $table.physicalStock,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get variance =>
+      $composableBuilder(column: $table.variance, builder: (column) => column);
+
+  GeneratedColumn<String> get varianceReason => $composableBuilder(
+    column: $table.varianceReason,
+    builder: (column) => column,
+  );
+}
+
+class $$StockOpnameItemsTableTableManager
+    extends
+        RootTableManager<
+          _$PosifyDatabase,
+          $StockOpnameItemsTable,
+          StockOpnameItem,
+          $$StockOpnameItemsTableFilterComposer,
+          $$StockOpnameItemsTableOrderingComposer,
+          $$StockOpnameItemsTableAnnotationComposer,
+          $$StockOpnameItemsTableCreateCompanionBuilder,
+          $$StockOpnameItemsTableUpdateCompanionBuilder,
+          (
+            StockOpnameItem,
+            BaseReferences<
+              _$PosifyDatabase,
+              $StockOpnameItemsTable,
+              StockOpnameItem
+            >,
+          ),
+          StockOpnameItem,
+          PrefetchHooks Function()
+        > {
+  $$StockOpnameItemsTableTableManager(
+    _$PosifyDatabase db,
+    $StockOpnameItemsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$StockOpnameItemsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$StockOpnameItemsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$StockOpnameItemsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> stockOpnameId = const Value.absent(),
+                Value<int?> productId = const Value.absent(),
+                Value<int?> variantId = const Value.absent(),
+                Value<int?> ingredientId = const Value.absent(),
+                Value<double> systemStock = const Value.absent(),
+                Value<double> physicalStock = const Value.absent(),
+                Value<double> variance = const Value.absent(),
+                Value<String?> varianceReason = const Value.absent(),
+              }) => StockOpnameItemsCompanion(
+                id: id,
+                stockOpnameId: stockOpnameId,
+                productId: productId,
+                variantId: variantId,
+                ingredientId: ingredientId,
+                systemStock: systemStock,
+                physicalStock: physicalStock,
+                variance: variance,
+                varianceReason: varianceReason,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int stockOpnameId,
+                Value<int?> productId = const Value.absent(),
+                Value<int?> variantId = const Value.absent(),
+                Value<int?> ingredientId = const Value.absent(),
+                required double systemStock,
+                required double physicalStock,
+                required double variance,
+                Value<String?> varianceReason = const Value.absent(),
+              }) => StockOpnameItemsCompanion.insert(
+                id: id,
+                stockOpnameId: stockOpnameId,
+                productId: productId,
+                variantId: variantId,
+                ingredientId: ingredientId,
+                systemStock: systemStock,
+                physicalStock: physicalStock,
+                variance: variance,
+                varianceReason: varianceReason,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$StockOpnameItemsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$PosifyDatabase,
+      $StockOpnameItemsTable,
+      StockOpnameItem,
+      $$StockOpnameItemsTableFilterComposer,
+      $$StockOpnameItemsTableOrderingComposer,
+      $$StockOpnameItemsTableAnnotationComposer,
+      $$StockOpnameItemsTableCreateCompanionBuilder,
+      $$StockOpnameItemsTableUpdateCompanionBuilder,
+      (
+        StockOpnameItem,
+        BaseReferences<
+          _$PosifyDatabase,
+          $StockOpnameItemsTable,
+          StockOpnameItem
+        >,
+      ),
+      StockOpnameItem,
+      PrefetchHooks Function()
+    >;
 
 class $PosifyDatabaseManager {
   final _$PosifyDatabase _db;
@@ -15890,4 +17452,8 @@ class $PosifyDatabaseManager {
       );
   $$UnitConversionsTableTableManager get unitConversions =>
       $$UnitConversionsTableTableManager(_db, _db.unitConversions);
+  $$StockOpnameTableTableManager get stockOpname =>
+      $$StockOpnameTableTableManager(_db, _db.stockOpname);
+  $$StockOpnameItemsTableTableManager get stockOpnameItems =>
+      $$StockOpnameItemsTableTableManager(_db, _db.stockOpnameItems);
 }

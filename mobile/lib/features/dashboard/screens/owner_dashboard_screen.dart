@@ -7,6 +7,7 @@ import 'package:posify_app/features/auth/providers/owner_provider.dart';
 import 'package:posify_app/features/pos/screens/pos_tab.dart';
 import 'package:posify_app/features/pos/screens/inventory_tab.dart';
 import 'package:posify_app/features/reports/screens/sales_analytics_screen.dart';
+import 'package:posify_app/features/reports/screens/stock_loss_report_screen.dart';
 import 'package:posify_app/features/settings/screens/employee_list_screen.dart';
 import 'package:posify_app/features/settings/screens/store_profile_screen.dart';
 import 'package:posify_app/features/settings/screens/transaction_history_screen.dart';
@@ -560,6 +561,12 @@ class _OwnerDashboardScreenState extends ConsumerState<OwnerDashboardScreen> {
         label: 'Laporan',
         color: AppTheme.infoColor,
         onTap: () => _nav(const SalesAnalyticsScreen()),
+      ),
+      _ActionItem(
+        icon: Icons.money_off_csred_rounded,
+        label: 'Loss/Waste',
+        color: Colors.redAccent,
+        onTap: () => _nav(const StockLossReportScreen()),
       ),
       _ActionItem(
         icon: Icons.people_rounded,

@@ -22,6 +22,8 @@ import 'tables/ingredients_table.dart';
 import 'tables/product_recipes_table.dart';
 import 'tables/ingredient_stock_history_table.dart';
 import 'tables/unit_conversions_table.dart';
+import 'tables/stock_opname_table.dart';
+import 'tables/stock_opname_items_table.dart';
 
 part 'database.g.dart';
 
@@ -56,6 +58,8 @@ class StockTransactionWithProduct {
     ProductRecipes,
     IngredientStockHistory,
     UnitConversions,
+    StockOpname,
+    StockOpnameItems,
   ],
 )
 class PosifyDatabase extends _$PosifyDatabase {
@@ -65,7 +69,7 @@ class PosifyDatabase extends _$PosifyDatabase {
   PosifyDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
 
   @override
   MigrationStrategy get migration {
@@ -121,6 +125,10 @@ class PosifyDatabase extends _$PosifyDatabase {
         }
         if (from < 11) {
           await m.createTable(unitConversions);
+        }
+        if (from < 12) {
+          await m.createTable(stockOpname);
+          await m.createTable(stockOpnameItems);
         }
       },
     );
@@ -1135,34 +1143,167 @@ class PosifyDatabase extends _$PosifyDatabase {
   Future<List<UnitConversion>> getConversionsForBaseUnit(String baseUnit) =>
       (select(unitConversions)..where((t) => t.toUnit.equals(baseUnit))).get();
 
-  // ===== Ingredient Stock Opname =====
-  Future<void> saveIngredientOpname({
-    required Map<int, double> physicalStockMap,
-    required String reason,
-  }) async {
+  // ===== Full-Structured Stock Opname =====
+  Future<int> createDraftOpname(StockOpnameCompanion entry) =>
+      into(stockOpname).insert(entry);
+
+  Future<List<StockOpnameData>> getDraftOpnames() =>
+      (select(stockOpname)..where((o) => o.status.equals('DRAFT'))).get();
+
+  Stream<List<StockOpnameData>> watchDraftOpnames() =>
+      (select(stockOpname)..where((o) => o.status.equals('DRAFT'))).watch();
+
+  Future<StockOpnameData?> getOpnameById(int id) =>
+      (select(stockOpname)..where((o) => o.id.equals(id))).getSingleOrNull();
+
+  Future<List<StockOpnameItem>> getOpnameItems(int opnameId) =>
+      (select(stockOpnameItems)..where((i) => i.stockOpnameId.equals(opnameId))).get();
+
+  Stream<List<StockOpnameItem>> watchOpnameItems(int opnameId) =>
+      (select(stockOpnameItems)..where((i) => i.stockOpnameId.equals(opnameId))).watch();
+
+  Future<int> addOpnameItem(StockOpnameItemsCompanion entry) =>
+      into(stockOpnameItems).insert(entry);
+
+  Future<bool> updateOpnameItem(StockOpnameItem entry) =>
+      update(stockOpnameItems).replace(entry);
+
+  Future<int> removeOpnameItem(int id) =>
+      (delete(stockOpnameItems)..where((i) => i.id.equals(id))).go();
+
+  Future<void> submitOpname(int opnameId) async {
     await transaction(() async {
-      for (final entry in physicalStockMap.entries) {
-        final id = entry.key;
-        final physical = entry.value;
-        final ingredient = await getIngredientById(id);
-        if (ingredient == null) continue;
+      final opname = await getOpnameById(opnameId);
+      if (opname == null || opname.status == 'COMPLETED') return;
 
-        final diff = physical - ingredient.stockQuantity;
-        if (diff == 0.0) continue;
+      final items = await getOpnameItems(opnameId);
+      
+      for (final item in items) {
+        if (item.variance == 0.0) continue;
 
-        await updateIngredient(ingredient.copyWith(stockQuantity: physical));
-        await insertIngredientStockHistory(
-          IngredientStockHistoryCompanion.insert(
-            ingredientId: id,
-            type: 'ADJUST',
-            quantityChange: diff,
-            previousBalance: ingredient.stockQuantity,
-            newBalance: physical,
-            reason: Value(reason),
-          ),
-        );
+        if (opname.type == 'INGREDIENT' && item.ingredientId != null) {
+          final ingredient = await getIngredientById(item.ingredientId!);
+          if (ingredient != null) {
+            await updateIngredient(ingredient.copyWith(stockQuantity: item.physicalStock));
+            await insertIngredientStockHistory(
+              IngredientStockHistoryCompanion.insert(
+                ingredientId: ingredient.id,
+                type: 'ADJUST',
+                quantityChange: item.variance,
+                previousBalance: item.systemStock,
+                newBalance: item.physicalStock,
+                reason: Value(item.varianceReason ?? 'Opname ${opname.opnameNumber}'),
+              ),
+            );
+          }
+        } else if (opname.type == 'PRODUCT' && item.productId != null) {
+           final baseProduct = await getProduct(item.productId!);
+           if (item.variantId != null) {
+             final variant = await getVariant(item.variantId!);
+             if (variant != null) {
+               await updateVariant(variant.copyWith(stock: item.physicalStock.toInt()));
+               await insertStockTransaction(
+                 StockTransactionsCompanion.insert(
+                   productId: item.productId!,
+                   variantId: Value(item.variantId!),
+                   type: 'ADJUST',
+                   quantity: item.variance.toInt(),
+                   previousStock: item.systemStock.toInt(),
+                   newStock: item.physicalStock.toInt(),
+                   reason: Value(item.varianceReason ?? 'Opname ${opname.opnameNumber}'),
+                   createdAt: DateTime.now().toIso8601String(),
+                 ),
+               );
+             }
+           } else if (baseProduct != null) {
+             await updateProduct(baseProduct.copyWith(stock: item.physicalStock.toInt()));
+             await insertStockTransaction(
+               StockTransactionsCompanion.insert(
+                 productId: item.productId!,
+                 type: 'ADJUST',
+                 quantity: item.variance.toInt(),
+                 previousStock: item.systemStock.toInt(),
+                 newStock: item.physicalStock.toInt(),
+                 reason: Value(item.varianceReason ?? 'Opname ${opname.opnameNumber}'),
+                 createdAt: DateTime.now().toIso8601String(),
+               ),
+             );
+           }
+        }
       }
+
+      await update(stockOpname).replace(opname.copyWith(status: 'COMPLETED'));
     });
+  }
+
+  // ===== Stock Loss Report =====
+  Future<List<StockLossItem>> getStockLossReport(DateTime start, DateTime end) async {
+    final startStr = start.toIso8601String();
+    final endStr = end.toIso8601String();
+    
+    final List<StockLossItem> results = [];
+
+    // Products and Variants
+    final productQuery = await customSelect(
+      '''
+      SELECT 
+        CASE 
+          WHEN p.has_variants = 1 THEN p.name || ' - ' || v.name 
+          ELSE p.name 
+        END as item_name,
+        'PRODUCT' as type,
+        IFNULL(i.variance_reason, 'Lainnya') as reason,
+        ABS(i.variance) as loss_qty,
+        ABS(i.variance) * IFNULL(v.price, p.price) as loss_value
+      FROM stock_opname_items i
+      INNER JOIN stock_opname o ON o.id = i.stock_opname_id
+      INNER JOIN products p ON p.id = i.product_id
+      LEFT JOIN product_variants v ON v.id = i.variant_id
+      WHERE o.status = 'COMPLETED' AND i.variance < 0
+        AND o.created_at >= ? AND o.created_at <= ?
+      ''',
+      variables: [Variable.withString(startStr), Variable.withString(endStr)],
+    ).get();
+
+    for (final row in productQuery) {
+      results.add(StockLossItem(
+        row.read<String>('item_name'),
+        row.read<String>('type'),
+        row.read<String>('reason'),
+        row.read<double>('loss_qty'),
+        row.read<double>('loss_value').round(),
+      ));
+    }
+
+    // Ingredients
+    final ingredientQuery = await customSelect(
+      '''
+      SELECT 
+        ing.name as item_name,
+        'INGREDIENT' as type,
+        IFNULL(i.variance_reason, 'Lainnya') as reason,
+        ABS(i.variance) as loss_qty,
+        ABS(i.variance) * ing.average_cost as loss_value
+      FROM stock_opname_items i
+      INNER JOIN stock_opname o ON o.id = i.stock_opname_id
+      INNER JOIN ingredients ing ON ing.id = i.ingredient_id
+      WHERE o.status = 'COMPLETED' AND i.variance < 0
+        AND o.created_at >= ? AND o.created_at <= ?
+      ''',
+      variables: [Variable.withString(startStr), Variable.withString(endStr)],
+    ).get();
+
+    for (final row in ingredientQuery) {
+      results.add(StockLossItem(
+        row.read<String>('item_name'),
+        row.read<String>('type'),
+        row.read<String>('reason'),
+        row.read<double>('loss_qty'),
+        row.read<double>('loss_value').round(),
+      ));
+    }
+
+    return results;
   }
 }
 
@@ -1226,6 +1367,16 @@ class TransactionItemWithProduct {
   final TransactionItem item;
   final Product product;
   TransactionItemWithProduct({required this.item, required this.product});
+}
+
+class StockLossItem {
+  final String itemName;
+  final String type; // 'PRODUCT', 'INGREDIENT'
+  final String reason;
+  final double varianceQuantity;
+  final int lossValue;
+
+  StockLossItem(this.itemName, this.type, this.reason, this.varianceQuantity, this.lossValue);
 }
 
 LazyDatabase _openConnection() {
