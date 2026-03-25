@@ -41,6 +41,11 @@ func (m *MockService) Generate(req license.GenerateRequest) (*models.License, er
 	return args.Get(0).(*models.License), args.Error(1)
 }
 
+func (m *MockService) Deregister(req license.DeregisterRequest) error {
+	args := m.Called(req)
+	return args.Error(0)
+}
+
 func setupApp(mockSvc license.Service) *fiber.App {
 	app := fiber.New()
 	handler := license.NewHandler(mockSvc)
@@ -143,4 +148,24 @@ func TestHandler_Activate_FailNotFound(t *testing.T) {
 	json.NewDecoder(resp.Body).Decode(&resData)
 	assert.Equal(t, "error", resData["status"])
 	assert.Equal(t, license.ErrLicenseNotFound.Error(), resData["message"])
+}
+
+func TestHandler_Deregister_Success(t *testing.T) {
+	mockSvc := new(MockService)
+	app := setupApp(mockSvc)
+
+	reqBody := license.DeregisterRequest{
+		LicenseCode:   "TEST-CODE",
+		CustomerEmail: "owner@test.com",
+	}
+
+	mockSvc.On("Deregister", reqBody).Return(nil)
+
+	bodyBytes, _ := json.Marshal(reqBody)
+	req := httptest.NewRequest("POST", "/api/v1/license/reset", bytes.NewReader(bodyBytes))
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := app.Test(req)
+	assert.NoError(t, err)
+	assert.Equal(t, 200, resp.StatusCode)
 }

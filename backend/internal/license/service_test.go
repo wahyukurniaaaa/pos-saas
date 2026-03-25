@@ -39,6 +39,11 @@ func (m *MockRepository) UpdateDevice(device *models.LicenseDevice) error {
 	return args.Error(0)
 }
 
+func (m *MockRepository) ClearDevices(licenseID uint) error {
+	args := m.Called(licenseID)
+	return args.Error(0)
+}
+
 func TestActivate_SuccessFirstTime(t *testing.T) {
 	mockRepo := new(MockRepository)
 	svc := license.NewService(mockRepo, nil)
@@ -168,4 +173,50 @@ func TestVerify_FailBanned(t *testing.T) {
 
 	assert.ErrorIs(t, err, license.ErrLicenseBanned)
 	assert.False(t, isActive)
+}
+
+func TestDeregister_Success(t *testing.T) {
+	mockRepo := new(MockRepository)
+	svc := license.NewService(mockRepo, nil)
+
+	req := license.DeregisterRequest{
+		LicenseCode:   "TEST-CODE",
+		CustomerEmail: "owner@test.com",
+	}
+
+	mockLicense := &models.License{
+		ID:            1,
+		LicenseCode:   "TEST-CODE",
+		CustomerEmail: "owner@test.com",
+	}
+
+	mockRepo.On("FindByCode", "TEST-CODE").Return(mockLicense, nil)
+	mockRepo.On("ClearDevices", uint(1)).Return(nil)
+
+	err := svc.Deregister(req)
+
+	assert.NoError(t, err)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestDeregister_FailEmailMismatch(t *testing.T) {
+	mockRepo := new(MockRepository)
+	svc := license.NewService(mockRepo, nil)
+
+	req := license.DeregisterRequest{
+		LicenseCode:   "TEST-CODE",
+		CustomerEmail: "hacker@test.com",
+	}
+
+	mockLicense := &models.License{
+		ID:            1,
+		LicenseCode:   "TEST-CODE",
+		CustomerEmail: "owner@test.com",
+	}
+
+	mockRepo.On("FindByCode", "TEST-CODE").Return(mockLicense, nil)
+
+	err := svc.Deregister(req)
+
+	assert.ErrorContains(t, err, "Email tidak cocok")
 }

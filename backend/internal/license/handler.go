@@ -22,6 +22,7 @@ func NewHandler(service Service) *Handler {
 func (h *Handler) RegisterRoutes(router fiber.Router) {
 	router.Post("/activate", h.Activate)
 	router.Post("/verify", h.Verify)
+	router.Post("/reset", h.Deregister)
 }
 
 func (h *Handler) RegisterAdminRoutes(router fiber.Router) {
@@ -118,4 +119,23 @@ func (h *Handler) Generate(c *fiber.Ctx) error {
 	}
 
 	return response.Success(c, fiber.StatusCreated, "Lisensi berhasil dibuat.", resData)
+}
+
+func (h *Handler) Deregister(c *fiber.Ctx) error {
+	var req DeregisterRequest
+	if err := c.BodyParser(&req); err != nil {
+		return response.Error(c, fiber.StatusBadRequest, "Format JSON tidak valid.")
+	}
+	if err := validate.Struct(req); err != nil {
+		return response.Error(c, fiber.StatusBadRequest, "Data yang dikirim tidak lengkap.")
+	}
+
+	if err := h.service.Deregister(req); err != nil {
+		if err == ErrLicenseNotFound {
+			return response.Error(c, fiber.StatusNotFound, err.Error())
+		}
+		return response.Error(c, fiber.StatusBadRequest, err.Error())
+	}
+
+	return response.Success(c, fiber.StatusOK, "Semua perangkat untuk lisensi ini berhasil di-reset.", nil)
 }

@@ -13,6 +13,7 @@ type Repository interface {
 	Update(license *models.License) error
 	Create(license *models.License) error
 	UpdateDevice(device *models.LicenseDevice) error
+	ClearDevices(licenseID uint) error
 }
 
 type repository struct {
@@ -45,4 +46,8 @@ func (r *repository) Create(license *models.License) error {
 
 func (r *repository) UpdateDevice(device *models.LicenseDevice) error {
 	return r.db.Save(device).Error
+}
+
+func (r *repository) ClearDevices(licenseID uint) error {
+	return r.db.Where("license_id = ?", licenseID).Delete(&models.LicenseDevice{}).Error
 }

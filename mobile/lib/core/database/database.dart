@@ -4,6 +4,9 @@ import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:intl/intl.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'dart:convert';
+import 'dart:math';
 
 import 'tables/licenses_table.dart';
 import 'tables/employees_table.dart';
@@ -1389,10 +1392,33 @@ class StockLossItem {
   StockLossItem(this.itemName, this.type, this.reason, this.varianceQuantity, this.lossValue);
 }
 
+String _generateRandomKey() {
+  final random = Random.secure();
+  final values = List<int>.generate(32, (i) => random.nextInt(256));
+  return base64UrlEncode(values);
+}
+
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();
     final file = File(p.join(dbFolder.path, 'posify.db'));
-    return NativeDatabase.createInBackground(file);
+
+    // Ambil atau buat kunci dekripsi dari memori aman (Secure Storage)
+    const storage = FlutterSecureStorage();
+    String? encryptionKey = await storage.read(key: 'db_encryption_key');
+    
+    if (encryptionKey == null) {
+      encryptionKey = _generateRandomKey();
+      await storage.write(key: 'db_encryption_key', value: encryptionKey);
+    }
+
+    // Buat database di latar belakang dan gunakan konfigurasi kunci PRAGMA
+    return NativeDatabase.createInBackground(
+      file,
+      setup: (database) {
+        // Peringatan: Jalankan PRAGMA key untuk dekripsi
+        database.execute("PRAGMA key = '\$encryptionKey';");
+      },
+    );
   });
 }

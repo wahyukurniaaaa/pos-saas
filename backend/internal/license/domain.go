@@ -35,3 +35,8 @@ type GenerateResponseData struct {
 	MaxDevices    int    `json:"max_devices"`
 	CustomerEmail string `json:"customer_email"`
 }
+
+type DeregisterRequest struct {
+	LicenseCode   string `json:"license_code" validate:"required"`
+	CustomerEmail string `json:"customer_email" validate:"required,email"`
+}

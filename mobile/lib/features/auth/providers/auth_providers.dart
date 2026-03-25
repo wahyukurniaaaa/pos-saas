@@ -16,6 +16,7 @@ class LicenseNotifier extends AsyncNotifier<License?> {
   final _deviceInfo = DeviceInfoPlugin();
   final _storage = const FlutterSecureStorage();
   static const String _deviceIdKey = 'posify_device_id_stable';
+  static const String _serverTimeKey = 'posify_last_server_time';
 
   Future<String> _getDeviceId() async {
     // 1. Check persistent cache (Secure Storage)
@@ -33,8 +34,9 @@ class LicenseNotifier extends AsyncNotifier<License?> {
       baseId = iosInfo.identifierForVendor ?? 'IOS-UNKNOWN';
     }
 
-    // Hash it to make it uniform + adding some salt
-    final hashedId = sha256.convert(utf8.encode('salt_$baseId')).toString();
+    // Hash it to make it uniform + adding some dynamic salt
+    final salt = DateTime.now().millisecondsSinceEpoch.toString();
+    final hashedId = sha256.convert(utf8.encode('${salt}_$baseId')).toString();
     await _storage.write(key: _deviceIdKey, value: hashedId);
     return hashedId;
   }
@@ -57,6 +59,18 @@ class LicenseNotifier extends AsyncNotifier<License?> {
 
     if (license != null) {
       final currentDeviceId = await _getDeviceId();
+      final now = DateTime.now();
+
+      // 0. Time Manipulation Check
+      final lastServerTimeString = await _storage.read(key: _serverTimeKey);
+      if (lastServerTimeString != null) {
+        final lastServerTime = DateTime.tryParse(lastServerTimeString);
+        // If current device time is BEFORE the last known verified time, clock was manipulated backwards.
+        if (lastServerTime != null && now.isBefore(lastServerTime)) {
+          await db.deleteLicense(license.licenseCode);
+          return null;
+        }
+      }
 
       // 1. Lazy Fingerprint Validation
       // If mismatch, we STILL allow entry but trigger background verification.
@@ -68,7 +82,6 @@ class LicenseNotifier extends AsyncNotifier<License?> {
       }
 
       // 2. 7-Day Hard Offline Block - This is a business rule, we keep it.
-      final now = DateTime.now();
       final lastCheck = license.lastVerified ?? license.activationDate ?? now;
       final diff = now.difference(lastCheck);
 
@@ -107,6 +120,7 @@ class LicenseNotifier extends AsyncNotifier<License?> {
 
       if (isSuccess) {
         // Success! Update local timestamp AND ensure fingerprint is synced locally
+        await _storage.write(key: _serverTimeKey, value: DateTime.now().toIso8601String());
         await db.updateLicenseFingerprint(code, deviceId);
       } else {
         // Verification failed. Could be a fingerprint mismatch after emulator update.
@@ -128,6 +142,7 @@ class LicenseNotifier extends AsyncNotifier<License?> {
 
         if (isActSuccess) {
           // Silent re-activation worked! Update local DB with new fingerprint.
+          await _storage.write(key: _serverTimeKey, value: DateTime.now().toIso8601String());
           await db.updateLicenseFingerprint(code, deviceId);
         } else {
           // Truly invalid or device limit reached.
@@ -137,6 +152,16 @@ class LicenseNotifier extends AsyncNotifier<License?> {
       }
     } catch (e) {
       // Offline-First: Keep local state if server unreachable
+      // Network Blackhole Exploit Mitigation
+      try {
+        // Cek koneksi ke server stabil (tanpa memicu request yang berat)
+        await dio.head('https://1.1.1.1', options: Options(receiveTimeout: const Duration(seconds: 3)));
+        // Jika kode sampai sini, berarti ada internet AKTIF namun `/verify` sengaja diblokir / mati.
+        throw Exception('Akses API terblokir. Harap periksa jaringan / matikan VPN.');
+      } catch (_) {
+        // Jika ping ke 1.1.1.1 juga Error/Timeout = perangkat ini benar-benar OFFLINE murni.
+        // Kita izinkan grace-period lisensi berjalan normal.
+      }
     }
   }
 
@@ -173,6 +198,9 @@ class LicenseNotifier extends AsyncNotifier<License?> {
           response.statusCode == 200;
 
       if (isSuccess) {
+        // Save the server time
+        await _storage.write(key: _serverTimeKey, value: DateTime.now().toIso8601String());
+        
         // 2. Clear existing licenses first to avoid UNIQUE constraint violation on licenseCode
         // This is a robust approach for a Single-License POS application.
         await (db.delete(db.licenses)).go();
@@ -219,7 +247,7 @@ class LicenseNotifier extends AsyncNotifier<License?> {
       // Keep state as data(null) – avoid triggering AppBootstrap rebuild.
       if (ref.mounted) state = const AsyncValue.data(null);
       return (false, msg);
-    } catch (e, st) {
+    } catch (e) {
       if (!ref.mounted) return (false, null);
       // Keep state as data(null) – avoid triggering AppBootstrap rebuild.
       state = const AsyncValue.data(null);

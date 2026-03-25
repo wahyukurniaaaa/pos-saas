@@ -70,6 +70,12 @@ func main() {
 	licenseSvc := license.NewService(licenseRepo, resendSvc)
 	licenseHandler := license.NewHandler(licenseSvc)
 
+	// Start server
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "3000"
+	}
+
 	// Protected Routes (Uses X-App-Client-Key and Limiter)
 	licenseRoutes := api.Group("/license", middleware.RequireAppClientKey, limiterConf)
 	licenseHandler.RegisterRoutes(licenseRoutes)
@@ -77,6 +83,22 @@ func main() {
 	// Admin Routes (Uses X-Admin-Secret-Key)
 	adminRoutes := api.Group("/admin/license", middleware.RequireAdminSecretKey, limiterConf)
 	licenseHandler.RegisterAdminRoutes(adminRoutes)
+
+	// Add special access for Admin UI to test all license endpoints
+	api.Post("/license/reset", middleware.RequireAdminSecretKey, licenseHandler.Deregister)
+	api.Post("/license/verify", middleware.RequireAdminSecretKey, licenseHandler.Verify)
+	api.Post("/license/activate", middleware.RequireAdminSecretKey, licenseHandler.Activate)
+
+	// STATIC FILES (ADMIN UI)
+	// Only serve in development mode for security
+	if os.Getenv("APP_ENV") == "development" {
+		adminPath := os.Getenv("ADMIN_PATH")
+		if adminPath == "" {
+			adminPath = "/admin"
+		}
+		app.Static(adminPath, "./public")
+		log.Printf("Admin UI enabled at http://localhost:%s%s", port, adminPath)
+	}
 
 	// Health Check / Ping Endpoint
 	api.Get("/ping", func(c *fiber.Ctx) error {
@@ -86,11 +108,6 @@ func main() {
 		})
 	})
 
-	// Start server
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "3000"
-	}
 	log.Printf("Server starting on port %s", port)
 	log.Fatal(app.Listen(":" + port))
 }

@@ -1,6 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
-import 'package:encrypt/encrypt.dart' as encrypt;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
@@ -12,77 +10,29 @@ class BackupService {
   BackupService._internal();
 
   static const _storage = FlutterSecureStorage();
-  static const _keyName = 'backup_encryption_key';
+  
+  // MENGGUNAKAN NAMA KUNCI YANG SAMA DENGAN DATABASE.DART
+  // Inilah inti dari unified-key SQLCipher
+  static const _keyName = 'db_encryption_key';
 
-  Future<String> _getOrCreateKey() async {
-    String? key = await _storage.read(key: _keyName);
-    if (key == null) {
-      final newKey = encrypt.Key.fromSecureRandom(32).base64;
-      await _storage.write(key: _keyName, value: newKey);
-      key = newKey;
-    }
-    return key;
-  }
-
+  /// Mengambil Master Recovery Key SQLCipher untuk ditampilkan ke pengguna
   Future<String> getRecoveryKey() async {
-    return await _getOrCreateKey();
+    String? key = await _storage.read(key: _keyName);
+    if (key == null || key.isEmpty) {
+      return 'Kunci belum ter-generate (Login Terlebih Dahulu)';
+    }
+    return key; // Teks Password ~44 karakter (Base64)
   }
 
-  Future<void> encryptFile(
-    File sourceFile,
-    String targetPath, {
-    String? customKey,
-  }) async {
-    final keyString = customKey ?? await _getOrCreateKey();
-    final key = encrypt.Key.fromBase64(keyString);
-    final iv = encrypt.IV.fromSecureRandom(16);
-    final encrypter = encrypt.Encrypter(encrypt.AES(key));
-
-    final contents = await sourceFile.readAsBytes();
-    final encrypted = encrypter.encryptBytes(contents, iv: iv);
-
-    // Store IV (16 bytes) then encrypted data
-    final result = Uint8List(16 + encrypted.bytes.length);
-    result.setAll(0, iv.bytes);
-    result.setAll(16, encrypted.bytes);
-
-    final targetFile = File(targetPath);
-    await targetFile.writeAsBytes(result);
-  }
-
-  Future<void> decryptFile(
-    File encryptedFile,
-    String targetPath, {
-    String? customKey,
-  }) async {
-    final keyString = customKey ?? await _getOrCreateKey();
-    final key = encrypt.Key.fromBase64(keyString);
-    final encrypter = encrypt.Encrypter(encrypt.AES(key));
-
-    final contents = await encryptedFile.readAsBytes();
-    if (contents.length < 16) throw Exception('Format file backup tidak valid');
-
-    final iv = encrypt.IV(contents.sublist(0, 16));
-    final encryptedData = contents.sublist(16);
-
-    final decrypted = encrypter.decryptBytes(
-      encrypt.Encrypted(encryptedData),
-      iv: iv,
-    );
-
-    final targetFile = File(targetPath);
-    await targetFile.writeAsBytes(decrypted);
-  }
-
+  /// Mem-backup Database (Hanya menyalin karena otomatis terenkripsi oleh SQLCipher)
   Future<String> performAutoBackup() async {
     try {
       final dbFolder = await getApplicationDocumentsDirectory();
+      // File ini SUDAH merupakan brankas AES-256 yang aman buatan Drift SQLCipher
       final dbFile = File(p.join(dbFolder.path, 'posify.db'));
 
       if (!await dbFile.exists()) return 'Database tidak ditemukan';
 
-      // For auto-backup, we store it in a internal but persistent folder
-      // Users can see/export these from the Settings UI later
       final appSupportDir = await getApplicationSupportDirectory();
       final backupsDir = Directory(p.join(appSupportDir.path, 'backups'));
 
@@ -91,15 +41,14 @@ class BackupService {
       }
 
       final timestamp = DateFormat('yyyyMMdd_HHmm').format(DateTime.now());
+      // Disimpan dengan format eksklusif .posifybak agar mudah di-filter FilePicker
       final backupPath = p.join(
         backupsDir.path,
-        'posify_backup_$timestamp.enc',
+        'posify_backup_$timestamp.posifybak',
       );
 
-      await encryptFile(dbFile, backupPath);
-
-      // Also try to copy to a more accessible folder if possible (Optional but good)
-      // For now, internal backup is enough for the "Tutup Shift" flow
+      // LANGSUNG Salin file! Tidak perlu encrypt lagi.
+      await dbFile.copy(backupPath);
 
       return 'Auto-backup berhasil disimpan';
     } catch (e) {
@@ -107,36 +56,42 @@ class BackupService {
     }
   }
 
+  /// Membaca daftar file backup di penyimpanan internal aplikasi
   Future<List<File>> getBackupList() async {
     final appSupportDir = await getApplicationSupportDirectory();
     final backupsDir = Directory(p.join(appSupportDir.path, 'backups'));
 
     if (!await backupsDir.exists()) return [];
 
+    // Bisa disaring berdasarkan ekstensi .posifybak jika diperlukan
     final files = backupsDir.listSync().whereType<File>().toList();
-    files.sort((a, b) => b.path.compareTo(a.path)); // Newest first
+    files.sort((a, b) => b.path.compareTo(a.path)); // Terbaru di atas
     return files;
   }
 
-  Future<void> restoreBackup(File encryptedFile, {String? recoveryKey}) async {
+  /// Me-restore file backup ke direktori utama aplikasi Drift
+  Future<void> restoreBackup(File backupFile, {String? recoveryKey}) async {
     final dbFolder = await getApplicationDocumentsDirectory();
     final dbPath = p.join(dbFolder.path, 'posify.db');
 
-    // Safety: Delete current DB first might be risky,
-    // better decrypt to temp then rename
-    final tempPath = '$dbPath.tmp';
-    await decryptFile(encryptedFile, tempPath, customKey: recoveryKey);
-
-    final dbFile = File(dbPath);
-    if (await dbFile.exists()) {
-      await dbFile.delete();
+    // JIKA RESTORE DARI HP LAIN & KUNCI (PASSWORD) DIMASUKKAN OLEH PENGGUNA
+    if (recoveryKey != null && recoveryKey.isNotEmpty) {
+      // TIMPA Master Key di HP Baru ini dengan Key dari HP Lama!
+      // Agar Drift/SQLCipher bisa membaca file backup HP lama ini tanpa mendeteksi "corrupted error".
+      await _storage.write(key: _keyName, value: recoveryKey);
     }
 
-    await File(tempPath).rename(dbPath);
+    final currentDbFile = File(dbPath);
+    if (await currentDbFile.exists()) {
+      await currentDbFile.delete(); // Kosongkan database saat ini
+    }
+
+    // Salin file backup untuk menjadi database primer
+    await backupFile.copy(dbPath);
   }
 
+  /// Fungsi antarmuka: Impor file (misal dari Google Drive/USB) lalu jadikan backup baru
   Future<void> importAndRestore(File externalFile, String recoveryKey) async {
-    // 1. Copy to internal backups directory for record
     final appSupportDir = await getApplicationSupportDirectory();
     final backupsDir = Directory(p.join(appSupportDir.path, 'backups'));
     if (!await backupsDir.exists()) await backupsDir.create(recursive: true);
@@ -144,11 +99,13 @@ class BackupService {
     final timestamp = DateFormat('yyyyMMdd_HHmm').format(DateTime.now());
     final internalPath = p.join(
       backupsDir.path,
-      'imported_backup_$timestamp.enc',
+      'imported_backup_$timestamp.posifybak',
     );
+    
+    // 1. Amankan salinan backup dari file picker ke direktori internal aplikasi
     await externalFile.copy(internalPath);
 
-    // 2. Perform restore with the provided recovery key
+    // 2. Langsung timpa database utama, BERSAMAAN DENGAN kunci pemulihannya
     await restoreBackup(File(internalPath), recoveryKey: recoveryKey);
   }
 }

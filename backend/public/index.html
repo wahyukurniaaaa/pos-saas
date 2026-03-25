@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POSify License Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        dark: {
+                            100: '#1e1e20',
+                            200: '#141416',
+                            300: '#0A0A0B',
+                        },
+                        accent: {
+                            primary: '#6366f1',
+                            secondary: '#06b6d4',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass { background: rgba(30, 30, 32, 0.7); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .accent-gradient { background: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%); }
+        .accent-text-gradient { background: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0A0A0B; }
+        ::-webkit-scrollbar-thumb { background: #1e1e20; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6366f1; }
+        @keyframes shimmer { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+        .loading::after { content: ''; animation: shimmer 1.5s infinite; }
+    </style>
+</head>
+<body class="bg-dark-300 text-gray-200 font-sans min-h-screen selection:bg-accent-primary/30">
+    <!-- Auth Overlay -->
+    <div id="authOverlay" class="fixed inset-0 z-50 flex items-center justify-center glass p-4 transition-opacity duration-500">
+        <div class="max-w-md w-full glass rounded-3xl p-8 shadow-2xl border-accent-primary/20 scale-100 transition-transform duration-300">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 accent-gradient rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg shadow-accent-primary/20">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                </div>
+                <h1 class="text-2xl font-bold text-white mb-2">Restricted Access</h1>
+                <p class="text-gray-400">Please enter your <strong>Admin Secret Key</strong> to proceed.</p>
+            </div>
+            <div class="space-y-4">
+                <input type="password" id="secretKey" placeholder="••••••••••••••••" class="w-full bg-dark-100/50 border border-gray-700/50 rounded-2xl px-5 py-4 focus:outline-none focus:ring-2 focus:ring-accent-primary/50 transition-all text-center tracking-[0.5em] text-lg">
+                <button onclick="checkAuth()" class="w-full accent-gradient hover:opacity-90 text-white font-semibold py-4 rounded-2xl transition-all shadow-lg active:scale-95">
+                    Unlock Dashboard
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content (Hidden Initially) -->
+    <div id="mainContent" class="hidden max-w-7xl mx-auto p-4 md:p-10">
+        <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+            <div>
+                <h2 class="text-3xl font-bold text-white mb-2 flex items-center gap-3">
+                    <span class="accent-text-gradient">POSify</span> License Panel
+                    <span class="text-xs font-mono px-2 py-1 bg-accent-primary/10 text-accent-primary rounded-full border border-accent-primary/20">v1.2.0</span>
+                </h2>
+                <p class="text-gray-400">Manage and verify POSify licenses securely.</p>
+            </div>
+            <div class="flex items-center gap-3 bg-dark-100/50 rounded-2xl p-2 border border-gray-800">
+                <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse mx-2"></div>
+                <span class="text-sm font-medium mr-2">Connected to API v1</span>
+                <button onclick="logout()" class="px-4 py-2 hover:bg-red-500/10 text-red-400 rounded-xl transition-all text-xs font-semibold">LOGOUT</button>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Generate License Card -->
+            <div class="glass p-8 rounded-3xl">
+                <div class="flex items-center gap-4 mb-8 text-accent-primary">
+                    <div class="p-3 bg-accent-primary/10 rounded-2xl">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-white">Generate Code</h3>
+                </div>
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-1">Tier Level</label>
+                        <select id="genTier" class="w-full bg-dark-200 border border-gray-700/50 rounded-2xl px-4 py-3 focus:ring-1 focus:ring-accent-primary outline-none">
+                            <option value="Tier 1">Starter (Tier 1)</option>
+                            <option value="Tier 2">Business (Tier 2)</option>
+                            <option value="Tier 3">Enterprise (Tier 3)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-1">Max Devices</label>
+                        <input type="number" id="genMaxDevices" value="1" min="1" class="w-full bg-dark-200 border border-gray-700/50 rounded-2xl px-4 py-3 outline-none focus:ring-1 focus:ring-accent-primary">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-1">Customer Email</label>
+                        <input type="email" id="genEmail" placeholder="client@example.com" class="w-full bg-dark-200 border border-gray-700/50 rounded-2xl px-4 py-3 outline-none focus:ring-1 focus:ring-accent-primary">
+                    </div>
+                    <button onclick="generateLicense()" id="btnGenerate" class="w-full accent-gradient py-4 rounded-2xl font-bold shadow-lg shadow-accent-primary/20 active:scale-95 transition-all">
+                        Generate Now
+                    </button>
+                </div>
+            </div>
+
+            <!-- Reset License Card -->
+            <div class="glass p-8 rounded-3xl">
+                <div class="flex items-center gap-4 mb-8 text-red-400">
+                    <div class="p-3 bg-red-400/10 rounded-2xl">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-white">Reset Devices</h3>
+                </div>
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-1">License Code</label>
+                        <input type="text" id="resetCode" placeholder="POS-XXXX-XXXX" class="w-full bg-dark-200 border border-gray-700/50 rounded-2xl px-4 py-3 outline-none focus:ring-1 focus:ring-red-400">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-1">Confirm Email</label>
+                        <input type="email" id="resetEmail" placeholder="client@example.com" class="w-full bg-dark-200 border border-gray-700/50 rounded-2xl px-4 py-3 outline-none focus:ring-1 focus:ring-red-400">
+                    </div>
+                    <div class="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex gap-3">
+                        <svg class="w-5 h-5 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                        <p class="text-xs text-red-300">Reseting will unlink all current device fingerprints from this license.</p>
+                    </div>
+                    <button onclick="resetLicense()" id="btnReset" class="w-full bg-red-500 hover:bg-red-600 py-4 rounded-2xl font-bold shadow-lg shadow-red-500/20 active:scale-95 transition-all">
+                        Force Reset
+                    </button>
+                </div>
+            </div>
+
+            <!-- Result / Response Terminal -->
+            <div class="glass flex flex-col rounded-3xl overflow-hidden min-h-[400px]">
+                <div class="p-4 bg-dark-100 flex items-center justify-between border-b border-gray-800">
+                    <div class="flex gap-1.5">
+                        <div class="w-3 h-3 rounded-full bg-red-500/50"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500/50"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500/50"></div>
+                    </div>
+                    <span class="text-[10px] font-mono font-bold text-gray-500 tracking-widest uppercase">Result Terminal</span>
+                </div>
+                <div id="terminal" class="flex-1 p-6 font-mono text-xs overflow-y-auto space-y-4">
+                    <div class="text-accent-secondary">SYSTEM initialized... waiting for input</div>
+                </div>
+                <div class="p-4 bg-dark-200 border-t border-gray-800">
+                    <button onclick="clearTerminal()" class="text-[10px] font-bold text-gray-500 hover:text-white transition-all uppercase tracking-wider">Clear Screen</button>
+                </div>
+            </div>
+
+            <!-- Verify License Card -->
+            <div class="glass p-8 rounded-3xl">
+                <div class="flex items-center gap-4 mb-8 text-accent-secondary">
+                    <div class="p-3 bg-accent-secondary/10 rounded-2xl">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-white">Verify Status</h3>
+                </div>
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-1">License Code</label>
+                        <input type="text" id="verifyCode" placeholder="POS-XXXX-XXXX" class="w-full bg-dark-200 border border-gray-700/50 rounded-2xl px-4 py-3 outline-none focus:ring-1 focus:ring-accent-secondary">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-1">Device Fingerprint</label>
+                        <input type="text" id="verifyFingerprint" placeholder="device-uid-123" class="w-full bg-dark-200 border border-gray-700/50 rounded-2xl px-4 py-3 outline-none focus:ring-1 focus:ring-accent-secondary">
+                    </div>
+                    <button onclick="verifyLicense()" class="w-full border border-accent-secondary/30 hover:bg-accent-secondary/10 text-accent-secondary py-4 rounded-2xl font-bold transition-all">
+                        Check Ping
+                    </button>
+                </div>
+            </div>
+
+            <!-- Manual Activate Card -->
+            <div class="glass p-8 rounded-3xl">
+                <div class="flex items-center gap-4 mb-8 text-yellow-400">
+                    <div class="p-3 bg-yellow-400/10 rounded-2xl">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-white">Manual Activate</h3>
+                </div>
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Code</label>
+                            <input type="text" id="actCode" class="w-full bg-dark-200 border border-gray-700/50 rounded-xl px-3 py-2 text-sm outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Fingerprint</label>
+                            <input type="text" id="actFingerprint" class="w-full bg-dark-200 border border-gray-700/50 rounded-xl px-3 py-2 text-sm outline-none">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Model</label>
+                            <input type="text" id="actModel" value="Admin UI" class="w-full bg-dark-200 border border-gray-700/50 rounded-xl px-3 py-2 text-sm outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">OS</label>
+                            <input type="text" id="actOS" value="Web Dashboard" class="w-full bg-dark-200 border border-gray-700/50 rounded-xl px-3 py-2 text-sm outline-none">
+                        </div>
+                    </div>
+                    <button onclick="activateLicense()" class="w-full bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-500 border border-yellow-500/30 py-4 rounded-2xl font-bold transition-all">
+                        Activate Device
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <footer class="mt-16 text-center text-gray-600 text-[10px] space-y-2">
+            <p class="uppercase tracking-[0.2em] font-bold">PREMIUM LICENSE MANAGEMENT INTERFACE (v2.0) &bull;</p>
+            <p>&copy; 2026 POSify SaaS Team. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        const API_BASE = '/api/v1';
+        let adminKey = localStorage.getItem('__pk_adm');
+
+        window.onload = () => {
+            if (adminKey) {
+                document.getElementById('authOverlay').style.display = 'none';
+                document.getElementById('mainContent').classList.remove('hidden');
+            }
+        };
+
+        function log(msg, type = 'info') {
+            const term = document.getElementById('terminal');
+            const div = document.createElement('div');
+            const colorClass = type === 'error' ? 'text-red-400' : type === 'success' ? 'text-green-400' : 'text-gray-400 ml-4';
+            const timestamp = new Date().toLocaleTimeString();
+            div.innerHTML = `<span class="text-gray-600">[${timestamp}]</span> <span class="${colorClass}">${msg}</span>`;
+            term.appendChild(div);
+            term.scrollTop = term.scrollHeight;
+        }
+
+        function clearTerminal() {
+            document.getElementById('terminal').innerHTML = '<div class="text-accent-secondary">Terminal cleared.</div>';
+        }
+
+        function checkAuth() {
+            const key = document.getElementById('secretKey').value;
+            if (key) {
+                adminKey = key;
+                localStorage.setItem('__pk_adm', key);
+                document.getElementById('authOverlay').classList.add('opacity-0');
+                setTimeout(() => {
+                    document.getElementById('authOverlay').style.display = 'none';
+                    document.getElementById('mainContent').classList.remove('hidden');
+                    log('Dashboard unlocked with Admin Key', 'success');
+                }, 500);
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('__pk_adm');
+            window.location.reload();
+        }
+
+        async function fetchAPI(endpoint, method, data) {
+            log(`Calling ${method} ${endpoint}...`, 'info');
+            try {
+                const res = await fetch(`${API_BASE}${endpoint}`, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Admin-Secret-Key': adminKey,
+                        'X-App-Client-Key': 'ADMIN_UI_BYPASS' // Dummy bypass if needed, handled by middleware
+                    },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (res.ok) {
+                    log(`SUCCESS: ${JSON.stringify(result.data || result.message, null, 2)}`, 'success');
+                } else {
+                    log(`ERROR [${res.status}]: ${result.message || 'Unknown error'}`, 'error');
+                }
+            } catch (e) {
+                log(`NETWORK ERROR: ${e.message}`, 'error');
+            }
+        }
+
+        function generateLicense() {
+            const data = {
+                tier_level: document.getElementById('genTier').value,
+                max_devices: parseInt(document.getElementById('genMaxDevices').value),
+                customer_email: document.getElementById('genEmail').value
+            };
+            if (!data.customer_email) return log('Email is required!', 'error');
+            fetchAPI('/admin/license/generate', 'POST', data);
+        }
+
+        function resetLicense() {
+            const data = {
+                license_code: document.getElementById('resetCode').value,
+                customer_email: document.getElementById('resetEmail').value
+            };
+            if (!data.license_code || !data.customer_email) return log('Fill all fields!', 'error');
+            fetchAPI('/license/reset', 'POST', data);
+        }
+
+        function verifyLicense() {
+            const data = {
+                license_code: document.getElementById('verifyCode').value,
+                device_fingerprint: document.getElementById('verifyFingerprint').value
+            };
+            if (!data.license_code || !data.device_fingerprint) return log('Fill all fields!', 'error');
+            fetchAPI('/license/verify', 'POST', data);
+        }
+
+        function activateLicense() {
+            const data = {
+                license_code: document.getElementById('actCode').value,
+                device_fingerprint: document.getElementById('actFingerprint').value,
+                device_model: document.getElementById('actModel').value,
+                os_version: document.getElementById('actOS').value
+            };
+            if (!data.license_code || !data.device_fingerprint) return log('License & Fingerprint required!', 'error');
+            fetchAPI('/license/activate', 'POST', data);
+        }
+    </script>
+</body>
+</html>

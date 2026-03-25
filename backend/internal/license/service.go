@@ -22,6 +22,7 @@ type Service interface {
 	Activate(req ActivateRequest) (*models.License, error)
 	Verify(req VerifyRequest) (bool, error)
 	Generate(req GenerateRequest) (*models.License, error)
+	Deregister(req DeregisterRequest) error
 }
 
 type service struct {
@@ -167,4 +168,20 @@ func (s *service) Generate(req GenerateRequest) (*models.License, error) {
 	}()
 
 	return license, nil
+}
+
+func (s *service) Deregister(req DeregisterRequest) error {
+	lic, err := s.repo.FindByCode(req.LicenseCode)
+	if err != nil {
+		return err
+	}
+	if lic == nil {
+		return ErrLicenseNotFound
+	}
+
+	if lic.CustomerEmail != req.CustomerEmail {
+		return errors.New("Email tidak cocok dengan lisensi ini.")
+	}
+
+	return s.repo.ClearDevices(lic.ID)
 }
