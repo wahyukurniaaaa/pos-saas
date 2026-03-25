@@ -16,6 +16,7 @@ import 'inventory/import_product_screen.dart';
 import 'inventory/global_stock_history_screen.dart';
 import 'inventory/product_list_screen.dart';
 import 'inventory/ingredient_list_screen.dart';
+import 'inventory/ingredient_opname_screen.dart';
 import 'inventory/select_product_transaction_screen.dart';
 
 
@@ -174,6 +175,13 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                           label: 'Stock Opname',
                           color: AppTheme.tertiaryColor,
                           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const StockOpnameScreen())),
+                        ),
+                        _buildMenuCard(
+                          context,
+                          icon: Icons.fact_check_outlined,
+                          label: 'Opname Bahan',
+                          color: AppTheme.errorColor,
+                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const IngredientOpnameScreen())),
                         ),
                         _buildMenuCard(
                           context,

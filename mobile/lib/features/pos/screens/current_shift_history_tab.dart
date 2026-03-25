@@ -184,71 +184,119 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
 
   Widget _buildFilterBar(BuildContext context, WidgetRef ref) {
     final currentFilter = ref.watch(historyFilterProvider);
-    final filters = HistoryFilterType.values;
 
     return Container(
-      height: 60,
+      width: double.infinity,
       color: Theme.of(context).colorScheme.surface,
-      child: ListView.separated(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        scrollDirection: Axis.horizontal,
-        itemCount: filters.length,
-        separatorBuilder: (context, index) => const SizedBox(width: 8),
-        itemBuilder: (context, index) {
-          final type = filters[index];
-          final filter = HistoryFilter(type: type);
-          final isSelected = currentFilter.type == type;
-
-          return FilterChip(
-            label: Text(
-              filter.label,
-              style: GoogleFonts.poppins(
-                fontSize: 13,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurfaceVariant,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: InkWell(
+        onTap: () => _showFilterModal(context, ref, currentFilter),
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.2)),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Periode: ${currentFilter.label}',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
-            ),
-            selected: isSelected,
-            onSelected: (selected) async {
-              if (type == HistoryFilterType.custom) {
-                final range = await showDateRangePicker(
-                  context: context,
-                  firstDate: DateTime(2023),
-                  lastDate: DateTime.now(),
-                  builder: (context, child) {
-                    return Theme(
-                      data: Theme.of(context).copyWith(
-                        colorScheme: ColorScheme.light(
-                          primary: AppTheme.primaryColor,
-                          onPrimary: Colors.white,
-                          onSurface: AppTheme.textPrimary,
-                        ),
-                      ),
-                      child: child!,
-                    );
-                  },
-                );
-                if (range != null) {
-                  ref.read(historyFilterProvider.notifier).setFilter(
-                      HistoryFilter(type: type, range: range));
-                }
-              } else {
-                ref.read(historyFilterProvider.notifier).setFilter(filter);
-              }
-            },
-            backgroundColor: Theme.of(context).colorScheme.surface,
-            selectedColor: Theme.of(context).colorScheme.primary,
-            checkmarkColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-              side: BorderSide(
-                color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).dividerColor.withValues(alpha: 0.1),
-              ),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-          );
-        },
+              Icon(Icons.arrow_drop_down, color: Theme.of(context).colorScheme.onSurfaceVariant),
+            ],
+          ),
+        ),
       ),
+    );
+  }
+
+  void _showFilterModal(BuildContext context, WidgetRef ref, HistoryFilter currentFilter) {
+    final filters = HistoryFilterType.values;
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (BuildContext modalContext) {
+        return SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 8),
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Pilih Rentang Waktu',
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ...filters.map((type) {
+                  final filter = HistoryFilter(type: type);
+                  final isSelected = currentFilter.type == type;
+                  return ListTile(
+                    title: Text(
+                      filter.label,
+                      style: GoogleFonts.poppins(
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                    trailing: isSelected
+                        ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary)
+                        : null,
+                    onTap: () async {
+                      Navigator.pop(modalContext);
+                      if (type == HistoryFilterType.custom) {
+                        final range = await showDateRangePicker(
+                          context: context,
+                          firstDate: DateTime(2023),
+                          lastDate: DateTime.now(),
+                          builder: (context, child) {
+                            return Theme(
+                              data: Theme.of(context).copyWith(
+                                colorScheme: ColorScheme.light(
+                                  primary: Theme.of(context).colorScheme.primary,
+                                  onPrimary: Colors.white,
+                                  onSurface: Theme.of(context).colorScheme.onSurface,
+                                ),
+                              ),
+                              child: child!,
+                            );
+                          },
+                        );
+                        if (range != null) {
+                          ref.read(historyFilterProvider.notifier).setFilter(
+                              HistoryFilter(type: type, range: range));
+                        }
+                      } else {
+                        ref.read(historyFilterProvider.notifier).setFilter(filter);
+                      }
+                    },
+                  );
+                }),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

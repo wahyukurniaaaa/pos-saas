@@ -18,7 +18,7 @@ class SalesAnalyticsScreen extends ConsumerStatefulWidget {
 
 class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
   String _selectedRange =
-      'Bulan Ini'; // 'Hari Ini', '7 Hari Terakhir', 'Bulan Ini', 'Tahun Ini'
+      'Hari Ini'; // 'Hari Ini', '7 Hari Terakhir', 'Bulan Ini', 'Tahun Ini'
 
   bool _isLoading = true;
   int _totalRevenue = 0;
@@ -156,7 +156,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
             maxWidth: 1024,
             child: Column(
               children: [
-                _buildFilterChips(),
+                _buildFilterDropdown(),
                 Expanded(
                   child: _isLoading
                       ? const Center(child: CircularProgressIndicator())
@@ -210,36 +210,95 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
     );
   }
 
-  Widget _buildFilterChips() {
+  Widget _buildFilterDropdown() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      width: double.infinity,
       color: Colors.white,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: ['Hari Ini', '7 Hari Terakhir', 'Bulan Ini', 'Tahun Ini'].map((range) {
-            final isSelected = _selectedRange == range;
-            return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: ChoiceChip(
-                label: Text(range),
-                selected: isSelected,
-                onSelected: (selected) {
-                  if (selected) {
-                    setState(() => _selectedRange = range);
-                    _loadData();
-                  }
-                },
-                selectedColor: AppTheme.primaryColor,
-                labelStyle: GoogleFonts.poppins(
-                  color: isSelected ? Colors.white : AppTheme.textPrimary,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: InkWell(
+        onTap: _showFilterModal,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Periode: $_selectedRange',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.textPrimary,
                 ),
               ),
-            );
-          }).toList(),
+              const Icon(Icons.arrow_drop_down, color: AppTheme.textSecondary),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  void _showFilterModal() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        final ranges = ['Hari Ini', '7 Hari Terakhir', 'Bulan Ini', 'Tahun Ini'];
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Pilih Rentang Waktu',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 8),
+              ...ranges.map((range) {
+                final isSelected = _selectedRange == range;
+                return ListTile(
+                  title: Text(
+                    range,
+                    style: GoogleFonts.poppins(
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      color: isSelected ? AppTheme.primaryColor : AppTheme.textPrimary,
+                    ),
+                  ),
+                  trailing: isSelected
+                      ? const Icon(Icons.check, color: AppTheme.primaryColor)
+                      : null,
+                  onTap: () {
+                    Navigator.pop(context);
+                    if (!isSelected) {
+                      setState(() => _selectedRange = range);
+                      _loadData();
+                    }
+                  },
+                );
+              }),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
     );
   }
 
