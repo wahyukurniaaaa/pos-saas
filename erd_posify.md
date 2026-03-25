@@ -158,6 +158,28 @@ erDiagram
         INTEGER subtotal "Q * Harga"
     }
 
+    stock_opname {
+        INTEGER id PK "Auto Increment"
+        TEXT opname_number "Nomor Dokumen"
+        TEXT type "PRODUCT / INGREDIENT"
+        TEXT status "DRAFT / COMPLETED"
+        INTEGER created_by FK "Employee ID"
+        TEXT notes "Catatan (Opsional)"
+        TEXT created_at "ISO 8601"
+    }
+
+    stock_opname_items {
+        INTEGER id PK "Auto Increment"
+        INTEGER stock_opname_id FK
+        INTEGER product_id FK "Nullable"
+        INTEGER variant_id FK "Nullable"
+        INTEGER ingredient_id FK "Nullable"
+        REAL system_stock "Stok di sistem saat opname"
+        REAL physical_stock "Stok fisik aktual"
+        REAL variance "Selisih (fisik - sistem)"
+        TEXT variance_reason "Keterangan (Waste/Rusak/Selisih dll)"
+    }
+
     stock_transactions {
         INTEGER id PK "Auto Increment"
         INTEGER product_id FK
