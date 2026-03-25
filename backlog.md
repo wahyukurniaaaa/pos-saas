@@ -9,24 +9,27 @@ Berikut adalah backlog fitur untuk pengembangan **Posify Inventory Phase 2 & 3**
 ### 1. Recipe & Ingredient Management (Sistem Bahan Baku)
 *   **Goal**: Otomasi pemotongan stok bahan baku berdasarkan penjualan produk jadi.
 *   **Tasks**:
-    *   [ ] Create `ingredients` table (id, name, unit, sku, stock).
-    *   [ ] Create `product_recipes` join table (productId, ingredientId, quantityNeeded).
-    *   [ ] Implement deduction logic in `processCheckout` transaction.
-    *   [ ] UI: Ingredient selection in Product Form.
+    *   [x] Create `ingredients` table (id, name, unit, sku, stock).
+    *   [x] Create `product_recipes` join table (productId, ingredientId, quantityNeeded).
+    *   [x] Implement deduction logic in `processCheckout` transaction.
+    *   [x] UI: Ingredient selection in Product Form.
 
 ### 2. COGS (HPP) & Average Cost Tracking
 *   **Goal**: Menghitung keuntungan bersih yang presisi berdasarkan harga beli historis.
 *   **Tasks**:
-    *   [ ] Add `purchase_price` to `stock_transactions`.
-    *   [ ] Implement "Moving Average" cost algorithm in database.
-    *   [ ] Report: Gross Profit (Laba Kotor) per Product/Category.
+    *   [x] Add `purchase_price` to `stock_transactions` (Implemented via `IngredientStockHistory`).
+    *   [x] Implement "Moving Average" cost algorithm in database.
+    *   [x] Report: Gross Profit (Laba Kotor) per Product/Category.
+    *   [ ] **Retail HPP Support**: Tambahkan `purchase_price` di tabel `Products` & `ProductVariants` untuk mendukung profit ritel tanpa resep.
+
 
 ### 3. Stock Opname & Variance Audit
 *   **Goal**: Pencatatan selisih stok (fisik vs sistem) untuk mencegah kerugian.
 *   **Tasks**:
-    *   [ ] Create `stock_opname` table and `opname_items`.
-    *   [ ] Implementation of "Variance Reason" (e.g., Waste, Stolen, Sample).
-    *   [ ] Report: Stock Loss/Waste value.
+    *   [x] `IngredientOpnameScreen`: Audit stok fisik bahan baku dengan kalkulasi selisih otomatis.
+    *   [x] Penyesuaian stok otomatis ke `IngredientStockHistory` (tipe ADJUST).
+    *   [ ] Report: Stock Loss/Waste value summary per periode.
+
 
 ---
 
@@ -35,8 +38,10 @@ Berikut adalah backlog fitur untuk pengembangan **Posify Inventory Phase 2 & 3**
 ### 4. Unit of Measure (UoM) Conversion
 *   **Goal**: Mendukung satuan yang berbeda antara pembelian (Box/Karung) dan penggunaan (Gr/Pcs).
 *   **Tasks**:
-    *   [ ] Create `unit_conversions` table.
-    *   [ ] Logic to auto-convert 1kg -> 1000g during Stock In.
+    *   [x] Logic to auto-convert 1kg → 1000g during Stock In. (Implemented in Ingredient Stock In Modal)
+    *   [x] Create `unit_conversions` table (schema v11) untuk aturan konversi satuan fleksibel.
+    *   [x] UI: `UnitConversionScreen` — Owner dapat CRUD aturan konversi dari Pengaturan.
+
 
 ### 5. Low Stock Dashboard & Notifications
 *   **Goal**: Memindahkan sistem alert dari pasif (banner) ke aktif (proaktif).

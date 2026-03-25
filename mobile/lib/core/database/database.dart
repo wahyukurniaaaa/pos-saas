@@ -18,6 +18,10 @@ import 'tables/stock_transactions_table.dart';
 import 'tables/customers_table.dart';
 import 'tables/suppliers_table.dart';
 import 'tables/printer_settings_table.dart';
+import 'tables/ingredients_table.dart';
+import 'tables/product_recipes_table.dart';
+import 'tables/ingredient_stock_history_table.dart';
+import 'tables/unit_conversions_table.dart';
 
 part 'database.g.dart';
 
@@ -48,6 +52,10 @@ class StockTransactionWithProduct {
     Customers,
     Suppliers,
     PrinterSettings,
+    Ingredients,
+    ProductRecipes,
+    IngredientStockHistory,
+    UnitConversions,
   ],
 )
 class PosifyDatabase extends _$PosifyDatabase {
@@ -57,7 +65,7 @@ class PosifyDatabase extends _$PosifyDatabase {
   PosifyDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration {
@@ -101,6 +109,18 @@ class PosifyDatabase extends _$PosifyDatabase {
           await m.createTable(stockTransactions);
           await m.addColumn(products, products.lowStockThreshold);
           await m.addColumn(transactions, transactions.customerId);
+        }
+        if (from < 9) {
+          await m.createTable(ingredients);
+          await m.createTable(productRecipes);
+          await m.createTable(ingredientStockHistory);
+        }
+        if (from < 10) {
+          await m.addColumn(ingredients, ingredients.lastSupplierId);
+          await m.addColumn(ingredientStockHistory, ingredientStockHistory.supplierId);
+        }
+        if (from < 11) {
+          await m.createTable(unitConversions);
         }
       },
     );
@@ -580,6 +600,19 @@ class PosifyDatabase extends _$PosifyDatabase {
             ));
           }
         }
+
+        // 4. Update Ingredients Stock (New Recipe Integration)
+        final recipes = await getRecipesByProductId(productId);
+        for (final recipe in recipes) {
+          final totalDeduction = recipe.quantityNeeded * qty;
+          await deductIngredientStock(
+            ingredientId: recipe.ingredientId,
+            quantityInBaseUnit: totalDeduction,
+            type: 'SALE',
+            referenceId: transactionEntry.receiptNumber.value,
+            reason: 'Penjualan: ${transactionEntry.receiptNumber.value}',
+          );
+        }
       }
 
       return txId;
@@ -837,6 +870,78 @@ class PosifyDatabase extends _$PosifyDatabase {
     }).toList();
   }
 
+  Future<int> getTotalGrossProfit(DateTime start, DateTime end) async {
+    final recipeCostExp = (productRecipes.quantityNeeded * ingredients.averageCost).sum();
+    final query = selectOnly(transactionItems).join([
+      innerJoin(transactions, transactions.id.equalsExp(transactionItems.transactionId)),
+      innerJoin(productRecipes, productRecipes.productId.equalsExp(transactionItems.productId)),
+      innerJoin(ingredients, ingredients.id.equalsExp(productRecipes.ingredientId)),
+    ])
+      ..addColumns([recipeCostExp])
+      ..where(transactions.createdAt.isBetweenValues(start, end))
+      ..where(transactions.paymentStatus.equals('paid'));
+
+    final totalRevenue = await getTotalRevenue(start, end);
+    final result = await query.getSingle();
+    final totalCost = result.read(recipeCostExp) ?? 0.0;
+    return totalRevenue - totalCost.round();
+  }
+
+  Future<List<ProductProfit>> getProductProfitReport(DateTime start, DateTime end) async {
+    final revenueExp = (transactionItems.subtotal).sum();
+    final costExp = (productRecipes.quantityNeeded * ingredients.averageCost * transactionItems.quantity.cast<double>()).sum();
+    final query = selectOnly(transactionItems).join([
+      innerJoin(products, products.id.equalsExp(transactionItems.productId)),
+      innerJoin(transactions, transactions.id.equalsExp(transactionItems.transactionId)),
+      leftOuterJoin(productRecipes, productRecipes.productId.equalsExp(transactionItems.productId)),
+      leftOuterJoin(ingredients, ingredients.id.equalsExp(productRecipes.ingredientId)),
+    ])
+      ..addColumns([products.name, revenueExp, costExp])
+      ..where(transactions.createdAt.isBetweenValues(start, end))
+      ..where(transactions.paymentStatus.equals('paid'))
+      ..groupBy([products.id])
+      ..orderBy([OrderingTerm.desc(revenueExp)]);
+
+    final results = await query.get();
+    return results.map((row) {
+      final revenue = row.read(revenueExp) ?? 0;
+      final cost = (row.read(costExp) as num?)?.toDouble() ?? 0.0;
+      return ProductProfit(
+        row.read(products.name) ?? 'Unknown',
+        revenue,
+        (revenue - cost.round()),
+      );
+    }).toList();
+  }
+
+  Future<List<CategoryProfit>> getCategoryProfitReport(DateTime start, DateTime end) async {
+    final revenueExp = (transactionItems.subtotal).sum();
+    final costExp = (productRecipes.quantityNeeded * ingredients.averageCost * transactionItems.quantity.cast<double>()).sum();
+    final query = selectOnly(transactionItems).join([
+      innerJoin(products, products.id.equalsExp(transactionItems.productId)),
+      innerJoin(categories, categories.id.equalsExp(products.categoryId)),
+      innerJoin(transactions, transactions.id.equalsExp(transactionItems.transactionId)),
+      leftOuterJoin(productRecipes, productRecipes.productId.equalsExp(transactionItems.productId)),
+      leftOuterJoin(ingredients, ingredients.id.equalsExp(productRecipes.ingredientId)),
+    ])
+      ..addColumns([categories.name, revenueExp, costExp])
+      ..where(transactions.createdAt.isBetweenValues(start, end))
+      ..where(transactions.paymentStatus.equals('paid'))
+      ..groupBy([categories.id])
+      ..orderBy([OrderingTerm.desc(revenueExp)]);
+
+    final results = await query.get();
+    return results.map((row) {
+      final revenue = row.read(revenueExp) ?? 0;
+      final cost = (row.read(costExp) as num?)?.toDouble() ?? 0.0;
+      return CategoryProfit(
+        row.read(categories.name) ?? 'Unknown',
+        revenue,
+        (revenue - cost.round()),
+      );
+    }).toList();
+  }
+
   Future<List<DailySales>> getHourlySales(DateTime start, DateTime end) async {
     final list =
         await (select(transactions)
@@ -870,6 +975,195 @@ class PosifyDatabase extends _$PosifyDatabase {
       // categories, employees, licenses, storeProfile, and printerSettings are preserved
     });
   }
+
+  // ===== Ingredients Queries =====
+  Future<List<Ingredient>> getAllIngredients() => select(ingredients).get();
+
+  Stream<List<Ingredient>> watchAllIngredients() => select(ingredients).watch();
+
+  Future<int> insertIngredient(IngredientsCompanion entry) =>
+      into(ingredients).insert(entry);
+
+  Future<bool> updateIngredient(Ingredient entry) =>
+      update(ingredients).replace(entry);
+
+  Future<int> deleteIngredient(Ingredient entry) =>
+      delete(ingredients).delete(entry);
+
+  Future<Ingredient?> getIngredientById(int id) =>
+      (select(ingredients)..where((t) => t.id.equals(id))).getSingleOrNull();
+
+  // ===== Product Recipes Queries =====
+  Future<List<ProductRecipe>> getRecipesByProductId(int productId) =>
+      (select(productRecipes)..where((t) => t.productId.equals(productId))).get();
+
+  Stream<List<ProductRecipe>> watchRecipesByProductId(int productId) =>
+      (select(productRecipes)..where((t) => t.productId.equals(productId))).watch();
+
+  Future<int> insertProductRecipe(ProductRecipesCompanion entry) =>
+      into(productRecipes).insert(entry);
+
+  Future<bool> updateProductRecipe(ProductRecipe entry) =>
+      update(productRecipes).replace(entry);
+
+  Future<int> deleteProductRecipe(ProductRecipe entry) =>
+      delete(productRecipes).delete(entry);
+
+  Future<void> replaceProductRecipes(
+    int productId,
+    List<ProductRecipesCompanion> newRecipes,
+  ) async {
+    await transaction(() async {
+      await (delete(productRecipes)..where((r) => r.productId.equals(productId)))
+          .go();
+      if (newRecipes.isNotEmpty) {
+        await batch((b) => b.insertAll(productRecipes, newRecipes));
+      }
+    });
+  }
+
+  // ===== Ingredient Stock History Queries =====
+  Future<List<IngredientStockHistoryData>> getIngredientHistory(int ingredientId) =>
+      (select(ingredientStockHistory)
+            ..where((t) => t.ingredientId.equals(ingredientId))
+            ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
+          .get();
+
+  Stream<List<IngredientStockHistoryData>> watchIngredientHistory(int ingredientId) =>
+      (select(ingredientStockHistory)
+            ..where((t) => t.ingredientId.equals(ingredientId))
+            ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
+          .watch();
+
+  Future<int> insertIngredientStockHistory(
+          IngredientStockHistoryCompanion entry) =>
+      into(ingredientStockHistory).insert(entry);
+
+  /// Atomically adds stock to an ingredient and records it in history.
+  /// [quantityInBaseUnit] must already be converted to the base unit.
+  Future<void> addIngredientStock({
+    required int ingredientId,
+    required double quantityInBaseUnit,
+    int? supplierId,
+    double? newCostPerUnit,
+    String? reason,
+  }) async {
+    await transaction(() async {
+      final ingredient = await getIngredientById(ingredientId);
+      if (ingredient == null) return;
+
+      final previousBalance = ingredient.stockQuantity;
+      final newBalance = previousBalance + quantityInBaseUnit;
+
+      // Weighted average cost calculation
+      double updatedCost = ingredient.averageCost;
+      if (newCostPerUnit != null && newCostPerUnit > 0) {
+        final totalOldValue = previousBalance * ingredient.averageCost;
+        final totalNewValue = quantityInBaseUnit * newCostPerUnit;
+        updatedCost = newBalance > 0
+            ? (totalOldValue + totalNewValue) / newBalance
+            : newCostPerUnit;
+      }
+
+      await updateIngredient(ingredient.copyWith(
+        stockQuantity: newBalance,
+        averageCost: updatedCost,
+        lastSupplierId: Value(supplierId),
+      ));
+
+      await insertIngredientStockHistory(
+        IngredientStockHistoryCompanion.insert(
+          ingredientId: ingredientId,
+          supplierId: Value(supplierId),
+          type: 'PURCHASE',
+          quantityChange: quantityInBaseUnit,
+          previousBalance: previousBalance,
+          newBalance: newBalance,
+          reason: Value(reason ?? 'Tambah Stok Manual'),
+        ),
+      );
+    });
+  }
+
+  /// Atomically removes stock from an ingredient (e.g. from a sale).
+  Future<void> deductIngredientStock({
+    required int ingredientId,
+    required double quantityInBaseUnit,
+    String type = 'SALE',
+    String? referenceId,
+    String? reason,
+  }) async {
+    await transaction(() async {
+      final ingredient = await getIngredientById(ingredientId);
+      if (ingredient == null) return;
+
+      final previousBalance = ingredient.stockQuantity;
+      final newBalance = (previousBalance - quantityInBaseUnit).clamp(0.0, double.infinity);
+
+      await updateIngredient(ingredient.copyWith(stockQuantity: newBalance));
+
+      await insertIngredientStockHistory(
+        IngredientStockHistoryCompanion.insert(
+          ingredientId: ingredientId,
+          type: type,
+          quantityChange: -quantityInBaseUnit,
+          previousBalance: previousBalance,
+          newBalance: newBalance,
+          referenceId: Value(referenceId),
+          reason: Value(reason),
+        ),
+      );
+    });
+  }
+
+  // ===== Unit Conversion Queries =====
+  Stream<List<UnitConversion>> watchAllUnitConversions() =>
+      select(unitConversions).watch();
+
+  Future<List<UnitConversion>> getAllUnitConversions() =>
+      select(unitConversions).get();
+
+  Future<int> insertUnitConversion(UnitConversionsCompanion entry) =>
+      into(unitConversions).insert(entry);
+
+  Future<bool> updateUnitConversion(UnitConversion entry) =>
+      update(unitConversions).replace(entry);
+
+  Future<int> deleteUnitConversion(int id) =>
+      (delete(unitConversions)..where((t) => t.id.equals(id))).go();
+
+  Future<List<UnitConversion>> getConversionsForBaseUnit(String baseUnit) =>
+      (select(unitConversions)..where((t) => t.toUnit.equals(baseUnit))).get();
+
+  // ===== Ingredient Stock Opname =====
+  Future<void> saveIngredientOpname({
+    required Map<int, double> physicalStockMap,
+    required String reason,
+  }) async {
+    await transaction(() async {
+      for (final entry in physicalStockMap.entries) {
+        final id = entry.key;
+        final physical = entry.value;
+        final ingredient = await getIngredientById(id);
+        if (ingredient == null) continue;
+
+        final diff = physical - ingredient.stockQuantity;
+        if (diff == 0.0) continue;
+
+        await updateIngredient(ingredient.copyWith(stockQuantity: physical));
+        await insertIngredientStockHistory(
+          IngredientStockHistoryCompanion.insert(
+            ingredientId: id,
+            type: 'ADJUST',
+            quantityChange: diff,
+            previousBalance: ingredient.stockQuantity,
+            newBalance: physical,
+            reason: Value(reason),
+          ),
+        );
+      }
+    });
+  }
 }
 
 class ProductWithVariants {
@@ -887,6 +1181,20 @@ class ProductSales {
   final String productName;
   final int totalQuantity;
   ProductSales(this.productName, this.totalQuantity);
+}
+
+class ProductProfit {
+  final String productName;
+  final int totalRevenue;
+  final int totalProfit;
+  ProductProfit(this.productName, this.totalRevenue, this.totalProfit);
+}
+
+class CategoryProfit {
+  final String categoryName;
+  final int totalRevenue;
+  final int totalProfit;
+  CategoryProfit(this.categoryName, this.totalRevenue, this.totalProfit);
 }
 
 class DailySales {

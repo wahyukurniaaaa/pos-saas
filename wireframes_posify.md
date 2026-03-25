@@ -665,3 +665,67 @@ Berikut adalah representasi visual sketsa (wireframe) kasar untuk aplikasi POSif
 +---------------------------------------+
 ```
 ```
+### 8. Manajemen Bahan Baku & Resep [NEW]
+
+**A. Ingredient List (Bahan Baku):**
+```text
++---------------------------------------+
+| 📦 Daftar Bahan Baku (Ingredients)    |
+| [🔍 Cari Bahan...                ]    |
++---------------------------------------+
+| Biji Kopi Arabica               [ ⋮ ]  |
+| Stok: 1.500 gr   Avg: Rp 250/gr       |
+|---------------------------------------|
+| Susu UHT Plain                  [ ⋮ ]  |
+| Stok: 5.000 ml   Avg: Rp 18/ml   [!]  |
+|---------------------------------------|
+| Gula Pasir                      [ ⋮ ]  |
+| Stok: 2.000 gr   Avg: Rp 15/gr        |
+|                                       |
+| [ ➕ TAMBAH BAHAN ]  [ 🕒 HISTORY ]   |
++---------------------------------------+
+| 🏠 Kasir | 🧾 Riwayat | 📦 Stok | ⚙️ Setting |
++---------------------------------------+
+```
+
+**B. Modal Tambah Stok (Stock In Bahan):**
+```text
++---------------------------------------+
+| 📥 TAMBAH STOK: Susu UHT              |
+|                                       |
+|   Jumlah Stok Baru                    |
+|  +---------------------------------+  |
+|  | 5                    [ Liter v ]|  |
+|  +---------------------------------+  |
+|  *Otomatis dikonversi ke 5.000 ml     |
+|                                       |
+|   Total Harga Beli                    |
+|  +---------------------------------+  |
+|  | Rp 95.000                       |  |
+|  +---------------------------------+  |
+|  *Avg Cost akan diupdate otomatis.    |
+|                                       |
+|  [        SIMPAN STOK MASUK        ]  |
++---------------------------------------+
+```
+
+**C. Recipe Builder (Dalam Form Produk):**
+```text
++---------------------------------------+
+| ... [Data Produk Lainnya] ...         |
+|                                       |
+| --- RESEP / KOMPOSISI [BARU] ---      |
+| [ + Pilih Bahan Baku ]                |
+|                                       |
+| +------------------------------------+|
+| | Biji Kopi Arabica                  ||
+| | Qty: [ 15 ] gr                   X ||
+| +------------------------------------+|
+| +------------------------------------+|
+| | Susu UHT Plain                     ||
+| | Qty: [ 150 ] ml                  X ||
+| +------------------------------------+|
+|                                       |
+| [        SIMPAN PRODUK & RESEP       ]|
++---------------------------------------+
+```

@@ -20,6 +20,9 @@ erDiagram
     
     categories ||--|{ products : "mengkelompokkan"
     
+    suppliers ||--o{ ingredients : "menyuplai terakhir"
+    suppliers ||--o{ ingredient_stock_history : "disuplai pada"
+    
     products ||--o{ stock_transactions : "memiliki riwayat"
     products ||--o{ transaction_items : "dibeli dalam"
     products ||--o{ product_variants : "memiliki ragam"
@@ -27,6 +30,10 @@ erDiagram
     product_variants ||--o{ stock_transactions : "diopname/masuk/keluar (opsional)"
     
     transactions ||--|{ transaction_items : "memiliki detail"
+    
+    products ||--o{ product_recipes : "menggunakan"
+    ingredients ||--o{ product_recipes : "digunakan"
+    ingredients ||--o{ ingredient_stock_history : "memiliki riwayat"
 
     %% Definisi Entitas %%
 
@@ -94,7 +101,6 @@ erDiagram
         TEXT name 
         TEXT sku "Barang Simple. Unik, Barcode"
         INTEGER price "Harga Jual (Jika simple)"
-        INTEGER purchase_price "Harga Beli"
         INTEGER stock "Sisa Fisik (Jika simple)"
         INTEGER low_stock_threshold "Batas stok menipis, Default 0"
         BOOLEAN has_variants "Default False"
@@ -102,6 +108,7 @@ erDiagram
         TEXT created_at "ISO 8601"
         TEXT updated_at "ISO 8601"
     }
+
 
     product_variants {
         INTEGER id PK "Auto Increment"
@@ -158,7 +165,6 @@ erDiagram
         INTEGER supplier_id FK "Nullable (utk IN)"
         TEXT type "IN / OUT / ADJUST / SALE / VOID"
         INTEGER quantity "Jml perubahan"
-        INTEGER cost_price "Harga beli saat stok masuk (Nullable)"
         INTEGER previous_stock "Stok sistem sblmnya"
         INTEGER new_stock "Stok fisik baru"
         TEXT reason "Alasan / Note (Opsional)"
@@ -166,17 +172,61 @@ erDiagram
         TEXT created_at "ISO 8601"
     }
 
+
     printer_settings {
         INTEGER id PK "Auto Increment"
         TEXT device_name "Nama Printer"
         TEXT mac_address "Identitas Unik"
         TEXT status "paired/last_connected"
     }
+
+    ingredients {
+        INTEGER id PK "Auto Increment"
+        TEXT name "Nama Bahan Baku"
+        TEXT unit "Satuan Dasar (gr/ml/pcs)"
+        REAL stock_quantity "Stok saat ini"
+        REAL min_stock_threshold "Batas peringatan"
+        REAL average_cost "HPP Rata-rata per satuan"
+        INTEGER last_supplier_id FK "Supplier terakhir"
+        TEXT created_at "ISO 8601"
+    }
+
+    product_recipes {
+        INTEGER id PK "Auto Increment"
+        INTEGER product_id FK
+        INTEGER ingredient_id FK
+        REAL quantity_needed "Jumlah yang dibutuhkan per porsi"
+        TEXT created_at "ISO 8601"
+    }
+
+
+    ingredient_stock_history {
+        INTEGER id PK "Auto Increment"
+        INTEGER ingredient_id FK
+        INTEGER supplier_id FK "Nullable, utk PURCHASE"
+        TEXT type "SALE/PURCHASE/ADJUST/WASTE"
+        REAL quantity_change "Perubahan stok (+/-)"
+        REAL previous_balance "Stok sebelum"
+        REAL new_balance "Stok sesudah"
+        TEXT reference_id "No Nota / No Batch"
+        TEXT reason "Keterangan (Waste/Adjust)"
+        TEXT created_at "ISO 8601"
+    }
+
+    unit_conversions {
+        INTEGER id PK "Auto Increment"
+        TEXT from_unit "e.g., kg"
+        TEXT to_unit "e.g., gr"
+        REAL multiplier "misal 1000"
+        TEXT notes "Catatan manual, nullable"
+        TEXT created_at "ISO 8601"
+    }
+
 ```
 
 ---
-
 ## 2. Struktur Tabel & Penjelasan (SQLite Data Types - Drift ORM)
+
 
 Di dalam SQLite (yang diatur via Drift ORM), tipe data utama yang dipakai adalah `TEXT` dan `INTEGER`. Tanggal dan UUID akan disesuaikan menjadi *class type-safe* di layer Dart dengan *fallback* fungsi penyimpanan secara `TEXT` berformat `ISO 8601` untuk standar lokalisasi dan sinkronisasi log di Tier 2 nanti.
 
@@ -208,3 +258,28 @@ Di tabel ini pula letak variabel Global untuk menghitung **Pajak (PB1/PPN)** dan
 
 ### h) `printer_settings` (Koneksi Hardware)
 Menyimpan data printer terakhir yang digunakan agar aplikasi bisa otomatis *re-connect* saat kasir dibuka tanpa perlu mengulang proses scanning setiap hari.
+
+### i) `customers` & `suppliers` (CRM & Logistik)
+- **`customers`**: Menyimpan data pelanggan untuk fitur membership dan riwayat transaksi.
+- **`suppliers`**: Master data pemasok untuk melacak asal `ingredient_stock_history` (PURCHASE).
+
+### j) `ingredients`, `product_recipes`, & `ingredient_stock_history` (Manajemen Stok Bahan)
+- **`ingredients`**: Unit dasar stok disimpan dalam satuan terkecil. `average_cost` memakai Weighted Average.
+- **`product_recipes`**: Pemetaan 1 Produk → *n* Bahan Baku dengan kuantitas tertentu.
+- **`ingredient_stock_history`**: Audit trail stok bahan baku (IN/OUT/ADJUST/SALE).
+
+### k) `unit_conversions` (Konversi Satuan / UoM)
+- **`unit_conversions`**: Tabel master untuk menyimpan aturan matematika antar satuan (misal: 1000 gr = 1 kg).
+- **Proses**: Saat stok masuk (purchasing) user bisa input "Karung", sistem mencari `from_unit='karung'` ke `to_unit='gr'` untuk menghitung nominal stok yang harus diinput ke database.
+- Tabel ini berdiri sendiri dan dikonfigurasi oleh **Owner**.
+
+---
+## 3. Catatan Logic & Perhitungan Bisnis
+
+> [!NOTE]
+> **Gross Profit Calculation (COGS)**:
+> Sejak v2.2, Laporan Laba Kotor dihitung secara *on-the-fly* (tidak disimpan di tabel tersendiri) menggunakan Weighted Average cost dari bahan baku.
+> **Formula**: `Laba Kotor = Total Penjualan - (Kebutuhan Bahan × Average Cost)`
+> Query ini menggabungkan `transactions`, `transaction_items`, `product_recipes`, dan `ingredients`.
+
+

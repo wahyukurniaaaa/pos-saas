@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
@@ -23,12 +23,18 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
   bool _isLoading = true;
   int _totalRevenue = 0;
   int _totalTransactions = 0;
+  int _totalGrossProfit = 0;
   int _aov = 0;
   double _revenueChange = 0; // percentage
   double _transactionChange = 0; // percentage
+  double _profitChange = 0; // percentage
   List<ProductSales> _topProducts = [];
-  List<DailySales> _salesData = []; // Can be hourly, daily, or monthly
+  List<ProductProfit> _productProfits = [];
+  List<CategoryProfit> _categoryProfits = [];
+  List<DailySales> _salesData = []; 
   List<PaymentMethodSales> _paymentMethods = [];
+
+  bool _showProfitInTopProducts = false;
 
   final _currency = NumberFormat.currency(
     locale: 'id_ID',
@@ -86,22 +92,21 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
 
     final revenue = await db.getTotalRevenue(range.start, range.end);
     final count = await db.getTotalTransactions(range.start, range.end);
+    final totalProfit = await db.getTotalGrossProfit(range.start, range.end);
     final topProducts = await db.getTopProducts(range.start, range.end);
+    final productProfits = await db.getProductProfitReport(range.start, range.end);
+    final categoryProfits = await db.getCategoryProfitReport(range.start, range.end);
     final paymentMethods = await db.getPaymentMethodBreakdown(range.start, range.end);
     
     // Previous data for comparison
     final prevRevenue = await db.getTotalRevenue(prevRange.start, prevRange.end);
     final prevCount = await db.getTotalTransactions(prevRange.start, prevRange.end);
+    final prevProfit = await db.getTotalGrossProfit(prevRange.start, prevRange.end);
 
     // Dynamic sales trend
     List<DailySales> sales;
     if (_selectedRange == 'Hari Ini') {
       sales = await db.getHourlySales(range.start, range.end);
-    } else if (_selectedRange == 'Tahun Ini') {
-      // Need getMonthlySales? Or just use getDailySales and group in UI?
-      // Let's just use getDailySales for now and group manually if needed, 
-      // but I added getHourlySales to db. Let's add getMonthlySales to db later if needed.
-      sales = await db.getDailySales(range.start, range.end);
     } else {
       sales = await db.getDailySales(range.start, range.end);
     }
@@ -117,10 +122,14 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
       setState(() {
         _totalRevenue = revenue;
         _totalTransactions = count;
+        _totalGrossProfit = totalProfit;
         _aov = count > 0 ? (revenue / count).round() : 0;
         _revenueChange = prevRevenue > 0 ? ((revenue - prevRevenue) / prevRevenue) * 100 : 0;
         _transactionChange = prevCount > 0 ? ((count - prevCount) / prevCount) * 100 : 0;
+        _profitChange = prevProfit > 0 ? ((totalProfit - prevProfit) / prevProfit) * 100 : 0;
         _topProducts = topProducts;
+        _productProfits = productProfits;
+        _categoryProfits = categoryProfits;
         _salesData = sales;
         _paymentMethods = paymentMethods;
         _isLoading = false;
@@ -158,6 +167,8 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                             children: [
                               _buildSummaryGrid(),
                               const SizedBox(height: 16),
+                              _buildGrossProfitCard(),
+                              const SizedBox(height: 16),
                               if (isTablet)
                                 Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -178,11 +189,15 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Expanded(child: _buildTopProductsCard()),
-                                    const Spacer(), // Memberi ruang kosong di tablet agar tidak terlalu lebar
+                                    const SizedBox(width: 16),
+                                    Expanded(child: _buildCategoryProfitCard()),
                                   ],
                                 )
-                              else
+                              else ...[
                                 _buildTopProductsCard(),
+                                const SizedBox(height: 16),
+                                _buildCategoryProfitCard(),
+                              ],
                             ],
                           ),
                         ),
@@ -317,48 +332,6 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
     );
   }
 
-  Widget _buildWideSummaryCard(String title, String value, IconData icon, String subtitle) {
-    return Card(
-      elevation: 0,
-      color: Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: AppTheme.primaryColor),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.poppins(fontSize: 12, color: AppTheme.textSecondary),
-                  ),
-                  Text(
-                    value,
-                    style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-            ),
-            Text(
-              subtitle,
-              style: GoogleFonts.poppins(fontSize: 10, color: AppTheme.textSecondary),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildChartCard() {
     if (_salesData.isEmpty) return const SizedBox.shrink();
@@ -575,6 +548,82 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
     );
   }
 
+  Widget _buildGrossProfitCard() {
+    return _buildWideSummaryCard(
+      'Laba Kotor (Estimasi)',
+      _currency.format(_totalGrossProfit),
+      Icons.account_balance_wallet_outlined,
+      'Pendapatan - Estimasi Biaya Bahan',
+      change: _profitChange,
+    );
+  }
+
+  Widget _buildWideSummaryCard(String title, String value, IconData icon, String subtitle, {double? change}) {
+    final isPositive = (change ?? 0) >= 0;
+    return Card(
+      elevation: 0,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: AppTheme.primaryColor),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        title,
+                        style: GoogleFonts.poppins(fontSize: 12, color: AppTheme.textSecondary),
+                      ),
+                      if (change != null) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: (isPositive ? Colors.green : Colors.red).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            '${isPositive ? '+' : ''}${change.toStringAsFixed(1)}%',
+                            style: GoogleFonts.poppins(
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                              color: isPositive ? Colors.green : Colors.red,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  Text(
+                    value,
+                    style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.poppins(fontSize: 10, color: AppTheme.textSecondary),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildTopProductsCard() {
     return Card(
       elevation: 0,
@@ -584,12 +633,21 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Top 5 Produk (Kuantitas)',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  _showProfitInTopProducts ? 'Top 5 Produk (Laba)' : 'Top 5 Produk (Kuantitas)',
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+                ),
+                TextButton(
+                  onPressed: () => setState(() => _showProfitInTopProducts = !_showProfitInTopProducts),
+                  child: Text(_showProfitInTopProducts ? 'Lihat Qty' : 'Lihat Laba', style: TextStyle(fontSize: 12)),
+                ),
+              ],
             ),
-            const SizedBox(height: 20),
-            if (_topProducts.isEmpty)
+            const SizedBox(height: 12),
+            if (_showProfitInTopProducts ? _productProfits.isEmpty : _topProducts.isEmpty)
               Center(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 20),
@@ -600,40 +658,92 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                 ),
               )
             else
-              ..._topProducts.asMap().entries.map(
-                (entry) {
-                   final p = entry.value;
-                   final maxQty = _topProducts.first.totalQuantity;
-                   final progress = p.totalQuantity / maxQty;
-                   return Padding(
-                     padding: const EdgeInsets.only(bottom: 16),
-                     child: Column(
-                       children: [
-                         Row(
-                           children: [
-                             Text('${entry.key + 1}', style: GoogleFonts.poppins(color: AppTheme.textSecondary, fontWeight: FontWeight.bold)),
-                             const SizedBox(width: 12),
-                             Expanded(child: Text(p.productName, style: GoogleFonts.poppins(fontWeight: FontWeight.w600))),
-                             Text('${p.totalQuantity}x', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-                           ],
-                         ),
-                         const SizedBox(height: 6),
-                         ClipRRect(
-                           borderRadius: BorderRadius.circular(4),
-                           child: LinearProgressIndicator(
-                             value: progress,
-                             backgroundColor: AppTheme.backgroundLight,
-                             color: AppTheme.primaryColor,
-                             minHeight: 6,
-                           ),
-                         ),
-                       ],
-                     ),
-                   );
-                }
+              ...(_showProfitInTopProducts 
+                ? _productProfits.take(5).toList().asMap().entries.map((e) {
+                    final p = e.value;
+                    final maxProfit = _productProfits.first.totalProfit;
+                    final progress = maxProfit > 0 ? p.totalProfit / maxProfit : 0.0;
+                    return _buildRankingItem(e.key + 1, p.productName, _currency.format(p.totalProfit), progress);
+                  })
+                : _topProducts.take(5).toList().asMap().entries.map((e) {
+                    final p = e.value;
+                    final maxQty = _topProducts.first.totalQuantity;
+                    final progress = maxQty > 0 ? p.totalQuantity / maxQty : 0.0;
+                    return _buildRankingItem(e.key + 1, p.productName, '${p.totalQuantity}x', progress);
+                  })
               ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryProfitCard() {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Analisa Kategori (Laba)',
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (_categoryProfits.isEmpty)
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  child: Text(
+                    'Belum ada data',
+                    style: GoogleFonts.poppins(color: AppTheme.textSecondary),
+                  ),
+                ),
+              )
+            else
+              ..._categoryProfits.asMap().entries.map((e) {
+                final c = e.value;
+                final maxProfit = _categoryProfits.first.totalProfit;
+                final progress = maxProfit > 0 ? c.totalProfit / maxProfit : 0.0;
+                return _buildRankingItem(e.key + 1, c.categoryName, _currency.format(c.totalProfit), progress, color: AppTheme.secondaryColor);
+              }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRankingItem(int rank, String name, String value, double progress, {Color? color}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Text('$rank', style: GoogleFonts.poppins(color: AppTheme.textSecondary, fontWeight: FontWeight.bold)),
+              const SizedBox(width: 12),
+              Expanded(child: Text(name, style: GoogleFonts.poppins(fontWeight: FontWeight.w600))),
+              Text(value, style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+            ],
+          ),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: progress.clamp(0.0, 1.0),
+              backgroundColor: AppTheme.backgroundLight,
+              color: color ?? AppTheme.primaryColor,
+              minHeight: 6,
+            ),
+          ),
+        ],
       ),
     );
   }

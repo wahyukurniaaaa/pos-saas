@@ -18,6 +18,7 @@ import 'package:posify_app/features/pos/screens/settings/printer_settings_screen
 import 'package:posify_app/features/settings/screens/customers/customer_list_screen.dart';
 import 'package:posify_app/features/settings/screens/suppliers/supplier_list_screen.dart';
 import 'package:posify_app/features/pos/screens/inventory/global_stock_history_screen.dart';
+import 'package:posify_app/features/pos/screens/inventory/ingredient_list_screen.dart';
 import 'package:posify_app/features/pos/screens/settings_tab.dart';
 import 'package:intl/intl.dart';
 
@@ -601,10 +602,8 @@ class _OwnerDashboardScreenState extends ConsumerState<OwnerDashboardScreen> {
         _ActionItem(
           icon: Icons.kitchen_rounded,
           label: 'Bahan Baku',
-          color: Colors.green,
-          onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Fitur Bahan Baku akan segera hadir!')),
-          ),
+          color: const Color(0xFF0D9488),
+          onTap: () => _nav(const IngredientListScreen()),
         ),
         _ActionItem(
           icon: Icons.settings_rounded,

@@ -123,6 +123,42 @@ final productWithVariantsProvider =
       ProductWithVariantsNotifier.new,
     );
 
+// ===== Ingredient Provider =====
+
+class IngredientNotifier extends AsyncNotifier<List<Ingredient>> {
+  String? _searchQuery;
+
+  @override
+  Future<List<Ingredient>> build() async {
+    final db = ref.watch(databaseProvider);
+    
+    final subscription = db.watchAllIngredients().listen((data) {
+      if (ref.mounted) {
+        state = AsyncValue.data(_filter(data));
+      }
+    });
+
+    ref.onDispose(() => subscription.cancel());
+
+    final initialData = await db.getAllIngredients();
+    return _filter(initialData);
+  }
+
+  List<Ingredient> _filter(List<Ingredient> data) {
+    if (_searchQuery == null || _searchQuery!.isEmpty) return data;
+    return data.where((i) => i.name.toLowerCase().contains(_searchQuery!.toLowerCase())).toList();
+  }
+
+  void setSearch(String? query) {
+    _searchQuery = query;
+    ref.invalidateSelf();
+  }
+}
+
+final ingredientProvider = AsyncNotifierProvider<IngredientNotifier, List<Ingredient>>(
+  IngredientNotifier.new,
+);
+
 // ===== Cart Model =====
 
 /// Represents one line in the shopping cart.

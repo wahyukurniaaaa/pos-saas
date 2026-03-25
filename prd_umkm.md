@@ -2,9 +2,21 @@
 
 **Produk:** Aplikasi Sistem Kasir (POS) SaaS Offline-First
 
-**Versi:** 2.0 (WhatsApp Receipt & CRM Integration)
+**Versi:** 2.3 (Stock Opname Bahan Baku & UoM Conversion)
 
-**Status:** Implementasi Selesai (Phase 1-3)
+**Status:** Implementasi Progresif (Phase 1-3, Phase 7-9 Selesai)
+
+## **Update Log (v2.3):**
+*   **Stock Opname Bahan Baku (Phase 8)**: Layar audit stok fisik untuk bahan baku. User memasukkan stok fisik, sistem otomatis menghitung selisih dan membuat entri `ADJUST` di `ingredient_stock_history`.
+*   **Unit of Measure (UoM) Conversion (Phase 9)**: Tabel `unit_conversions` baru untuk aturan konversi satuan fleksibel (misal: 1 kg = 1000 gr). Layar manajemen konversi tersedia di Pengaturan (role Owner).
+*   **Database Migration v11**: Penambahan tabel `unit_conversions` pada skema database SQLite.
+*   **Versi App**: Bump ke `1.4.0+8`.
+
+## **Update Log (v2.2):**
+*   **Advanced Inventory**: Implementasi fitur "Stok Keluar" dengan alasan (Waste/Expired/Damage).
+*   **Supplier Management**: Penambahan Master Data Supplier dan integrasi pada Stock In bahan baku.
+*   **Gross Profit**: Penambahan perhitungan Laba Kotor otomatis di dashboard analitik berbasis resep (COGS).
+*   **ERD Sync**: Sinkronisasi tabel `suppliers`, `ingredients`, dan `ingredient_stock_history`.
 
 ## **1\. Ringkasan Eksekutif**
 
@@ -56,10 +68,18 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
 * **Barcode Scanning System:** 
     * **Continuous Scanning:** Scanner tetap terbuka untuk input keranjang belanja yang cepat di menu POS.
     * **Inventory Input:** Integrasi scanner pada form tambah/edit produk untuk mengisi SKU secara otomatis.
-* **Manajemen Stok Lokal & Supplier (Stock Card):** 
-    * Pencatatan stok masuk (pembelian dari supplier), stok keluar (rusak/expired), dan penyesuaian (*stock opname*).
-    * Setiap pergerakan stok dicatat di **Kartu Stok** sehingga ada *audit trail* yang jelas (Histori masuk/keluar/terjual).
+    * setiap pergerakan stok dicatat di **Kartu Stok** sehingga ada *audit trail* yang jelas (Histori masuk/keluar/terjual).
     * Notifikasi **Low Stock Alert** jika stok mendekati batas minimum.
+* **Manajemen Pemasok (Supplier):** [BARU]
+    * Mendata profil pemasok (Nama, Kontak, Alamat).
+    * Menautkan pemasok saat mencatat "Barang Masuk" (Stock In) untuk bahan baku, memudahkan pelacakan asal usul dan riwayat harga.
+* **Manajemen Bahan Baku & Resep (Advanced Inventory) [BARU]:**
+    * **Ingredient Maintenance**: Mengelola stok mentah (biji kopi, susu, gula) dengan satuan dasar (gr, ml, pcs).
+    * **Stock Out & Waste Management**: Fitur "Stok Keluar" manual dengan pencatatan alasan (Misal: Kedaluwarsa, Rusak, Tumpah) untuk transparansi pengurangan inventaris.
+    * **Recipe Builder**: Menentukan komposisi bahan baku per produk. Contoh: 1 cup "Copi Susu" memotong 15gr biji kopi dan 150ml susu.
+    * **Auto-Stock Deduction**: Pemotongan stok bahan baku secara otomatis dan *real-time* saat transaksi pembayaran selesai (Checkout).
+    * **Kalkulasi HPP (Weighted Moving Average)**: Sistem menghitung modal rata-rata secara otomatis setiap kali ada stok baru masuk (pembelian), memberikan akurasi laba kotor yang presisi bagi Owner.
+    * **Unit Conversion**: Fleksibilitas input stok dalam satuan besar (Kg/Liter) yang otomatis dikonversi ke satuan penyimpan dasar (Gram/Ml) di database.
 * **Pencatatan Pembayaran (Recording Only):** Memilih status pembayaran (**Tunai, QRIS, Debit, Kredit, Piutang/Bon**). Tidak ada integrasi gateway API untuk menghindari biaya MDR.  
 * **Print & Share Engine:** 
     *   Cetak struk via Bluetooth/USB Thermal (Protokol ESC/POS).
@@ -111,6 +131,10 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
 |  | Nilai Transaksi | Integrasi Subtotal, Tax Amount, Service Amount, dan Total Akhir (Nilai Integer/Pembulatan Rupiah). |
 |  | Status Bayar | Enum: {Tunai, QRIS, Debit, Kredit, Piutang, **Void/Batal**}. |
 |  | Void By | Jika status Void, field ini wajib terisi oleh PIN Supervisor/Owner (L2/L1). |
+| **Bahan Baku** | Nama Bahan | String, unik. Contoh: "Susu UHT", "Biji Kopi Arabica". |
+| (Baru) | Unit | Enum: {gr, ml, pcs}. Disimpan dalam satuan terkecil. |
+|  | HPP (Avg Cost) | Numeric. Dihitung otomatis (Weighted Average). |
+| **Resep** | Qty Needed | REAL. Jumlah bahan per 1 porsi produk. |
 
 ## **6\. Arsitektur Teknis & Tech Stack**
 
@@ -137,12 +161,13 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
 * **Manajemen Karyawan:** Saya ingin menambah banyak akun Kasir/Supervisor, melampirkan foto profil mereka (opsional), mengatur PIN 6-digit yang berbeda tanpa biaya tambahan, dan memantau akun yang terkunci akibat salah PIN 5x.
 * **Konfigurasi Biaya:** Saya ingin mengatur besaran persentase Pajak (PPN/PB1) secara *inclusive* atau *exclusive*, serta menetapkan *Service Charge* (%) agar sistem otomatis menghitungnya ke total belanjaan pelanggan. Perhitungan pajak bersifat dinamis dan akan di-record nilainya (nominal) pada setiap nota.
 * **Branded Receipt:** Saya ingin mengunggah logo toko saya agar struk fisik (Thermal) maupun struk digital (WhatsApp) terlihat lebih profesional.
-* **Monitoring Lengkap:** Sebagai Owner, saya ingin melihat menu analitik (Laporan Penjualan bulanan, tren penjualan, & riwayat Sesi Buka/Tutup Kasir) demi evaluasi dan pelacakan *fraud* kasir.  
+* **Monitoring Lengkap & Profitabilitas:** Sebagai Owner, saya ingin melihat menu analitik (Laporan Penjualan, tren, **Laba Kotor (Gross Profit)**, dan Kategori paling menguntungkan) demi mengevaluasi performa bisnis.
+* **Manajemen Modal (HPP):** Saya ingin sistem menghitung otomatis modal (COGS) dari setiap produk berdasarkan resep dan harga beli bahan baku agar sistem bisa menyajikan estimasi Laba Kotor secara otomatis.
 * **Data Safety:** Sebagai Owner, saya ingin mencadangkan data ke Google Drive secara manual, atau *Auto-Local Backup* (otomatis) di *storage internal* untuk keamanan.
 
 ### **8.2. Peran: Supervisor (L2)**
 
-* **Manajemen Stok Utama:** Saya ingin menambah stok manual dan melakukan **Stock Opname**, yakni memasukkan stok fisik, melihat perbandingan dengan stok di sistem, sekaligus menulis alasan penambahan/pengurangan di log riwayat.
+* **Manajemen Stok & Bahan:** Saya ingin menambah stok manual (bahan baku atau produk jadi) dan melakukan **Stock Opname**, yakni memasukkan stok fisik, melihat perbandingan dengan stok di sistem, sekaligus menulis alasan penambahan/pengurangan di log riwayat.
 * **Monitoring Shift:** Saya ingin melihat Laporan Shift & Analytics untuk mengecek uang kasir.
 * **Otorisasi Transaksi:** Saya ingin memasukkan PIN saya untuk menyetujui pembatalan (*void*) transaksi yang diajukan kasir.  
 * **Operasional:** Saya ingin bisa masuk ke menu kasir untuk membantu melayani antrean pelanggan.

@@ -62,6 +62,19 @@ Berdasarkan pedoman `mobile-design`:
    - Input field: Nama, Kategori (Dropdown), Harga Beli, Harga Jual, SKU/Barcode, Gambar Produk, Stok.
    - Tombol Scan Barcode via kamera di sebelah input SKU.
    - CTA "Simpan" di ujung form.
+3. **[Screen] Supplier Management (List, Form) [NEW]**
+   - List pemasok dengan info kontak.
+   - Form Manajemen Pemasok: Nama Pemasok, Kontak, Alamat.
+4. **[Screen] Ingredient Management (List, Form, History) [NEW]**
+   - List bahan baku (susu, kopi, dll) dengan filter & search.
+   - Form Manajemen Bahan: Nama, Satuan Dasar (gr/ml/pcs), Min Stok, Modal Awal.
+   - **Modal Tambah Stok**: Input jumlah, harga beli baru, dan **Pemilihan Pemasok (Supplier)**.
+   - **Form Stok Keluar (Waste)**: Input jumlah keluar dan catatan/alasan (misal: Rusak, Kadaluarsa).
+   - **Kartu Stok Bahan**: Riwayat kronologis mutasi bahan baku (Penjualan/Pembelian/Penyesuaian).
+5. **[Screen] Recipe Builder (Nested in Add/Edit Product) [NEW]**
+   - Bagian khusus dalam form produk untuk memilih bahan baku dan input kuantitas per porsi.
+   - Otomatis menampilkan satuan bahan yang dipilih sebagai label input.
+
 3. **[Screen] Import CSV / Excel**
    - Tampilan panduan format kolom yang wajib.
    - Tombol "Pilih File Document" (Membuka *File Picker* bawaan OS).
@@ -84,11 +97,12 @@ Berdasarkan pedoman `mobile-design`:
    - Diakses dari menu "Master Data".
    - Menampilkan list kategori (Makanan, Minuman, dsb).
    - Form pop-up / layar kecil untuk Tambah/Edit/Hapus nama kategori.
-5. **[Screen] Laporan Penjualan (Local Analytics)**
-   - Header: Filter rentang waktu (Hari ini, Kemarin, 7 Hari Terakhir, Bulan Ini).
-   - Card Ringkasan: Total Pendapatan, Total Transaksi, Rata-rata transaksi.
-   - Chart/Garis sederhana tren penjualan (bersumber murni dari SQLite `transactions`).
-   - Daftar 5 Produk Paling Laris (Best Seller).
+5. **[Screen] Laporan Penjualan & Analitik Laba (Dashboard)**
+   - Header: Filter rentang waktu (Hari ini, 7 Hari Terakhir, Bulan Ini, Tahun Ini).
+   - Card Ringkasan: Total Pendapatan, Total Transaksi, AOV, dan **Total Laba Kotor**.
+   - Chart/Garis sederhana tren penjualan.
+   - Daftar 5 Produk Paling Laris (Kuantitas vs Laba).
+   - Analisa Kategori (berdasarkan Laba).
 5. **[Screen] Riwayat Transaksi & Pembatalan (Void)**
    - Menampilkan list semua nota transaksi hari ini / yang difilter.
    - Ketika nota di-tap, muncul Pop-up Detail Nota (Item yang dibeli, Harga, Waktu).
@@ -131,6 +145,10 @@ Dari flow UI di atas, kita membutuhkan struktur *Class List Table* di layer Drif
 8. **`stock_adjustments`** (Log jejak audit saat Supervisor/Owner mengubah stok / *Stock Opname*. Terikat pada `product_id` dan/opsional `variant_id`).
 9. **`backup_logs`** (Mencatat kapan terakhir *Auto-Local Backup* berjalan).
 10. **`store_profile`** (Data tunggal profil toko: Nama, Alamat, Telp, **`logo_uri`** untuk kop struk).
+11. **`suppliers`** (BARU: id, name, contact, address).
+12. **`ingredients`** (BARU: id, name, unit, stock_quantity, average_cost, `last_supplier_id`).
+13. **`product_recipes`** (BARU: id, product_id, ingredient_id, quantity_needed).
+14. **`ingredient_stock_history`** (BARU: log mutasi bahan baku, termasuk `supplier_id` untuk barang masuk, dan `reason` untuk stok keluar/penyesuaian).
 
 ---
 *Dokumen ini adalah draf kasar untuk diskusi arsitektur sebelum diubah ke `implementation_plan.md`.*

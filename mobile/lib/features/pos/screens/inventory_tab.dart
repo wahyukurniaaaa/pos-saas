@@ -15,6 +15,7 @@ import 'inventory/stock_opname_screen.dart';
 import 'inventory/import_product_screen.dart';
 import 'inventory/global_stock_history_screen.dart';
 import 'inventory/product_list_screen.dart';
+import 'inventory/ingredient_list_screen.dart';
 import 'inventory/select_product_transaction_screen.dart';
 
 
@@ -159,6 +160,13 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                           label: 'Produk',
                           color: AppTheme.primaryColor,
                           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProductListScreen())),
+                        ),
+                        _buildMenuCard(
+                          context,
+                          icon: Icons.kitchen_rounded,
+                          label: 'Bahan Baku',
+                          color: const Color(0xFF0D9488),
+                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const IngredientListScreen())),
                         ),
                         _buildMenuCard(
                           context,
@@ -364,6 +372,16 @@ class _VariantInput {
   }
 }
 
+// ===== Recipe input form model =====
+class _RecipeInput {
+  int? ingredientId;
+  final quantityController = TextEditingController();
+
+  void dispose() {
+    quantityController.dispose();
+  }
+}
+
 // ===== Add / Edit Product Sheet =====
 
 class AddProductSheet extends ConsumerStatefulWidget {
@@ -389,6 +407,9 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
   bool _hasVariants = false;
   final List<_VariantInput> _variantInputs = [];
   
+  // Recipe mapping
+  final List<_RecipeInput> _recipeInputs = [];
+
   // Image
   String? _imagePath;
   final _imagePicker = ImagePicker();
@@ -522,9 +543,26 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
       if (_hasVariants) {
         WidgetsBinding.instance.addPostFrameCallback((_) => _loadExistingVariants());
       }
+
+      WidgetsBinding.instance.addPostFrameCallback((_) => _loadExistingRecipes());
     } else {
       _addVariantInput(); // Start with one blank variant row
     }
+  }
+
+  Future<void> _loadExistingRecipes() async {
+    final db = ref.read(databaseProvider);
+    final existing = await db.getRecipesByProductId(widget.product!.id);
+    if (!mounted) return;
+    setState(() {
+      _recipeInputs.clear();
+      for (final r in existing) {
+        final rInput = _RecipeInput();
+        rInput.ingredientId = r.ingredientId;
+        rInput.quantityController.text = r.quantityNeeded.toString();
+        _recipeInputs.add(rInput);
+      }
+    });
   }
 
   Future<void> _loadExistingVariants() async {
@@ -549,6 +587,10 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
     setState(() => _variantInputs.add(_VariantInput()));
   }
 
+  void _addRecipeInput() {
+    setState(() => _recipeInputs.add(_RecipeInput()));
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -558,6 +600,9 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
     _minStockController.dispose();
     for (final vi in _variantInputs) {
       vi.dispose();
+    }
+    for (final ri in _recipeInputs) {
+      ri.dispose();
     }
     super.dispose();
   }
@@ -621,13 +666,15 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
     );
   }
 
-  InputDecoration _inputDecoration(String label, {String? hint, String? prefixText, Widget? prefixIcon, Widget? suffixIcon, Color? fillColor}) {
+  InputDecoration _inputDecoration(String label, {String? hint, String? prefixText, String? suffixText, Widget? prefixIcon, Widget? suffixIcon, Color? fillColor}) {
     return InputDecoration(
       labelText: label,
       hintText: hint,
       prefixText: prefixText,
       prefixIcon: prefixIcon,
       suffixIcon: suffixIcon,
+      suffixText: suffixText,
+      suffixStyle: GoogleFonts.poppins(fontWeight: FontWeight.w700, color: AppTheme.textPrimary, fontSize: 13),
       prefixStyle: GoogleFonts.poppins(fontWeight: FontWeight.w700, color: AppTheme.textPrimary, fontSize: 15),
       labelStyle: GoogleFonts.poppins(fontSize: 14, color: AppTheme.textSecondary),
       hintStyle: GoogleFonts.poppins(fontSize: 14, color: Colors.grey.shade400),
@@ -1143,6 +1190,144 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
                               ],
                             ),
                           ),
+                          const SizedBox(height: 32),
+
+                          // Recipe Builder Section
+                          Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(color: Colors.grey.shade200),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.02),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.restaurant_menu_rounded, color: AppTheme.primaryColor),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Resep / Komposisi (Opsional)',
+                                      style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 15, color: AppTheme.textPrimary),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Pilih bahan baku dan jumlah yang dikurangkan otomatis setiap produk terjual.',
+                                  style: GoogleFonts.poppins(fontSize: 12, color: AppTheme.textSecondary),
+                                ),
+                                const SizedBox(height: 16),
+                                
+                                ..._recipeInputs.asMap().entries.map((entry) {
+                                  final idx = entry.key;
+                                  final ri = entry.value;
+                                  return Container(
+                                    margin: const EdgeInsets.only(bottom: 12),
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.shade50,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: Colors.grey.shade200),
+                                    ),
+                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Expanded(
+                                          flex: 2,
+                                          child: ref.watch(ingredientProvider).when(
+                                            data: (ingredients) => DropdownButtonFormField<int>(
+                                              isExpanded: true,
+                                              value: ri.ingredientId,
+                                              decoration: _inputDecoration('Bahan Baku', fillColor: Colors.white),
+                                              icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppTheme.textSecondary),
+                                              items: ingredients.map((ing) {
+                                                return DropdownMenuItem<int>(
+                                                  value: ing.id,
+                                                  child: Text('${ing.name} (${ing.unit})'),
+                                                );
+                                              }).toList(),
+                                              onChanged: (val) => setState(() => ri.ingredientId = val),
+                                              validator: (v) => v == null ? 'Pilih' : null,
+                                              selectedItemBuilder: (BuildContext context) {
+                                                return ingredients.map<Widget>((ing) {
+                                                  return Text(
+                                                    ing.name,
+                                                    style: GoogleFonts.poppins(color: AppTheme.textPrimary, fontSize: 13),
+                                                    overflow: TextOverflow.ellipsis,
+                                                  );
+                                                }).toList();
+                                              },
+                                            ),
+                                            loading: () => const LinearProgressIndicator(),
+                                            error: (_, __) => const Text('Gagal memuat bahan baku'),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          flex: 1,
+                                          child: TextFormField(
+                                            controller: ri.quantityController,
+                                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                            decoration: _inputDecoration(
+                                              'Jumlah',
+                                              fillColor: Colors.white,
+                                              suffixText: ri.ingredientId == null
+                                                  ? null
+                                                  : ref.watch(ingredientProvider).when(
+                                                        data: (ings) {
+                                                          final ing = ings.firstWhere(
+                                                            (i) => i.id == ri.ingredientId,
+                                                            orElse: () => ings.first,
+                                                          );
+                                                          return ing.unit;
+                                                        },
+                                                        loading: () => null,
+                                                        error: (_, __) => null,
+                                                      ),
+                                            ),
+                                            validator: (v) => v == null || v.isEmpty ? 'Wajib' : null,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        IconButton(
+                                          onPressed: () {
+                                            setState(() {
+                                              ri.dispose();
+                                              _recipeInputs.removeAt(idx);
+                                            });
+                                          },
+                                          icon: const Icon(Icons.delete_outline_rounded, color: AppTheme.errorColor),
+                                          padding: const EdgeInsets.only(top: 12),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }),
+
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: TextButton.icon(
+                                    onPressed: _addRecipeInput,
+                                    icon: const Icon(Icons.add_circle_outline_rounded, size: 20),
+                                    label: Text('Tambah Bahan Baku', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: AppTheme.primaryColor,
+                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -1283,6 +1468,23 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
       // If toggled off, remove all existing variants
       await db.deleteVariantsByProduct(productId);
     }
+
+    if (!mounted) return;
+
+    // Save recipes
+    final validRecipes = _recipeInputs
+        .where((ri) => ri.ingredientId != null && ri.quantityController.text.isNotEmpty)
+        .map((ri) {
+      final qStr = ri.quantityController.text.replaceAll(',', '.');
+      final quantity = double.tryParse(qStr) ?? 0.0;
+      return ProductRecipesCompanion.insert(
+        productId: productId,
+        ingredientId: ri.ingredientId!,
+        quantityNeeded: quantity,
+      );
+    }).toList();
+
+    await db.replaceProductRecipes(productId, validRecipes);
 
     if (!mounted) return;
     ref.invalidate(productProvider);

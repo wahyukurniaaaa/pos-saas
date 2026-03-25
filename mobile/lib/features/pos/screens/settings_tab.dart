@@ -14,6 +14,8 @@ import 'package:posify_app/features/settings/screens/tax_service_settings_screen
 import 'package:posify_app/features/settings/screens/database_settings_screen.dart';
 import 'package:posify_app/features/settings/screens/customers/customer_list_screen.dart';
 import 'package:posify_app/features/settings/screens/suppliers/supplier_list_screen.dart';
+import 'package:posify_app/features/pos/screens/inventory/ingredient_list_screen.dart';
+import 'package:posify_app/features/settings/screens/unit_conversion_screen.dart';
 import 'package:posify_app/core/widgets/responsive_layout.dart';
 
 class SettingsTab extends ConsumerWidget {
@@ -78,7 +80,7 @@ class SettingsTab extends ConsumerWidget {
                 // Produk
                 _buildSection(
                   context: context,
-                  title: 'Produk',
+                  title: 'Produk & Inventori',
                   items: [
                     _SettingsItem(
                       icon: Icons.label_rounded,
@@ -86,8 +88,22 @@ class SettingsTab extends ConsumerWidget {
                       subtitle: 'Tambah, edit, hapus kategori',
                       isEnabled: isAtLeastSupervisor,
                       onTap: () => _navigate(context, const CategoryManagementScreen()),
-                      isLast: true,
                     ),
+                    _SettingsItem(
+                      icon: Icons.kitchen_rounded,
+                      title: 'Kelola Bahan Baku',
+                      subtitle: 'Pantau stok & konversi unit resep',
+                      isEnabled: isAtLeastSupervisor,
+                      onTap: () => _navigate(context, const IngredientListScreen()),
+                    ),
+                    if (isOwner)
+                      _SettingsItem(
+                        icon: Icons.swap_horiz_rounded,
+                        title: 'Konversi Satuan (UoM)',
+                        subtitle: 'Atur aturan kg → gr, liter → ml, dsb.',
+                        onTap: () => _navigate(context, const UnitConversionScreen()),
+                        isLast: true,
+                      ),
                   ],
                 ),
 
