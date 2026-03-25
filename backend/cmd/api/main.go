@@ -96,8 +96,11 @@ func main() {
 		if adminPath == "" {
 			adminPath = "/admin"
 		}
-		app.Static(adminPath, "./public")
-		log.Printf("Admin UI enabled at http://localhost:%s%s", port, adminPath)
+		// Serves files from ./public under the adminPath
+		app.Static(adminPath, "./public", fiber.Static{
+			Index: "index.html",
+		})
+		log.Printf("Admin UI enabled at http://localhost:%s%s/", port, adminPath)
 	}
 
 	// Health Check / Ping Endpoint
