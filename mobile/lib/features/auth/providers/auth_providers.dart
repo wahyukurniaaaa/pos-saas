@@ -106,17 +106,40 @@ class LicenseNotifier extends AsyncNotifier<License?> {
               data['data']['is_active'] == true);
 
       if (isSuccess) {
-        // Success! Update local timestamp
-        await db.updateLicenseVerification(code);
+        // Success! Update local timestamp AND ensure fingerprint is synced locally
+        await db.updateLicenseFingerprint(code, deviceId);
       } else {
-        // License is no longer valid for this device!
-        await db.deleteLicense(code);
-        ref.invalidateSelf();
+        // Verification failed. Could be a fingerprint mismatch after emulator update.
+        // Try a "Silent Re-activation" instead of immediate deletion.
+        final model = await _getDeviceModel();
+        final actResponse = await dio.post(
+          'license/activate',
+          data: {
+            'license_code': code,
+            'device_fingerprint': deviceId,
+            'device_model': model,
+            'os_version': Platform.operatingSystemVersion,
+          },
+        );
+
+        final actData = actResponse.data;
+        final isActSuccess = (actData is Map && actData['status'] == 'success') ||
+            (actData is Map && actData['success'] == true);
+
+        if (isActSuccess) {
+          // Silent re-activation worked! Update local DB with new fingerprint.
+          await db.updateLicenseFingerprint(code, deviceId);
+        } else {
+          // Truly invalid or device limit reached.
+          await db.deleteLicense(code);
+          ref.invalidateSelf();
+        }
       }
     } catch (e) {
       // Offline-First: Keep local state if server unreachable
     }
   }
+
 
   Future<(bool, String?)> activate(String code) async {
     // NOTE: Do NOT set state = AsyncValue.loading() here.
@@ -150,7 +173,11 @@ class LicenseNotifier extends AsyncNotifier<License?> {
           response.statusCode == 200;
 
       if (isSuccess) {
-        // 2. Save/Update to Local SQLite (Upsert)
+        // 2. Clear existing licenses first to avoid UNIQUE constraint violation on licenseCode
+        // This is a robust approach for a Single-License POS application.
+        await (db.delete(db.licenses)).go();
+
+        // 3. Save new activation to Local SQLite
         await db.into(db.licenses).insert(
               LicensesCompanion.insert(
                 licenseCode: code,
@@ -158,11 +185,11 @@ class LicenseNotifier extends AsyncNotifier<License?> {
                 activationDate: Value(DateTime.now()),
                 status: const Value('active'),
               ),
-              mode: InsertMode.insertOrReplace,
             );
 
-        // 3. Read back dari DB dan update state
+        // 4. Read back from DB and update state
         final newLicense = await db.getLocalLicense();
+
         if (ref.mounted) state = AsyncValue.data(newLicense);
         return (true, null);
       }

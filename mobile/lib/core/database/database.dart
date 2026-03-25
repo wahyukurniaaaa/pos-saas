@@ -147,6 +147,16 @@ class PosifyDatabase extends _$PosifyDatabase {
     );
   }
 
+  Future<void> updateLicenseFingerprint(String code, String fingerprint) {
+    return (update(licenses)..where((t) => t.licenseCode.equals(code))).write(
+      LicensesCompanion(
+        deviceFingerprint: Value(fingerprint),
+        lastVerified: Value(DateTime.now()),
+      ),
+    );
+  }
+
+
   // ===== Employee Queries =====
   Future<List<Employee>> getAllEmployees() => select(employees).get();
 
