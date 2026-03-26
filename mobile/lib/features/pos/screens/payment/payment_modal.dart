@@ -9,6 +9,8 @@ import 'package:posify_app/features/settings/providers/store_provider.dart';
 import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import '../../providers/pos_providers.dart';
+import '../../providers/discount_provider.dart';
+import 'discount_selection_sheet.dart';
 import 'payment_success_screen.dart';
 
 final _currency = NumberFormat.currency(
@@ -136,19 +138,20 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
         double taxAmount = 0;
         double finalTotal = widget.totalAmount;
 
+        // Discount calculation
+        final selectedDiscount = ref.watch(selectedDiscountProvider);
+        int discountAmount = 0;
+        if (selectedDiscount != null) {
+          discountAmount = calculateDiscountAmount(selectedDiscount, widget.totalAmount.toInt());
+        }
+
         if (taxType == 'exclusive') {
           serviceCharge = widget.totalAmount * (servicePercentage / 100);
-          taxAmount =
-              (widget.totalAmount + serviceCharge) * (taxPercentage / 100);
-          finalTotal = widget.totalAmount + serviceCharge + taxAmount;
+          taxAmount = (widget.totalAmount + serviceCharge) * (taxPercentage / 100);
+          finalTotal = widget.totalAmount + serviceCharge + taxAmount - discountAmount;
         } else {
-          // Inclusive
-          // Final total is the price itself
-          finalTotal = widget.totalAmount;
-          // tax calculation: Total - (Total / (1 + rate))
+          finalTotal = widget.totalAmount - discountAmount;
           taxAmount = finalTotal - (finalTotal / (1 + (taxPercentage / 100)));
-          // Service charge in inclusive is usually 0 or already inside,
-          // but for simplicity we treat inclusive as All-in.
           serviceCharge = 0;
         }
 
@@ -249,6 +252,10 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                       ),
                       const SizedBox(height: 28),
 
+                      // ── Discount Selection Row ──
+                      _buildDiscountRow(context, ref, widget.totalAmount, selectedDiscount, discountAmount),
+                      const SizedBox(height: 20),
+
                       // Payment Methods
                       Text(
                         'Metode Pembayaran',
@@ -343,6 +350,84 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildDiscountRow(BuildContext context, WidgetRef ref,
+      double subtotal, Discount? selected, int discountAmount) {
+    return GestureDetector(
+      onTap: () => showDiscountSelectionSheet(context, ref, subtotal),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: selected != null
+              ? AppTheme.secondaryColor.withOpacity(0.08)
+              : Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: selected != null
+                ? AppTheme.secondaryColor
+                : Colors.grey.shade200,
+            width: selected != null ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: selected != null
+                    ? AppTheme.secondaryColor.withOpacity(0.2)
+                    : Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                Icons.local_offer_rounded,
+                size: 20,
+                color: selected != null
+                    ? AppTheme.primaryColor
+                    : AppTheme.textSecondary,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: selected == null
+                  ? Text(
+                      'Pilih Promo / Voucher',
+                      style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.textSecondary,
+                          fontSize: 14),
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          selected.name,
+                          style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.textPrimary,
+                              fontSize: 14),
+                        ),
+                        Text(
+                          'Hemat ${_currency.format(discountAmount)}',
+                          style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.successColor,
+                              fontSize: 12),
+                        ),
+                      ],
+                    ),
+            ),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: AppTheme.textSecondary,
+              size: 20,
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -976,6 +1061,12 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
             customerPhone: enteredPhone.isNotEmpty ? enteredPhone : null,
             customerName: enteredName.isNotEmpty ? enteredName : null,
             customerId: assignedCustomerId,
+            discountId: ref.read(selectedDiscountProvider)?.id,
+            discountAmount: ref.read(selectedDiscountProvider) != null
+                ? calculateDiscountAmount(
+                    ref.read(selectedDiscountProvider)!,
+                    ref.read(cartProvider.notifier).subtotal.toInt())
+                : 0,
           );
 
       if (!mounted) return;

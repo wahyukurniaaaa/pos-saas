@@ -15,6 +15,8 @@ erDiagram
     
     customers ||--o{ transactions : "melakukan"
     suppliers ||--o{ stock_transactions : "menyuplai"
+    discounts ||--o{ transactions : "dipakai dalam (bill level)"
+    discounts ||--o{ transaction_items : "dipakai dalam (item level)"
     
     shifts ||--o{ transactions : "menampung nota"
     
@@ -149,6 +151,8 @@ erDiagram
         TEXT payment_method "cash/qris/debit/credit"
         TEXT payment_status "paid/void"
         INTEGER void_by FK "ID Pegawai L1/L2, Nullable"
+        INTEGER discount_id FK "Discounts ID, Nullable"
+        INTEGER discount_amount "Nominal Diskon (Total)"
         TEXT created_at "Waktu Transaksi"
     }
 
@@ -160,7 +164,9 @@ erDiagram
         TEXT variant_name "Snapshot nama varian"
         INTEGER quantity "Jml Beli"
         INTEGER price_at_transaction "Harga saat dibeli"
-        INTEGER subtotal "Q * Harga"
+        INTEGER discount_id FK "Discounts ID, Nullable"
+        INTEGER discount_amount "Diskon per unit"
+        INTEGER subtotal "Q * Harga - Diskon"
     }
 
     stock_opname {
@@ -270,6 +276,22 @@ erDiagram
         TEXT created_at "ISO 8601"
     }
 
+    discounts {
+        INTEGER id PK "Auto Increment"
+        TEXT name "Voucher Makan / Promo Item"
+        TEXT scope "transaction / item"
+        TEXT type "fixed / percentage"
+        REAL value "Nominal atau persen"
+        INTEGER min_spend "Minimal belanja (Rp)"
+        INTEGER min_qty "Minimal jumlah (Item)"
+        BOOLEAN is_automatic "Auto-apply"
+        BOOLEAN is_stackable "Bisa digabung diskon lain"
+        BOOLEAN is_active "Status aktif"
+        TEXT start_date "ISO 8601, Nullable"
+        TEXT end_date "ISO 8601, Nullable"
+        TEXT created_at "ISO 8601"
+    }
+
 ```
 
 ---
@@ -320,6 +342,12 @@ Menyimpan data printer terakhir yang digunakan agar aplikasi bisa otomatis *re-c
 - **`unit_conversions`**: Tabel master untuk menyimpan aturan matematika antar satuan (misal: 1000 gr = 1 kg).
 - **Proses**: Saat stok masuk (purchasing) user bisa input "Karung", sistem mencari `from_unit='karung'` ke `to_unit='gr'` untuk menghitung nominal stok yang harus diinput ke database.
 - Tabel ini berdiri sendiri dan dikonfigurasi oleh **Owner**.
+
+### l) `discounts` (Voucher & Promo)
+- Tabel ini menyimpan semua konfigurasi promosi, baik yang bersifat diskon otomatis (seperti Happy Hour) maupun voucher manual yang dipilih kasir.
+- `scope`: Menentukan apakah diskon memotong total nota (`transaction`) atau potongan per baris produk (`item`).
+- `is_stackable`: Jika `false`, maka diskon ini tidak bisa digabung dengan promo lainnya dalam satu transaksi.
+- History penggunaan diskon tercatat secara permanen di kolom `discount_id` dan `discount_amount` pada tabel `transactions` dan `transaction_items` untuk keperluan audit dan laporan performa promo.
 
 ---
 ## 3. Catatan Logic & Perhitungan Bisnis

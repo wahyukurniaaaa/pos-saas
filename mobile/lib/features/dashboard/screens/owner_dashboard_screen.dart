@@ -22,6 +22,7 @@ import 'package:posify_app/features/settings/screens/suppliers/supplier_list_scr
 import 'package:posify_app/features/pos/screens/inventory/global_stock_history_screen.dart';
 import 'package:posify_app/features/pos/screens/inventory/ingredient_list_screen.dart';
 import 'package:posify_app/features/pos/screens/settings_tab.dart';
+import 'package:posify_app/features/pos/screens/settings/discount_management_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:posify_app/features/dashboard/widgets/low_stock_widget.dart';
 import 'package:posify_app/features/inventory/screens/po/po_list_screen.dart';
@@ -399,6 +400,13 @@ class _OwnerDashboardScreenState extends ConsumerState<OwnerDashboardScreen> {
                         subtitle: 'PPN, service, diskon default',
                         color: AppTheme.infoColor,
                         onTap: () => _nav(const TaxServiceSettingsScreen()),
+                      ),
+                      _MenuTile(
+                        icon: Icons.local_offer_rounded,
+                        label: 'Diskon & Promo',
+                        subtitle: 'Kelola voucher & program promo',
+                        color: AppTheme.secondaryColor,
+                        onTap: () => _nav(const DiscountManagementScreen()),
                         isLast: !isOwner,
                       ),
                       if (isOwner)

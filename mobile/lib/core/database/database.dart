@@ -28,6 +28,7 @@ import 'tables/unit_conversions_table.dart';
 import 'tables/stock_opname_table.dart';
 import 'tables/stock_opname_items_table.dart';
 import 'tables/purchase_orders_table.dart';
+import 'tables/discounts_table.dart';
 
 part 'database.g.dart';
 
@@ -66,6 +67,7 @@ class StockTransactionWithProduct {
     StockOpnameItems,
     PurchaseOrders,
     PurchaseOrderItems,
+    Discounts,
   ],
 )
 class PosifyDatabase extends _$PosifyDatabase {
@@ -75,7 +77,7 @@ class PosifyDatabase extends _$PosifyDatabase {
   PosifyDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 14;
 
   @override
   MigrationStrategy get migration {
@@ -139,6 +141,13 @@ class PosifyDatabase extends _$PosifyDatabase {
         if (from < 13) {
           await m.createTable(purchaseOrders);
           await m.createTable(purchaseOrderItems);
+        }
+        if (from < 14) {
+          await m.createTable(discounts);
+          await m.addColumn(transactions, transactions.discountId);
+          await m.addColumn(transactions, transactions.discountAmount);
+          await m.addColumn(transactionItems, transactionItems.discountId);
+          await m.addColumn(transactionItems, transactionItems.discountAmount);
         }
       },
     );
@@ -665,6 +674,34 @@ class PosifyDatabase extends _$PosifyDatabase {
       // Mark PO as received
       await updatePurchaseOrderStatus(poId, 'received');
     });
+  }
+
+  // ===== Discount Queries =====
+
+  Future<List<Discount>> getAllDiscounts() =>
+      (select(discounts)..orderBy([(d) => OrderingTerm.desc(d.createdAt)])).get();
+
+  Stream<List<Discount>> watchAllDiscounts() =>
+      (select(discounts)..orderBy([(d) => OrderingTerm.desc(d.createdAt)])).watch();
+
+  Future<int> upsertDiscount(DiscountsCompanion entry) =>
+      into(discounts).insertOnConflictUpdate(entry);
+
+  Future<int> deleteDiscount(int id) =>
+      (delete(discounts)..where((d) => d.id.equals(id))).go();
+
+  /// Returns discounts that are valid: active, within period, meets minSpend, and matches scope.
+  Future<List<Discount>> getValidDiscounts({required double cartTotal, required String scope}) async {
+    final todayStr = DateTime.now().toIso8601String().substring(0, 10);
+    final all = await (select(discounts)
+          ..where((d) => d.isActive.equals(true) & d.scope.equals(scope)))
+        .get();
+    return all.where((d) {
+      final afterStart = d.startDate == null || d.startDate!.substring(0, 10).compareTo(todayStr) <= 0;
+      final beforeEnd = d.endDate == null || d.endDate!.substring(0, 10).compareTo(todayStr) >= 0;
+      final meetsMin = cartTotal >= d.minSpend;
+      return afterStart && beforeEnd && meetsMin;
+    }).toList();
   }
 
   // ===== Checkout Process =====

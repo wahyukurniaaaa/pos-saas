@@ -26,7 +26,7 @@ Berikut adalah backlog fitur untuk pengembangan **Posify Inventory Phase 2, 3, &
 ### 5. Low Stock Dashboard Widget
 *   **User Story**: "Sebagai Kasir, saya ingin melihat ringkasan stok yang menipis di dashboard agar saya tahu apa yang harus dipromosikan (atau jangan dijual)."
 *   **Tasks**:
-    *   [ ] UI: Widget "Stok Menipis" di Dashboard POS.
+    *   [x] UI: Widget "Stok Menipis" di Dashboard POS.
     *   [ ] UI: Filter "Hampir Habis" di Product Grid.
 
 ### 6. Batch & Expiry Tracking
@@ -59,10 +59,10 @@ Berikut adalah backlog fitur untuk pengembangan **Posify Inventory Phase 2, 3, &
 ### 9. Purchase Order (PO) Workflow
 *   **User Story**: "Sebagai Manager, saya ingin membuat pesanan resmi ke supplier dan melacaknya hingga barang diterima agar procurement terdokumentasi."
 *   **Tasks**:
-    *   [ ] Create `purchase_orders` & `po_items` tables.
-    *   [ ] Logic: Status flow (Draft -> Sent -> Partially Received -> Received).
-    *   [ ] Automation: Update stok otomatis saat PO berstatus `Received`.
-    *   [ ] UI: PO Management Screen (List & Form).
+    *   [x] Create `purchase_orders` & `po_items` tables.
+    *   [x] Logic: Status flow (Draft -> Sent -> Partially Received -> Received).
+    *   [x] Automation: Update stok otomatis saat PO berstatus `Received`.
+    *   [x] UI: PO Management Screen (List & Form).
 
 ---
 
@@ -83,6 +83,16 @@ Berikut adalah backlog fitur untuk pengembangan **Posify Inventory Phase 2, 3, &
     *   [ ] Backend: Cron Job untuk cek `low_stock_threshold` setiap jam.
     *   [ ] Integration with Firebase Cloud Messaging (FCM).
     *   [ ] UI: Low Stock Notification setup di Pengaturan.
+ 
+### 12. Discount & Voucher Management
+*   **User Story**: "Sebagai Owner, saya ingin membuat promo diskon (nominal/persen) dengan minimal belanja dan periode waktu tertentu serta dukungan diskon otomatis agar saya bisa meningkatkan penjualan."
+*   **Tasks**:
+    *   [x] **Database**: Create `discounts` table with scope (bill/item), stackable logic, and period validation (Migration v14).
+    *   [x] **UI**: Discount Management Screen in Settings (Navy/Yellow Theme).
+    *   [x] **Logic**: Handle "Voucher Selection" in Payment Modal with real-time validation.
+    *   [x] **Integration**: Recalculation logic (Subtotal - Discount) and audit trail in transactions.
+    *   [ ] **Item-Level Discount**: Integrasi pemilihan diskon per produk di dalam keranjang (Cart Detail).
+    *   [ ] **Auto-Apply Logic**: Implementasi deteksi promo otomatis saat syarat minimal belanja terpenuhi tanpa input kasir.
 
 ---
 

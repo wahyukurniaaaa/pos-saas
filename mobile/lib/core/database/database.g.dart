@@ -3484,6 +3484,747 @@ class ShiftsCompanion extends UpdateCompanion<Shift> {
   }
 }
 
+class $DiscountsTable extends Discounts
+    with TableInfo<$DiscountsTable, Discount> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DiscountsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 2,
+      maxTextLength: 100,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _scopeMeta = const VerificationMeta('scope');
+  @override
+  late final GeneratedColumn<String> scope = GeneratedColumn<String>(
+    'scope',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('transaction'),
+  );
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+    'type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('percentage'),
+  );
+  static const VerificationMeta _valueMeta = const VerificationMeta('value');
+  @override
+  late final GeneratedColumn<double> value = GeneratedColumn<double>(
+    'value',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _minSpendMeta = const VerificationMeta(
+    'minSpend',
+  );
+  @override
+  late final GeneratedColumn<int> minSpend = GeneratedColumn<int>(
+    'min_spend',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _minQtyMeta = const VerificationMeta('minQty');
+  @override
+  late final GeneratedColumn<int> minQty = GeneratedColumn<int>(
+    'min_qty',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _isAutomaticMeta = const VerificationMeta(
+    'isAutomatic',
+  );
+  @override
+  late final GeneratedColumn<bool> isAutomatic = GeneratedColumn<bool>(
+    'is_automatic',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_automatic" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _isStackableMeta = const VerificationMeta(
+    'isStackable',
+  );
+  @override
+  late final GeneratedColumn<bool> isStackable = GeneratedColumn<bool>(
+    'is_stackable',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_stackable" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _isActiveMeta = const VerificationMeta(
+    'isActive',
+  );
+  @override
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+    'is_active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_active" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _startDateMeta = const VerificationMeta(
+    'startDate',
+  );
+  @override
+  late final GeneratedColumn<String> startDate = GeneratedColumn<String>(
+    'start_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _endDateMeta = const VerificationMeta(
+    'endDate',
+  );
+  @override
+  late final GeneratedColumn<String> endDate = GeneratedColumn<String>(
+    'end_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    scope,
+    type,
+    value,
+    minSpend,
+    minQty,
+    isAutomatic,
+    isStackable,
+    isActive,
+    startDate,
+    endDate,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'discounts';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Discount> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('scope')) {
+      context.handle(
+        _scopeMeta,
+        scope.isAcceptableOrUnknown(data['scope']!, _scopeMeta),
+      );
+    }
+    if (data.containsKey('type')) {
+      context.handle(
+        _typeMeta,
+        type.isAcceptableOrUnknown(data['type']!, _typeMeta),
+      );
+    }
+    if (data.containsKey('value')) {
+      context.handle(
+        _valueMeta,
+        value.isAcceptableOrUnknown(data['value']!, _valueMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_valueMeta);
+    }
+    if (data.containsKey('min_spend')) {
+      context.handle(
+        _minSpendMeta,
+        minSpend.isAcceptableOrUnknown(data['min_spend']!, _minSpendMeta),
+      );
+    }
+    if (data.containsKey('min_qty')) {
+      context.handle(
+        _minQtyMeta,
+        minQty.isAcceptableOrUnknown(data['min_qty']!, _minQtyMeta),
+      );
+    }
+    if (data.containsKey('is_automatic')) {
+      context.handle(
+        _isAutomaticMeta,
+        isAutomatic.isAcceptableOrUnknown(
+          data['is_automatic']!,
+          _isAutomaticMeta,
+        ),
+      );
+    }
+    if (data.containsKey('is_stackable')) {
+      context.handle(
+        _isStackableMeta,
+        isStackable.isAcceptableOrUnknown(
+          data['is_stackable']!,
+          _isStackableMeta,
+        ),
+      );
+    }
+    if (data.containsKey('is_active')) {
+      context.handle(
+        _isActiveMeta,
+        isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
+      );
+    }
+    if (data.containsKey('start_date')) {
+      context.handle(
+        _startDateMeta,
+        startDate.isAcceptableOrUnknown(data['start_date']!, _startDateMeta),
+      );
+    }
+    if (data.containsKey('end_date')) {
+      context.handle(
+        _endDateMeta,
+        endDate.isAcceptableOrUnknown(data['end_date']!, _endDateMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Discount map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Discount(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      scope: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}scope'],
+      )!,
+      type: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}type'],
+      )!,
+      value: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}value'],
+      )!,
+      minSpend: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}min_spend'],
+      )!,
+      minQty: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}min_qty'],
+      )!,
+      isAutomatic: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_automatic'],
+      )!,
+      isStackable: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_stackable'],
+      )!,
+      isActive: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_active'],
+      )!,
+      startDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}start_date'],
+      ),
+      endDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}end_date'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $DiscountsTable createAlias(String alias) {
+    return $DiscountsTable(attachedDatabase, alias);
+  }
+}
+
+class Discount extends DataClass implements Insertable<Discount> {
+  final int id;
+  final String name;
+  final String scope;
+  final String type;
+  final double value;
+  final int minSpend;
+  final int minQty;
+  final bool isAutomatic;
+  final bool isStackable;
+  final bool isActive;
+  final String? startDate;
+  final String? endDate;
+  final DateTime createdAt;
+  const Discount({
+    required this.id,
+    required this.name,
+    required this.scope,
+    required this.type,
+    required this.value,
+    required this.minSpend,
+    required this.minQty,
+    required this.isAutomatic,
+    required this.isStackable,
+    required this.isActive,
+    this.startDate,
+    this.endDate,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['scope'] = Variable<String>(scope);
+    map['type'] = Variable<String>(type);
+    map['value'] = Variable<double>(value);
+    map['min_spend'] = Variable<int>(minSpend);
+    map['min_qty'] = Variable<int>(minQty);
+    map['is_automatic'] = Variable<bool>(isAutomatic);
+    map['is_stackable'] = Variable<bool>(isStackable);
+    map['is_active'] = Variable<bool>(isActive);
+    if (!nullToAbsent || startDate != null) {
+      map['start_date'] = Variable<String>(startDate);
+    }
+    if (!nullToAbsent || endDate != null) {
+      map['end_date'] = Variable<String>(endDate);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  DiscountsCompanion toCompanion(bool nullToAbsent) {
+    return DiscountsCompanion(
+      id: Value(id),
+      name: Value(name),
+      scope: Value(scope),
+      type: Value(type),
+      value: Value(value),
+      minSpend: Value(minSpend),
+      minQty: Value(minQty),
+      isAutomatic: Value(isAutomatic),
+      isStackable: Value(isStackable),
+      isActive: Value(isActive),
+      startDate: startDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(startDate),
+      endDate: endDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(endDate),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory Discount.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Discount(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      scope: serializer.fromJson<String>(json['scope']),
+      type: serializer.fromJson<String>(json['type']),
+      value: serializer.fromJson<double>(json['value']),
+      minSpend: serializer.fromJson<int>(json['minSpend']),
+      minQty: serializer.fromJson<int>(json['minQty']),
+      isAutomatic: serializer.fromJson<bool>(json['isAutomatic']),
+      isStackable: serializer.fromJson<bool>(json['isStackable']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
+      startDate: serializer.fromJson<String?>(json['startDate']),
+      endDate: serializer.fromJson<String?>(json['endDate']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'scope': serializer.toJson<String>(scope),
+      'type': serializer.toJson<String>(type),
+      'value': serializer.toJson<double>(value),
+      'minSpend': serializer.toJson<int>(minSpend),
+      'minQty': serializer.toJson<int>(minQty),
+      'isAutomatic': serializer.toJson<bool>(isAutomatic),
+      'isStackable': serializer.toJson<bool>(isStackable),
+      'isActive': serializer.toJson<bool>(isActive),
+      'startDate': serializer.toJson<String?>(startDate),
+      'endDate': serializer.toJson<String?>(endDate),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  Discount copyWith({
+    int? id,
+    String? name,
+    String? scope,
+    String? type,
+    double? value,
+    int? minSpend,
+    int? minQty,
+    bool? isAutomatic,
+    bool? isStackable,
+    bool? isActive,
+    Value<String?> startDate = const Value.absent(),
+    Value<String?> endDate = const Value.absent(),
+    DateTime? createdAt,
+  }) => Discount(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    scope: scope ?? this.scope,
+    type: type ?? this.type,
+    value: value ?? this.value,
+    minSpend: minSpend ?? this.minSpend,
+    minQty: minQty ?? this.minQty,
+    isAutomatic: isAutomatic ?? this.isAutomatic,
+    isStackable: isStackable ?? this.isStackable,
+    isActive: isActive ?? this.isActive,
+    startDate: startDate.present ? startDate.value : this.startDate,
+    endDate: endDate.present ? endDate.value : this.endDate,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  Discount copyWithCompanion(DiscountsCompanion data) {
+    return Discount(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      scope: data.scope.present ? data.scope.value : this.scope,
+      type: data.type.present ? data.type.value : this.type,
+      value: data.value.present ? data.value.value : this.value,
+      minSpend: data.minSpend.present ? data.minSpend.value : this.minSpend,
+      minQty: data.minQty.present ? data.minQty.value : this.minQty,
+      isAutomatic: data.isAutomatic.present
+          ? data.isAutomatic.value
+          : this.isAutomatic,
+      isStackable: data.isStackable.present
+          ? data.isStackable.value
+          : this.isStackable,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      startDate: data.startDate.present ? data.startDate.value : this.startDate,
+      endDate: data.endDate.present ? data.endDate.value : this.endDate,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Discount(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('scope: $scope, ')
+          ..write('type: $type, ')
+          ..write('value: $value, ')
+          ..write('minSpend: $minSpend, ')
+          ..write('minQty: $minQty, ')
+          ..write('isAutomatic: $isAutomatic, ')
+          ..write('isStackable: $isStackable, ')
+          ..write('isActive: $isActive, ')
+          ..write('startDate: $startDate, ')
+          ..write('endDate: $endDate, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    scope,
+    type,
+    value,
+    minSpend,
+    minQty,
+    isAutomatic,
+    isStackable,
+    isActive,
+    startDate,
+    endDate,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Discount &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.scope == this.scope &&
+          other.type == this.type &&
+          other.value == this.value &&
+          other.minSpend == this.minSpend &&
+          other.minQty == this.minQty &&
+          other.isAutomatic == this.isAutomatic &&
+          other.isStackable == this.isStackable &&
+          other.isActive == this.isActive &&
+          other.startDate == this.startDate &&
+          other.endDate == this.endDate &&
+          other.createdAt == this.createdAt);
+}
+
+class DiscountsCompanion extends UpdateCompanion<Discount> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> scope;
+  final Value<String> type;
+  final Value<double> value;
+  final Value<int> minSpend;
+  final Value<int> minQty;
+  final Value<bool> isAutomatic;
+  final Value<bool> isStackable;
+  final Value<bool> isActive;
+  final Value<String?> startDate;
+  final Value<String?> endDate;
+  final Value<DateTime> createdAt;
+  const DiscountsCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.scope = const Value.absent(),
+    this.type = const Value.absent(),
+    this.value = const Value.absent(),
+    this.minSpend = const Value.absent(),
+    this.minQty = const Value.absent(),
+    this.isAutomatic = const Value.absent(),
+    this.isStackable = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.startDate = const Value.absent(),
+    this.endDate = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  DiscountsCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.scope = const Value.absent(),
+    this.type = const Value.absent(),
+    required double value,
+    this.minSpend = const Value.absent(),
+    this.minQty = const Value.absent(),
+    this.isAutomatic = const Value.absent(),
+    this.isStackable = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.startDate = const Value.absent(),
+    this.endDate = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  }) : name = Value(name),
+       value = Value(value);
+  static Insertable<Discount> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? scope,
+    Expression<String>? type,
+    Expression<double>? value,
+    Expression<int>? minSpend,
+    Expression<int>? minQty,
+    Expression<bool>? isAutomatic,
+    Expression<bool>? isStackable,
+    Expression<bool>? isActive,
+    Expression<String>? startDate,
+    Expression<String>? endDate,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (scope != null) 'scope': scope,
+      if (type != null) 'type': type,
+      if (value != null) 'value': value,
+      if (minSpend != null) 'min_spend': minSpend,
+      if (minQty != null) 'min_qty': minQty,
+      if (isAutomatic != null) 'is_automatic': isAutomatic,
+      if (isStackable != null) 'is_stackable': isStackable,
+      if (isActive != null) 'is_active': isActive,
+      if (startDate != null) 'start_date': startDate,
+      if (endDate != null) 'end_date': endDate,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  DiscountsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<String>? scope,
+    Value<String>? type,
+    Value<double>? value,
+    Value<int>? minSpend,
+    Value<int>? minQty,
+    Value<bool>? isAutomatic,
+    Value<bool>? isStackable,
+    Value<bool>? isActive,
+    Value<String?>? startDate,
+    Value<String?>? endDate,
+    Value<DateTime>? createdAt,
+  }) {
+    return DiscountsCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      scope: scope ?? this.scope,
+      type: type ?? this.type,
+      value: value ?? this.value,
+      minSpend: minSpend ?? this.minSpend,
+      minQty: minQty ?? this.minQty,
+      isAutomatic: isAutomatic ?? this.isAutomatic,
+      isStackable: isStackable ?? this.isStackable,
+      isActive: isActive ?? this.isActive,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (scope.present) {
+      map['scope'] = Variable<String>(scope.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
+    }
+    if (value.present) {
+      map['value'] = Variable<double>(value.value);
+    }
+    if (minSpend.present) {
+      map['min_spend'] = Variable<int>(minSpend.value);
+    }
+    if (minQty.present) {
+      map['min_qty'] = Variable<int>(minQty.value);
+    }
+    if (isAutomatic.present) {
+      map['is_automatic'] = Variable<bool>(isAutomatic.value);
+    }
+    if (isStackable.present) {
+      map['is_stackable'] = Variable<bool>(isStackable.value);
+    }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
+    }
+    if (startDate.present) {
+      map['start_date'] = Variable<String>(startDate.value);
+    }
+    if (endDate.present) {
+      map['end_date'] = Variable<String>(endDate.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DiscountsCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('scope: $scope, ')
+          ..write('type: $type, ')
+          ..write('value: $value, ')
+          ..write('minSpend: $minSpend, ')
+          ..write('minQty: $minQty, ')
+          ..write('isAutomatic: $isAutomatic, ')
+          ..write('isStackable: $isStackable, ')
+          ..write('isActive: $isActive, ')
+          ..write('startDate: $startDate, ')
+          ..write('endDate: $endDate, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $TransactionsTable extends Transactions
     with TableInfo<$TransactionsTable, Transaction> {
   @override
@@ -3654,6 +4395,32 @@ class $TransactionsTable extends Transactions
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _discountIdMeta = const VerificationMeta(
+    'discountId',
+  );
+  @override
+  late final GeneratedColumn<int> discountId = GeneratedColumn<int>(
+    'discount_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES discounts (id)',
+    ),
+  );
+  static const VerificationMeta _discountAmountMeta = const VerificationMeta(
+    'discountAmount',
+  );
+  @override
+  late final GeneratedColumn<int> discountAmount = GeneratedColumn<int>(
+    'discount_amount',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -3670,6 +4437,8 @@ class $TransactionsTable extends Transactions
     createdAt,
     customerPhone,
     customerName,
+    discountId,
+    discountAmount,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3795,6 +4564,21 @@ class $TransactionsTable extends Transactions
         ),
       );
     }
+    if (data.containsKey('discount_id')) {
+      context.handle(
+        _discountIdMeta,
+        discountId.isAcceptableOrUnknown(data['discount_id']!, _discountIdMeta),
+      );
+    }
+    if (data.containsKey('discount_amount')) {
+      context.handle(
+        _discountAmountMeta,
+        discountAmount.isAcceptableOrUnknown(
+          data['discount_amount']!,
+          _discountAmountMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -3860,6 +4644,14 @@ class $TransactionsTable extends Transactions
         DriftSqlType.string,
         data['${effectivePrefix}customer_name'],
       ),
+      discountId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}discount_id'],
+      ),
+      discountAmount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}discount_amount'],
+      )!,
     );
   }
 
@@ -3884,6 +4676,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
   final DateTime createdAt;
   final String? customerPhone;
   final String? customerName;
+  final int? discountId;
+  final int discountAmount;
   const Transaction({
     required this.id,
     required this.receiptNumber,
@@ -3899,6 +4693,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     required this.createdAt,
     this.customerPhone,
     this.customerName,
+    this.discountId,
+    required this.discountAmount,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3925,6 +4721,10 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     if (!nullToAbsent || customerName != null) {
       map['customer_name'] = Variable<String>(customerName);
     }
+    if (!nullToAbsent || discountId != null) {
+      map['discount_id'] = Variable<int>(discountId);
+    }
+    map['discount_amount'] = Variable<int>(discountAmount);
     return map;
   }
 
@@ -3952,6 +4752,10 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       customerName: customerName == null && nullToAbsent
           ? const Value.absent()
           : Value(customerName),
+      discountId: discountId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(discountId),
+      discountAmount: Value(discountAmount),
     );
   }
 
@@ -3977,6 +4781,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       customerPhone: serializer.fromJson<String?>(json['customerPhone']),
       customerName: serializer.fromJson<String?>(json['customerName']),
+      discountId: serializer.fromJson<int?>(json['discountId']),
+      discountAmount: serializer.fromJson<int>(json['discountAmount']),
     );
   }
   @override
@@ -3997,6 +4803,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'customerPhone': serializer.toJson<String?>(customerPhone),
       'customerName': serializer.toJson<String?>(customerName),
+      'discountId': serializer.toJson<int?>(discountId),
+      'discountAmount': serializer.toJson<int>(discountAmount),
     };
   }
 
@@ -4015,6 +4823,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     DateTime? createdAt,
     Value<String?> customerPhone = const Value.absent(),
     Value<String?> customerName = const Value.absent(),
+    Value<int?> discountId = const Value.absent(),
+    int? discountAmount,
   }) => Transaction(
     id: id ?? this.id,
     receiptNumber: receiptNumber ?? this.receiptNumber,
@@ -4032,6 +4842,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
         ? customerPhone.value
         : this.customerPhone,
     customerName: customerName.present ? customerName.value : this.customerName,
+    discountId: discountId.present ? discountId.value : this.discountId,
+    discountAmount: discountAmount ?? this.discountAmount,
   );
   Transaction copyWithCompanion(TransactionsCompanion data) {
     return Transaction(
@@ -4065,6 +4877,12 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       customerName: data.customerName.present
           ? data.customerName.value
           : this.customerName,
+      discountId: data.discountId.present
+          ? data.discountId.value
+          : this.discountId,
+      discountAmount: data.discountAmount.present
+          ? data.discountAmount.value
+          : this.discountAmount,
     );
   }
 
@@ -4084,7 +4902,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           ..write('voidBy: $voidBy, ')
           ..write('createdAt: $createdAt, ')
           ..write('customerPhone: $customerPhone, ')
-          ..write('customerName: $customerName')
+          ..write('customerName: $customerName, ')
+          ..write('discountId: $discountId, ')
+          ..write('discountAmount: $discountAmount')
           ..write(')'))
         .toString();
   }
@@ -4105,6 +4925,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     createdAt,
     customerPhone,
     customerName,
+    discountId,
+    discountAmount,
   );
   @override
   bool operator ==(Object other) =>
@@ -4123,7 +4945,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           other.voidBy == this.voidBy &&
           other.createdAt == this.createdAt &&
           other.customerPhone == this.customerPhone &&
-          other.customerName == this.customerName);
+          other.customerName == this.customerName &&
+          other.discountId == this.discountId &&
+          other.discountAmount == this.discountAmount);
 }
 
 class TransactionsCompanion extends UpdateCompanion<Transaction> {
@@ -4141,6 +4965,8 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
   final Value<DateTime> createdAt;
   final Value<String?> customerPhone;
   final Value<String?> customerName;
+  final Value<int?> discountId;
+  final Value<int> discountAmount;
   const TransactionsCompanion({
     this.id = const Value.absent(),
     this.receiptNumber = const Value.absent(),
@@ -4156,6 +4982,8 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     this.createdAt = const Value.absent(),
     this.customerPhone = const Value.absent(),
     this.customerName = const Value.absent(),
+    this.discountId = const Value.absent(),
+    this.discountAmount = const Value.absent(),
   });
   TransactionsCompanion.insert({
     this.id = const Value.absent(),
@@ -4172,6 +5000,8 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     this.createdAt = const Value.absent(),
     this.customerPhone = const Value.absent(),
     this.customerName = const Value.absent(),
+    this.discountId = const Value.absent(),
+    this.discountAmount = const Value.absent(),
   }) : receiptNumber = Value(receiptNumber),
        shiftId = Value(shiftId),
        subtotal = Value(subtotal),
@@ -4192,6 +5022,8 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     Expression<DateTime>? createdAt,
     Expression<String>? customerPhone,
     Expression<String>? customerName,
+    Expression<int>? discountId,
+    Expression<int>? discountAmount,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -4209,6 +5041,8 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       if (createdAt != null) 'created_at': createdAt,
       if (customerPhone != null) 'customer_phone': customerPhone,
       if (customerName != null) 'customer_name': customerName,
+      if (discountId != null) 'discount_id': discountId,
+      if (discountAmount != null) 'discount_amount': discountAmount,
     });
   }
 
@@ -4227,6 +5061,8 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     Value<DateTime>? createdAt,
     Value<String?>? customerPhone,
     Value<String?>? customerName,
+    Value<int?>? discountId,
+    Value<int>? discountAmount,
   }) {
     return TransactionsCompanion(
       id: id ?? this.id,
@@ -4243,6 +5079,8 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       createdAt: createdAt ?? this.createdAt,
       customerPhone: customerPhone ?? this.customerPhone,
       customerName: customerName ?? this.customerName,
+      discountId: discountId ?? this.discountId,
+      discountAmount: discountAmount ?? this.discountAmount,
     );
   }
 
@@ -4291,6 +5129,12 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     if (customerName.present) {
       map['customer_name'] = Variable<String>(customerName.value);
     }
+    if (discountId.present) {
+      map['discount_id'] = Variable<int>(discountId.value);
+    }
+    if (discountAmount.present) {
+      map['discount_amount'] = Variable<int>(discountAmount.value);
+    }
     return map;
   }
 
@@ -4310,7 +5154,9 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
           ..write('voidBy: $voidBy, ')
           ..write('createdAt: $createdAt, ')
           ..write('customerPhone: $customerPhone, ')
-          ..write('customerName: $customerName')
+          ..write('customerName: $customerName, ')
+          ..write('discountId: $discountId, ')
+          ..write('discountAmount: $discountAmount')
           ..write(')'))
         .toString();
   }
@@ -4420,6 +5266,32 @@ class $TransactionItemsTable extends TransactionItems
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _discountIdMeta = const VerificationMeta(
+    'discountId',
+  );
+  @override
+  late final GeneratedColumn<int> discountId = GeneratedColumn<int>(
+    'discount_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES discounts (id)',
+    ),
+  );
+  static const VerificationMeta _discountAmountMeta = const VerificationMeta(
+    'discountAmount',
+  );
+  @override
+  late final GeneratedColumn<int> discountAmount = GeneratedColumn<int>(
+    'discount_amount',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -4430,6 +5302,8 @@ class $TransactionItemsTable extends TransactionItems
     quantity,
     priceAtTransaction,
     subtotal,
+    discountId,
+    discountAmount,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -4507,6 +5381,21 @@ class $TransactionItemsTable extends TransactionItems
     } else if (isInserting) {
       context.missing(_subtotalMeta);
     }
+    if (data.containsKey('discount_id')) {
+      context.handle(
+        _discountIdMeta,
+        discountId.isAcceptableOrUnknown(data['discount_id']!, _discountIdMeta),
+      );
+    }
+    if (data.containsKey('discount_amount')) {
+      context.handle(
+        _discountAmountMeta,
+        discountAmount.isAcceptableOrUnknown(
+          data['discount_amount']!,
+          _discountAmountMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -4548,6 +5437,14 @@ class $TransactionItemsTable extends TransactionItems
         DriftSqlType.int,
         data['${effectivePrefix}subtotal'],
       )!,
+      discountId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}discount_id'],
+      ),
+      discountAmount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}discount_amount'],
+      )!,
     );
   }
 
@@ -4566,6 +5463,8 @@ class TransactionItem extends DataClass implements Insertable<TransactionItem> {
   final int quantity;
   final int priceAtTransaction;
   final int subtotal;
+  final int? discountId;
+  final int discountAmount;
   const TransactionItem({
     required this.id,
     required this.transactionId,
@@ -4575,6 +5474,8 @@ class TransactionItem extends DataClass implements Insertable<TransactionItem> {
     required this.quantity,
     required this.priceAtTransaction,
     required this.subtotal,
+    this.discountId,
+    required this.discountAmount,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -4591,6 +5492,10 @@ class TransactionItem extends DataClass implements Insertable<TransactionItem> {
     map['quantity'] = Variable<int>(quantity);
     map['price_at_transaction'] = Variable<int>(priceAtTransaction);
     map['subtotal'] = Variable<int>(subtotal);
+    if (!nullToAbsent || discountId != null) {
+      map['discount_id'] = Variable<int>(discountId);
+    }
+    map['discount_amount'] = Variable<int>(discountAmount);
     return map;
   }
 
@@ -4608,6 +5513,10 @@ class TransactionItem extends DataClass implements Insertable<TransactionItem> {
       quantity: Value(quantity),
       priceAtTransaction: Value(priceAtTransaction),
       subtotal: Value(subtotal),
+      discountId: discountId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(discountId),
+      discountAmount: Value(discountAmount),
     );
   }
 
@@ -4625,6 +5534,8 @@ class TransactionItem extends DataClass implements Insertable<TransactionItem> {
       quantity: serializer.fromJson<int>(json['quantity']),
       priceAtTransaction: serializer.fromJson<int>(json['priceAtTransaction']),
       subtotal: serializer.fromJson<int>(json['subtotal']),
+      discountId: serializer.fromJson<int?>(json['discountId']),
+      discountAmount: serializer.fromJson<int>(json['discountAmount']),
     );
   }
   @override
@@ -4639,6 +5550,8 @@ class TransactionItem extends DataClass implements Insertable<TransactionItem> {
       'quantity': serializer.toJson<int>(quantity),
       'priceAtTransaction': serializer.toJson<int>(priceAtTransaction),
       'subtotal': serializer.toJson<int>(subtotal),
+      'discountId': serializer.toJson<int?>(discountId),
+      'discountAmount': serializer.toJson<int>(discountAmount),
     };
   }
 
@@ -4651,6 +5564,8 @@ class TransactionItem extends DataClass implements Insertable<TransactionItem> {
     int? quantity,
     int? priceAtTransaction,
     int? subtotal,
+    Value<int?> discountId = const Value.absent(),
+    int? discountAmount,
   }) => TransactionItem(
     id: id ?? this.id,
     transactionId: transactionId ?? this.transactionId,
@@ -4660,6 +5575,8 @@ class TransactionItem extends DataClass implements Insertable<TransactionItem> {
     quantity: quantity ?? this.quantity,
     priceAtTransaction: priceAtTransaction ?? this.priceAtTransaction,
     subtotal: subtotal ?? this.subtotal,
+    discountId: discountId.present ? discountId.value : this.discountId,
+    discountAmount: discountAmount ?? this.discountAmount,
   );
   TransactionItem copyWithCompanion(TransactionItemsCompanion data) {
     return TransactionItem(
@@ -4677,6 +5594,12 @@ class TransactionItem extends DataClass implements Insertable<TransactionItem> {
           ? data.priceAtTransaction.value
           : this.priceAtTransaction,
       subtotal: data.subtotal.present ? data.subtotal.value : this.subtotal,
+      discountId: data.discountId.present
+          ? data.discountId.value
+          : this.discountId,
+      discountAmount: data.discountAmount.present
+          ? data.discountAmount.value
+          : this.discountAmount,
     );
   }
 
@@ -4690,7 +5613,9 @@ class TransactionItem extends DataClass implements Insertable<TransactionItem> {
           ..write('variantName: $variantName, ')
           ..write('quantity: $quantity, ')
           ..write('priceAtTransaction: $priceAtTransaction, ')
-          ..write('subtotal: $subtotal')
+          ..write('subtotal: $subtotal, ')
+          ..write('discountId: $discountId, ')
+          ..write('discountAmount: $discountAmount')
           ..write(')'))
         .toString();
   }
@@ -4705,6 +5630,8 @@ class TransactionItem extends DataClass implements Insertable<TransactionItem> {
     quantity,
     priceAtTransaction,
     subtotal,
+    discountId,
+    discountAmount,
   );
   @override
   bool operator ==(Object other) =>
@@ -4717,7 +5644,9 @@ class TransactionItem extends DataClass implements Insertable<TransactionItem> {
           other.variantName == this.variantName &&
           other.quantity == this.quantity &&
           other.priceAtTransaction == this.priceAtTransaction &&
-          other.subtotal == this.subtotal);
+          other.subtotal == this.subtotal &&
+          other.discountId == this.discountId &&
+          other.discountAmount == this.discountAmount);
 }
 
 class TransactionItemsCompanion extends UpdateCompanion<TransactionItem> {
@@ -4729,6 +5658,8 @@ class TransactionItemsCompanion extends UpdateCompanion<TransactionItem> {
   final Value<int> quantity;
   final Value<int> priceAtTransaction;
   final Value<int> subtotal;
+  final Value<int?> discountId;
+  final Value<int> discountAmount;
   const TransactionItemsCompanion({
     this.id = const Value.absent(),
     this.transactionId = const Value.absent(),
@@ -4738,6 +5669,8 @@ class TransactionItemsCompanion extends UpdateCompanion<TransactionItem> {
     this.quantity = const Value.absent(),
     this.priceAtTransaction = const Value.absent(),
     this.subtotal = const Value.absent(),
+    this.discountId = const Value.absent(),
+    this.discountAmount = const Value.absent(),
   });
   TransactionItemsCompanion.insert({
     this.id = const Value.absent(),
@@ -4748,6 +5681,8 @@ class TransactionItemsCompanion extends UpdateCompanion<TransactionItem> {
     required int quantity,
     required int priceAtTransaction,
     required int subtotal,
+    this.discountId = const Value.absent(),
+    this.discountAmount = const Value.absent(),
   }) : transactionId = Value(transactionId),
        productId = Value(productId),
        quantity = Value(quantity),
@@ -4762,6 +5697,8 @@ class TransactionItemsCompanion extends UpdateCompanion<TransactionItem> {
     Expression<int>? quantity,
     Expression<int>? priceAtTransaction,
     Expression<int>? subtotal,
+    Expression<int>? discountId,
+    Expression<int>? discountAmount,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -4773,6 +5710,8 @@ class TransactionItemsCompanion extends UpdateCompanion<TransactionItem> {
       if (priceAtTransaction != null)
         'price_at_transaction': priceAtTransaction,
       if (subtotal != null) 'subtotal': subtotal,
+      if (discountId != null) 'discount_id': discountId,
+      if (discountAmount != null) 'discount_amount': discountAmount,
     });
   }
 
@@ -4785,6 +5724,8 @@ class TransactionItemsCompanion extends UpdateCompanion<TransactionItem> {
     Value<int>? quantity,
     Value<int>? priceAtTransaction,
     Value<int>? subtotal,
+    Value<int?>? discountId,
+    Value<int>? discountAmount,
   }) {
     return TransactionItemsCompanion(
       id: id ?? this.id,
@@ -4795,6 +5736,8 @@ class TransactionItemsCompanion extends UpdateCompanion<TransactionItem> {
       quantity: quantity ?? this.quantity,
       priceAtTransaction: priceAtTransaction ?? this.priceAtTransaction,
       subtotal: subtotal ?? this.subtotal,
+      discountId: discountId ?? this.discountId,
+      discountAmount: discountAmount ?? this.discountAmount,
     );
   }
 
@@ -4825,6 +5768,12 @@ class TransactionItemsCompanion extends UpdateCompanion<TransactionItem> {
     if (subtotal.present) {
       map['subtotal'] = Variable<int>(subtotal.value);
     }
+    if (discountId.present) {
+      map['discount_id'] = Variable<int>(discountId.value);
+    }
+    if (discountAmount.present) {
+      map['discount_amount'] = Variable<int>(discountAmount.value);
+    }
     return map;
   }
 
@@ -4838,7 +5787,9 @@ class TransactionItemsCompanion extends UpdateCompanion<TransactionItem> {
           ..write('variantName: $variantName, ')
           ..write('quantity: $quantity, ')
           ..write('priceAtTransaction: $priceAtTransaction, ')
-          ..write('subtotal: $subtotal')
+          ..write('subtotal: $subtotal, ')
+          ..write('discountId: $discountId, ')
+          ..write('discountAmount: $discountAmount')
           ..write(')'))
         .toString();
   }
@@ -10730,6 +11681,7 @@ abstract class _$PosifyDatabase extends GeneratedDatabase {
     this,
   );
   late final $ShiftsTable shifts = $ShiftsTable(this);
+  late final $DiscountsTable discounts = $DiscountsTable(this);
   late final $TransactionsTable transactions = $TransactionsTable(this);
   late final $TransactionItemsTable transactionItems = $TransactionItemsTable(
     this,
@@ -10767,6 +11719,7 @@ abstract class _$PosifyDatabase extends GeneratedDatabase {
     products,
     productVariants,
     shifts,
+    discounts,
     transactions,
     transactionItems,
     stockTransactions,
@@ -13776,6 +14729,564 @@ typedef $$ShiftsTableProcessedTableManager =
       Shift,
       PrefetchHooks Function({bool employeeId, bool transactionsRefs})
     >;
+typedef $$DiscountsTableCreateCompanionBuilder =
+    DiscountsCompanion Function({
+      Value<int> id,
+      required String name,
+      Value<String> scope,
+      Value<String> type,
+      required double value,
+      Value<int> minSpend,
+      Value<int> minQty,
+      Value<bool> isAutomatic,
+      Value<bool> isStackable,
+      Value<bool> isActive,
+      Value<String?> startDate,
+      Value<String?> endDate,
+      Value<DateTime> createdAt,
+    });
+typedef $$DiscountsTableUpdateCompanionBuilder =
+    DiscountsCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<String> scope,
+      Value<String> type,
+      Value<double> value,
+      Value<int> minSpend,
+      Value<int> minQty,
+      Value<bool> isAutomatic,
+      Value<bool> isStackable,
+      Value<bool> isActive,
+      Value<String?> startDate,
+      Value<String?> endDate,
+      Value<DateTime> createdAt,
+    });
+
+final class $$DiscountsTableReferences
+    extends BaseReferences<_$PosifyDatabase, $DiscountsTable, Discount> {
+  $$DiscountsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$TransactionsTable, List<Transaction>>
+  _transactionsRefsTable(_$PosifyDatabase db) => MultiTypedResultKey.fromTable(
+    db.transactions,
+    aliasName: $_aliasNameGenerator(
+      db.discounts.id,
+      db.transactions.discountId,
+    ),
+  );
+
+  $$TransactionsTableProcessedTableManager get transactionsRefs {
+    final manager = $$TransactionsTableTableManager(
+      $_db,
+      $_db.transactions,
+    ).filter((f) => f.discountId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_transactionsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$TransactionItemsTable, List<TransactionItem>>
+  _transactionItemsRefsTable(_$PosifyDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.transactionItems,
+        aliasName: $_aliasNameGenerator(
+          db.discounts.id,
+          db.transactionItems.discountId,
+        ),
+      );
+
+  $$TransactionItemsTableProcessedTableManager get transactionItemsRefs {
+    final manager = $$TransactionItemsTableTableManager(
+      $_db,
+      $_db.transactionItems,
+    ).filter((f) => f.discountId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _transactionItemsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$DiscountsTableFilterComposer
+    extends Composer<_$PosifyDatabase, $DiscountsTable> {
+  $$DiscountsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get scope => $composableBuilder(
+    column: $table.scope,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get minSpend => $composableBuilder(
+    column: $table.minSpend,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get minQty => $composableBuilder(
+    column: $table.minQty,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isAutomatic => $composableBuilder(
+    column: $table.isAutomatic,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isStackable => $composableBuilder(
+    column: $table.isStackable,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get startDate => $composableBuilder(
+    column: $table.startDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get endDate => $composableBuilder(
+    column: $table.endDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> transactionsRefs(
+    Expression<bool> Function($$TransactionsTableFilterComposer f) f,
+  ) {
+    final $$TransactionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.discountId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableFilterComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> transactionItemsRefs(
+    Expression<bool> Function($$TransactionItemsTableFilterComposer f) f,
+  ) {
+    final $$TransactionItemsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.transactionItems,
+      getReferencedColumn: (t) => t.discountId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionItemsTableFilterComposer(
+            $db: $db,
+            $table: $db.transactionItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$DiscountsTableOrderingComposer
+    extends Composer<_$PosifyDatabase, $DiscountsTable> {
+  $$DiscountsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get scope => $composableBuilder(
+    column: $table.scope,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get minSpend => $composableBuilder(
+    column: $table.minSpend,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get minQty => $composableBuilder(
+    column: $table.minQty,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isAutomatic => $composableBuilder(
+    column: $table.isAutomatic,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isStackable => $composableBuilder(
+    column: $table.isStackable,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get startDate => $composableBuilder(
+    column: $table.startDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get endDate => $composableBuilder(
+    column: $table.endDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$DiscountsTableAnnotationComposer
+    extends Composer<_$PosifyDatabase, $DiscountsTable> {
+  $$DiscountsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get scope =>
+      $composableBuilder(column: $table.scope, builder: (column) => column);
+
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<double> get value =>
+      $composableBuilder(column: $table.value, builder: (column) => column);
+
+  GeneratedColumn<int> get minSpend =>
+      $composableBuilder(column: $table.minSpend, builder: (column) => column);
+
+  GeneratedColumn<int> get minQty =>
+      $composableBuilder(column: $table.minQty, builder: (column) => column);
+
+  GeneratedColumn<bool> get isAutomatic => $composableBuilder(
+    column: $table.isAutomatic,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isStackable => $composableBuilder(
+    column: $table.isStackable,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  GeneratedColumn<String> get startDate =>
+      $composableBuilder(column: $table.startDate, builder: (column) => column);
+
+  GeneratedColumn<String> get endDate =>
+      $composableBuilder(column: $table.endDate, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  Expression<T> transactionsRefs<T extends Object>(
+    Expression<T> Function($$TransactionsTableAnnotationComposer a) f,
+  ) {
+    final $$TransactionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.discountId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> transactionItemsRefs<T extends Object>(
+    Expression<T> Function($$TransactionItemsTableAnnotationComposer a) f,
+  ) {
+    final $$TransactionItemsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.transactionItems,
+      getReferencedColumn: (t) => t.discountId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionItemsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.transactionItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$DiscountsTableTableManager
+    extends
+        RootTableManager<
+          _$PosifyDatabase,
+          $DiscountsTable,
+          Discount,
+          $$DiscountsTableFilterComposer,
+          $$DiscountsTableOrderingComposer,
+          $$DiscountsTableAnnotationComposer,
+          $$DiscountsTableCreateCompanionBuilder,
+          $$DiscountsTableUpdateCompanionBuilder,
+          (Discount, $$DiscountsTableReferences),
+          Discount,
+          PrefetchHooks Function({
+            bool transactionsRefs,
+            bool transactionItemsRefs,
+          })
+        > {
+  $$DiscountsTableTableManager(_$PosifyDatabase db, $DiscountsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$DiscountsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DiscountsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DiscountsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> scope = const Value.absent(),
+                Value<String> type = const Value.absent(),
+                Value<double> value = const Value.absent(),
+                Value<int> minSpend = const Value.absent(),
+                Value<int> minQty = const Value.absent(),
+                Value<bool> isAutomatic = const Value.absent(),
+                Value<bool> isStackable = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
+                Value<String?> startDate = const Value.absent(),
+                Value<String?> endDate = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => DiscountsCompanion(
+                id: id,
+                name: name,
+                scope: scope,
+                type: type,
+                value: value,
+                minSpend: minSpend,
+                minQty: minQty,
+                isAutomatic: isAutomatic,
+                isStackable: isStackable,
+                isActive: isActive,
+                startDate: startDate,
+                endDate: endDate,
+                createdAt: createdAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<String> scope = const Value.absent(),
+                Value<String> type = const Value.absent(),
+                required double value,
+                Value<int> minSpend = const Value.absent(),
+                Value<int> minQty = const Value.absent(),
+                Value<bool> isAutomatic = const Value.absent(),
+                Value<bool> isStackable = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
+                Value<String?> startDate = const Value.absent(),
+                Value<String?> endDate = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => DiscountsCompanion.insert(
+                id: id,
+                name: name,
+                scope: scope,
+                type: type,
+                value: value,
+                minSpend: minSpend,
+                minQty: minQty,
+                isAutomatic: isAutomatic,
+                isStackable: isStackable,
+                isActive: isActive,
+                startDate: startDate,
+                endDate: endDate,
+                createdAt: createdAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$DiscountsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({transactionsRefs = false, transactionItemsRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (transactionsRefs) db.transactions,
+                    if (transactionItemsRefs) db.transactionItems,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (transactionsRefs)
+                        await $_getPrefetchedData<
+                          Discount,
+                          $DiscountsTable,
+                          Transaction
+                        >(
+                          currentTable: table,
+                          referencedTable: $$DiscountsTableReferences
+                              ._transactionsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$DiscountsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).transactionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.discountId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (transactionItemsRefs)
+                        await $_getPrefetchedData<
+                          Discount,
+                          $DiscountsTable,
+                          TransactionItem
+                        >(
+                          currentTable: table,
+                          referencedTable: $$DiscountsTableReferences
+                              ._transactionItemsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$DiscountsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).transactionItemsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.discountId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$DiscountsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$PosifyDatabase,
+      $DiscountsTable,
+      Discount,
+      $$DiscountsTableFilterComposer,
+      $$DiscountsTableOrderingComposer,
+      $$DiscountsTableAnnotationComposer,
+      $$DiscountsTableCreateCompanionBuilder,
+      $$DiscountsTableUpdateCompanionBuilder,
+      (Discount, $$DiscountsTableReferences),
+      Discount,
+      PrefetchHooks Function({bool transactionsRefs, bool transactionItemsRefs})
+    >;
 typedef $$TransactionsTableCreateCompanionBuilder =
     TransactionsCompanion Function({
       Value<int> id,
@@ -13792,6 +15303,8 @@ typedef $$TransactionsTableCreateCompanionBuilder =
       Value<DateTime> createdAt,
       Value<String?> customerPhone,
       Value<String?> customerName,
+      Value<int?> discountId,
+      Value<int> discountAmount,
     });
 typedef $$TransactionsTableUpdateCompanionBuilder =
     TransactionsCompanion Function({
@@ -13809,6 +15322,8 @@ typedef $$TransactionsTableUpdateCompanionBuilder =
       Value<DateTime> createdAt,
       Value<String?> customerPhone,
       Value<String?> customerName,
+      Value<int?> discountId,
+      Value<int> discountAmount,
     });
 
 final class $$TransactionsTableReferences
@@ -13845,6 +15360,25 @@ final class $$TransactionsTableReferences
       $_db.employees,
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_voidByTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $DiscountsTable _discountIdTable(_$PosifyDatabase db) =>
+      db.discounts.createAlias(
+        $_aliasNameGenerator(db.transactions.discountId, db.discounts.id),
+      );
+
+  $$DiscountsTableProcessedTableManager? get discountId {
+    final $_column = $_itemColumn<int>('discount_id');
+    if ($_column == null) return null;
+    final manager = $$DiscountsTableTableManager(
+      $_db,
+      $_db.discounts,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_discountIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
@@ -13945,6 +15479,11 @@ class $$TransactionsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<int> get discountAmount => $composableBuilder(
+    column: $table.discountAmount,
+    builder: (column) => ColumnFilters(column),
+  );
+
   $$ShiftsTableFilterComposer get shiftId {
     final $$ShiftsTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -13982,6 +15521,29 @@ class $$TransactionsTableFilterComposer
           }) => $$EmployeesTableFilterComposer(
             $db: $db,
             $table: $db.employees,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$DiscountsTableFilterComposer get discountId {
+    final $$DiscountsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.discountId,
+      referencedTable: $db.discounts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DiscountsTableFilterComposer(
+            $db: $db,
+            $table: $db.discounts,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -14086,6 +15648,11 @@ class $$TransactionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get discountAmount => $composableBuilder(
+    column: $table.discountAmount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$ShiftsTableOrderingComposer get shiftId {
     final $$ShiftsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -14123,6 +15690,29 @@ class $$TransactionsTableOrderingComposer
           }) => $$EmployeesTableOrderingComposer(
             $db: $db,
             $table: $db.employees,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$DiscountsTableOrderingComposer get discountId {
+    final $$DiscountsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.discountId,
+      referencedTable: $db.discounts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DiscountsTableOrderingComposer(
+            $db: $db,
+            $table: $db.discounts,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -14194,6 +15784,11 @@ class $$TransactionsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<int> get discountAmount => $composableBuilder(
+    column: $table.discountAmount,
+    builder: (column) => column,
+  );
+
   $$ShiftsTableAnnotationComposer get shiftId {
     final $$ShiftsTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -14231,6 +15826,29 @@ class $$TransactionsTableAnnotationComposer
           }) => $$EmployeesTableAnnotationComposer(
             $db: $db,
             $table: $db.employees,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$DiscountsTableAnnotationComposer get discountId {
+    final $$DiscountsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.discountId,
+      referencedTable: $db.discounts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DiscountsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.discounts,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -14282,6 +15900,7 @@ class $$TransactionsTableTableManager
           PrefetchHooks Function({
             bool shiftId,
             bool voidBy,
+            bool discountId,
             bool transactionItemsRefs,
           })
         > {
@@ -14312,6 +15931,8 @@ class $$TransactionsTableTableManager
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<String?> customerPhone = const Value.absent(),
                 Value<String?> customerName = const Value.absent(),
+                Value<int?> discountId = const Value.absent(),
+                Value<int> discountAmount = const Value.absent(),
               }) => TransactionsCompanion(
                 id: id,
                 receiptNumber: receiptNumber,
@@ -14327,6 +15948,8 @@ class $$TransactionsTableTableManager
                 createdAt: createdAt,
                 customerPhone: customerPhone,
                 customerName: customerName,
+                discountId: discountId,
+                discountAmount: discountAmount,
               ),
           createCompanionCallback:
               ({
@@ -14344,6 +15967,8 @@ class $$TransactionsTableTableManager
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<String?> customerPhone = const Value.absent(),
                 Value<String?> customerName = const Value.absent(),
+                Value<int?> discountId = const Value.absent(),
+                Value<int> discountAmount = const Value.absent(),
               }) => TransactionsCompanion.insert(
                 id: id,
                 receiptNumber: receiptNumber,
@@ -14359,6 +15984,8 @@ class $$TransactionsTableTableManager
                 createdAt: createdAt,
                 customerPhone: customerPhone,
                 customerName: customerName,
+                discountId: discountId,
+                discountAmount: discountAmount,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -14372,6 +15999,7 @@ class $$TransactionsTableTableManager
               ({
                 shiftId = false,
                 voidBy = false,
+                discountId = false,
                 transactionItemsRefs = false,
               }) {
                 return PrefetchHooks(
@@ -14425,6 +16053,21 @@ class $$TransactionsTableTableManager
                                   )
                                   as T;
                         }
+                        if (discountId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.discountId,
+                                    referencedTable:
+                                        $$TransactionsTableReferences
+                                            ._discountIdTable(db),
+                                    referencedColumn:
+                                        $$TransactionsTableReferences
+                                            ._discountIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
 
                         return state;
                       },
@@ -14474,6 +16117,7 @@ typedef $$TransactionsTableProcessedTableManager =
       PrefetchHooks Function({
         bool shiftId,
         bool voidBy,
+        bool discountId,
         bool transactionItemsRefs,
       })
     >;
@@ -14487,6 +16131,8 @@ typedef $$TransactionItemsTableCreateCompanionBuilder =
       required int quantity,
       required int priceAtTransaction,
       required int subtotal,
+      Value<int?> discountId,
+      Value<int> discountAmount,
     });
 typedef $$TransactionItemsTableUpdateCompanionBuilder =
     TransactionItemsCompanion Function({
@@ -14498,6 +16144,8 @@ typedef $$TransactionItemsTableUpdateCompanionBuilder =
       Value<int> quantity,
       Value<int> priceAtTransaction,
       Value<int> subtotal,
+      Value<int?> discountId,
+      Value<int> discountAmount,
     });
 
 final class $$TransactionItemsTableReferences
@@ -14575,6 +16223,25 @@ final class $$TransactionItemsTableReferences
       manager.$state.copyWith(prefetchedData: [item]),
     );
   }
+
+  static $DiscountsTable _discountIdTable(_$PosifyDatabase db) =>
+      db.discounts.createAlias(
+        $_aliasNameGenerator(db.transactionItems.discountId, db.discounts.id),
+      );
+
+  $$DiscountsTableProcessedTableManager? get discountId {
+    final $_column = $_itemColumn<int>('discount_id');
+    if ($_column == null) return null;
+    final manager = $$DiscountsTableTableManager(
+      $_db,
+      $_db.discounts,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_discountIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
 }
 
 class $$TransactionItemsTableFilterComposer
@@ -14608,6 +16275,11 @@ class $$TransactionItemsTableFilterComposer
 
   ColumnFilters<int> get subtotal => $composableBuilder(
     column: $table.subtotal,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get discountAmount => $composableBuilder(
+    column: $table.discountAmount,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -14679,6 +16351,29 @@ class $$TransactionItemsTableFilterComposer
     );
     return composer;
   }
+
+  $$DiscountsTableFilterComposer get discountId {
+    final $$DiscountsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.discountId,
+      referencedTable: $db.discounts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DiscountsTableFilterComposer(
+            $db: $db,
+            $table: $db.discounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$TransactionItemsTableOrderingComposer
@@ -14712,6 +16407,11 @@ class $$TransactionItemsTableOrderingComposer
 
   ColumnOrderings<int> get subtotal => $composableBuilder(
     column: $table.subtotal,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get discountAmount => $composableBuilder(
+    column: $table.discountAmount,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -14783,6 +16483,29 @@ class $$TransactionItemsTableOrderingComposer
     );
     return composer;
   }
+
+  $$DiscountsTableOrderingComposer get discountId {
+    final $$DiscountsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.discountId,
+      referencedTable: $db.discounts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DiscountsTableOrderingComposer(
+            $db: $db,
+            $table: $db.discounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$TransactionItemsTableAnnotationComposer
@@ -14812,6 +16535,11 @@ class $$TransactionItemsTableAnnotationComposer
 
   GeneratedColumn<int> get subtotal =>
       $composableBuilder(column: $table.subtotal, builder: (column) => column);
+
+  GeneratedColumn<int> get discountAmount => $composableBuilder(
+    column: $table.discountAmount,
+    builder: (column) => column,
+  );
 
   $$TransactionsTableAnnotationComposer get transactionId {
     final $$TransactionsTableAnnotationComposer composer = $composerBuilder(
@@ -14881,6 +16609,29 @@ class $$TransactionItemsTableAnnotationComposer
     );
     return composer;
   }
+
+  $$DiscountsTableAnnotationComposer get discountId {
+    final $$DiscountsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.discountId,
+      referencedTable: $db.discounts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DiscountsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.discounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$TransactionItemsTableTableManager
@@ -14900,6 +16651,7 @@ class $$TransactionItemsTableTableManager
             bool transactionId,
             bool productId,
             bool variantId,
+            bool discountId,
           })
         > {
   $$TransactionItemsTableTableManager(
@@ -14925,6 +16677,8 @@ class $$TransactionItemsTableTableManager
                 Value<int> quantity = const Value.absent(),
                 Value<int> priceAtTransaction = const Value.absent(),
                 Value<int> subtotal = const Value.absent(),
+                Value<int?> discountId = const Value.absent(),
+                Value<int> discountAmount = const Value.absent(),
               }) => TransactionItemsCompanion(
                 id: id,
                 transactionId: transactionId,
@@ -14934,6 +16688,8 @@ class $$TransactionItemsTableTableManager
                 quantity: quantity,
                 priceAtTransaction: priceAtTransaction,
                 subtotal: subtotal,
+                discountId: discountId,
+                discountAmount: discountAmount,
               ),
           createCompanionCallback:
               ({
@@ -14945,6 +16701,8 @@ class $$TransactionItemsTableTableManager
                 required int quantity,
                 required int priceAtTransaction,
                 required int subtotal,
+                Value<int?> discountId = const Value.absent(),
+                Value<int> discountAmount = const Value.absent(),
               }) => TransactionItemsCompanion.insert(
                 id: id,
                 transactionId: transactionId,
@@ -14954,6 +16712,8 @@ class $$TransactionItemsTableTableManager
                 quantity: quantity,
                 priceAtTransaction: priceAtTransaction,
                 subtotal: subtotal,
+                discountId: discountId,
+                discountAmount: discountAmount,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -14964,7 +16724,12 @@ class $$TransactionItemsTableTableManager
               )
               .toList(),
           prefetchHooksCallback:
-              ({transactionId = false, productId = false, variantId = false}) {
+              ({
+                transactionId = false,
+                productId = false,
+                variantId = false,
+                discountId = false,
+              }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [],
@@ -15029,6 +16794,21 @@ class $$TransactionItemsTableTableManager
                                   )
                                   as T;
                         }
+                        if (discountId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.discountId,
+                                    referencedTable:
+                                        $$TransactionItemsTableReferences
+                                            ._discountIdTable(db),
+                                    referencedColumn:
+                                        $$TransactionItemsTableReferences
+                                            ._discountIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
 
                         return state;
                       },
@@ -15057,6 +16837,7 @@ typedef $$TransactionItemsTableProcessedTableManager =
         bool transactionId,
         bool productId,
         bool variantId,
+        bool discountId,
       })
     >;
 typedef $$StockTransactionsTableCreateCompanionBuilder =
@@ -19838,6 +21619,8 @@ class $PosifyDatabaseManager {
       $$ProductVariantsTableTableManager(_db, _db.productVariants);
   $$ShiftsTableTableManager get shifts =>
       $$ShiftsTableTableManager(_db, _db.shifts);
+  $$DiscountsTableTableManager get discounts =>
+      $$DiscountsTableTableManager(_db, _db.discounts);
   $$TransactionsTableTableManager get transactions =>
       $$TransactionsTableTableManager(_db, _db.transactions);
   $$TransactionItemsTableTableManager get transactionItems =>

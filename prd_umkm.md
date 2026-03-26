@@ -2,14 +2,14 @@
 
 **Produk:** Aplikasi Sistem Kasir (POS) SaaS Offline-First
 
-**Versi:** 2.4 (UI Responsiveness & Brand Refresh)
+**Versi:** 2.5 (Discount & Voucher Management)
 
-**Status:** Implementasi Progresif (Phase 1-3, Phase 7-10 Selesai)
+**Status:** Implementasi Progresif (Phase 1-3, Phase 7-11 Selesai)
 
-## **Update Log (v2.4):**
-*   **UI Responsiveness & Brand Harmonization**: Standardisasi layout tablet menggunakan `ResponsiveCenter` (max-width 768px). Harmonisasi warna brand menggunakan Navy (`primaryColor`) dan Kuning (`secondaryColor`) di seluruh layar utama (Dashboard, PO, Inventory).
-*   **Purple Ban Enforcement**: Pembersihan seluruh elemen UI dari warna ungu terlarang untuk menjaga konsistensi identitas brand.
-*   **Versi App**: Bump ke `2.0.0 (Beta UI Refresh)`.
+## **Update Log (v2.5):**
+*   **Discount & Voucher Management (Phase 11)**: Sistem promosi fleksibel pendukung diskon per-item dan per-transaksi (bill level). Mendukung minimal belanja, periode aktif, dan diskon otomatis.
+*   **Database Migration v14**: Penambahan tabel `discounts` serta kolom audit diskon pada `transactions` dan `transaction_items`.
+*   **UI Refresh**: Integrasi "Pilih Promo" pada modal pembayaran POS.
 
 ## **Update Log (v2.3):**
 *   **Stock Opname Bahan Baku (Phase 8)**: Layar audit stok fisik untuk bahan baku. User memasukkan stok fisik, sistem otomatis menghitung selisih dan membuat entri `ADJUST` di `ingredient_stock_history`.
@@ -84,6 +84,12 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
     * **Auto-Stock Deduction**: Pemotongan stok bahan baku secara otomatis dan *real-time* saat transaksi pembayaran selesai (Checkout).
     * **Kalkulasi HPP (Weighted Moving Average)**: Sistem menghitung modal rata-rata secara otomatis setiap kali ada stok baru masuk (pembelian), memberikan akurasi laba kotor yang presisi bagi Owner.
     * **Unit Conversion**: Fleksibilitas input stok dalam satuan besar (Kg/Liter) yang otomatis dikonversi ke satuan penyimpan dasar (Gram/Ml) di database.
+* **Modul Promosi & Diskon (Advanced) [BARU]:**
+    * **Flexible Discount Engine**: Mendukung diskon berbasis Nominal (Rp) dan Persentase (%).
+    * **Promotion Scope**: Pengaturan diskon berlaku untuk seluruh keranjang (Bill-level) atau produk tertentu saja (Item-level).
+    * **Validation Rules**: Menetapkan syarat minimal belanja (Spend) atau minimal kuantitas item agar promo dapat digunakan.
+    * **Time-Bound Promo**: Mengatur periode aktif promo (Tanggal Mulai/Selesai) untuk program musiman.
+    * **Automatic vs Manual**: Promo dapat bersifat otomatis (terpasang saat syarat terpenuhi) atau voucher manual yang harus dipilih kasir.
 * **Pencatatan Pembayaran (Recording Only):** Memilih status pembayaran (**Tunai, QRIS, Debit, Kredit, Piutang/Bon**). Tidak ada integrasi gateway API untuk menghindari biaya MDR.  
 * **Print & Share Engine:** 
     *   Cetak struk via Bluetooth/USB Thermal (Protokol ESC/POS).
@@ -165,6 +171,7 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
 * **Manajemen Karyawan:** Saya ingin menambah banyak akun Kasir/Supervisor, melampirkan foto profil mereka (opsional), mengatur PIN 6-digit yang berbeda tanpa biaya tambahan, dan memantau akun yang terkunci akibat salah PIN 5x.
 * **Konfigurasi Biaya:** Saya ingin mengatur besaran persentase Pajak (PPN/PB1) secara *inclusive* atau *exclusive*, serta menetapkan *Service Charge* (%) agar sistem otomatis menghitungnya ke total belanjaan pelanggan. Perhitungan pajak bersifat dinamis dan akan di-record nilainya (nominal) pada setiap nota.
 * **Branded Receipt:** Saya ingin mengunggah logo toko saya agar struk fisik (Thermal) maupun struk digital (WhatsApp) terlihat lebih profesional.
+* **Manajemen Promosi:** Saya ingin membuat berbagai jenis promo (Misal: Diskon Hari Raya 10%, Voucher Potongan Rp 15rb) dengan syarat minimal belanja untuk meningkatkan omzet dan menarik loyalitas pelanggan.
 * **Monitoring Lengkap & Profitabilitas:** Sebagai Owner, saya ingin melihat menu analitik (Laporan Penjualan, tren, **Laba Kotor (Gross Profit)**, dan Kategori paling menguntungkan) demi mengevaluasi performa bisnis.
 * **Manajemen Modal (HPP):** Saya ingin sistem menghitung otomatis modal (COGS) dari setiap produk berdasarkan resep dan harga beli bahan baku agar sistem bisa menyajikan estimasi Laba Kotor secara otomatis.
 * **Data Safety:** Sebagai Owner, saya ingin mencadangkan data ke Google Drive secara manual, atau *Auto-Local Backup* (otomatis) di *storage internal* untuk keamanan.

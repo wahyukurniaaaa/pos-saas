@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'transactions_table.dart';
 import 'products_table.dart';
 import 'product_variants_table.dart';
+import 'discounts_table.dart';
 
 class TransactionItems extends Table {
   IntColumn get id => integer().autoIncrement()();
@@ -14,4 +15,7 @@ class TransactionItems extends Table {
   IntColumn get quantity => integer()();
   IntColumn get priceAtTransaction => integer()(); // Snapshot harga saat dibeli
   IntColumn get subtotal => integer()(); // quantity * priceAtTransaction
+  // Discount (Item Level)
+  IntColumn get discountId => integer().nullable().references(Discounts, #id)();
+  IntColumn get discountAmount => integer().withDefault(const Constant(0))();
 }

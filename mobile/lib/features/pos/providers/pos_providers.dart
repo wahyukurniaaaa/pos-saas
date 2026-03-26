@@ -241,6 +241,8 @@ class CartNotifier extends Notifier<List<CartItem>> {
     String? customerPhone,
     String? customerName,
     int? customerId,
+    int? discountId,
+    int discountAmount = 0,
   }) async {
     try {
       if (state.isEmpty) return null;
@@ -263,6 +265,8 @@ class CartNotifier extends Notifier<List<CartItem>> {
         customerPhone: drift.Value(customerPhone),
         customerName: drift.Value(customerName),
         customerId: drift.Value(customerId),
+        discountId: drift.Value(discountId),
+        discountAmount: drift.Value(discountAmount),
       );
 
       final itemsParams = state.map((item) {
