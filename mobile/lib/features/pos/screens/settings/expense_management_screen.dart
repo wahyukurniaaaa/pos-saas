@@ -7,6 +7,7 @@ import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:posify_app/features/pos/providers/expense_provider.dart';
 import 'package:posify_app/features/auth/providers/owner_provider.dart';
+import 'package:posify_app/features/pos/providers/shift_provider.dart';
 import 'package:drift/drift.dart' hide Column;
 
 class ExpenseManagementScreen extends ConsumerStatefulWidget {
@@ -465,10 +466,12 @@ class _ExpenseFormSheetState extends ConsumerState<_ExpenseFormSheet> {
     try {
       final session = ref.read(sessionProvider).value;
       final employeeId = session?.id ?? 1;
+      final openShift = ref.read(openShiftProvider).value;
       await ref.read(expenseProvider.notifier).add(
         ExpensesCompanion.insert(
           categoryId: _selectedCategory!.id,
           recordedBy: employeeId,
+          shiftId: Value(openShift?.id),
           amount: int.parse(amountStr),
           note: Value(_noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim()),
           createdAt: Value(DateTime(widget.selectedDate.year, widget.selectedDate.month, widget.selectedDate.day,

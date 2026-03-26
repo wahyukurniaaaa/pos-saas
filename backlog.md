@@ -11,7 +11,7 @@ Berikut adalah backlog fitur untuk pengembangan **Posify Inventory Phase 2, 3, &
 
 ### 2. COGS (HPP) & Average Cost Tracking
 *   [x] Moving average cost algorithm and Gross Profit reporting.
-*   [ ] **Retail HPP Support**: Tambahkan `purchase_price` di tabel `Products` untuk profit ritel tanpa resep.
+*   [x] **Retail HPP Support**: Tambahkan `purchase_price` di tabel `Products` untuk profit ritel tanpa resep.
 
 ### 3. Stock Opname & Variance Audit
 *   [x] Physical vs System stock reconciliation with variance reason.
@@ -91,8 +91,8 @@ Berikut adalah backlog fitur untuk pengembangan **Posify Inventory Phase 2, 3, &
     *   [x] **UI**: Discount Management Screen in Settings (Navy/Yellow Theme).
     *   [x] **Logic**: Handle "Voucher Selection" in Payment Modal with real-time validation.
     *   [x] **Integration**: Recalculation logic (Subtotal - Discount) and audit trail in transactions.
-    *   [ ] **Item-Level Discount**: Integrasi pemilihan diskon per produk di dalam keranjang (Cart Detail).
-    *   [ ] **Auto-Apply Logic**: Implementasi deteksi promo otomatis saat syarat minimal belanja terpenuhi tanpa input kasir.
+    *   [x] **Item-Level Discount**: Integrasi pemilihan diskon per produk di dalam keranjang (Cart Detail).
+    *   [x] **Auto-Apply Logic**: Implementasi deteksi promo otomatis saat syarat minimal belanja terpenuhi tanpa input kasir.
 
 ---
 
@@ -108,9 +108,9 @@ Berikut adalah backlog fitur untuk pengembangan **Posify Inventory Phase 2, 3, &
 *   **User Story**: "Sebagai Owner/Kasir, saya ingin mencatat setiap pengeluaran operasional (belanja bahan, gaji, listrik) langsung dari aplikasi agar arus kas bisnis saya dapat dipantau secara real-time dan laporan laba rugi akurat."
 *   **💡 Insight Kompetitor**: Kasir Pintar, Majoo, dan Moka semuanya memiliki fitur Kas Keluar terintegrasi dengan shift. Ini adalah **gap utama** yang harus ditutup untuk bersaing di segmen UMKM.
 *   **Tasks**:
-    *   [ ] **Database v15**: Create `expense_categories` table (default: Bahan Baku, Gaji, Listrik, Operasional, Lain-lain) dan `expenses` table (linked to shift, category & employee).
-    *   [ ] **CRUD UI**: `ExpenseManagementScreen` — list per hari, form input (nominal, kategori, catatan, foto bukti opsional).
-    *   [ ] **Kategori Kustom**: `ExpenseCategoryManagementScreen` — Owner bisa buat/edit/hapus kategori dengan icon & warna.
-    *   [ ] **Integrasi Shift**: Total pengeluaran per shift tampil di rekap "Tutup Shift" sebagai Kas Keluar.
-    *   [ ] **Cashflow Analytics**: `CashFlowScreen` — bar chart Pendapatan vs Pengeluaran, tampilkan Laba Operasional bersih.
-    *   [ ] **Quick Action**: Tombol "Kas Keluar" di tab Kasir untuk input cepat tanpa buka Pengaturan.
+    *   [x] **Database v15**: Create `expense_categories` table (default: Bahan Baku, Gaji, Listrik, Operasional, Lain-lain) dan `expenses` table (linked to shift, category & employee).
+    *   [x] **CRUD UI**: `ExpenseManagementScreen` — list per hari, form input (nominal, kategori, catatan, foto bukti opsional).
+    *   [x] **Kategori Kustom**: `ExpenseCategoryManagementScreen` — Owner bisa buat/edit/hapus kategori dengan icon & warna.
+    *   [x] **Integrasi Shift**: Total pengeluaran per shift tampil di rekap "Tutup Shift" sebagai Kas Keluar.
+    *   [x] **Cashflow Analytics**: `CashFlowScreen` — bar chart Pendapatan vs Pengeluaran, tampilkan Laba Operasional bersih.
+    *   [x] **Quick Action**: Tombol "Kas Keluar" di tab Kasir untuk input cepat tanpa buka Pengaturan.

@@ -124,6 +124,14 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
 
   @override
   Widget build(BuildContext context) {
+    final validDiscountsAsync = ref.watch(validTransactionDiscountsProvider(widget.totalAmount));
+    if (validDiscountsAsync.hasValue) {
+      ref.read(selectedDiscountProvider.notifier).autoApplyIfNeeded(
+        validDiscountsAsync.value!, 
+        widget.totalAmount
+      );
+    }
+
     final storeAsync = ref.watch(storeProfileProvider);
 
     return storeAsync.when(

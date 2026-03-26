@@ -405,6 +405,7 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
+  final _purchasePriceController = TextEditingController(text: '0');
   final _stockController = TextEditingController();
   final _skuController = TextEditingController();
   final _minStockController = TextEditingController(text: '0');
@@ -540,6 +541,7 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
       final p = widget.product!;
       _nameController.text = p.name;
       _priceController.text = p.price.toString();
+      _purchasePriceController.text = p.purchasePrice.toString();
       _stockController.text = p.stock.toString();
       _skuController.text = p.sku;
       _minStockController.text = p.lowStockThreshold.toString();
@@ -603,6 +605,7 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
   void dispose() {
     _nameController.dispose();
     _priceController.dispose();
+    _purchasePriceController.dispose();
     _stockController.dispose();
     _skuController.dispose();
     _minStockController.dispose();
@@ -944,6 +947,16 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
                             keyboardType: TextInputType.number,
                             decoration: _inputDecoration(
                               _hasVariants ? 'Harga Dasar' : 'Harga Jual',
+                              prefixText: 'Rp  ',
+                            ),
+                            validator: (v) => v!.isEmpty ? 'Wajib diisi' : null,
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: _purchasePriceController,
+                            keyboardType: TextInputType.number,
+                            decoration: _inputDecoration(
+                              'Harga Beli / HPP (Retail)',
                               prefixText: 'Rp  ',
                             ),
                             validator: (v) => v!.isEmpty ? 'Wajib diisi' : null,
@@ -1417,6 +1430,11 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
           _priceController.text.replaceAll('.', '').replaceAll(',', ''),
         ) ??
         0;
+    final purchasePriceVal =
+        int.tryParse(
+          _purchasePriceController.text.replaceAll('.', '').replaceAll(',', ''),
+        ) ??
+        0;
     final stockVal = int.tryParse(_stockController.text) ?? 0;
 
     int productId;
@@ -1430,6 +1448,7 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
           sku: sku,
           name: _nameController.text.trim(),
           price: priceVal,
+          purchasePrice: Value(purchasePriceVal),
           hasVariants: Value(_hasVariants),
           stock: Value(_hasVariants ? 0 : stockVal),
           lowStockThreshold: Value(minStockVal),
@@ -1443,6 +1462,7 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
           sku: sku,
           name: _nameController.text.trim(),
           price: priceVal,
+          purchasePrice: purchasePriceVal,
           hasVariants: _hasVariants,
           stock: _hasVariants ? 0 : stockVal,
           lowStockThreshold: minStockVal,

@@ -1820,6 +1820,18 @@ class $ProductsTable extends Products with TableInfo<$ProductsTable, Product> {
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _purchasePriceMeta = const VerificationMeta(
+    'purchasePrice',
+  );
+  @override
+  late final GeneratedColumn<int> purchasePrice = GeneratedColumn<int>(
+    'purchase_price',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   static const VerificationMeta _hasVariantsMeta = const VerificationMeta(
     'hasVariants',
   );
@@ -1899,6 +1911,7 @@ class $ProductsTable extends Products with TableInfo<$ProductsTable, Product> {
     name,
     sku,
     price,
+    purchasePrice,
     hasVariants,
     stock,
     lowStockThreshold,
@@ -1952,6 +1965,15 @@ class $ProductsTable extends Products with TableInfo<$ProductsTable, Product> {
       );
     } else if (isInserting) {
       context.missing(_priceMeta);
+    }
+    if (data.containsKey('purchase_price')) {
+      context.handle(
+        _purchasePriceMeta,
+        purchasePrice.isAcceptableOrUnknown(
+          data['purchase_price']!,
+          _purchasePriceMeta,
+        ),
+      );
     }
     if (data.containsKey('has_variants')) {
       context.handle(
@@ -2024,6 +2046,10 @@ class $ProductsTable extends Products with TableInfo<$ProductsTable, Product> {
         DriftSqlType.int,
         data['${effectivePrefix}price'],
       )!,
+      purchasePrice: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}purchase_price'],
+      )!,
       hasVariants: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}has_variants'],
@@ -2063,6 +2089,7 @@ class Product extends DataClass implements Insertable<Product> {
   final String name;
   final String sku;
   final int price;
+  final int purchasePrice;
   final bool hasVariants;
   final int stock;
   final int lowStockThreshold;
@@ -2075,6 +2102,7 @@ class Product extends DataClass implements Insertable<Product> {
     required this.name,
     required this.sku,
     required this.price,
+    required this.purchasePrice,
     required this.hasVariants,
     required this.stock,
     required this.lowStockThreshold,
@@ -2090,6 +2118,7 @@ class Product extends DataClass implements Insertable<Product> {
     map['name'] = Variable<String>(name);
     map['sku'] = Variable<String>(sku);
     map['price'] = Variable<int>(price);
+    map['purchase_price'] = Variable<int>(purchasePrice);
     map['has_variants'] = Variable<bool>(hasVariants);
     map['stock'] = Variable<int>(stock);
     map['low_stock_threshold'] = Variable<int>(lowStockThreshold);
@@ -2108,6 +2137,7 @@ class Product extends DataClass implements Insertable<Product> {
       name: Value(name),
       sku: Value(sku),
       price: Value(price),
+      purchasePrice: Value(purchasePrice),
       hasVariants: Value(hasVariants),
       stock: Value(stock),
       lowStockThreshold: Value(lowStockThreshold),
@@ -2130,6 +2160,7 @@ class Product extends DataClass implements Insertable<Product> {
       name: serializer.fromJson<String>(json['name']),
       sku: serializer.fromJson<String>(json['sku']),
       price: serializer.fromJson<int>(json['price']),
+      purchasePrice: serializer.fromJson<int>(json['purchasePrice']),
       hasVariants: serializer.fromJson<bool>(json['hasVariants']),
       stock: serializer.fromJson<int>(json['stock']),
       lowStockThreshold: serializer.fromJson<int>(json['lowStockThreshold']),
@@ -2147,6 +2178,7 @@ class Product extends DataClass implements Insertable<Product> {
       'name': serializer.toJson<String>(name),
       'sku': serializer.toJson<String>(sku),
       'price': serializer.toJson<int>(price),
+      'purchasePrice': serializer.toJson<int>(purchasePrice),
       'hasVariants': serializer.toJson<bool>(hasVariants),
       'stock': serializer.toJson<int>(stock),
       'lowStockThreshold': serializer.toJson<int>(lowStockThreshold),
@@ -2162,6 +2194,7 @@ class Product extends DataClass implements Insertable<Product> {
     String? name,
     String? sku,
     int? price,
+    int? purchasePrice,
     bool? hasVariants,
     int? stock,
     int? lowStockThreshold,
@@ -2174,6 +2207,7 @@ class Product extends DataClass implements Insertable<Product> {
     name: name ?? this.name,
     sku: sku ?? this.sku,
     price: price ?? this.price,
+    purchasePrice: purchasePrice ?? this.purchasePrice,
     hasVariants: hasVariants ?? this.hasVariants,
     stock: stock ?? this.stock,
     lowStockThreshold: lowStockThreshold ?? this.lowStockThreshold,
@@ -2190,6 +2224,9 @@ class Product extends DataClass implements Insertable<Product> {
       name: data.name.present ? data.name.value : this.name,
       sku: data.sku.present ? data.sku.value : this.sku,
       price: data.price.present ? data.price.value : this.price,
+      purchasePrice: data.purchasePrice.present
+          ? data.purchasePrice.value
+          : this.purchasePrice,
       hasVariants: data.hasVariants.present
           ? data.hasVariants.value
           : this.hasVariants,
@@ -2211,6 +2248,7 @@ class Product extends DataClass implements Insertable<Product> {
           ..write('name: $name, ')
           ..write('sku: $sku, ')
           ..write('price: $price, ')
+          ..write('purchasePrice: $purchasePrice, ')
           ..write('hasVariants: $hasVariants, ')
           ..write('stock: $stock, ')
           ..write('lowStockThreshold: $lowStockThreshold, ')
@@ -2228,6 +2266,7 @@ class Product extends DataClass implements Insertable<Product> {
     name,
     sku,
     price,
+    purchasePrice,
     hasVariants,
     stock,
     lowStockThreshold,
@@ -2244,6 +2283,7 @@ class Product extends DataClass implements Insertable<Product> {
           other.name == this.name &&
           other.sku == this.sku &&
           other.price == this.price &&
+          other.purchasePrice == this.purchasePrice &&
           other.hasVariants == this.hasVariants &&
           other.stock == this.stock &&
           other.lowStockThreshold == this.lowStockThreshold &&
@@ -2258,6 +2298,7 @@ class ProductsCompanion extends UpdateCompanion<Product> {
   final Value<String> name;
   final Value<String> sku;
   final Value<int> price;
+  final Value<int> purchasePrice;
   final Value<bool> hasVariants;
   final Value<int> stock;
   final Value<int> lowStockThreshold;
@@ -2270,6 +2311,7 @@ class ProductsCompanion extends UpdateCompanion<Product> {
     this.name = const Value.absent(),
     this.sku = const Value.absent(),
     this.price = const Value.absent(),
+    this.purchasePrice = const Value.absent(),
     this.hasVariants = const Value.absent(),
     this.stock = const Value.absent(),
     this.lowStockThreshold = const Value.absent(),
@@ -2283,6 +2325,7 @@ class ProductsCompanion extends UpdateCompanion<Product> {
     required String name,
     required String sku,
     required int price,
+    this.purchasePrice = const Value.absent(),
     this.hasVariants = const Value.absent(),
     this.stock = const Value.absent(),
     this.lowStockThreshold = const Value.absent(),
@@ -2299,6 +2342,7 @@ class ProductsCompanion extends UpdateCompanion<Product> {
     Expression<String>? name,
     Expression<String>? sku,
     Expression<int>? price,
+    Expression<int>? purchasePrice,
     Expression<bool>? hasVariants,
     Expression<int>? stock,
     Expression<int>? lowStockThreshold,
@@ -2312,6 +2356,7 @@ class ProductsCompanion extends UpdateCompanion<Product> {
       if (name != null) 'name': name,
       if (sku != null) 'sku': sku,
       if (price != null) 'price': price,
+      if (purchasePrice != null) 'purchase_price': purchasePrice,
       if (hasVariants != null) 'has_variants': hasVariants,
       if (stock != null) 'stock': stock,
       if (lowStockThreshold != null) 'low_stock_threshold': lowStockThreshold,
@@ -2327,6 +2372,7 @@ class ProductsCompanion extends UpdateCompanion<Product> {
     Value<String>? name,
     Value<String>? sku,
     Value<int>? price,
+    Value<int>? purchasePrice,
     Value<bool>? hasVariants,
     Value<int>? stock,
     Value<int>? lowStockThreshold,
@@ -2340,6 +2386,7 @@ class ProductsCompanion extends UpdateCompanion<Product> {
       name: name ?? this.name,
       sku: sku ?? this.sku,
       price: price ?? this.price,
+      purchasePrice: purchasePrice ?? this.purchasePrice,
       hasVariants: hasVariants ?? this.hasVariants,
       stock: stock ?? this.stock,
       lowStockThreshold: lowStockThreshold ?? this.lowStockThreshold,
@@ -2366,6 +2413,9 @@ class ProductsCompanion extends UpdateCompanion<Product> {
     }
     if (price.present) {
       map['price'] = Variable<int>(price.value);
+    }
+    if (purchasePrice.present) {
+      map['purchase_price'] = Variable<int>(purchasePrice.value);
     }
     if (hasVariants.present) {
       map['has_variants'] = Variable<bool>(hasVariants.value);
@@ -2396,6 +2446,7 @@ class ProductsCompanion extends UpdateCompanion<Product> {
           ..write('name: $name, ')
           ..write('sku: $sku, ')
           ..write('price: $price, ')
+          ..write('purchasePrice: $purchasePrice, ')
           ..write('hasVariants: $hasVariants, ')
           ..write('stock: $stock, ')
           ..write('lowStockThreshold: $lowStockThreshold, ')
@@ -13939,6 +13990,7 @@ typedef $$ProductsTableCreateCompanionBuilder =
       required String name,
       required String sku,
       required int price,
+      Value<int> purchasePrice,
       Value<bool> hasVariants,
       Value<int> stock,
       Value<int> lowStockThreshold,
@@ -13953,6 +14005,7 @@ typedef $$ProductsTableUpdateCompanionBuilder =
       Value<String> name,
       Value<String> sku,
       Value<int> price,
+      Value<int> purchasePrice,
       Value<bool> hasVariants,
       Value<int> stock,
       Value<int> lowStockThreshold,
@@ -14105,6 +14158,11 @@ class $$ProductsTableFilterComposer
 
   ColumnFilters<int> get price => $composableBuilder(
     column: $table.price,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get purchasePrice => $composableBuilder(
+    column: $table.purchasePrice,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -14291,6 +14349,11 @@ class $$ProductsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get purchasePrice => $composableBuilder(
+    column: $table.purchasePrice,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get hasVariants => $composableBuilder(
     column: $table.hasVariants,
     builder: (column) => ColumnOrderings(column),
@@ -14365,6 +14428,11 @@ class $$ProductsTableAnnotationComposer
 
   GeneratedColumn<int> get price =>
       $composableBuilder(column: $table.price, builder: (column) => column);
+
+  GeneratedColumn<int> get purchasePrice => $composableBuilder(
+    column: $table.purchasePrice,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<bool> get hasVariants => $composableBuilder(
     column: $table.hasVariants,
@@ -14552,6 +14620,7 @@ class $$ProductsTableTableManager
                 Value<String> name = const Value.absent(),
                 Value<String> sku = const Value.absent(),
                 Value<int> price = const Value.absent(),
+                Value<int> purchasePrice = const Value.absent(),
                 Value<bool> hasVariants = const Value.absent(),
                 Value<int> stock = const Value.absent(),
                 Value<int> lowStockThreshold = const Value.absent(),
@@ -14564,6 +14633,7 @@ class $$ProductsTableTableManager
                 name: name,
                 sku: sku,
                 price: price,
+                purchasePrice: purchasePrice,
                 hasVariants: hasVariants,
                 stock: stock,
                 lowStockThreshold: lowStockThreshold,
@@ -14578,6 +14648,7 @@ class $$ProductsTableTableManager
                 required String name,
                 required String sku,
                 required int price,
+                Value<int> purchasePrice = const Value.absent(),
                 Value<bool> hasVariants = const Value.absent(),
                 Value<int> stock = const Value.absent(),
                 Value<int> lowStockThreshold = const Value.absent(),
@@ -14590,6 +14661,7 @@ class $$ProductsTableTableManager
                 name: name,
                 sku: sku,
                 price: price,
+                purchasePrice: purchasePrice,
                 hasVariants: hasVariants,
                 stock: stock,
                 lowStockThreshold: lowStockThreshold,

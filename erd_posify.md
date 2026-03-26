@@ -110,6 +110,7 @@ erDiagram
         INTEGER price "Harga Jual (Jika simple)"
         INTEGER stock "Sisa Fisik (Jika simple)"
         INTEGER low_stock_threshold "Batas stok menipis, Default 0"
+        INTEGER purchase_price "Harga Beli / HPP Retail (Moving Average)"
         BOOLEAN has_variants "Default False"
         TEXT image_uri "Path lokal gambar"
         TEXT created_at "ISO 8601"
@@ -354,8 +355,9 @@ Menyimpan data printer terakhir yang digunakan agar aplikasi bisa otomatis *re-c
 
 > [!NOTE]
 > **Gross Profit Calculation (COGS)**:
-> Sejak v2.2, Laporan Laba Kotor dihitung secara *on-the-fly* (tidak disimpan di tabel tersendiri) menggunakan Weighted Average cost dari bahan baku.
-> **Formula**: `Laba Kotor = Total Penjualan - (Kebutuhan Bahan × Average Cost)`
+> Sejak v2.6, Laporan Laba Kotor mendukung produk resep maupun retail murni.
+> **Formula (Resep)**: `Laba Kotor = Total Penjualan - (Kebutuhan Bahan × Average Cost)`
+> **Formula (Retail)**: `Laba Kotor = Total Penjualan - (Qty Terjual × Purchase Price)`
 > Query ini menggabungkan `transactions`, `transaction_items`, `product_recipes`, dan `ingredients`.
 
 

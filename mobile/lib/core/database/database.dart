@@ -80,7 +80,7 @@ class PosifyDatabase extends _$PosifyDatabase {
   PosifyDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 15;
+  int get schemaVersion => 16;
 
   @override
   MigrationStrategy get migration {
@@ -165,6 +165,9 @@ class PosifyDatabase extends _$PosifyDatabase {
               ExpenseCategoriesCompanion.insert(name: 'Lain-lain', icon: const Value('more_horiz'), color: const Value('#7F8C8D'), isDefault: const Value(true)),
             ]);
           });
+        }
+        if (from < 16) {
+          await m.addColumn(products, products.purchasePrice);
         }
       },
     );
@@ -441,8 +444,23 @@ class PosifyDatabase extends _$PosifyDatabase {
             .write(ProductVariantsCompanion(stock: Value(newStock)));
             
         // Updates main product aggregate stock
+        final oldStock = product.stock;
+        final oldHpp = product.purchasePrice;
+        int newHpp = oldHpp;
+
+        if (unitCost > 0) {
+           final totalOldValue = oldStock * oldHpp;
+           final totalNewValue = quantity * unitCost;
+           newHpp = newProductStock > 0 
+               ? ((totalOldValue + totalNewValue) / newProductStock).round()
+               : unitCost;
+        }
+
         await (update(products)..where((p) => p.id.equals(productId)))
-            .write(ProductsCompanion(stock: Value(newProductStock)));
+            .write(ProductsCompanion(
+              stock: Value(newProductStock),
+              purchasePrice: Value(newHpp),
+            ));
 
         await into(stockTransactions).insert(StockTransactionsCompanion.insert(
           productId: productId,
@@ -461,9 +479,24 @@ class PosifyDatabase extends _$PosifyDatabase {
               ..where((p) => p.id.equals(productId)))
             .getSingleOrNull();
         if (product == null) throw Exception('Product not found');
+        final oldStock = product.stock;
+        final oldHpp = product.purchasePrice;
+        int newHpp = oldHpp;
         final newStock = product.stock + quantity;
+
+        if (unitCost > 0) {
+           final totalOldValue = oldStock * oldHpp;
+           final totalNewValue = quantity * unitCost;
+           newHpp = newStock > 0 
+               ? ((totalOldValue + totalNewValue) / newStock).round()
+               : unitCost;
+        }
+
         await (update(products)..where((p) => p.id.equals(productId)))
-            .write(ProductsCompanion(stock: Value(newStock)));
+            .write(ProductsCompanion(
+              stock: Value(newStock),
+              purchasePrice: Value(newHpp),
+            ));
         await into(stockTransactions).insert(StockTransactionsCompanion.insert(
           productId: productId,
           supplierId: Value(supplierId),
@@ -1145,75 +1178,127 @@ class PosifyDatabase extends _$PosifyDatabase {
   }
 
   Future<int> getTotalGrossProfit(DateTime start, DateTime end) async {
-    final recipeCostExp = (productRecipes.quantityNeeded * ingredients.averageCost).sum();
-    final query = selectOnly(transactionItems).join([
-      innerJoin(transactions, transactions.id.equalsExp(transactionItems.transactionId)),
-      innerJoin(productRecipes, productRecipes.productId.equalsExp(transactionItems.productId)),
-      innerJoin(ingredients, ingredients.id.equalsExp(productRecipes.ingredientId)),
-    ])
-      ..addColumns([recipeCostExp])
-      ..where(transactions.createdAt.isBetweenValues(start, end))
-      ..where(transactions.paymentStatus.equals('paid'));
-
-    final totalRevenue = await getTotalRevenue(start, end);
-    final result = await query.getSingle();
-    final totalCost = result.read(recipeCostExp) ?? 0.0;
-    return totalRevenue - totalCost.round();
+    final report = await getProductProfitReport(start, end);
+    final totalProfit = report.fold<int>(0, (sum, p) => sum + p.totalProfit);
+    return totalProfit;
   }
 
   Future<List<ProductProfit>> getProductProfitReport(DateTime start, DateTime end) async {
-    final revenueExp = (transactionItems.subtotal).sum();
-    final costExp = (productRecipes.quantityNeeded * ingredients.averageCost * transactionItems.quantity.cast<double>()).sum();
-    final query = selectOnly(transactionItems).join([
+    final query = select(transactionItems).join([
       innerJoin(products, products.id.equalsExp(transactionItems.productId)),
       innerJoin(transactions, transactions.id.equalsExp(transactionItems.transactionId)),
-      leftOuterJoin(productRecipes, productRecipes.productId.equalsExp(transactionItems.productId)),
-      leftOuterJoin(ingredients, ingredients.id.equalsExp(productRecipes.ingredientId)),
     ])
-      ..addColumns([products.name, revenueExp, costExp])
       ..where(transactions.createdAt.isBetweenValues(start, end))
-      ..where(transactions.paymentStatus.equals('paid'))
-      ..groupBy([products.id])
-      ..orderBy([OrderingTerm.desc(revenueExp)]);
+      ..where(transactions.paymentStatus.equals('paid'));
 
     final results = await query.get();
-    return results.map((row) {
-      final revenue = row.read(revenueExp) ?? 0;
-      final cost = (row.read(costExp) as num?)?.toDouble() ?? 0.0;
-      return ProductProfit(
-        row.read(products.name) ?? 'Unknown',
-        revenue,
-        (revenue - cost.round()),
-      );
-    }).toList();
+
+    final Map<int, ProductProfit> profitMap = {};
+
+    for (var row in results) {
+      final item = row.readTable(transactionItems);
+      final product = row.readTable(products);
+
+      final revenue = item.subtotal;
+      double cost = 0.0;
+
+      // 1. Check if it has recipe
+      final recipeCostQuery = selectOnly(productRecipes).join([
+        innerJoin(ingredients, ingredients.id.equalsExp(productRecipes.ingredientId)),
+      ])
+        ..addColumns([productRecipes.quantityNeeded, ingredients.averageCost])
+        ..where(productRecipes.productId.equals(product.id));
+
+      final recipeCostResults = await recipeCostQuery.get();
+      if (recipeCostResults.isNotEmpty) {
+        double unitCost = 0.0;
+        for (var rcRow in recipeCostResults) {
+          final qtyNeeded = rcRow.read(productRecipes.quantityNeeded) ?? 0.0;
+          final avgCost = rcRow.read(ingredients.averageCost) ?? 0.0;
+          unitCost += (qtyNeeded * avgCost);
+        }
+        cost = unitCost * item.quantity;
+      } else {
+        // 2. Retail HPP Support
+        cost = (product.purchasePrice * item.quantity).toDouble();
+      }
+
+      int profit = revenue - cost.round();
+
+      if (profitMap.containsKey(product.id)) {
+        profitMap[product.id] = ProductProfit(
+          product.name,
+          profitMap[product.id]!.totalRevenue + revenue,
+          profitMap[product.id]!.totalProfit + profit,
+        );
+      } else {
+        profitMap[product.id] = ProductProfit(product.name, revenue, profit);
+      }
+    }
+
+    final list = profitMap.values.toList();
+    list.sort((a, b) => b.totalRevenue.compareTo(a.totalRevenue));
+    return list;
   }
 
   Future<List<CategoryProfit>> getCategoryProfitReport(DateTime start, DateTime end) async {
-    final revenueExp = (transactionItems.subtotal).sum();
-    final costExp = (productRecipes.quantityNeeded * ingredients.averageCost * transactionItems.quantity.cast<double>()).sum();
-    final query = selectOnly(transactionItems).join([
+    final query = select(transactionItems).join([
       innerJoin(products, products.id.equalsExp(transactionItems.productId)),
       innerJoin(categories, categories.id.equalsExp(products.categoryId)),
       innerJoin(transactions, transactions.id.equalsExp(transactionItems.transactionId)),
-      leftOuterJoin(productRecipes, productRecipes.productId.equalsExp(transactionItems.productId)),
-      leftOuterJoin(ingredients, ingredients.id.equalsExp(productRecipes.ingredientId)),
     ])
-      ..addColumns([categories.name, revenueExp, costExp])
       ..where(transactions.createdAt.isBetweenValues(start, end))
-      ..where(transactions.paymentStatus.equals('paid'))
-      ..groupBy([categories.id])
-      ..orderBy([OrderingTerm.desc(revenueExp)]);
+      ..where(transactions.paymentStatus.equals('paid'));
 
     final results = await query.get();
-    return results.map((row) {
-      final revenue = row.read(revenueExp) ?? 0;
-      final cost = (row.read(costExp) as num?)?.toDouble() ?? 0.0;
-      return CategoryProfit(
-        row.read(categories.name) ?? 'Unknown',
-        revenue,
-        (revenue - cost.round()),
-      );
-    }).toList();
+
+    final Map<int, CategoryProfit> profitMap = {};
+
+    for (var row in results) {
+      final item = row.readTable(transactionItems);
+      final product = row.readTable(products);
+      final category = row.readTable(categories);
+
+      final revenue = item.subtotal;
+      double cost = 0.0;
+
+      // 1. Check if it has recipe
+      final recipeCostQuery = selectOnly(productRecipes).join([
+        innerJoin(ingredients, ingredients.id.equalsExp(productRecipes.ingredientId)),
+      ])
+        ..addColumns([productRecipes.quantityNeeded, ingredients.averageCost])
+        ..where(productRecipes.productId.equals(product.id));
+
+      final recipeCostResults = await recipeCostQuery.get();
+      if (recipeCostResults.isNotEmpty) {
+        double unitCost = 0.0;
+        for (var rcRow in recipeCostResults) {
+          final qtyNeeded = rcRow.read(productRecipes.quantityNeeded) ?? 0.0;
+          final avgCost = rcRow.read(ingredients.averageCost) ?? 0.0;
+          unitCost += (qtyNeeded * avgCost);
+        }
+        cost = unitCost * item.quantity;
+      } else {
+        // 2. Retail HPP Support
+        cost = (product.purchasePrice * item.quantity).toDouble();
+      }
+
+      int profit = revenue - cost.round();
+
+      if (profitMap.containsKey(category.id)) {
+        profitMap[category.id] = CategoryProfit(
+          category.name,
+          profitMap[category.id]!.totalRevenue + revenue,
+          profitMap[category.id]!.totalProfit + profit,
+        );
+      } else {
+        profitMap[category.id] = CategoryProfit(category.name, revenue, profit);
+      }
+    }
+
+    final list = profitMap.values.toList();
+    list.sort((a, b) => b.totalRevenue.compareTo(a.totalRevenue));
+    return list;
   }
 
   Future<List<DailySales>> getHourlySales(DateTime start, DateTime end) async {

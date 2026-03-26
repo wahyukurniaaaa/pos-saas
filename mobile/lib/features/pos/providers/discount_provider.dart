@@ -27,9 +27,44 @@ final validItemDiscountsProvider =
 // ─── Currently selected bill-level discount ──────────────────────────────────
 
 class SelectedDiscountNotifier extends Notifier<Discount?> {
+  bool _userExplicitlyRemoved = false;
+
   @override
   Discount? build() => null;
-  set state(Discount? val) => super.state = val;
+  
+  set state(Discount? val) {
+    if (val == null) {
+      _userExplicitlyRemoved = true;
+    } else {
+      _userExplicitlyRemoved = false;
+    }
+    super.state = val;
+  }
+
+  void reset() {
+    _userExplicitlyRemoved = false;
+    super.state = null;
+  }
+
+  void autoApplyIfNeeded(List<Discount> validDiscounts, double totalAmount) {
+    if (super.state != null || _userExplicitlyRemoved) return;
+
+    final autoDiscounts = validDiscounts
+        .where((d) => d.isAutomatic && d.minSpend <= totalAmount)
+        .toList();
+
+    if (autoDiscounts.isNotEmpty) {
+      autoDiscounts.sort((a, b) => 
+          calculateDiscountAmount(b, totalAmount.toInt())
+          .compareTo(calculateDiscountAmount(a, totalAmount.toInt())));
+      
+      Future.microtask(() {
+        if (super.state == null && !_userExplicitlyRemoved) {
+          super.state = autoDiscounts.first;
+        }
+      });
+    }
+  }
 }
 
 final selectedDiscountProvider =

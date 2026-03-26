@@ -15,6 +15,7 @@ import 'package:posify_app/features/pos/screens/shift/shift_opening_modal.dart';
 import 'package:posify_app/features/pos/screens/barcode_scanner_modal.dart';
 import 'package:posify_app/core/widgets/product_image.dart';
 import '../providers/pos_providers.dart';
+import 'item_discount_selection_sheet.dart';
 import 'inventory_tab.dart' as inventory;
 import 'inventory/import_product_screen.dart';
 
@@ -1032,10 +1033,90 @@ class CartPanel extends ConsumerWidget {
                   _currency.format(item.effectivePrice),
                   style: GoogleFonts.poppins(
                     fontSize: 14,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: item.appliedDiscount != null ? AppTheme.textSecondary : Theme.of(context).colorScheme.primary,
                     fontWeight: FontWeight.w700,
+                    decoration: item.appliedDiscount != null ? TextDecoration.lineThrough : null,
                   ),
                 ),
+                if (item.appliedDiscount != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Text(
+                      _currency.format(item.total / item.quantity),
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 6),
+                if (item.appliedDiscount != null)
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppTheme.successColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          '-${_currency.format(item.itemDiscountAmount)}',
+                          style: GoogleFonts.poppins(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.successColor,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      GestureDetector(
+                        onTap: () {
+                          showModalBottomSheet(
+                            context: context,
+                            backgroundColor: Colors.transparent,
+                            isScrollControlled: true,
+                            builder: (_) => ItemDiscountSelectionSheet(cartItem: item),
+                          );
+                        },
+                        child: Text(
+                          'Ubah',
+                          style: GoogleFonts.poppins(
+                            fontSize: 11,
+                            color: AppTheme.primaryColor,
+                            fontWeight: FontWeight.w600,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                else
+                  GestureDetector(
+                    onTap: () {
+                      showModalBottomSheet(
+                        context: context,
+                        backgroundColor: Colors.transparent,
+                        isScrollControlled: true,
+                        builder: (_) => ItemDiscountSelectionSheet(cartItem: item),
+                      );
+                    },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.local_offer_outlined, size: 13, color: AppTheme.primaryColor),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Gunakan Diskon Item',
+                          style: GoogleFonts.poppins(
+                            fontSize: 11,
+                            color: AppTheme.primaryColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
               ],
             ),
           ),

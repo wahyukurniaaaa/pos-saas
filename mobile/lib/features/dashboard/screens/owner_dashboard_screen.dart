@@ -7,8 +7,7 @@ import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/features/auth/providers/owner_provider.dart';
 import 'package:posify_app/features/pos/screens/pos_tab.dart';
 import 'package:posify_app/features/pos/screens/inventory_tab.dart';
-import 'package:posify_app/features/reports/screens/sales_analytics_screen.dart';
-import 'package:posify_app/features/reports/screens/stock_loss_report_screen.dart';
+import 'package:posify_app/features/reports/screens/report_menu_screen.dart';
 import 'package:posify_app/features/settings/screens/employee_list_screen.dart';
 import 'package:posify_app/features/settings/screens/store_profile_screen.dart';
 import 'package:posify_app/features/settings/screens/transaction_history_screen.dart';
@@ -284,10 +283,10 @@ class _OwnerDashboardScreenState extends ConsumerState<OwnerDashboardScreen> {
                     _menuCard([
                       _MenuTile(
                         icon: Icons.analytics_rounded,
-                        label: 'Analitik Penjualan',
-                        subtitle: 'Grafik tren & top produk',
+                        label: 'Semua Laporan',
+                        subtitle: 'Pusat laporan bisnis terpadu',
                         color: AppTheme.primaryColor,
-                        onTap: () => _nav(const SalesAnalyticsScreen()),
+                        onTap: () => _nav(const ReportMenuScreen()),
                       ),
                       _MenuTile(
                         icon: Icons.account_balance_wallet_rounded,
@@ -606,13 +605,7 @@ class _OwnerDashboardScreenState extends ConsumerState<OwnerDashboardScreen> {
         icon: Icons.analytics_rounded,
         label: 'Laporan',
         color: AppTheme.infoColor,
-        onTap: () => _nav(const SalesAnalyticsScreen()),
-      ),
-      _ActionItem(
-        icon: Icons.money_off_csred_rounded,
-        label: 'Loss/Waste',
-        color: Colors.redAccent,
-        onTap: () => _nav(const StockLossReportScreen()),
+        onTap: () => _nav(const ReportMenuScreen()),
       ),
       _ActionItem(
         icon: Icons.outbond_rounded,

@@ -2,9 +2,14 @@
 
 **Produk:** Aplikasi Sistem Kasir (POS) SaaS Offline-First
 
-**Versi:** 2.5 (Discount & Voucher Management)
+**Versi:** 2.6 (Retail HPP & Moving Average)
 
-**Status:** Implementasi Progresif (Phase 1-3, Phase 7-11 Selesai)
+**Status:** Implementasi Progresif (Phase 1-3, Phase 7-12 Selesai)
+
+## **Update Log (v2.6):**
+*   **Retail HPP Support (Phase 12)**: Tambahkan dukungan Harga Pokok Penjualan (HPP) untuk produk retail murni (non-resep).
+*   **Moving Average Algorithm**: Implementasi perhitungan modal rata-rata otomatis pada produk retail saat proses *Stock In*, menjaga akurasi laba kotor di tengah fluktuasi harga supplier.
+*   **Database Migration v16**: Penambahan kolom `purchase_price` pada tabel `products`.
 
 ## **Update Log (v2.5):**
 *   **Discount & Voucher Management (Phase 11)**: Sistem promosi fleksibel pendukung diskon per-item dan per-transaksi (bill level). Mendukung minimal belanja, periode aktif, dan diskon otomatis.

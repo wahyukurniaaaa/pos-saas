@@ -167,14 +167,16 @@ class CartItem {
   final Product product;
   final ProductVariant? variant; // null = simple product
   final int quantity;
+  final Discount? appliedDiscount;
 
-  CartItem({required this.product, this.variant, this.quantity = 1});
+  CartItem({required this.product, this.variant, this.quantity = 1, this.appliedDiscount});
 
-  CartItem copyWith({int? quantity}) {
+  CartItem copyWith({int? quantity, Discount? appliedDiscount, bool removeDiscount = false}) {
     return CartItem(
       product: product,
       variant: variant,
       quantity: quantity ?? this.quantity,
+      appliedDiscount: removeDiscount ? null : (appliedDiscount ?? this.appliedDiscount),
     );
   }
 
@@ -184,7 +186,16 @@ class CartItem {
           ? variant!.price!
           : product.price;
 
-  double get total => (effectivePrice * quantity).toDouble();
+  int get itemDiscountAmount {
+    if (appliedDiscount == null) return 0;
+    final baseAmount = effectivePrice * quantity;
+    if (appliedDiscount!.type == 'fixed') {
+      return appliedDiscount!.value.toInt().clamp(0, baseAmount);
+    }
+    return ((baseAmount * appliedDiscount!.value / 100)).round().clamp(0, baseAmount);
+  }
+
+  double get total => ((effectivePrice * quantity) - itemDiscountAmount).toDouble();
 
   /// Unique key: same product with different variants = different cart lines.
   String get cartKey =>
@@ -226,6 +237,13 @@ class CartNotifier extends Notifier<List<CartItem>> {
     state = [
       for (final item in state)
         if (item.cartKey == cartKey) item.copyWith(quantity: quantity) else item,
+    ];
+  }
+
+  void updateItemDiscount(String cartKey, Discount? discount) {
+    state = [
+      for (final item in state)
+        if (item.cartKey == cartKey) item.copyWith(appliedDiscount: discount, removeDiscount: discount == null) else item,
     ];
   }
 
@@ -283,6 +301,8 @@ class CartNotifier extends Notifier<List<CartItem>> {
           quantity: item.quantity,
           priceAtTransaction: item.effectivePrice,
           subtotal: item.total.toInt(),
+          discountId: drift.Value(item.appliedDiscount?.id),
+          discountAmount: drift.Value(item.itemDiscountAmount),
         );
       }).toList();
 
