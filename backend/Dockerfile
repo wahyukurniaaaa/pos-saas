@@ -22,6 +22,8 @@ WORKDIR /root/
 
 # Copy the binary from the builder stage
 COPY --from=builder /app/main .
+# Copy the static files folder
+COPY --from=builder /app/public ./public
 
 # Port exposed by Fiber
 EXPOSE 8080
