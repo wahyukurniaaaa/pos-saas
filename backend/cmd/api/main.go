@@ -96,6 +96,12 @@ func main() {
 		if adminPath == "" {
 			adminPath = "/admin"
 		}
+
+		// Add a redirect for the path without a trailing slash
+		app.Get(adminPath, func(c *fiber.Ctx) error {
+			return c.Redirect(adminPath + "/")
+		})
+
 		// Serves files from ./public under the adminPath
 		app.Static(adminPath, "./public", fiber.Static{
 			Index: "index.html",
