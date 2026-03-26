@@ -2,9 +2,14 @@
 
 **Produk:** Aplikasi Sistem Kasir (POS) SaaS Offline-First
 
-**Versi:** 2.6 (Retail HPP & Moving Average)
+**Versi:** 2.7 (Loyalty & Membership System)
 
-**Status:** Implementasi Progresif (Phase 1-3, Phase 7-12 Selesai)
+**Status:** Implementasi Progresif (Phase 1-3, Phase 7-13 Selesai)
+
+## **Update Log (v2.7):**
+*   **Loyalty & Membership System (Phase 10)**: Sistem poin member terintegrasi. Pelanggan mendapatkan poin berdasarkan nominal belanja yang dapat ditukarkan menjadi diskon langsung di kasir.
+*   **Loyalty Analytics**: Dashboard leaderboard untuk memantau member paling loyal (berdasarkan poin dan frekuensi transaksi).
+*   **Database Migration v17**: Penambahan kolom `points` pada `customers`, pengaturan poin di `store_profile`, dan audit poin pada `transactions`.
 
 ## **Update Log (v2.6):**
 *   **Retail HPP Support (Phase 12)**: Tambahkan dukungan Harga Pokok Penjualan (HPP) untuk produk retail murni (non-resep).
@@ -98,8 +103,8 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
 * **Pencatatan Pembayaran (Recording Only):** Memilih status pembayaran (**Tunai, QRIS, Debit, Kredit, Piutang/Bon**). Tidak ada integrasi gateway API untuk menghindari biaya MDR.  
 * **Print & Share Engine:** 
     *   Cetak struk via Bluetooth/USB Thermal (Protokol ESC/POS).
-    *   **WhatsApp Hybrid Sharing:** Mengirim struk digital (Image + Text summary) ke WhatsApp pelanggan.
-    *   **CRM & Database Pelanggan (Member):** Sistem mendata identitas pelanggan untuk pencarian cepat saat *checkout*. Pelanggan terdaftar bisa dianalisis riwayat belanjanya.
+    *   **WhatsApp Hybrid Sharing:** Mengirim struk digital (Image + Text summary) ke WhatsApp pelanggan. Incl. Info Poin Member.
+    *   **CRM & Database Pelanggan (Member) & Loyalty [BARU]:** Sistem mendata identitas pelanggan untuk pencarian cepat saat *checkout*. Pelanggan terdaftar otomatis mengumpulkan poin belanja (Berdasarkan aturan konversi Rp -> Poin) yang dapat ditukarkan (Redeem) menjadi potongan harga tunai.
 
 ### **4.4. Modul Backup & Restore (Tier 1)**
 
@@ -136,6 +141,7 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
 |  | Foto Profil | Path ke Image Device lokal, opsional. |
 | **Pelanggan (Member)** | Nama | String, wajib. |
 | (Baru) | Telepon (WA) | String, opsional (tapi unik jika ada). |
+|  | Poin | Integer. Default 0. Bertambah saat belanja, berkurang saat redeem. |
 |  | Alamat/Email | String, opsional. |
 | **Profil Toko** | Nama Toko | String, max 50 karakter. Wajib diisi. (Untuk Struk). |
 |  | Telp / Alamat | String. Telp Format numerik (opsional). Alamat (opsional). |
@@ -177,7 +183,7 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
 * **Konfigurasi Biaya:** Saya ingin mengatur besaran persentase Pajak (PPN/PB1) secara *inclusive* atau *exclusive*, serta menetapkan *Service Charge* (%) agar sistem otomatis menghitungnya ke total belanjaan pelanggan. Perhitungan pajak bersifat dinamis dan akan di-record nilainya (nominal) pada setiap nota.
 * **Branded Receipt:** Saya ingin mengunggah logo toko saya agar struk fisik (Thermal) maupun struk digital (WhatsApp) terlihat lebih profesional.
 * **Manajemen Promosi:** Saya ingin membuat berbagai jenis promo (Misal: Diskon Hari Raya 10%, Voucher Potongan Rp 15rb) dengan syarat minimal belanja untuk meningkatkan omzet dan menarik loyalitas pelanggan.
-* **Monitoring Lengkap & Profitabilitas:** Sebagai Owner, saya ingin melihat menu analitik (Laporan Penjualan, tren, **Laba Kotor (Gross Profit)**, dan Kategori paling menguntungkan) demi mengevaluasi performa bisnis.
+*   **Monitoring Lengkap & Profitabilitas:** Sebagai Owner, saya ingin melihat menu analitik (Laporan Penjualan, tren, **Laba Kotor (Gross Profit)**, **Loyalty Analytics (Leaderboard Member)**, dan Kategori paling menguntungkan) demi mengevaluasi performa bisnis.
 * **Manajemen Modal (HPP):** Saya ingin sistem menghitung otomatis modal (COGS) dari setiap produk berdasarkan resep dan harga beli bahan baku agar sistem bisa menyajikan estimasi Laba Kotor secara otomatis.
 * **Data Safety:** Sebagai Owner, saya ingin mencadangkan data ke Google Drive secara manual, atau *Auto-Local Backup* (otomatis) di *storage internal* untuk keamanan.
 
