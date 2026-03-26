@@ -162,3 +162,25 @@ Berikut adalah backlog fitur untuk pengembangan **Posify Inventory Phase 2, 3, &
     *   [ ] **Implementation**: Short-url feedback link yang disertakan di struk WhatsApp.
     *   [ ] **UI**: Rating star (1-5) dan kolom komentar sederhana (Web-based).
     *   [ ] **Monitoring**: Notifikasi instan ke Owner jika ada rating < 3 agar bisa segera dilakukan *service recovery*.
+
+### 20. Serial Number / IMEI Tracking (Retail Electronics)
+*   **User Story**: "Sebagai Owner Toko Elektronik, saya ingin mencatat nomor seri atau IMEI produk saat barang masuk dan terjual agar saya bisa melacak histori garansi dan mencegah klaim palsu."
+*   **Tasks**:
+    *   [ ] **Database**: Create `product_serials` table linked to `transaction_items` and `stock_history`.
+    *   [ ] **UI**: Popup input SN/IMEI di menu POS saat item dipilih.
+    *   [ ] **Validation**: Cek apakah SN/IMEI sudah pernah terjual atau masih tersedia di stok.
+    *   [ ] **Search**: Fitur "Cek Garansi" berbasis SN/IMEI di menu Riwayat.
+
+### 21. Service Booking & Appointment (Jasa / Barber / Salon)
+*   **User Story**: "Sebagai Owner Salon/Barber, saya ingin mengatur jadwal kunjungan pelanggan agar saya bisa melihat beban kerja staff dan memastikan tidak ada tabrakan jadwal (Double Booking)."
+*   **Tasks**:
+    *   [ ] **UI**: Calendar View (Day/Week) untuk melihat slot waktu yang tersedia.
+    *   [ ] **Logic**: Link booking ke `employee_id` (Stylist/Therapist) dan `customer_id`.
+    *   [ ] **Integration**: Saat pelanggan datang, satu klik untuk merubah "Booking" menjadi "Active Transaction" di POS.
+
+### 22. Purchase Order (PO) Management (General Retail)
+*   **User Story**: "Sebagai Purchasing Manager, saya ingin membuat dokumen pesanan resmi (PO) ke Supplier sebelum barang dikirim agar saya bisa mencocokkan jumlah pesanan dengan jumlah barang yang datang (Stock In Match)."
+*   **Tasks**:
+    *   [ ] **Database**: Create `purchase_orders` and `po_items` tables with states (`Draft/Sent/Partial/Received`).
+    *   [ ] **UI**: PO Creator — Form input barang yang ingin dipesan ke Supplier terpilih.
+    *   [ ] **Inventory Sync**: Fitur "Receive from PO" di menu Stock In untuk input stok otomatis berbasis dokumen PO yang sudah ada.
