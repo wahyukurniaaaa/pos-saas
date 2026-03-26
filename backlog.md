@@ -115,3 +115,50 @@ Berikut adalah backlog fitur untuk pengembangan **Posify Inventory Phase 2, 3, &
     *   [x] **Integrasi Shift**: Total pengeluaran per shift tampil di rekap "Tutup Shift" sebagai Kas Keluar.
     *   [x] **Cashflow Analytics**: `CashFlowScreen` — bar chart Pendapatan vs Pengeluaran, tampilkan Laba Operasional bersih.
     *   [x] **Quick Action**: Tombol "Kas Keluar" di tab Kasir untuk input cepat tanpa buka Pengaturan.
+
+## 🎨 Priority 6: Advanced & Add-ons (Future Growth)
+
+### 14. F&B Table Management (Manajemen Meja)
+*   **User Story**: "Sebagai Manager Restoran, saya ingin mengatur denah meja secara visual agar saya bisa melihat status keterisian meja (Kosong/Terisi/Selesai) dan mengelola pesanan per meja (Split Bill/Merge Table) dengan mudah."
+*   **Tasks**:
+    *   [ ] **Database**: Create `tables` (mapping to zones/areas) and `table_sessions` (linking transaction to a physical table).
+    *   [ ] **UI**: Visual Floor Maker — Drag & drop interface untuk menyusun denah meja (Bundar/Kotak).
+    *   [ ] **Status Tracking**: Visual indicator per meja (Hijau: Kosong, Merah: Terisi, Kuning: Menunggu Pembayaran).
+    *   [ ] **Advanced Logic**: Feature "Pindah Meja" dan "Gabung Tagihan" (Merge Bill) antar meja dalam satu sesi.
+
+### 15. Kitchen Display System (KDS)
+*   **User Story**: "Sebagai Staff Dapur, saya ingin melihat pesanan masuk secara real-time di layar tablet agar saya bisa langsung memasak tanpa perlu kertas struk fisik (Paperless Kitchen)."
+*   **Tasks**:
+    *   [ ] **Communication**: Implement local networking (WebSocket/Socket.io) untuk sinkronisasi instan antara Kasir & Dapur.
+    *   [ ] **UI**: KDS Dashboard — Grid view pesanan yang diurutkan berdasarkan waktu masuk (FIFO).
+    *   [ ] **Status Flow**: Tombol "Start Cooking", "Ready to Serve", dan "Collected".
+    *   [ ] **Alerts**: Tanda peringatan (Warna Merah/Blink) jika pesanan belum selesai dalam waktu > 15 menit.
+
+### 16. Debt (Piutang / Bon) Management
+*   **User Story**: "Sebagai Owner, saya ingin mencatat transaksi yang belum lunas (Bon) atas nama pelanggan tertentu agar saya bisa melacak total piutang dan menagihnya di kemudian hari."
+*   **Tasks**:
+    *   [ ] **Database**: Update `transactions` status (`unpaid / partial`) dan buat tabel `debt_payments` untuk cicilan.
+    *   [ ] **UI**: Debt Ledger — Halaman khusus di menu Pelanggan untuk melihat daftar hutang yang belum lunas.
+    *   [ ] **Reminder**: Fitur "Kirim Pengingat" otomatis via WhatsApp API untuk jatuh tempo hutang.
+    *   [ ] **Analytics**: Laporan penuaan piutang (Aging Report) untuk melihat hutang macet.
+
+### 17. Employee Commissions & Performance
+*   **User Story**: "Sebagai Owner, saya ingin menetapkan komisi per item atau per total penjualan bagi karyawan agar motivasi staff meningkat dan saya bisa melihat siapa 'Top Performer' bulan ini secara otomatis."
+*   **Tasks**:
+    *   [ ] **Database**: Create `commissions_config` (Fixed amount or Percentage per product/category).
+    *   [ ] **Logic**: Auto-calculation komisi setiap kali transaksi selesai, dikaitkan dengan `employee_id`.
+    *   [ ] **UI**: Staff Performance Dashboard — Grafik penjualan per karyawan dan estimasi gaji/bonus bulanan.
+
+### 18. Digital Catalog (Catalog Online / Link-in-Bio)
+*   **User Story**: "Sebagai Owner, saya ingin membagikan katalog produk online ke media sosial agar pelanggan bisa melihat menu/produk saya secara mandiri dan melakukan pre-order."
+*   **Tasks**:
+    *   [ ] **Backend**: Mini-web generator yang mengambil data produk & stok dari database lokal (Cloud Sync required).
+    *   [ ] **UI**: Public Product Landing Page — Tampilan katalog yang mobile-friendly dan estetik.
+    *   [ ] **Order Link**: Tombol "Order via WA" yang otomatis menyusun pesan format belanja berdasarkan item yang dipilih di web.
+
+### 19. Customer Feedback System (NPS)
+*   **User Story**: "Sebagai Owner, saya ingin mendapatkan feedback langsung dari pelanggan setelah transaksi agar saya bisa mengevaluasi kualitas layanan dan komplain secara cepat."
+*   **Tasks**:
+    *   [ ] **Implementation**: Short-url feedback link yang disertakan di struk WhatsApp.
+    *   [ ] **UI**: Rating star (1-5) dan kolom komentar sederhana (Web-based).
+    *   [ ] **Monitoring**: Notifikasi instan ke Owner jika ada rating < 3 agar bisa segera dilakukan *service recovery*.
