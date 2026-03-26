@@ -7,11 +7,13 @@ import 'package:posify_app/core/theme/app_theme.dart';
 class WhatsAppReceiptWidget extends StatelessWidget {
   final TransactionWithItems data;
   final StoreProfileData? storeProfile;
+  final Customer? customer;
 
   const WhatsAppReceiptWidget({
     super.key,
     required this.data,
     this.storeProfile,
+    this.customer,
   });
 
   @override
@@ -198,6 +200,73 @@ class WhatsAppReceiptWidget extends StatelessWidget {
           ),
 
           const SizedBox(height: 48),
+
+          // Loyalty Section
+          if (customer != null && data.transaction.pointsEarned > 0) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF8E1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFFFE082)),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.stars_rounded, color: Colors.amber, size: 18),
+                      const SizedBox(width: 8),
+                      Text(
+                        'INFO POIN MEMBER',
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                          color: Colors.amber.shade800,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Poin Diperoleh:',
+                        style: GoogleFonts.poppins(fontSize: 12, color: Colors.amber.shade900),
+                      ),
+                      Text(
+                        '+${data.transaction.pointsEarned} Poin',
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                          color: Colors.amber.shade900,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Total Poin Anda:',
+                        style: GoogleFonts.poppins(fontSize: 12, color: Colors.amber.shade900),
+                      ),
+                      Text(
+                        '${customer!.points} Poin',
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                          color: Colors.amber.shade900,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+
           Text(
             'Terima kasih telah berbelanja!',
             textAlign: TextAlign.center,

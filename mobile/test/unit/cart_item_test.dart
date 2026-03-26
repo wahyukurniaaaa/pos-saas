@@ -13,6 +13,7 @@ void main() {
       sku: 'SKU123',
       hasVariants: false,
       lowStockThreshold: 0,
+      purchasePrice: 0,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );

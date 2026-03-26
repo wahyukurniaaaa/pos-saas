@@ -49,6 +49,9 @@ void main() {
         subtotal: 50000,
         taxAmount: 0,
         serviceChargeAmount: 0,
+        discountAmount: 0,
+        pointsEarned: 0,
+        pointsRedeemed: 0,
         createdAt: DateTime.now(),
       ),
       Transaction(
@@ -61,6 +64,9 @@ void main() {
         subtotal: 30000,
         taxAmount: 0,
         serviceChargeAmount: 0,
+        discountAmount: 0,
+        pointsEarned: 0,
+        pointsRedeemed: 0,
         createdAt: DateTime.now(),
       ),
     ];

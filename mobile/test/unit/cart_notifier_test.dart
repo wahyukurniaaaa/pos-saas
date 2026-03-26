@@ -23,6 +23,7 @@ void main() {
     sku: 'sku1',
     hasVariants: false,
     lowStockThreshold: 0,
+    purchasePrice: 0,
     createdAt: DateTime.now(),
     updatedAt: DateTime.now(),
   );
@@ -36,6 +37,7 @@ void main() {
     sku: 'sku2',
     hasVariants: false,
     lowStockThreshold: 0,
+    purchasePrice: 0,
     createdAt: DateTime.now(),
     updatedAt: DateTime.now(),
   );

@@ -80,7 +80,7 @@ class PosifyDatabase extends _$PosifyDatabase {
   PosifyDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 16;
+  int get schemaVersion => 17;
 
   @override
   MigrationStrategy get migration {
@@ -168,6 +168,13 @@ class PosifyDatabase extends _$PosifyDatabase {
         }
         if (from < 16) {
           await m.addColumn(products, products.purchasePrice);
+        }
+        if (from < 17) {
+          await m.addColumn(customers, customers.points);
+          await m.addColumn(transactions, transactions.pointsEarned);
+          await m.addColumn(transactions, transactions.pointsRedeemed);
+          await m.addColumn(storeProfile, storeProfile.loyaltyPointConversion);
+          await m.addColumn(storeProfile, storeProfile.loyaltyPointValue);
         }
       },
     );
@@ -405,6 +412,44 @@ class PosifyDatabase extends _$PosifyDatabase {
   Future<int> insertCustomer(CustomersCompanion entry) =>
       into(customers).insert(entry);
   Future<bool> updateCustomer(Customer entry) => update(customers).replace(entry);
+
+  /// Returns all customers who have at least 1 transaction, with aggregated stats.
+  /// Sorted by points descending by default.
+  Future<List<CustomerLoyaltyStat>> getLoyaltyLeaderboard() async {
+    final result = await customSelect(
+      '''
+      SELECT
+        c.*,
+        COUNT(t.id) AS transaction_count,
+        COALESCE(SUM(t.total_amount), 0) AS total_spend
+      FROM customers c
+      INNER JOIN transactions t ON t.customer_id = c.id
+      GROUP BY c.id
+      ORDER BY c.points DESC
+      ''',
+      readsFrom: {customers, transactions},
+    ).get();
+
+    return result.map((row) {
+      final customer = Customer(
+        id: row.read<int>('id'),
+        name: row.read<String>('name'),
+        phone: row.readNullable<String>('phone'),
+        email: row.readNullable<String>('email'),
+        address: row.readNullable<String>('address'),
+        isMember: row.read<bool>('is_member'),
+        points: row.read<int>('points'),
+        createdAt: row.read<String>('created_at'),
+        updatedAt: row.read<String>('updated_at'),
+      );
+      return CustomerLoyaltyStat(
+        customer: customer,
+        transactionCount: row.read<int>('transaction_count'),
+        totalSpend: row.read<int>('total_spend'),
+      );
+    }).toList();
+  }
+
 
   Future<List<Supplier>> getAllSuppliers() => select(suppliers).get();
   Stream<List<Supplier>> watchAllSuppliers() => select(suppliers).watch();
@@ -919,6 +964,21 @@ class PosifyDatabase extends _$PosifyDatabase {
             referenceId: transactionEntry.receiptNumber.value,
             reason: 'Penjualan: ${transactionEntry.receiptNumber.value}',
           );
+        }
+      }
+
+      // 5. Update Customer Points
+      if (transactionEntry.customerId.present && transactionEntry.customerId.value != null) {
+        final customerId = transactionEntry.customerId.value!;
+        final earned = transactionEntry.pointsEarned.present ? transactionEntry.pointsEarned.value : 0;
+        final redeemed = transactionEntry.pointsRedeemed.present ? transactionEntry.pointsRedeemed.value : 0;
+
+        if (earned > 0 || redeemed > 0) {
+          final customer = await (select(customers)..where((c) => c.id.equals(customerId))).getSingleOrNull();
+          if (customer != null) {
+            final newPoints = customer.points + earned - redeemed;
+            await update(customers).replace(customer.copyWith(points: newPoints));
+          }
         }
       }
 
@@ -1754,6 +1814,18 @@ class CashFlowData {
   });
 
   int get netProfit => totalRevenue - totalExpense;
+}
+
+class CustomerLoyaltyStat {
+  final Customer customer;
+  final int transactionCount;
+  final int totalSpend;
+
+  const CustomerLoyaltyStat({
+    required this.customer,
+    required this.transactionCount,
+    required this.totalSpend,
+  });
 }
 
 String _generateRandomKey() {

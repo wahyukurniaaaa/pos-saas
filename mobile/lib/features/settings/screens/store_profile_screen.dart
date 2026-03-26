@@ -24,6 +24,8 @@ class _StoreProfileScreenState extends ConsumerState<StoreProfileScreen> {
   final _nameController = TextEditingController();
   final _addressController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _loyaltyConversionController = TextEditingController();
+  final _loyaltyValueController = TextEditingController();
 
   String? _logoUri;
   bool _isLoading = true;
@@ -46,6 +48,8 @@ class _StoreProfileScreenState extends ConsumerState<StoreProfileScreen> {
         _nameController.text = profile.name;
         _addressController.text = profile.address ?? '';
         _phoneController.text = profile.phone ?? '';
+        _loyaltyConversionController.text = profile.loyaltyPointConversion.toString();
+        _loyaltyValueController.text = profile.loyaltyPointValue.toString();
         _logoUri = profile.logoUri;
       }
     } catch (e) {
@@ -62,6 +66,8 @@ class _StoreProfileScreenState extends ConsumerState<StoreProfileScreen> {
     _nameController.dispose();
     _addressController.dispose();
     _phoneController.dispose();
+    _loyaltyConversionController.dispose();
+    _loyaltyValueController.dispose();
     super.dispose();
   }
 
@@ -205,6 +211,8 @@ class _StoreProfileScreenState extends ConsumerState<StoreProfileScreen> {
             phone: Value(
               _phoneController.text.isEmpty ? null : _phoneController.text,
             ),
+            loyaltyPointConversion: Value(int.tryParse(_loyaltyConversionController.text.replaceAll(RegExp(r'[^0-9]'), '')) ?? 10000),
+            loyaltyPointValue: Value(int.tryParse(_loyaltyValueController.text.replaceAll(RegExp(r'[^0-9]'), '')) ?? 100),
             logoUri: Value(_logoUri),
           ),
         );
@@ -218,6 +226,8 @@ class _StoreProfileScreenState extends ConsumerState<StoreProfileScreen> {
             phone: Value(
               _phoneController.text.isEmpty ? null : _phoneController.text,
             ),
+            loyaltyPointConversion: int.tryParse(_loyaltyConversionController.text.replaceAll(RegExp(r'[^0-9]'), '')) ?? 10000,
+            loyaltyPointValue: int.tryParse(_loyaltyValueController.text.replaceAll(RegExp(r'[^0-9]'), '')) ?? 100,
             logoUri: Value(_logoUri),
           ),
         );
@@ -433,6 +443,39 @@ class _StoreProfileScreenState extends ConsumerState<StoreProfileScreen> {
                           'Alamat Toko (Opsional)',
                           'Misal: Jl. Raya Posify No. 1, Jakarta',
                           Icons.location_on_rounded,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Loyalty Settings
+                      Text(
+                        'Pengaturan Poin Pelanggan (Loyalty)',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _loyaltyConversionController,
+                        keyboardType: TextInputType.number,
+                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                        decoration: _inputDecoration(
+                          'Minimum Belanja untuk 1 Poin (Rp)',
+                          'Misal: 10000',
+                          Icons.monetization_on_rounded,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _loyaltyValueController,
+                        keyboardType: TextInputType.number,
+                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                        decoration: _inputDecoration(
+                          'Nilai 1 Poin saat ditukar (Rp)',
+                          'Misal: 100',
+                          Icons.card_giftcard_rounded,
                         ),
                       ),
                       const SizedBox(height: 40),

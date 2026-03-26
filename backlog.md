@@ -68,14 +68,15 @@ Berikut adalah backlog fitur untuk pengembangan **Posify Inventory Phase 2, 3, &
 
 ## 🟣 Priority 4: Loyalty & Automation (Growth)
 
-### 10. Loyalty & Membership System (Points)
+### 10. Loyalty & Membership System (Points) - COMPLETED
 *   **User Story**: "Sebagai Owner, saya ingin memberikan poin setiap belanja agar pelanggan kembali lagi (retensi)."
 *   **Tasks**:
-    *   [ ] Add `points` column to `customers` table.
-    *   [ ] Create `loyalty_rules` (e.g., Rp 10.000 = 1 Point).
-    *   [ ] Implementation of `Point Calculation` in checkout transaction.
-    *   [ ] UI: Tukar Poin menjadi diskon di halaman Pembayaran.
-    *   [ ] Report: Member most active analytics.
+    *   [x] **Database**: Add `points` column to `customers` table and `points_earned/points_redeemed` to `transactions`.
+    *   [x] **Configuration**: Create loyalty rules in Store Profile (Poin per Belanja & Nilai Tukar Poin).
+    *   [x] **Logic**: Implementation of point calculation and balance persistence during checkout.
+    *   [x] **Redemption**: UI/Logic to redeem points for direct discounts in Payment Modal.
+    *   [x] **Reporting**: Loyalty Analytics screen with member leaderboard (Most Points & Most Active).
+    *   [x] **Receipts**: Include point earned/total balance info in Thermal and WhatsApp receipts.
 
 ### 11. Proactive Low Stock Alerts (Push Notifications)
 *   **User Story**: "Sebagai Bagian Gudang, saya ingin ada notifikasi otomatis saat stok menipis agar tidak telat restock."

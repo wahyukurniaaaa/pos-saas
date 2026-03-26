@@ -1,6 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/core/providers/receipt_provider.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
@@ -21,7 +22,12 @@ class PaymentSuccessScreen extends ConsumerWidget {
     required this.cashReceived,
     required this.changeAmount,
     required this.paymentMethod,
+    this.pointsEarned = 0,
+    this.customerPointsAfter,
   });
+
+  final int pointsEarned;
+  final int? customerPointsAfter;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -92,6 +98,48 @@ class PaymentSuccessScreen extends ConsumerWidget {
                         formatCurrency.format(changeAmount),
                         isTotal: true,
                       ),
+                      if (pointsEarned > 0) ...[
+                        const Divider(height: 24),
+                        Row(
+                          children: [
+                            const Icon(Icons.stars_rounded, color: Colors.amber, size: 20),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Poin Diperoleh',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  color: AppTheme.textSecondary,
+                                ),
+                              ),
+                            ),
+                            Text(
+                              '+$pointsEarned Poin',
+                              style: GoogleFonts.poppins(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.amber.shade700,
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (customerPointsAfter != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Text(
+                                  'Total poin: $customerPointsAfter',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    color: AppTheme.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
                     ],
                   ),
                 ),
@@ -105,17 +153,23 @@ class PaymentSuccessScreen extends ConsumerWidget {
                       final db = ref.read(databaseProvider);
                       final receiptService = ref.read(receiptServiceProvider);
 
-                      // Fetch profile and transaction data
                       final profile = await db.getStoreProfile();
-                      final txnData = await db.getTransactionWithItems(
-                        transactionId,
-                      );
+                      final txnData = await db.getTransactionWithItems(transactionId);
+
+                      // Fetch customer if linked
+                      Customer? customer;
+                      if (txnData?.transaction.customerId != null) {
+                        customer = await (db.select(db.customers)
+                          ..where((c) => c.id.equals(txnData!.transaction.customerId!)))
+                          .getSingleOrNull();
+                      }
 
                       if (txnData != null) {
                         await receiptService.printReceipt(
                           profile: profile,
                           transaction: txnData.transaction,
                           items: txnData.items,
+                          customer: customer,
                         );
                       }
                     } catch (e) {
@@ -157,14 +211,21 @@ class PaymentSuccessScreen extends ConsumerWidget {
                       final receiptService = ref.read(receiptServiceProvider);
 
                       final profile = await db.getStoreProfile();
-                      final txnData = await db.getTransactionWithItems(
-                        transactionId,
-                      );
+                      final txnData = await db.getTransactionWithItems(transactionId);
+
+                      // Fetch customer if linked
+                      Customer? customer;
+                      if (txnData?.transaction.customerId != null) {
+                        customer = await (db.select(db.customers)
+                          ..where((c) => c.id.equals(txnData!.transaction.customerId!)))
+                          .getSingleOrNull();
+                      }
 
                       if (txnData != null) {
                         await receiptService.shareToWhatsApp(
                           profile: profile,
                           data: txnData,
+                          customer: customer,
                         );
                       }
                     } catch (e) {

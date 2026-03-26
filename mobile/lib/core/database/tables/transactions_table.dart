@@ -23,4 +23,7 @@ class Transactions extends Table {
   // Discount (Bill Level)
   IntColumn get discountId => integer().nullable().references(Discounts, #id)();
   IntColumn get discountAmount => integer().withDefault(const Constant(0))();
+  // Loyalty Points
+  IntColumn get pointsEarned => integer().withDefault(const Constant(0))();
+  IntColumn get pointsRedeemed => integer().withDefault(const Constant(0))();
 }

@@ -75,6 +75,8 @@ erDiagram
         INTEGER tax_percentage "Persentase Pajak (0-100)"
         TEXT tax_type "inclusive/exclusive"
         INTEGER service_charge_percentage "Persen Service (0-100)"
+        INTEGER loyalty_point_conversion "Nilai belanja per 1 poin"
+        INTEGER loyalty_point_value "Nilai Rp per 1 poin (redeem)"
     }
 
     customers {
@@ -84,6 +86,7 @@ erDiagram
         TEXT email "Opsional"
         TEXT address "Opsional"
         BOOLEAN is_member "Default True"
+        INTEGER points "Poin Member saat ini"
         TEXT created_at "ISO 8601"
         TEXT updated_at "ISO 8601"
     }
@@ -154,6 +157,10 @@ erDiagram
         INTEGER void_by FK "ID Pegawai L1/L2, Nullable"
         INTEGER discount_id FK "Discounts ID, Nullable"
         INTEGER discount_amount "Nominal Diskon (Total)"
+        INTEGER points_earned "Poin yg didapat dari transaksi"
+        INTEGER points_redeemed "Poin yg ditukarkan dari saldo"
+        TEXT customer_name "Snapshot data member"
+        TEXT customer_phone "Snapshot data member"
         TEXT created_at "Waktu Transaksi"
     }
 

@@ -14,6 +14,7 @@ class ReceiptService {
     required StoreProfileData? profile,
     required Transaction transaction,
     required List<TransactionItemWithProduct> items,
+    Customer? customer,
   }) async {
     final bool? isConnected = await bluetooth.isConnected;
     if (isConnected != true) {
@@ -110,6 +111,16 @@ class ReceiptService {
     await bluetooth.printCustom('Terima Kasih', 1, 1);
     await bluetooth.printCustom('Sudah Berbelanja', 0, 1);
 
+    // Loyalty Info (shown only if there is a member)
+    if (customer != null && transaction.pointsEarned > 0) {
+      await bluetooth.printCustom('--------------------------------', 0, 1);
+      await bluetooth.printCustom('** INFO POIN MEMBER **', 0, 1);
+      final earned = '+ ${transaction.pointsEarned} Poin Diperoleh';
+      await bluetooth.printCustom(earned, 0, 1);
+      final balance = 'Total Poin : ${customer.points}';
+      await bluetooth.printCustom(balance, 0, 1);
+    }
+
     await bluetooth.printNewLine();
     await bluetooth.printNewLine();
     await bluetooth.printNewLine();
@@ -119,6 +130,7 @@ class ReceiptService {
   Future<void> shareToWhatsApp({
     required StoreProfileData? profile,
     required TransactionWithItems data,
+    Customer? customer,
   }) async {
     final screenshotController = ScreenshotController();
 
@@ -135,7 +147,7 @@ class ReceiptService {
     ).writeAsBytes(imageBytes);
 
     // 3. Format Text
-    final String text = _formatWhatsAppText(profile, data);
+    final String text = _formatWhatsAppText(profile, data, customer: customer);
 
     // 4. Share
     await Share.shareXFiles([XFile(file.path)], text: text);
@@ -143,8 +155,9 @@ class ReceiptService {
 
   String _formatWhatsAppText(
     StoreProfileData? profile,
-    TransactionWithItems data,
-  ) {
+    TransactionWithItems data, {
+    Customer? customer,
+  }) {
     final currency = NumberFormat.currency(
       locale: 'id_ID',
       symbol: 'Rp ',
@@ -177,6 +190,13 @@ class ReceiptService {
     );
     buffer.writeln('');
     buffer.writeln('Terima kasih sudah berbelanja! 🙏');
+
+    if (customer != null && data.transaction.pointsEarned > 0) {
+      buffer.writeln('');
+      buffer.writeln('⭐ *INFO POIN MEMBER*');
+      buffer.writeln('Poin diperoleh transaksi ini: +${data.transaction.pointsEarned} Poin');
+      buffer.writeln('Total poin Anda saat ini: ${customer.points} Poin');
+    }
 
     return buffer.toString();
   }

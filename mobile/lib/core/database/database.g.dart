@@ -1140,6 +1140,29 @@ class $StoreProfileTable extends StoreProfile
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _loyaltyPointConversionMeta =
+      const VerificationMeta('loyaltyPointConversion');
+  @override
+  late final GeneratedColumn<int> loyaltyPointConversion = GeneratedColumn<int>(
+    'loyalty_point_conversion',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(10000),
+  );
+  static const VerificationMeta _loyaltyPointValueMeta = const VerificationMeta(
+    'loyaltyPointValue',
+  );
+  @override
+  late final GeneratedColumn<int> loyaltyPointValue = GeneratedColumn<int>(
+    'loyalty_point_value',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(100),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1150,6 +1173,8 @@ class $StoreProfileTable extends StoreProfile
     taxType,
     serviceChargePercentage,
     logoUri,
+    loyaltyPointConversion,
+    loyaltyPointValue,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1216,6 +1241,24 @@ class $StoreProfileTable extends StoreProfile
         logoUri.isAcceptableOrUnknown(data['logo_uri']!, _logoUriMeta),
       );
     }
+    if (data.containsKey('loyalty_point_conversion')) {
+      context.handle(
+        _loyaltyPointConversionMeta,
+        loyaltyPointConversion.isAcceptableOrUnknown(
+          data['loyalty_point_conversion']!,
+          _loyaltyPointConversionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('loyalty_point_value')) {
+      context.handle(
+        _loyaltyPointValueMeta,
+        loyaltyPointValue.isAcceptableOrUnknown(
+          data['loyalty_point_value']!,
+          _loyaltyPointValueMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -1257,6 +1300,14 @@ class $StoreProfileTable extends StoreProfile
         DriftSqlType.string,
         data['${effectivePrefix}logo_uri'],
       ),
+      loyaltyPointConversion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}loyalty_point_conversion'],
+      )!,
+      loyaltyPointValue: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}loyalty_point_value'],
+      )!,
     );
   }
 
@@ -1276,6 +1327,8 @@ class StoreProfileData extends DataClass
   final String taxType;
   final int serviceChargePercentage;
   final String? logoUri;
+  final int loyaltyPointConversion;
+  final int loyaltyPointValue;
   const StoreProfileData({
     required this.id,
     required this.name,
@@ -1285,6 +1338,8 @@ class StoreProfileData extends DataClass
     required this.taxType,
     required this.serviceChargePercentage,
     this.logoUri,
+    required this.loyaltyPointConversion,
+    required this.loyaltyPointValue,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1303,6 +1358,8 @@ class StoreProfileData extends DataClass
     if (!nullToAbsent || logoUri != null) {
       map['logo_uri'] = Variable<String>(logoUri);
     }
+    map['loyalty_point_conversion'] = Variable<int>(loyaltyPointConversion);
+    map['loyalty_point_value'] = Variable<int>(loyaltyPointValue);
     return map;
   }
 
@@ -1322,6 +1379,8 @@ class StoreProfileData extends DataClass
       logoUri: logoUri == null && nullToAbsent
           ? const Value.absent()
           : Value(logoUri),
+      loyaltyPointConversion: Value(loyaltyPointConversion),
+      loyaltyPointValue: Value(loyaltyPointValue),
     );
   }
 
@@ -1341,6 +1400,10 @@ class StoreProfileData extends DataClass
         json['serviceChargePercentage'],
       ),
       logoUri: serializer.fromJson<String?>(json['logoUri']),
+      loyaltyPointConversion: serializer.fromJson<int>(
+        json['loyaltyPointConversion'],
+      ),
+      loyaltyPointValue: serializer.fromJson<int>(json['loyaltyPointValue']),
     );
   }
   @override
@@ -1357,6 +1420,8 @@ class StoreProfileData extends DataClass
         serviceChargePercentage,
       ),
       'logoUri': serializer.toJson<String?>(logoUri),
+      'loyaltyPointConversion': serializer.toJson<int>(loyaltyPointConversion),
+      'loyaltyPointValue': serializer.toJson<int>(loyaltyPointValue),
     };
   }
 
@@ -1369,6 +1434,8 @@ class StoreProfileData extends DataClass
     String? taxType,
     int? serviceChargePercentage,
     Value<String?> logoUri = const Value.absent(),
+    int? loyaltyPointConversion,
+    int? loyaltyPointValue,
   }) => StoreProfileData(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -1379,6 +1446,9 @@ class StoreProfileData extends DataClass
     serviceChargePercentage:
         serviceChargePercentage ?? this.serviceChargePercentage,
     logoUri: logoUri.present ? logoUri.value : this.logoUri,
+    loyaltyPointConversion:
+        loyaltyPointConversion ?? this.loyaltyPointConversion,
+    loyaltyPointValue: loyaltyPointValue ?? this.loyaltyPointValue,
   );
   StoreProfileData copyWithCompanion(StoreProfileCompanion data) {
     return StoreProfileData(
@@ -1394,6 +1464,12 @@ class StoreProfileData extends DataClass
           ? data.serviceChargePercentage.value
           : this.serviceChargePercentage,
       logoUri: data.logoUri.present ? data.logoUri.value : this.logoUri,
+      loyaltyPointConversion: data.loyaltyPointConversion.present
+          ? data.loyaltyPointConversion.value
+          : this.loyaltyPointConversion,
+      loyaltyPointValue: data.loyaltyPointValue.present
+          ? data.loyaltyPointValue.value
+          : this.loyaltyPointValue,
     );
   }
 
@@ -1407,7 +1483,9 @@ class StoreProfileData extends DataClass
           ..write('taxPercentage: $taxPercentage, ')
           ..write('taxType: $taxType, ')
           ..write('serviceChargePercentage: $serviceChargePercentage, ')
-          ..write('logoUri: $logoUri')
+          ..write('logoUri: $logoUri, ')
+          ..write('loyaltyPointConversion: $loyaltyPointConversion, ')
+          ..write('loyaltyPointValue: $loyaltyPointValue')
           ..write(')'))
         .toString();
   }
@@ -1422,6 +1500,8 @@ class StoreProfileData extends DataClass
     taxType,
     serviceChargePercentage,
     logoUri,
+    loyaltyPointConversion,
+    loyaltyPointValue,
   );
   @override
   bool operator ==(Object other) =>
@@ -1434,7 +1514,9 @@ class StoreProfileData extends DataClass
           other.taxPercentage == this.taxPercentage &&
           other.taxType == this.taxType &&
           other.serviceChargePercentage == this.serviceChargePercentage &&
-          other.logoUri == this.logoUri);
+          other.logoUri == this.logoUri &&
+          other.loyaltyPointConversion == this.loyaltyPointConversion &&
+          other.loyaltyPointValue == this.loyaltyPointValue);
 }
 
 class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
@@ -1446,6 +1528,8 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
   final Value<String> taxType;
   final Value<int> serviceChargePercentage;
   final Value<String?> logoUri;
+  final Value<int> loyaltyPointConversion;
+  final Value<int> loyaltyPointValue;
   const StoreProfileCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
@@ -1455,6 +1539,8 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
     this.taxType = const Value.absent(),
     this.serviceChargePercentage = const Value.absent(),
     this.logoUri = const Value.absent(),
+    this.loyaltyPointConversion = const Value.absent(),
+    this.loyaltyPointValue = const Value.absent(),
   });
   StoreProfileCompanion.insert({
     this.id = const Value.absent(),
@@ -1465,6 +1551,8 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
     this.taxType = const Value.absent(),
     this.serviceChargePercentage = const Value.absent(),
     this.logoUri = const Value.absent(),
+    this.loyaltyPointConversion = const Value.absent(),
+    this.loyaltyPointValue = const Value.absent(),
   }) : name = Value(name);
   static Insertable<StoreProfileData> custom({
     Expression<int>? id,
@@ -1475,6 +1563,8 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
     Expression<String>? taxType,
     Expression<int>? serviceChargePercentage,
     Expression<String>? logoUri,
+    Expression<int>? loyaltyPointConversion,
+    Expression<int>? loyaltyPointValue,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1486,6 +1576,9 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
       if (serviceChargePercentage != null)
         'service_charge_percentage': serviceChargePercentage,
       if (logoUri != null) 'logo_uri': logoUri,
+      if (loyaltyPointConversion != null)
+        'loyalty_point_conversion': loyaltyPointConversion,
+      if (loyaltyPointValue != null) 'loyalty_point_value': loyaltyPointValue,
     });
   }
 
@@ -1498,6 +1591,8 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
     Value<String>? taxType,
     Value<int>? serviceChargePercentage,
     Value<String?>? logoUri,
+    Value<int>? loyaltyPointConversion,
+    Value<int>? loyaltyPointValue,
   }) {
     return StoreProfileCompanion(
       id: id ?? this.id,
@@ -1509,6 +1604,9 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
       serviceChargePercentage:
           serviceChargePercentage ?? this.serviceChargePercentage,
       logoUri: logoUri ?? this.logoUri,
+      loyaltyPointConversion:
+          loyaltyPointConversion ?? this.loyaltyPointConversion,
+      loyaltyPointValue: loyaltyPointValue ?? this.loyaltyPointValue,
     );
   }
 
@@ -1541,6 +1639,14 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
     if (logoUri.present) {
       map['logo_uri'] = Variable<String>(logoUri.value);
     }
+    if (loyaltyPointConversion.present) {
+      map['loyalty_point_conversion'] = Variable<int>(
+        loyaltyPointConversion.value,
+      );
+    }
+    if (loyaltyPointValue.present) {
+      map['loyalty_point_value'] = Variable<int>(loyaltyPointValue.value);
+    }
     return map;
   }
 
@@ -1554,7 +1660,9 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
           ..write('taxPercentage: $taxPercentage, ')
           ..write('taxType: $taxType, ')
           ..write('serviceChargePercentage: $serviceChargePercentage, ')
-          ..write('logoUri: $logoUri')
+          ..write('logoUri: $logoUri, ')
+          ..write('loyaltyPointConversion: $loyaltyPointConversion, ')
+          ..write('loyaltyPointValue: $loyaltyPointValue')
           ..write(')'))
         .toString();
   }
@@ -4472,6 +4580,30 @@ class $TransactionsTable extends Transactions
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _pointsEarnedMeta = const VerificationMeta(
+    'pointsEarned',
+  );
+  @override
+  late final GeneratedColumn<int> pointsEarned = GeneratedColumn<int>(
+    'points_earned',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _pointsRedeemedMeta = const VerificationMeta(
+    'pointsRedeemed',
+  );
+  @override
+  late final GeneratedColumn<int> pointsRedeemed = GeneratedColumn<int>(
+    'points_redeemed',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -4490,6 +4622,8 @@ class $TransactionsTable extends Transactions
     customerName,
     discountId,
     discountAmount,
+    pointsEarned,
+    pointsRedeemed,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -4630,6 +4764,24 @@ class $TransactionsTable extends Transactions
         ),
       );
     }
+    if (data.containsKey('points_earned')) {
+      context.handle(
+        _pointsEarnedMeta,
+        pointsEarned.isAcceptableOrUnknown(
+          data['points_earned']!,
+          _pointsEarnedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('points_redeemed')) {
+      context.handle(
+        _pointsRedeemedMeta,
+        pointsRedeemed.isAcceptableOrUnknown(
+          data['points_redeemed']!,
+          _pointsRedeemedMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -4703,6 +4855,14 @@ class $TransactionsTable extends Transactions
         DriftSqlType.int,
         data['${effectivePrefix}discount_amount'],
       )!,
+      pointsEarned: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}points_earned'],
+      )!,
+      pointsRedeemed: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}points_redeemed'],
+      )!,
     );
   }
 
@@ -4729,6 +4889,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
   final String? customerName;
   final int? discountId;
   final int discountAmount;
+  final int pointsEarned;
+  final int pointsRedeemed;
   const Transaction({
     required this.id,
     required this.receiptNumber,
@@ -4746,6 +4908,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     this.customerName,
     this.discountId,
     required this.discountAmount,
+    required this.pointsEarned,
+    required this.pointsRedeemed,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -4776,6 +4940,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       map['discount_id'] = Variable<int>(discountId);
     }
     map['discount_amount'] = Variable<int>(discountAmount);
+    map['points_earned'] = Variable<int>(pointsEarned);
+    map['points_redeemed'] = Variable<int>(pointsRedeemed);
     return map;
   }
 
@@ -4807,6 +4973,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           ? const Value.absent()
           : Value(discountId),
       discountAmount: Value(discountAmount),
+      pointsEarned: Value(pointsEarned),
+      pointsRedeemed: Value(pointsRedeemed),
     );
   }
 
@@ -4834,6 +5002,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       customerName: serializer.fromJson<String?>(json['customerName']),
       discountId: serializer.fromJson<int?>(json['discountId']),
       discountAmount: serializer.fromJson<int>(json['discountAmount']),
+      pointsEarned: serializer.fromJson<int>(json['pointsEarned']),
+      pointsRedeemed: serializer.fromJson<int>(json['pointsRedeemed']),
     );
   }
   @override
@@ -4856,6 +5026,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       'customerName': serializer.toJson<String?>(customerName),
       'discountId': serializer.toJson<int?>(discountId),
       'discountAmount': serializer.toJson<int>(discountAmount),
+      'pointsEarned': serializer.toJson<int>(pointsEarned),
+      'pointsRedeemed': serializer.toJson<int>(pointsRedeemed),
     };
   }
 
@@ -4876,6 +5048,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     Value<String?> customerName = const Value.absent(),
     Value<int?> discountId = const Value.absent(),
     int? discountAmount,
+    int? pointsEarned,
+    int? pointsRedeemed,
   }) => Transaction(
     id: id ?? this.id,
     receiptNumber: receiptNumber ?? this.receiptNumber,
@@ -4895,6 +5069,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     customerName: customerName.present ? customerName.value : this.customerName,
     discountId: discountId.present ? discountId.value : this.discountId,
     discountAmount: discountAmount ?? this.discountAmount,
+    pointsEarned: pointsEarned ?? this.pointsEarned,
+    pointsRedeemed: pointsRedeemed ?? this.pointsRedeemed,
   );
   Transaction copyWithCompanion(TransactionsCompanion data) {
     return Transaction(
@@ -4934,6 +5110,12 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       discountAmount: data.discountAmount.present
           ? data.discountAmount.value
           : this.discountAmount,
+      pointsEarned: data.pointsEarned.present
+          ? data.pointsEarned.value
+          : this.pointsEarned,
+      pointsRedeemed: data.pointsRedeemed.present
+          ? data.pointsRedeemed.value
+          : this.pointsRedeemed,
     );
   }
 
@@ -4955,7 +5137,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           ..write('customerPhone: $customerPhone, ')
           ..write('customerName: $customerName, ')
           ..write('discountId: $discountId, ')
-          ..write('discountAmount: $discountAmount')
+          ..write('discountAmount: $discountAmount, ')
+          ..write('pointsEarned: $pointsEarned, ')
+          ..write('pointsRedeemed: $pointsRedeemed')
           ..write(')'))
         .toString();
   }
@@ -4978,6 +5162,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     customerName,
     discountId,
     discountAmount,
+    pointsEarned,
+    pointsRedeemed,
   );
   @override
   bool operator ==(Object other) =>
@@ -4998,7 +5184,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           other.customerPhone == this.customerPhone &&
           other.customerName == this.customerName &&
           other.discountId == this.discountId &&
-          other.discountAmount == this.discountAmount);
+          other.discountAmount == this.discountAmount &&
+          other.pointsEarned == this.pointsEarned &&
+          other.pointsRedeemed == this.pointsRedeemed);
 }
 
 class TransactionsCompanion extends UpdateCompanion<Transaction> {
@@ -5018,6 +5206,8 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
   final Value<String?> customerName;
   final Value<int?> discountId;
   final Value<int> discountAmount;
+  final Value<int> pointsEarned;
+  final Value<int> pointsRedeemed;
   const TransactionsCompanion({
     this.id = const Value.absent(),
     this.receiptNumber = const Value.absent(),
@@ -5035,6 +5225,8 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     this.customerName = const Value.absent(),
     this.discountId = const Value.absent(),
     this.discountAmount = const Value.absent(),
+    this.pointsEarned = const Value.absent(),
+    this.pointsRedeemed = const Value.absent(),
   });
   TransactionsCompanion.insert({
     this.id = const Value.absent(),
@@ -5053,6 +5245,8 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     this.customerName = const Value.absent(),
     this.discountId = const Value.absent(),
     this.discountAmount = const Value.absent(),
+    this.pointsEarned = const Value.absent(),
+    this.pointsRedeemed = const Value.absent(),
   }) : receiptNumber = Value(receiptNumber),
        shiftId = Value(shiftId),
        subtotal = Value(subtotal),
@@ -5075,6 +5269,8 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     Expression<String>? customerName,
     Expression<int>? discountId,
     Expression<int>? discountAmount,
+    Expression<int>? pointsEarned,
+    Expression<int>? pointsRedeemed,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -5094,6 +5290,8 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       if (customerName != null) 'customer_name': customerName,
       if (discountId != null) 'discount_id': discountId,
       if (discountAmount != null) 'discount_amount': discountAmount,
+      if (pointsEarned != null) 'points_earned': pointsEarned,
+      if (pointsRedeemed != null) 'points_redeemed': pointsRedeemed,
     });
   }
 
@@ -5114,6 +5312,8 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     Value<String?>? customerName,
     Value<int?>? discountId,
     Value<int>? discountAmount,
+    Value<int>? pointsEarned,
+    Value<int>? pointsRedeemed,
   }) {
     return TransactionsCompanion(
       id: id ?? this.id,
@@ -5132,6 +5332,8 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       customerName: customerName ?? this.customerName,
       discountId: discountId ?? this.discountId,
       discountAmount: discountAmount ?? this.discountAmount,
+      pointsEarned: pointsEarned ?? this.pointsEarned,
+      pointsRedeemed: pointsRedeemed ?? this.pointsRedeemed,
     );
   }
 
@@ -5186,6 +5388,12 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     if (discountAmount.present) {
       map['discount_amount'] = Variable<int>(discountAmount.value);
     }
+    if (pointsEarned.present) {
+      map['points_earned'] = Variable<int>(pointsEarned.value);
+    }
+    if (pointsRedeemed.present) {
+      map['points_redeemed'] = Variable<int>(pointsRedeemed.value);
+    }
     return map;
   }
 
@@ -5207,7 +5415,9 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
           ..write('customerPhone: $customerPhone, ')
           ..write('customerName: $customerName, ')
           ..write('discountId: $discountId, ')
-          ..write('discountAmount: $discountAmount')
+          ..write('discountAmount: $discountAmount, ')
+          ..write('pointsEarned: $pointsEarned, ')
+          ..write('pointsRedeemed: $pointsRedeemed')
           ..write(')'))
         .toString();
   }
@@ -6572,6 +6782,16 @@ class $CustomersTable extends Customers
     ),
     defaultValue: const Constant(true),
   );
+  static const VerificationMeta _pointsMeta = const VerificationMeta('points');
+  @override
+  late final GeneratedColumn<int> points = GeneratedColumn<int>(
+    'points',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -6602,6 +6822,7 @@ class $CustomersTable extends Customers
     email,
     address,
     isMember,
+    points,
     createdAt,
     updatedAt,
   ];
@@ -6650,6 +6871,12 @@ class $CustomersTable extends Customers
       context.handle(
         _isMemberMeta,
         isMember.isAcceptableOrUnknown(data['is_member']!, _isMemberMeta),
+      );
+    }
+    if (data.containsKey('points')) {
+      context.handle(
+        _pointsMeta,
+        points.isAcceptableOrUnknown(data['points']!, _pointsMeta),
       );
     }
     if (data.containsKey('created_at')) {
@@ -6701,6 +6928,10 @@ class $CustomersTable extends Customers
         DriftSqlType.bool,
         data['${effectivePrefix}is_member'],
       )!,
+      points: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}points'],
+      )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}created_at'],
@@ -6725,6 +6956,7 @@ class Customer extends DataClass implements Insertable<Customer> {
   final String? email;
   final String? address;
   final bool isMember;
+  final int points;
   final String createdAt;
   final String updatedAt;
   const Customer({
@@ -6734,6 +6966,7 @@ class Customer extends DataClass implements Insertable<Customer> {
     this.email,
     this.address,
     required this.isMember,
+    required this.points,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -6752,6 +6985,7 @@ class Customer extends DataClass implements Insertable<Customer> {
       map['address'] = Variable<String>(address);
     }
     map['is_member'] = Variable<bool>(isMember);
+    map['points'] = Variable<int>(points);
     map['created_at'] = Variable<String>(createdAt);
     map['updated_at'] = Variable<String>(updatedAt);
     return map;
@@ -6771,6 +7005,7 @@ class Customer extends DataClass implements Insertable<Customer> {
           ? const Value.absent()
           : Value(address),
       isMember: Value(isMember),
+      points: Value(points),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -6788,6 +7023,7 @@ class Customer extends DataClass implements Insertable<Customer> {
       email: serializer.fromJson<String?>(json['email']),
       address: serializer.fromJson<String?>(json['address']),
       isMember: serializer.fromJson<bool>(json['isMember']),
+      points: serializer.fromJson<int>(json['points']),
       createdAt: serializer.fromJson<String>(json['createdAt']),
       updatedAt: serializer.fromJson<String>(json['updatedAt']),
     );
@@ -6802,6 +7038,7 @@ class Customer extends DataClass implements Insertable<Customer> {
       'email': serializer.toJson<String?>(email),
       'address': serializer.toJson<String?>(address),
       'isMember': serializer.toJson<bool>(isMember),
+      'points': serializer.toJson<int>(points),
       'createdAt': serializer.toJson<String>(createdAt),
       'updatedAt': serializer.toJson<String>(updatedAt),
     };
@@ -6814,6 +7051,7 @@ class Customer extends DataClass implements Insertable<Customer> {
     Value<String?> email = const Value.absent(),
     Value<String?> address = const Value.absent(),
     bool? isMember,
+    int? points,
     String? createdAt,
     String? updatedAt,
   }) => Customer(
@@ -6823,6 +7061,7 @@ class Customer extends DataClass implements Insertable<Customer> {
     email: email.present ? email.value : this.email,
     address: address.present ? address.value : this.address,
     isMember: isMember ?? this.isMember,
+    points: points ?? this.points,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -6834,6 +7073,7 @@ class Customer extends DataClass implements Insertable<Customer> {
       email: data.email.present ? data.email.value : this.email,
       address: data.address.present ? data.address.value : this.address,
       isMember: data.isMember.present ? data.isMember.value : this.isMember,
+      points: data.points.present ? data.points.value : this.points,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -6848,6 +7088,7 @@ class Customer extends DataClass implements Insertable<Customer> {
           ..write('email: $email, ')
           ..write('address: $address, ')
           ..write('isMember: $isMember, ')
+          ..write('points: $points, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -6862,6 +7103,7 @@ class Customer extends DataClass implements Insertable<Customer> {
     email,
     address,
     isMember,
+    points,
     createdAt,
     updatedAt,
   );
@@ -6875,6 +7117,7 @@ class Customer extends DataClass implements Insertable<Customer> {
           other.email == this.email &&
           other.address == this.address &&
           other.isMember == this.isMember &&
+          other.points == this.points &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -6886,6 +7129,7 @@ class CustomersCompanion extends UpdateCompanion<Customer> {
   final Value<String?> email;
   final Value<String?> address;
   final Value<bool> isMember;
+  final Value<int> points;
   final Value<String> createdAt;
   final Value<String> updatedAt;
   const CustomersCompanion({
@@ -6895,6 +7139,7 @@ class CustomersCompanion extends UpdateCompanion<Customer> {
     this.email = const Value.absent(),
     this.address = const Value.absent(),
     this.isMember = const Value.absent(),
+    this.points = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
   });
@@ -6905,6 +7150,7 @@ class CustomersCompanion extends UpdateCompanion<Customer> {
     this.email = const Value.absent(),
     this.address = const Value.absent(),
     this.isMember = const Value.absent(),
+    this.points = const Value.absent(),
     required String createdAt,
     required String updatedAt,
   }) : name = Value(name),
@@ -6917,6 +7163,7 @@ class CustomersCompanion extends UpdateCompanion<Customer> {
     Expression<String>? email,
     Expression<String>? address,
     Expression<bool>? isMember,
+    Expression<int>? points,
     Expression<String>? createdAt,
     Expression<String>? updatedAt,
   }) {
@@ -6927,6 +7174,7 @@ class CustomersCompanion extends UpdateCompanion<Customer> {
       if (email != null) 'email': email,
       if (address != null) 'address': address,
       if (isMember != null) 'is_member': isMember,
+      if (points != null) 'points': points,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
     });
@@ -6939,6 +7187,7 @@ class CustomersCompanion extends UpdateCompanion<Customer> {
     Value<String?>? email,
     Value<String?>? address,
     Value<bool>? isMember,
+    Value<int>? points,
     Value<String>? createdAt,
     Value<String>? updatedAt,
   }) {
@@ -6949,6 +7198,7 @@ class CustomersCompanion extends UpdateCompanion<Customer> {
       email: email ?? this.email,
       address: address ?? this.address,
       isMember: isMember ?? this.isMember,
+      points: points ?? this.points,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -6975,6 +7225,9 @@ class CustomersCompanion extends UpdateCompanion<Customer> {
     if (isMember.present) {
       map['is_member'] = Variable<bool>(isMember.value);
     }
+    if (points.present) {
+      map['points'] = Variable<int>(points.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<String>(createdAt.value);
     }
@@ -6993,6 +7246,7 @@ class CustomersCompanion extends UpdateCompanion<Customer> {
           ..write('email: $email, ')
           ..write('address: $address, ')
           ..write('isMember: $isMember, ')
+          ..write('points: $points, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -13509,6 +13763,8 @@ typedef $$StoreProfileTableCreateCompanionBuilder =
       Value<String> taxType,
       Value<int> serviceChargePercentage,
       Value<String?> logoUri,
+      Value<int> loyaltyPointConversion,
+      Value<int> loyaltyPointValue,
     });
 typedef $$StoreProfileTableUpdateCompanionBuilder =
     StoreProfileCompanion Function({
@@ -13520,6 +13776,8 @@ typedef $$StoreProfileTableUpdateCompanionBuilder =
       Value<String> taxType,
       Value<int> serviceChargePercentage,
       Value<String?> logoUri,
+      Value<int> loyaltyPointConversion,
+      Value<int> loyaltyPointValue,
     });
 
 class $$StoreProfileTableFilterComposer
@@ -13568,6 +13826,16 @@ class $$StoreProfileTableFilterComposer
 
   ColumnFilters<String> get logoUri => $composableBuilder(
     column: $table.logoUri,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get loyaltyPointConversion => $composableBuilder(
+    column: $table.loyaltyPointConversion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get loyaltyPointValue => $composableBuilder(
+    column: $table.loyaltyPointValue,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -13620,6 +13888,16 @@ class $$StoreProfileTableOrderingComposer
     column: $table.logoUri,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get loyaltyPointConversion => $composableBuilder(
+    column: $table.loyaltyPointConversion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get loyaltyPointValue => $composableBuilder(
+    column: $table.loyaltyPointValue,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$StoreProfileTableAnnotationComposer
@@ -13658,6 +13936,16 @@ class $$StoreProfileTableAnnotationComposer
 
   GeneratedColumn<String> get logoUri =>
       $composableBuilder(column: $table.logoUri, builder: (column) => column);
+
+  GeneratedColumn<int> get loyaltyPointConversion => $composableBuilder(
+    column: $table.loyaltyPointConversion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get loyaltyPointValue => $composableBuilder(
+    column: $table.loyaltyPointValue,
+    builder: (column) => column,
+  );
 }
 
 class $$StoreProfileTableTableManager
@@ -13703,6 +13991,8 @@ class $$StoreProfileTableTableManager
                 Value<String> taxType = const Value.absent(),
                 Value<int> serviceChargePercentage = const Value.absent(),
                 Value<String?> logoUri = const Value.absent(),
+                Value<int> loyaltyPointConversion = const Value.absent(),
+                Value<int> loyaltyPointValue = const Value.absent(),
               }) => StoreProfileCompanion(
                 id: id,
                 name: name,
@@ -13712,6 +14002,8 @@ class $$StoreProfileTableTableManager
                 taxType: taxType,
                 serviceChargePercentage: serviceChargePercentage,
                 logoUri: logoUri,
+                loyaltyPointConversion: loyaltyPointConversion,
+                loyaltyPointValue: loyaltyPointValue,
               ),
           createCompanionCallback:
               ({
@@ -13723,6 +14015,8 @@ class $$StoreProfileTableTableManager
                 Value<String> taxType = const Value.absent(),
                 Value<int> serviceChargePercentage = const Value.absent(),
                 Value<String?> logoUri = const Value.absent(),
+                Value<int> loyaltyPointConversion = const Value.absent(),
+                Value<int> loyaltyPointValue = const Value.absent(),
               }) => StoreProfileCompanion.insert(
                 id: id,
                 name: name,
@@ -13732,6 +14026,8 @@ class $$StoreProfileTableTableManager
                 taxType: taxType,
                 serviceChargePercentage: serviceChargePercentage,
                 logoUri: logoUri,
+                loyaltyPointConversion: loyaltyPointConversion,
+                loyaltyPointValue: loyaltyPointValue,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
@@ -16383,6 +16679,8 @@ typedef $$TransactionsTableCreateCompanionBuilder =
       Value<String?> customerName,
       Value<int?> discountId,
       Value<int> discountAmount,
+      Value<int> pointsEarned,
+      Value<int> pointsRedeemed,
     });
 typedef $$TransactionsTableUpdateCompanionBuilder =
     TransactionsCompanion Function({
@@ -16402,6 +16700,8 @@ typedef $$TransactionsTableUpdateCompanionBuilder =
       Value<String?> customerName,
       Value<int?> discountId,
       Value<int> discountAmount,
+      Value<int> pointsEarned,
+      Value<int> pointsRedeemed,
     });
 
 final class $$TransactionsTableReferences
@@ -16559,6 +16859,16 @@ class $$TransactionsTableFilterComposer
 
   ColumnFilters<int> get discountAmount => $composableBuilder(
     column: $table.discountAmount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get pointsEarned => $composableBuilder(
+    column: $table.pointsEarned,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get pointsRedeemed => $composableBuilder(
+    column: $table.pointsRedeemed,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -16731,6 +17041,16 @@ class $$TransactionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get pointsEarned => $composableBuilder(
+    column: $table.pointsEarned,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get pointsRedeemed => $composableBuilder(
+    column: $table.pointsRedeemed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$ShiftsTableOrderingComposer get shiftId {
     final $$ShiftsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -16864,6 +17184,16 @@ class $$TransactionsTableAnnotationComposer
 
   GeneratedColumn<int> get discountAmount => $composableBuilder(
     column: $table.discountAmount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get pointsEarned => $composableBuilder(
+    column: $table.pointsEarned,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get pointsRedeemed => $composableBuilder(
+    column: $table.pointsRedeemed,
     builder: (column) => column,
   );
 
@@ -17011,6 +17341,8 @@ class $$TransactionsTableTableManager
                 Value<String?> customerName = const Value.absent(),
                 Value<int?> discountId = const Value.absent(),
                 Value<int> discountAmount = const Value.absent(),
+                Value<int> pointsEarned = const Value.absent(),
+                Value<int> pointsRedeemed = const Value.absent(),
               }) => TransactionsCompanion(
                 id: id,
                 receiptNumber: receiptNumber,
@@ -17028,6 +17360,8 @@ class $$TransactionsTableTableManager
                 customerName: customerName,
                 discountId: discountId,
                 discountAmount: discountAmount,
+                pointsEarned: pointsEarned,
+                pointsRedeemed: pointsRedeemed,
               ),
           createCompanionCallback:
               ({
@@ -17047,6 +17381,8 @@ class $$TransactionsTableTableManager
                 Value<String?> customerName = const Value.absent(),
                 Value<int?> discountId = const Value.absent(),
                 Value<int> discountAmount = const Value.absent(),
+                Value<int> pointsEarned = const Value.absent(),
+                Value<int> pointsRedeemed = const Value.absent(),
               }) => TransactionsCompanion.insert(
                 id: id,
                 receiptNumber: receiptNumber,
@@ -17064,6 +17400,8 @@ class $$TransactionsTableTableManager
                 customerName: customerName,
                 discountId: discountId,
                 discountAmount: discountAmount,
+                pointsEarned: pointsEarned,
+                pointsRedeemed: pointsRedeemed,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -18251,6 +18589,7 @@ typedef $$CustomersTableCreateCompanionBuilder =
       Value<String?> email,
       Value<String?> address,
       Value<bool> isMember,
+      Value<int> points,
       required String createdAt,
       required String updatedAt,
     });
@@ -18262,6 +18601,7 @@ typedef $$CustomersTableUpdateCompanionBuilder =
       Value<String?> email,
       Value<String?> address,
       Value<bool> isMember,
+      Value<int> points,
       Value<String> createdAt,
       Value<String> updatedAt,
     });
@@ -18302,6 +18642,11 @@ class $$CustomersTableFilterComposer
 
   ColumnFilters<bool> get isMember => $composableBuilder(
     column: $table.isMember,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get points => $composableBuilder(
+    column: $table.points,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -18355,6 +18700,11 @@ class $$CustomersTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get points => $composableBuilder(
+    column: $table.points,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -18392,6 +18742,9 @@ class $$CustomersTableAnnotationComposer
 
   GeneratedColumn<bool> get isMember =>
       $composableBuilder(column: $table.isMember, builder: (column) => column);
+
+  GeneratedColumn<int> get points =>
+      $composableBuilder(column: $table.points, builder: (column) => column);
 
   GeneratedColumn<String> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -18437,6 +18790,7 @@ class $$CustomersTableTableManager
                 Value<String?> email = const Value.absent(),
                 Value<String?> address = const Value.absent(),
                 Value<bool> isMember = const Value.absent(),
+                Value<int> points = const Value.absent(),
                 Value<String> createdAt = const Value.absent(),
                 Value<String> updatedAt = const Value.absent(),
               }) => CustomersCompanion(
@@ -18446,6 +18800,7 @@ class $$CustomersTableTableManager
                 email: email,
                 address: address,
                 isMember: isMember,
+                points: points,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
               ),
@@ -18457,6 +18812,7 @@ class $$CustomersTableTableManager
                 Value<String?> email = const Value.absent(),
                 Value<String?> address = const Value.absent(),
                 Value<bool> isMember = const Value.absent(),
+                Value<int> points = const Value.absent(),
                 required String createdAt,
                 required String updatedAt,
               }) => CustomersCompanion.insert(
@@ -18466,6 +18822,7 @@ class $$CustomersTableTableManager
                 email: email,
                 address: address,
                 isMember: isMember,
+                points: points,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
               ),

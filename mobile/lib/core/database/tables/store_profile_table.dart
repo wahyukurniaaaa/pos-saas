@@ -11,4 +11,8 @@ class StoreProfile extends Table {
   IntColumn get serviceChargePercentage =>
       integer().withDefault(const Constant(0))();
   TextColumn get logoUri => text().nullable()();
+  IntColumn get loyaltyPointConversion =>
+      integer().withDefault(const Constant(10000))();
+  IntColumn get loyaltyPointValue =>
+      integer().withDefault(const Constant(100))();
 }

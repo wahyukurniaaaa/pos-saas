@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
+import 'package:posify_app/features/reports/screens/loyalty_analytics_screen.dart';
 import 'package:posify_app/features/reports/screens/sales_analytics_screen.dart';
 import 'package:posify_app/features/reports/screens/stock_loss_report_screen.dart';
 import 'package:posify_app/features/settings/screens/transaction_history_screen.dart';
@@ -82,6 +83,18 @@ class ReportMenuScreen extends StatelessWidget {
                 subtitle: 'Kartu stok masuk/keluar semua produk',
                 color: Colors.orange,
                 onTap: () => _nav(context, const GlobalStockHistoryScreen()),
+                isLast: true,
+              ),
+            ]),
+            const SizedBox(height: 24),
+            _buildSectionTitle('LAPORAN MEMBER & LOYALTY'),
+            _buildMenuCard(context, [
+              _ReportMenuItem(
+                icon: Icons.stars_rounded,
+                title: 'Loyalty Analytics',
+                subtitle: 'Leaderboard poin & member paling aktif',
+                color: Colors.amber.shade700,
+                onTap: () => _nav(context, const LoyaltyAnalyticsScreen()),
                 isLast: true,
               ),
             ]),

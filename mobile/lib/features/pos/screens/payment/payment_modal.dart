@@ -39,6 +39,9 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
   final TextEditingController _nameController = TextEditingController();
   Customer? _selectedCustomer;
 
+  // Loyalty
+  bool _usePoints = false;
+
   // Quick cash options
   late List<double> _quickCashOptions;
 
@@ -141,6 +144,9 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
         final taxPercentage = profile?.taxPercentage ?? 0;
         final taxType = profile?.taxType ?? 'exclusive';
         final servicePercentage = profile?.serviceChargePercentage ?? 0;
+        
+        final loyaltyPointConversion = profile?.loyaltyPointConversion ?? 10000;
+        final loyaltyPointValue = profile?.loyaltyPointValue ?? 100;
 
         double serviceCharge = 0;
         double taxAmount = 0;
@@ -153,15 +159,31 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
           discountAmount = calculateDiscountAmount(selectedDiscount, widget.totalAmount.toInt());
         }
 
+        // Points calculation
+        int pointsDiscount = 0;
+        int pointsToRedeem = 0;
+        if (_usePoints && _selectedCustomer != null) {
+          final currentPoints = _selectedCustomer!.points;
+          final subtotalAfterDiscount = widget.totalAmount - discountAmount;
+          final maxUsablePoints = (subtotalAfterDiscount / loyaltyPointValue).floor();
+          
+          pointsToRedeem = currentPoints > maxUsablePoints ? maxUsablePoints : currentPoints;
+          pointsDiscount = pointsToRedeem * loyaltyPointValue;
+        }
+
         if (taxType == 'exclusive') {
           serviceCharge = widget.totalAmount * (servicePercentage / 100);
           taxAmount = (widget.totalAmount + serviceCharge) * (taxPercentage / 100);
-          finalTotal = widget.totalAmount + serviceCharge + taxAmount - discountAmount;
+          finalTotal = widget.totalAmount + serviceCharge + taxAmount - discountAmount - pointsDiscount;
         } else {
-          finalTotal = widget.totalAmount - discountAmount;
+          finalTotal = widget.totalAmount - discountAmount - pointsDiscount;
           taxAmount = finalTotal - (finalTotal / (1 + (taxPercentage / 100)));
           serviceCharge = 0;
         }
+        
+        if (finalTotal < 0) finalTotal = 0;
+
+        final pointsEarned = (finalTotal / loyaltyPointConversion).floor();
 
         // Update quick cash options based on the calculated finalTotal
         // This needs to be done here because finalTotal depends on async data
@@ -295,6 +317,15 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
 
                       const SizedBox(height: 24),
                       _buildCustomerInfoSection(),
+                      const SizedBox(height: 16),
+                      if (_selectedCustomer != null)
+                        _buildLoyaltySection(
+                          pointsEarned,
+                          pointsToRedeem,
+                          pointsDiscount,
+                          _selectedCustomer!.points,
+                          loyaltyPointValue,
+                        ),
                     ],
                   ),
                 ),
@@ -322,6 +353,8 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                           finalTotal,
                           taxAmount,
                           serviceCharge,
+                          pointsEarned,
+                          pointsToRedeem,
                         )
                       : null,
                   style: ElevatedButton.styleFrom(
@@ -1018,12 +1051,122 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
     );
   }
 
+  Widget _buildLoyaltySection(
+    int pointsEarned,
+    int pointsToRedeem,
+    int pointsDiscount,
+    int currentPoints,
+    int loyaltyPointValue,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppTheme.primaryColor.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: AppTheme.primaryColor.withValues(alpha: 0.1),
+          width: 2,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Loyalty Point',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                  color: AppTheme.primaryColor,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '+$pointsEarned Poin',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.primaryColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Poin Tersedia: $currentPoints',
+            style: GoogleFonts.poppins(fontSize: 14, color: AppTheme.textSecondary),
+          ),
+          if (currentPoints > 0) ...[
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Tukar Poin',
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        '1 Poin = ${_currency.format(loyaltyPointValue)}',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: AppTheme.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Switch(
+                  value: _usePoints,
+                  onChanged: (val) {
+                    setState(() {
+                      _usePoints = val;
+                    });
+                  },
+                activeThumbColor: AppTheme.primaryColor,
+                ),
+              ],
+            ),
+            if (_usePoints && pointsDiscount > 0)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  'Memotong $pointsToRedeem Poin (-${_currency.format(pointsDiscount)})',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.successColor,
+                  ),
+                ),
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+
   bool _isProcessing = false;
 
   Future<void> _processPayment(
     double finalTotal,
     double tax,
     double service,
+    int pointsEarned,
+    int pointsToRedeem,
   ) async {
     if (_isProcessing) return;
 
@@ -1069,6 +1212,8 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
             customerPhone: enteredPhone.isNotEmpty ? enteredPhone : null,
             customerName: enteredName.isNotEmpty ? enteredName : null,
             customerId: assignedCustomerId,
+            pointsEarned: pointsEarned,
+            pointsRedeemed: pointsToRedeem,
             discountId: ref.read(selectedDiscountProvider)?.id,
             discountAmount: ref.read(selectedDiscountProvider) != null
                 ? calculateDiscountAmount(
@@ -1080,7 +1225,18 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
       if (!mounted) return;
 
       if (transactionId != null) {
-        // 2. Tampilkan Layar Sukses (Replace modal dengan screen sukses)
+        // 2. Calculate new customer balance if applicable
+        int? customerPointsAfter;
+        if (_selectedCustomer != null && pointsEarned > 0) {
+          final db = ref.read(databaseProvider);
+          final updatedCustomer = await (db.select(db.customers)
+              ..where((c) => c.id.equals(_selectedCustomer!.id))).getSingleOrNull();
+          customerPointsAfter = updatedCustomer?.points;
+        }
+
+        if (!mounted) return;
+
+        // 3. Tampilkan Layar Sukses
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -1092,6 +1248,8 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                   : finalTotal,
               changeAmount: changeAmount.toDouble(),
               paymentMethod: _selectedMethod,
+              pointsEarned: pointsEarned,
+              customerPointsAfter: customerPointsAfter,
             ),
           ),
         );
