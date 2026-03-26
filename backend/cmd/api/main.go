@@ -54,7 +54,7 @@ func main() {
 		AllowOrigins:     allowOrigins,
 		AllowMethods:     "GET,POST,PUT,DELETE,OPTIONS",
 		AllowHeaders:     "Origin, Content-Type, Accept, Authorization, X-App-Client-Key, X-Admin-Secret-Key",
-		AllowCredentials: true,
+		AllowCredentials: allowOrigins != "*",
 	}))
 
 	// Rate Limiter
