@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:posify_app/features/pos/providers/shift_provider.dart';
+import 'package:posify_app/features/pos/providers/expense_provider.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/core/services/backup_service.dart';
 
@@ -57,10 +58,13 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
       shiftTransactionsProvider(activeShift.id),
     );
 
+    final expenseAsync = ref.watch(shiftExpenseTotalProvider(activeShift.id));
+    
     double startCash = activeShift.startingCash.toDouble();
     double cashSales = 0;
     double qrisSales = 0;
     double voidSales = 0;
+    double shiftExpenses = 0;
 
     if (transactionsAsync.hasValue) {
       for (final t in transactionsAsync.value!) {
@@ -75,8 +79,12 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
         }
       }
     }
+    
+    if (expenseAsync.hasValue) {
+      shiftExpenses = expenseAsync.value!.toDouble();
+    }
 
-    final double expectedDrawer = startCash + cashSales;
+    final double expectedDrawer = startCash + cashSales - shiftExpenses;
 
     return Container(
       constraints: BoxConstraints(
@@ -180,6 +188,11 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
                     'Total Penjualan Non-Tunai',
                     qrisSales,
                     isNonCash: true,
+                  ),
+                  _buildDetailRow(
+                    'Pengeluaran Kas (Kas Keluar)',
+                    shiftExpenses,
+                    isNegative: true,
                   ),
 
                   const Padding(

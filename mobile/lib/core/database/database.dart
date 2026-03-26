@@ -29,6 +29,7 @@ import 'tables/stock_opname_table.dart';
 import 'tables/stock_opname_items_table.dart';
 import 'tables/purchase_orders_table.dart';
 import 'tables/discounts_table.dart';
+import 'tables/expenses_table.dart';
 
 part 'database.g.dart';
 
@@ -68,6 +69,8 @@ class StockTransactionWithProduct {
     PurchaseOrders,
     PurchaseOrderItems,
     Discounts,
+    ExpenseCategories,
+    Expenses,
   ],
 )
 class PosifyDatabase extends _$PosifyDatabase {
@@ -77,7 +80,7 @@ class PosifyDatabase extends _$PosifyDatabase {
   PosifyDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 14;
+  int get schemaVersion => 15;
 
   @override
   MigrationStrategy get migration {
@@ -148,6 +151,20 @@ class PosifyDatabase extends _$PosifyDatabase {
           await m.addColumn(transactions, transactions.discountAmount);
           await m.addColumn(transactionItems, transactionItems.discountId);
           await m.addColumn(transactionItems, transactionItems.discountAmount);
+        }
+        if (from < 15) {
+          await m.createTable(expenseCategories);
+          await m.createTable(expenses);
+          // Seed default expense categories
+          await batch((b) {
+            b.insertAll(expenseCategories, [
+              ExpenseCategoriesCompanion.insert(name: 'Bahan Baku', icon: const Value('inventory_2'), color: const Value('#E67E22'), isDefault: const Value(true)),
+              ExpenseCategoriesCompanion.insert(name: 'Gaji & Upah', icon: const Value('people'), color: const Value('#27AE60'), isDefault: const Value(true)),
+              ExpenseCategoriesCompanion.insert(name: 'Listrik & Air', icon: const Value('bolt'), color: const Value('#2980B9'), isDefault: const Value(true)),
+              ExpenseCategoriesCompanion.insert(name: 'Operasional', icon: const Value('build'), color: const Value('#1E3A5F'), isDefault: const Value(true)),
+              ExpenseCategoriesCompanion.insert(name: 'Lain-lain', icon: const Value('more_horiz'), color: const Value('#7F8C8D'), isDefault: const Value(true)),
+            ]);
+          });
         }
       },
     );
@@ -690,7 +707,6 @@ class PosifyDatabase extends _$PosifyDatabase {
   Future<int> deleteDiscount(int id) =>
       (delete(discounts)..where((d) => d.id.equals(id))).go();
 
-  /// Returns discounts that are valid: active, within period, meets minSpend, and matches scope.
   Future<List<Discount>> getValidDiscounts({required double cartTotal, required String scope}) async {
     final todayStr = DateTime.now().toIso8601String().substring(0, 10);
     final all = await (select(discounts)
@@ -704,7 +720,97 @@ class PosifyDatabase extends _$PosifyDatabase {
     }).toList();
   }
 
-  // ===== Checkout Process =====
+  // ===== Expense Category Queries =====
+
+  Future<List<ExpenseCategory>> getAllExpenseCategories() =>
+      (select(expenseCategories)..orderBy([(c) => OrderingTerm.asc(c.name)])).get();
+
+  Future<int> upsertExpenseCategory(ExpenseCategoriesCompanion entry) =>
+      into(expenseCategories).insertOnConflictUpdate(entry);
+
+  Future<int> deleteExpenseCategory(int id) =>
+      (delete(expenseCategories)..where((c) => c.id.equals(id))).go();
+
+  // ===== Expense Queries =====
+
+  /// Returns all expenses for a given day, joined with their category.
+  Future<List<ExpenseWithCategory>> getExpensesWithCategory({required DateTime date}) async {
+    final startOfDay = DateTime(date.year, date.month, date.day);
+    final endOfDay = startOfDay.add(const Duration(days: 1));
+
+    final rows = await (select(expenses)
+          ..where((e) =>
+              e.createdAt.isBiggerOrEqualValue(startOfDay) &
+              e.createdAt.isSmallerThanValue(endOfDay))
+          ..orderBy([(e) => OrderingTerm.desc(e.createdAt)]))
+        .get();
+
+    final categories = {
+      for (final c in await getAllExpenseCategories()) c.id: c
+    };
+
+    return rows.map((e) {
+      return ExpenseWithCategory(
+        expense: e,
+        category: categories[e.categoryId],
+      );
+    }).toList();
+  }
+
+  Future<int> insertExpense(ExpensesCompanion entry) =>
+      into(expenses).insert(entry);
+
+  Future<int> deleteExpense(int id) =>
+      (delete(expenses)..where((e) => e.id.equals(id))).go();
+
+  Future<int> getTotalExpenseByShift(int shiftId) async {
+    final rows = await (select(expenses)
+          ..where((e) => e.shiftId.equals(shiftId)))
+        .get();
+    return rows.fold<int>(0, (sum, e) => sum + e.amount);
+  }
+
+  /// Returns cash flow data for the given date range.
+  Future<CashFlowData> getCashFlowData({required DateTime from, required DateTime to}) async {
+    // Total revenue from paid transactions
+    final txRows = await (select(transactions)
+          ..where((t) =>
+              t.createdAt.isBiggerOrEqualValue(from) &
+              t.createdAt.isSmallerThanValue(to.add(const Duration(days: 1))) &
+              t.paymentStatus.equals('paid')))
+        .get();
+    final totalRevenue = txRows.fold(0, (sum, t) => sum + t.totalAmount);
+
+    // Total expenses
+    final expenseRows = await (select(expenses)
+          ..where((e) =>
+              e.createdAt.isBiggerOrEqualValue(from) &
+              e.createdAt.isSmallerThanValue(to.add(const Duration(days: 1)))))
+        .get();
+    final totalExpense = expenseRows.fold(0, (sum, e) => sum + e.amount);
+
+    // Daily expense summaries (for chart)
+    final Map<String, int> dailyMap = {};
+    for (final e in expenseRows) {
+      final key = '${e.createdAt.year}-${e.createdAt.month.toString().padLeft(2, '0')}-${e.createdAt.day.toString().padLeft(2, '0')}';
+      dailyMap[key] = (dailyMap[key] ?? 0) + e.amount;
+    }
+
+    final daily = dailyMap.entries
+        .map((e) => DailyExpenseSummary(
+              date: DateTime.parse(e.key),
+              total: e.value,
+            ))
+        .toList()
+      ..sort((a, b) => a.date.compareTo(b.date));
+
+    return CashFlowData(
+      totalRevenue: totalRevenue,
+      totalExpense: totalExpense,
+      daily: daily,
+    );
+  }
+
   Future<int> processCheckout({
     required TransactionsCompanion transactionEntry,
     required List<TransactionItemsCompanion> itemsParams,
@@ -1537,6 +1643,32 @@ class StockLossItem {
   final int lossValue;
 
   StockLossItem(this.itemName, this.type, this.reason, this.varianceQuantity, this.lossValue);
+}
+
+class ExpenseWithCategory {
+  final Expense expense;
+  final ExpenseCategory? category;
+  ExpenseWithCategory({required this.expense, this.category});
+}
+
+class DailyExpenseSummary {
+  final DateTime date;
+  final int total;
+  DailyExpenseSummary({required this.date, required this.total});
+}
+
+class CashFlowData {
+  final int totalRevenue;
+  final int totalExpense;
+  final List<DailyExpenseSummary> daily;
+
+  CashFlowData({
+    required this.totalRevenue,
+    required this.totalExpense,
+    required this.daily,
+  });
+
+  int get netProfit => totalRevenue - totalExpense;
 }
 
 String _generateRandomKey() {

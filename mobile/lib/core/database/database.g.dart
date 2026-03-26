@@ -11669,6 +11669,904 @@ class PurchaseOrderItemsCompanion extends UpdateCompanion<PurchaseOrderItem> {
   }
 }
 
+class $ExpenseCategoriesTable extends ExpenseCategories
+    with TableInfo<$ExpenseCategoriesTable, ExpenseCategory> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ExpenseCategoriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 2,
+      maxTextLength: 50,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _iconMeta = const VerificationMeta('icon');
+  @override
+  late final GeneratedColumn<String> icon = GeneratedColumn<String>(
+    'icon',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('shopping_bag'),
+  );
+  static const VerificationMeta _colorMeta = const VerificationMeta('color');
+  @override
+  late final GeneratedColumn<String> color = GeneratedColumn<String>(
+    'color',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('#1E3A5F'),
+  );
+  static const VerificationMeta _isDefaultMeta = const VerificationMeta(
+    'isDefault',
+  );
+  @override
+  late final GeneratedColumn<bool> isDefault = GeneratedColumn<bool>(
+    'is_default',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_default" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    icon,
+    color,
+    isDefault,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'expense_categories';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ExpenseCategory> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('icon')) {
+      context.handle(
+        _iconMeta,
+        icon.isAcceptableOrUnknown(data['icon']!, _iconMeta),
+      );
+    }
+    if (data.containsKey('color')) {
+      context.handle(
+        _colorMeta,
+        color.isAcceptableOrUnknown(data['color']!, _colorMeta),
+      );
+    }
+    if (data.containsKey('is_default')) {
+      context.handle(
+        _isDefaultMeta,
+        isDefault.isAcceptableOrUnknown(data['is_default']!, _isDefaultMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ExpenseCategory map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ExpenseCategory(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      icon: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}icon'],
+      )!,
+      color: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}color'],
+      )!,
+      isDefault: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_default'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ExpenseCategoriesTable createAlias(String alias) {
+    return $ExpenseCategoriesTable(attachedDatabase, alias);
+  }
+}
+
+class ExpenseCategory extends DataClass implements Insertable<ExpenseCategory> {
+  final int id;
+  final String name;
+  final String icon;
+  final String color;
+  final bool isDefault;
+  final DateTime createdAt;
+  const ExpenseCategory({
+    required this.id,
+    required this.name,
+    required this.icon,
+    required this.color,
+    required this.isDefault,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['icon'] = Variable<String>(icon);
+    map['color'] = Variable<String>(color);
+    map['is_default'] = Variable<bool>(isDefault);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  ExpenseCategoriesCompanion toCompanion(bool nullToAbsent) {
+    return ExpenseCategoriesCompanion(
+      id: Value(id),
+      name: Value(name),
+      icon: Value(icon),
+      color: Value(color),
+      isDefault: Value(isDefault),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory ExpenseCategory.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ExpenseCategory(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      icon: serializer.fromJson<String>(json['icon']),
+      color: serializer.fromJson<String>(json['color']),
+      isDefault: serializer.fromJson<bool>(json['isDefault']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'icon': serializer.toJson<String>(icon),
+      'color': serializer.toJson<String>(color),
+      'isDefault': serializer.toJson<bool>(isDefault),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  ExpenseCategory copyWith({
+    int? id,
+    String? name,
+    String? icon,
+    String? color,
+    bool? isDefault,
+    DateTime? createdAt,
+  }) => ExpenseCategory(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    icon: icon ?? this.icon,
+    color: color ?? this.color,
+    isDefault: isDefault ?? this.isDefault,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  ExpenseCategory copyWithCompanion(ExpenseCategoriesCompanion data) {
+    return ExpenseCategory(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      icon: data.icon.present ? data.icon.value : this.icon,
+      color: data.color.present ? data.color.value : this.color,
+      isDefault: data.isDefault.present ? data.isDefault.value : this.isDefault,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ExpenseCategory(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('icon: $icon, ')
+          ..write('color: $color, ')
+          ..write('isDefault: $isDefault, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name, icon, color, isDefault, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ExpenseCategory &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.icon == this.icon &&
+          other.color == this.color &&
+          other.isDefault == this.isDefault &&
+          other.createdAt == this.createdAt);
+}
+
+class ExpenseCategoriesCompanion extends UpdateCompanion<ExpenseCategory> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> icon;
+  final Value<String> color;
+  final Value<bool> isDefault;
+  final Value<DateTime> createdAt;
+  const ExpenseCategoriesCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.icon = const Value.absent(),
+    this.color = const Value.absent(),
+    this.isDefault = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  ExpenseCategoriesCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.icon = const Value.absent(),
+    this.color = const Value.absent(),
+    this.isDefault = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<ExpenseCategory> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? icon,
+    Expression<String>? color,
+    Expression<bool>? isDefault,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (icon != null) 'icon': icon,
+      if (color != null) 'color': color,
+      if (isDefault != null) 'is_default': isDefault,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  ExpenseCategoriesCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<String>? icon,
+    Value<String>? color,
+    Value<bool>? isDefault,
+    Value<DateTime>? createdAt,
+  }) {
+    return ExpenseCategoriesCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      icon: icon ?? this.icon,
+      color: color ?? this.color,
+      isDefault: isDefault ?? this.isDefault,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (icon.present) {
+      map['icon'] = Variable<String>(icon.value);
+    }
+    if (color.present) {
+      map['color'] = Variable<String>(color.value);
+    }
+    if (isDefault.present) {
+      map['is_default'] = Variable<bool>(isDefault.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ExpenseCategoriesCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('icon: $icon, ')
+          ..write('color: $color, ')
+          ..write('isDefault: $isDefault, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ExpensesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _categoryIdMeta = const VerificationMeta(
+    'categoryId',
+  );
+  @override
+  late final GeneratedColumn<int> categoryId = GeneratedColumn<int>(
+    'category_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES expense_categories (id)',
+    ),
+  );
+  static const VerificationMeta _shiftIdMeta = const VerificationMeta(
+    'shiftId',
+  );
+  @override
+  late final GeneratedColumn<int> shiftId = GeneratedColumn<int>(
+    'shift_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _recordedByMeta = const VerificationMeta(
+    'recordedBy',
+  );
+  @override
+  late final GeneratedColumn<int> recordedBy = GeneratedColumn<int>(
+    'recorded_by',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES employees (id)',
+    ),
+  );
+  static const VerificationMeta _amountMeta = const VerificationMeta('amount');
+  @override
+  late final GeneratedColumn<int> amount = GeneratedColumn<int>(
+    'amount',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _photoUriMeta = const VerificationMeta(
+    'photoUri',
+  );
+  @override
+  late final GeneratedColumn<String> photoUri = GeneratedColumn<String>(
+    'photo_uri',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    categoryId,
+    shiftId,
+    recordedBy,
+    amount,
+    note,
+    photoUri,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'expenses';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Expense> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('category_id')) {
+      context.handle(
+        _categoryIdMeta,
+        categoryId.isAcceptableOrUnknown(data['category_id']!, _categoryIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_categoryIdMeta);
+    }
+    if (data.containsKey('shift_id')) {
+      context.handle(
+        _shiftIdMeta,
+        shiftId.isAcceptableOrUnknown(data['shift_id']!, _shiftIdMeta),
+      );
+    }
+    if (data.containsKey('recorded_by')) {
+      context.handle(
+        _recordedByMeta,
+        recordedBy.isAcceptableOrUnknown(data['recorded_by']!, _recordedByMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_recordedByMeta);
+    }
+    if (data.containsKey('amount')) {
+      context.handle(
+        _amountMeta,
+        amount.isAcceptableOrUnknown(data['amount']!, _amountMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_amountMeta);
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    if (data.containsKey('photo_uri')) {
+      context.handle(
+        _photoUriMeta,
+        photoUri.isAcceptableOrUnknown(data['photo_uri']!, _photoUriMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Expense map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Expense(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      categoryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}category_id'],
+      )!,
+      shiftId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}shift_id'],
+      ),
+      recordedBy: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}recorded_by'],
+      )!,
+      amount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}amount'],
+      )!,
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      ),
+      photoUri: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}photo_uri'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ExpensesTable createAlias(String alias) {
+    return $ExpensesTable(attachedDatabase, alias);
+  }
+}
+
+class Expense extends DataClass implements Insertable<Expense> {
+  final int id;
+  final int categoryId;
+  final int? shiftId;
+  final int recordedBy;
+  final int amount;
+  final String? note;
+  final String? photoUri;
+  final DateTime createdAt;
+  const Expense({
+    required this.id,
+    required this.categoryId,
+    this.shiftId,
+    required this.recordedBy,
+    required this.amount,
+    this.note,
+    this.photoUri,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['category_id'] = Variable<int>(categoryId);
+    if (!nullToAbsent || shiftId != null) {
+      map['shift_id'] = Variable<int>(shiftId);
+    }
+    map['recorded_by'] = Variable<int>(recordedBy);
+    map['amount'] = Variable<int>(amount);
+    if (!nullToAbsent || note != null) {
+      map['note'] = Variable<String>(note);
+    }
+    if (!nullToAbsent || photoUri != null) {
+      map['photo_uri'] = Variable<String>(photoUri);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  ExpensesCompanion toCompanion(bool nullToAbsent) {
+    return ExpensesCompanion(
+      id: Value(id),
+      categoryId: Value(categoryId),
+      shiftId: shiftId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(shiftId),
+      recordedBy: Value(recordedBy),
+      amount: Value(amount),
+      note: note == null && nullToAbsent ? const Value.absent() : Value(note),
+      photoUri: photoUri == null && nullToAbsent
+          ? const Value.absent()
+          : Value(photoUri),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory Expense.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Expense(
+      id: serializer.fromJson<int>(json['id']),
+      categoryId: serializer.fromJson<int>(json['categoryId']),
+      shiftId: serializer.fromJson<int?>(json['shiftId']),
+      recordedBy: serializer.fromJson<int>(json['recordedBy']),
+      amount: serializer.fromJson<int>(json['amount']),
+      note: serializer.fromJson<String?>(json['note']),
+      photoUri: serializer.fromJson<String?>(json['photoUri']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'categoryId': serializer.toJson<int>(categoryId),
+      'shiftId': serializer.toJson<int?>(shiftId),
+      'recordedBy': serializer.toJson<int>(recordedBy),
+      'amount': serializer.toJson<int>(amount),
+      'note': serializer.toJson<String?>(note),
+      'photoUri': serializer.toJson<String?>(photoUri),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  Expense copyWith({
+    int? id,
+    int? categoryId,
+    Value<int?> shiftId = const Value.absent(),
+    int? recordedBy,
+    int? amount,
+    Value<String?> note = const Value.absent(),
+    Value<String?> photoUri = const Value.absent(),
+    DateTime? createdAt,
+  }) => Expense(
+    id: id ?? this.id,
+    categoryId: categoryId ?? this.categoryId,
+    shiftId: shiftId.present ? shiftId.value : this.shiftId,
+    recordedBy: recordedBy ?? this.recordedBy,
+    amount: amount ?? this.amount,
+    note: note.present ? note.value : this.note,
+    photoUri: photoUri.present ? photoUri.value : this.photoUri,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  Expense copyWithCompanion(ExpensesCompanion data) {
+    return Expense(
+      id: data.id.present ? data.id.value : this.id,
+      categoryId: data.categoryId.present
+          ? data.categoryId.value
+          : this.categoryId,
+      shiftId: data.shiftId.present ? data.shiftId.value : this.shiftId,
+      recordedBy: data.recordedBy.present
+          ? data.recordedBy.value
+          : this.recordedBy,
+      amount: data.amount.present ? data.amount.value : this.amount,
+      note: data.note.present ? data.note.value : this.note,
+      photoUri: data.photoUri.present ? data.photoUri.value : this.photoUri,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Expense(')
+          ..write('id: $id, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('shiftId: $shiftId, ')
+          ..write('recordedBy: $recordedBy, ')
+          ..write('amount: $amount, ')
+          ..write('note: $note, ')
+          ..write('photoUri: $photoUri, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    categoryId,
+    shiftId,
+    recordedBy,
+    amount,
+    note,
+    photoUri,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Expense &&
+          other.id == this.id &&
+          other.categoryId == this.categoryId &&
+          other.shiftId == this.shiftId &&
+          other.recordedBy == this.recordedBy &&
+          other.amount == this.amount &&
+          other.note == this.note &&
+          other.photoUri == this.photoUri &&
+          other.createdAt == this.createdAt);
+}
+
+class ExpensesCompanion extends UpdateCompanion<Expense> {
+  final Value<int> id;
+  final Value<int> categoryId;
+  final Value<int?> shiftId;
+  final Value<int> recordedBy;
+  final Value<int> amount;
+  final Value<String?> note;
+  final Value<String?> photoUri;
+  final Value<DateTime> createdAt;
+  const ExpensesCompanion({
+    this.id = const Value.absent(),
+    this.categoryId = const Value.absent(),
+    this.shiftId = const Value.absent(),
+    this.recordedBy = const Value.absent(),
+    this.amount = const Value.absent(),
+    this.note = const Value.absent(),
+    this.photoUri = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  ExpensesCompanion.insert({
+    this.id = const Value.absent(),
+    required int categoryId,
+    this.shiftId = const Value.absent(),
+    required int recordedBy,
+    required int amount,
+    this.note = const Value.absent(),
+    this.photoUri = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  }) : categoryId = Value(categoryId),
+       recordedBy = Value(recordedBy),
+       amount = Value(amount);
+  static Insertable<Expense> custom({
+    Expression<int>? id,
+    Expression<int>? categoryId,
+    Expression<int>? shiftId,
+    Expression<int>? recordedBy,
+    Expression<int>? amount,
+    Expression<String>? note,
+    Expression<String>? photoUri,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (categoryId != null) 'category_id': categoryId,
+      if (shiftId != null) 'shift_id': shiftId,
+      if (recordedBy != null) 'recorded_by': recordedBy,
+      if (amount != null) 'amount': amount,
+      if (note != null) 'note': note,
+      if (photoUri != null) 'photo_uri': photoUri,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  ExpensesCompanion copyWith({
+    Value<int>? id,
+    Value<int>? categoryId,
+    Value<int?>? shiftId,
+    Value<int>? recordedBy,
+    Value<int>? amount,
+    Value<String?>? note,
+    Value<String?>? photoUri,
+    Value<DateTime>? createdAt,
+  }) {
+    return ExpensesCompanion(
+      id: id ?? this.id,
+      categoryId: categoryId ?? this.categoryId,
+      shiftId: shiftId ?? this.shiftId,
+      recordedBy: recordedBy ?? this.recordedBy,
+      amount: amount ?? this.amount,
+      note: note ?? this.note,
+      photoUri: photoUri ?? this.photoUri,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (categoryId.present) {
+      map['category_id'] = Variable<int>(categoryId.value);
+    }
+    if (shiftId.present) {
+      map['shift_id'] = Variable<int>(shiftId.value);
+    }
+    if (recordedBy.present) {
+      map['recorded_by'] = Variable<int>(recordedBy.value);
+    }
+    if (amount.present) {
+      map['amount'] = Variable<int>(amount.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (photoUri.present) {
+      map['photo_uri'] = Variable<String>(photoUri.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ExpensesCompanion(')
+          ..write('id: $id, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('shiftId: $shiftId, ')
+          ..write('recordedBy: $recordedBy, ')
+          ..write('amount: $amount, ')
+          ..write('note: $note, ')
+          ..write('photoUri: $photoUri, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$PosifyDatabase extends GeneratedDatabase {
   _$PosifyDatabase(QueryExecutor e) : super(e);
   $PosifyDatabaseManager get managers => $PosifyDatabaseManager(this);
@@ -11707,6 +12605,9 @@ abstract class _$PosifyDatabase extends GeneratedDatabase {
   late final $PurchaseOrdersTable purchaseOrders = $PurchaseOrdersTable(this);
   late final $PurchaseOrderItemsTable purchaseOrderItems =
       $PurchaseOrderItemsTable(this);
+  late final $ExpenseCategoriesTable expenseCategories =
+      $ExpenseCategoriesTable(this);
+  late final $ExpensesTable expenses = $ExpensesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -11734,6 +12635,8 @@ abstract class _$PosifyDatabase extends GeneratedDatabase {
     stockOpnameItems,
     purchaseOrders,
     purchaseOrderItems,
+    expenseCategories,
+    expenses,
   ];
 }
 
@@ -12019,6 +12922,25 @@ final class $$EmployeesTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$ExpensesTable, List<Expense>> _expensesRefsTable(
+    _$PosifyDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.expenses,
+    aliasName: $_aliasNameGenerator(db.employees.id, db.expenses.recordedBy),
+  );
+
+  $$ExpensesTableProcessedTableManager get expensesRefs {
+    final manager = $$ExpensesTableTableManager(
+      $_db,
+      $_db.expenses,
+    ).filter((f) => f.recordedBy.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_expensesRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$EmployeesTableFilterComposer
@@ -12121,6 +13043,31 @@ class $$EmployeesTableFilterComposer
           }) => $$TransactionsTableFilterComposer(
             $db: $db,
             $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> expensesRefs(
+    Expression<bool> Function($$ExpensesTableFilterComposer f) f,
+  ) {
+    final $$ExpensesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.expenses,
+      getReferencedColumn: (t) => t.recordedBy,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ExpensesTableFilterComposer(
+            $db: $db,
+            $table: $db.expenses,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -12283,6 +13230,31 @@ class $$EmployeesTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> expensesRefs<T extends Object>(
+    Expression<T> Function($$ExpensesTableAnnotationComposer a) f,
+  ) {
+    final $$ExpensesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.expenses,
+      getReferencedColumn: (t) => t.recordedBy,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ExpensesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.expenses,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$EmployeesTableTableManager
@@ -12298,7 +13270,11 @@ class $$EmployeesTableTableManager
           $$EmployeesTableUpdateCompanionBuilder,
           (Employee, $$EmployeesTableReferences),
           Employee,
-          PrefetchHooks Function({bool shiftsRefs, bool transactionsRefs})
+          PrefetchHooks Function({
+            bool shiftsRefs,
+            bool transactionsRefs,
+            bool expensesRefs,
+          })
         > {
   $$EmployeesTableTableManager(_$PosifyDatabase db, $EmployeesTable table)
     : super(
@@ -12368,12 +13344,17 @@ class $$EmployeesTableTableManager
               )
               .toList(),
           prefetchHooksCallback:
-              ({shiftsRefs = false, transactionsRefs = false}) {
+              ({
+                shiftsRefs = false,
+                transactionsRefs = false,
+                expensesRefs = false,
+              }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
                     if (shiftsRefs) db.shifts,
                     if (transactionsRefs) db.transactions,
+                    if (expensesRefs) db.expenses,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -12420,6 +13401,27 @@ class $$EmployeesTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (expensesRefs)
+                        await $_getPrefetchedData<
+                          Employee,
+                          $EmployeesTable,
+                          Expense
+                        >(
+                          currentTable: table,
+                          referencedTable: $$EmployeesTableReferences
+                              ._expensesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$EmployeesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).expensesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.recordedBy == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -12440,7 +13442,11 @@ typedef $$EmployeesTableProcessedTableManager =
       $$EmployeesTableUpdateCompanionBuilder,
       (Employee, $$EmployeesTableReferences),
       Employee,
-      PrefetchHooks Function({bool shiftsRefs, bool transactionsRefs})
+      PrefetchHooks Function({
+        bool shiftsRefs,
+        bool transactionsRefs,
+        bool expensesRefs,
+      })
     >;
 typedef $$StoreProfileTableCreateCompanionBuilder =
     StoreProfileCompanion Function({
@@ -21601,6 +22607,797 @@ typedef $$PurchaseOrderItemsTableProcessedTableManager =
         bool ingredientId,
       })
     >;
+typedef $$ExpenseCategoriesTableCreateCompanionBuilder =
+    ExpenseCategoriesCompanion Function({
+      Value<int> id,
+      required String name,
+      Value<String> icon,
+      Value<String> color,
+      Value<bool> isDefault,
+      Value<DateTime> createdAt,
+    });
+typedef $$ExpenseCategoriesTableUpdateCompanionBuilder =
+    ExpenseCategoriesCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<String> icon,
+      Value<String> color,
+      Value<bool> isDefault,
+      Value<DateTime> createdAt,
+    });
+
+final class $$ExpenseCategoriesTableReferences
+    extends
+        BaseReferences<
+          _$PosifyDatabase,
+          $ExpenseCategoriesTable,
+          ExpenseCategory
+        > {
+  $$ExpenseCategoriesTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static MultiTypedResultKey<$ExpensesTable, List<Expense>> _expensesRefsTable(
+    _$PosifyDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.expenses,
+    aliasName: $_aliasNameGenerator(
+      db.expenseCategories.id,
+      db.expenses.categoryId,
+    ),
+  );
+
+  $$ExpensesTableProcessedTableManager get expensesRefs {
+    final manager = $$ExpensesTableTableManager(
+      $_db,
+      $_db.expenses,
+    ).filter((f) => f.categoryId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_expensesRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$ExpenseCategoriesTableFilterComposer
+    extends Composer<_$PosifyDatabase, $ExpenseCategoriesTable> {
+  $$ExpenseCategoriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get icon => $composableBuilder(
+    column: $table.icon,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get color => $composableBuilder(
+    column: $table.color,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isDefault => $composableBuilder(
+    column: $table.isDefault,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> expensesRefs(
+    Expression<bool> Function($$ExpensesTableFilterComposer f) f,
+  ) {
+    final $$ExpensesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.expenses,
+      getReferencedColumn: (t) => t.categoryId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ExpensesTableFilterComposer(
+            $db: $db,
+            $table: $db.expenses,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$ExpenseCategoriesTableOrderingComposer
+    extends Composer<_$PosifyDatabase, $ExpenseCategoriesTable> {
+  $$ExpenseCategoriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get icon => $composableBuilder(
+    column: $table.icon,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get color => $composableBuilder(
+    column: $table.color,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isDefault => $composableBuilder(
+    column: $table.isDefault,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ExpenseCategoriesTableAnnotationComposer
+    extends Composer<_$PosifyDatabase, $ExpenseCategoriesTable> {
+  $$ExpenseCategoriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get icon =>
+      $composableBuilder(column: $table.icon, builder: (column) => column);
+
+  GeneratedColumn<String> get color =>
+      $composableBuilder(column: $table.color, builder: (column) => column);
+
+  GeneratedColumn<bool> get isDefault =>
+      $composableBuilder(column: $table.isDefault, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  Expression<T> expensesRefs<T extends Object>(
+    Expression<T> Function($$ExpensesTableAnnotationComposer a) f,
+  ) {
+    final $$ExpensesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.expenses,
+      getReferencedColumn: (t) => t.categoryId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ExpensesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.expenses,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$ExpenseCategoriesTableTableManager
+    extends
+        RootTableManager<
+          _$PosifyDatabase,
+          $ExpenseCategoriesTable,
+          ExpenseCategory,
+          $$ExpenseCategoriesTableFilterComposer,
+          $$ExpenseCategoriesTableOrderingComposer,
+          $$ExpenseCategoriesTableAnnotationComposer,
+          $$ExpenseCategoriesTableCreateCompanionBuilder,
+          $$ExpenseCategoriesTableUpdateCompanionBuilder,
+          (ExpenseCategory, $$ExpenseCategoriesTableReferences),
+          ExpenseCategory,
+          PrefetchHooks Function({bool expensesRefs})
+        > {
+  $$ExpenseCategoriesTableTableManager(
+    _$PosifyDatabase db,
+    $ExpenseCategoriesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ExpenseCategoriesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ExpenseCategoriesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ExpenseCategoriesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> icon = const Value.absent(),
+                Value<String> color = const Value.absent(),
+                Value<bool> isDefault = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => ExpenseCategoriesCompanion(
+                id: id,
+                name: name,
+                icon: icon,
+                color: color,
+                isDefault: isDefault,
+                createdAt: createdAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<String> icon = const Value.absent(),
+                Value<String> color = const Value.absent(),
+                Value<bool> isDefault = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => ExpenseCategoriesCompanion.insert(
+                id: id,
+                name: name,
+                icon: icon,
+                color: color,
+                isDefault: isDefault,
+                createdAt: createdAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ExpenseCategoriesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({expensesRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [if (expensesRefs) db.expenses],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (expensesRefs)
+                    await $_getPrefetchedData<
+                      ExpenseCategory,
+                      $ExpenseCategoriesTable,
+                      Expense
+                    >(
+                      currentTable: table,
+                      referencedTable: $$ExpenseCategoriesTableReferences
+                          ._expensesRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$ExpenseCategoriesTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).expensesRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.categoryId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$ExpenseCategoriesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$PosifyDatabase,
+      $ExpenseCategoriesTable,
+      ExpenseCategory,
+      $$ExpenseCategoriesTableFilterComposer,
+      $$ExpenseCategoriesTableOrderingComposer,
+      $$ExpenseCategoriesTableAnnotationComposer,
+      $$ExpenseCategoriesTableCreateCompanionBuilder,
+      $$ExpenseCategoriesTableUpdateCompanionBuilder,
+      (ExpenseCategory, $$ExpenseCategoriesTableReferences),
+      ExpenseCategory,
+      PrefetchHooks Function({bool expensesRefs})
+    >;
+typedef $$ExpensesTableCreateCompanionBuilder =
+    ExpensesCompanion Function({
+      Value<int> id,
+      required int categoryId,
+      Value<int?> shiftId,
+      required int recordedBy,
+      required int amount,
+      Value<String?> note,
+      Value<String?> photoUri,
+      Value<DateTime> createdAt,
+    });
+typedef $$ExpensesTableUpdateCompanionBuilder =
+    ExpensesCompanion Function({
+      Value<int> id,
+      Value<int> categoryId,
+      Value<int?> shiftId,
+      Value<int> recordedBy,
+      Value<int> amount,
+      Value<String?> note,
+      Value<String?> photoUri,
+      Value<DateTime> createdAt,
+    });
+
+final class $$ExpensesTableReferences
+    extends BaseReferences<_$PosifyDatabase, $ExpensesTable, Expense> {
+  $$ExpensesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $ExpenseCategoriesTable _categoryIdTable(_$PosifyDatabase db) =>
+      db.expenseCategories.createAlias(
+        $_aliasNameGenerator(db.expenses.categoryId, db.expenseCategories.id),
+      );
+
+  $$ExpenseCategoriesTableProcessedTableManager get categoryId {
+    final $_column = $_itemColumn<int>('category_id')!;
+
+    final manager = $$ExpenseCategoriesTableTableManager(
+      $_db,
+      $_db.expenseCategories,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_categoryIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $EmployeesTable _recordedByTable(_$PosifyDatabase db) =>
+      db.employees.createAlias(
+        $_aliasNameGenerator(db.expenses.recordedBy, db.employees.id),
+      );
+
+  $$EmployeesTableProcessedTableManager get recordedBy {
+    final $_column = $_itemColumn<int>('recorded_by')!;
+
+    final manager = $$EmployeesTableTableManager(
+      $_db,
+      $_db.employees,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_recordedByTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$ExpensesTableFilterComposer
+    extends Composer<_$PosifyDatabase, $ExpensesTable> {
+  $$ExpensesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get shiftId => $composableBuilder(
+    column: $table.shiftId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get amount => $composableBuilder(
+    column: $table.amount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get photoUri => $composableBuilder(
+    column: $table.photoUri,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$ExpenseCategoriesTableFilterComposer get categoryId {
+    final $$ExpenseCategoriesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.categoryId,
+      referencedTable: $db.expenseCategories,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ExpenseCategoriesTableFilterComposer(
+            $db: $db,
+            $table: $db.expenseCategories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$EmployeesTableFilterComposer get recordedBy {
+    final $$EmployeesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.recordedBy,
+      referencedTable: $db.employees,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EmployeesTableFilterComposer(
+            $db: $db,
+            $table: $db.employees,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ExpensesTableOrderingComposer
+    extends Composer<_$PosifyDatabase, $ExpensesTable> {
+  $$ExpensesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get shiftId => $composableBuilder(
+    column: $table.shiftId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get amount => $composableBuilder(
+    column: $table.amount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get photoUri => $composableBuilder(
+    column: $table.photoUri,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ExpenseCategoriesTableOrderingComposer get categoryId {
+    final $$ExpenseCategoriesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.categoryId,
+      referencedTable: $db.expenseCategories,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ExpenseCategoriesTableOrderingComposer(
+            $db: $db,
+            $table: $db.expenseCategories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$EmployeesTableOrderingComposer get recordedBy {
+    final $$EmployeesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.recordedBy,
+      referencedTable: $db.employees,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EmployeesTableOrderingComposer(
+            $db: $db,
+            $table: $db.employees,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ExpensesTableAnnotationComposer
+    extends Composer<_$PosifyDatabase, $ExpensesTable> {
+  $$ExpensesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get shiftId =>
+      $composableBuilder(column: $table.shiftId, builder: (column) => column);
+
+  GeneratedColumn<int> get amount =>
+      $composableBuilder(column: $table.amount, builder: (column) => column);
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<String> get photoUri =>
+      $composableBuilder(column: $table.photoUri, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$ExpenseCategoriesTableAnnotationComposer get categoryId {
+    final $$ExpenseCategoriesTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.categoryId,
+          referencedTable: $db.expenseCategories,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ExpenseCategoriesTableAnnotationComposer(
+                $db: $db,
+                $table: $db.expenseCategories,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+
+  $$EmployeesTableAnnotationComposer get recordedBy {
+    final $$EmployeesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.recordedBy,
+      referencedTable: $db.employees,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EmployeesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.employees,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ExpensesTableTableManager
+    extends
+        RootTableManager<
+          _$PosifyDatabase,
+          $ExpensesTable,
+          Expense,
+          $$ExpensesTableFilterComposer,
+          $$ExpensesTableOrderingComposer,
+          $$ExpensesTableAnnotationComposer,
+          $$ExpensesTableCreateCompanionBuilder,
+          $$ExpensesTableUpdateCompanionBuilder,
+          (Expense, $$ExpensesTableReferences),
+          Expense,
+          PrefetchHooks Function({bool categoryId, bool recordedBy})
+        > {
+  $$ExpensesTableTableManager(_$PosifyDatabase db, $ExpensesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ExpensesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ExpensesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ExpensesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> categoryId = const Value.absent(),
+                Value<int?> shiftId = const Value.absent(),
+                Value<int> recordedBy = const Value.absent(),
+                Value<int> amount = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+                Value<String?> photoUri = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => ExpensesCompanion(
+                id: id,
+                categoryId: categoryId,
+                shiftId: shiftId,
+                recordedBy: recordedBy,
+                amount: amount,
+                note: note,
+                photoUri: photoUri,
+                createdAt: createdAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int categoryId,
+                Value<int?> shiftId = const Value.absent(),
+                required int recordedBy,
+                required int amount,
+                Value<String?> note = const Value.absent(),
+                Value<String?> photoUri = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => ExpensesCompanion.insert(
+                id: id,
+                categoryId: categoryId,
+                shiftId: shiftId,
+                recordedBy: recordedBy,
+                amount: amount,
+                note: note,
+                photoUri: photoUri,
+                createdAt: createdAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ExpensesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({categoryId = false, recordedBy = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (categoryId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.categoryId,
+                                referencedTable: $$ExpensesTableReferences
+                                    ._categoryIdTable(db),
+                                referencedColumn: $$ExpensesTableReferences
+                                    ._categoryIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+                    if (recordedBy) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.recordedBy,
+                                referencedTable: $$ExpensesTableReferences
+                                    ._recordedByTable(db),
+                                referencedColumn: $$ExpensesTableReferences
+                                    ._recordedByTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$ExpensesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$PosifyDatabase,
+      $ExpensesTable,
+      Expense,
+      $$ExpensesTableFilterComposer,
+      $$ExpensesTableOrderingComposer,
+      $$ExpensesTableAnnotationComposer,
+      $$ExpensesTableCreateCompanionBuilder,
+      $$ExpensesTableUpdateCompanionBuilder,
+      (Expense, $$ExpensesTableReferences),
+      Expense,
+      PrefetchHooks Function({bool categoryId, bool recordedBy})
+    >;
 
 class $PosifyDatabaseManager {
   final _$PosifyDatabase _db;
@@ -21652,4 +23449,8 @@ class $PosifyDatabaseManager {
       $$PurchaseOrdersTableTableManager(_db, _db.purchaseOrders);
   $$PurchaseOrderItemsTableTableManager get purchaseOrderItems =>
       $$PurchaseOrderItemsTableTableManager(_db, _db.purchaseOrderItems);
+  $$ExpenseCategoriesTableTableManager get expenseCategories =>
+      $$ExpenseCategoriesTableTableManager(_db, _db.expenseCategories);
+  $$ExpensesTableTableManager get expenses =>
+      $$ExpensesTableTableManager(_db, _db.expenses);
 }

@@ -23,6 +23,8 @@ import 'package:posify_app/features/pos/screens/inventory/global_stock_history_s
 import 'package:posify_app/features/pos/screens/inventory/ingredient_list_screen.dart';
 import 'package:posify_app/features/pos/screens/settings_tab.dart';
 import 'package:posify_app/features/pos/screens/settings/discount_management_screen.dart';
+import 'package:posify_app/features/pos/screens/settings/expense_management_screen.dart';
+import 'package:posify_app/features/dashboard/screens/cashflow_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:posify_app/features/dashboard/widgets/low_stock_widget.dart';
 import 'package:posify_app/features/inventory/screens/po/po_list_screen.dart';
@@ -286,6 +288,13 @@ class _OwnerDashboardScreenState extends ConsumerState<OwnerDashboardScreen> {
                         subtitle: 'Grafik tren & top produk',
                         color: AppTheme.primaryColor,
                         onTap: () => _nav(const SalesAnalyticsScreen()),
+                      ),
+                      _MenuTile(
+                        icon: Icons.account_balance_wallet_rounded,
+                        label: 'Arus Kas',
+                        subtitle: 'Laporan margin & pengeluaran',
+                        color: Colors.green,
+                        onTap: () => _nav(const CashFlowScreen()),
                       ),
                       _MenuTile(
                         icon: Icons.receipt_long_rounded,
@@ -604,6 +613,12 @@ class _OwnerDashboardScreenState extends ConsumerState<OwnerDashboardScreen> {
         label: 'Loss/Waste',
         color: Colors.redAccent,
         onTap: () => _nav(const StockLossReportScreen()),
+      ),
+      _ActionItem(
+        icon: Icons.outbond_rounded,
+        label: 'Kas Keluar',
+        color: Colors.deepOrange,
+        onTap: () => _nav(const ExpenseManagementScreen()),
       ),
       _ActionItem(
         icon: Icons.people_rounded,

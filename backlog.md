@@ -96,5 +96,21 @@ Berikut adalah backlog fitur untuk pengembangan **Posify Inventory Phase 2, 3, &
 
 ---
 
+
 > [!NOTE]
 > Backlog ini disusun kembali menggunakan agen `project-planner` untuk memastikan struktur User Story yang berpusat pada pengguna dan Task Breakdown yang teknis.
+
+---
+
+## 🟠 Priority 5: Financial Visibility (High Demand - Market Gap)
+
+### 13. Expense (Kas Keluar) Management
+*   **User Story**: "Sebagai Owner/Kasir, saya ingin mencatat setiap pengeluaran operasional (belanja bahan, gaji, listrik) langsung dari aplikasi agar arus kas bisnis saya dapat dipantau secara real-time dan laporan laba rugi akurat."
+*   **💡 Insight Kompetitor**: Kasir Pintar, Majoo, dan Moka semuanya memiliki fitur Kas Keluar terintegrasi dengan shift. Ini adalah **gap utama** yang harus ditutup untuk bersaing di segmen UMKM.
+*   **Tasks**:
+    *   [ ] **Database v15**: Create `expense_categories` table (default: Bahan Baku, Gaji, Listrik, Operasional, Lain-lain) dan `expenses` table (linked to shift, category & employee).
+    *   [ ] **CRUD UI**: `ExpenseManagementScreen` — list per hari, form input (nominal, kategori, catatan, foto bukti opsional).
+    *   [ ] **Kategori Kustom**: `ExpenseCategoryManagementScreen` — Owner bisa buat/edit/hapus kategori dengan icon & warna.
+    *   [ ] **Integrasi Shift**: Total pengeluaran per shift tampil di rekap "Tutup Shift" sebagai Kas Keluar.
+    *   [ ] **Cashflow Analytics**: `CashFlowScreen` — bar chart Pendapatan vs Pengeluaran, tampilkan Laba Operasional bersih.
+    *   [ ] **Quick Action**: Tombol "Kas Keluar" di tab Kasir untuk input cepat tanpa buka Pengaturan.
