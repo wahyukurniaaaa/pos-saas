@@ -193,3 +193,11 @@ Berikut adalah backlog fitur untuk pengembangan **Posify Inventory Phase 2, 3, &
     *   [ ] **UI**: Lapisan "Daftar Bill Tersimpan" untuk melihat, mencari, dan memuat ulang (Resume) transaksi.
     *   [ ] **Logic**: Manajemen stok — apakah stok dikurangi saat simpan bill atau hanya saat bayar (Configurable).
     *   [ ] **Integration**: Hubungkan dengan fitur Manajemen Meja (Jika aktif) agar bill tersimpan otomatis terikat pada meja tertentu.
+
+### 24. Transaction Notes (Catatan Pesanan)
+*   **User Story**: "Sebagai Kasir, saya ingin menambahkan catatan khusus pada transaksi (Misal: 'Jangan pakai sambal', 'Meja Pojok', atau 'Urgent') agar staff lain dapat memahami instruksi spesifik untuk pesanan tersebut."
+*   **Tasks**:
+    *   [ ] **Database**: Tambahkan kolom `notes` (TEXT) pada tabel `transactions`.
+    *   [ ] **UI**: Tambahkan field input "Catatan" di `PaymentModal` atau sebelum masuk ke layar pembayaran.
+    *   [ ] **Display**: Tampilkan catatan pada daftar riwayat transaksi dan detail transaksi.
+    *   [ ] **Receipts**: Cetak catatan pada struk thermal dan struk WhatsApp jika terisi.
