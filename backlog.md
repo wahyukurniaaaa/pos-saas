@@ -184,3 +184,12 @@ Berikut adalah backlog fitur untuk pengembangan **Posify Inventory Phase 2, 3, &
     *   [ ] **Database**: Create `purchase_orders` and `po_items` tables with states (`Draft/Sent/Partial/Received`).
     *   [ ] **UI**: PO Creator — Form input barang yang ingin dipesan ke Supplier terpilih.
     *   [ ] **Inventory Sync**: Fitur "Receive from PO" di menu Stock In untuk input stok otomatis berbasis dokumen PO yang sudah ada.
+
+### 23. Save Bill (Hold / Pending Transaction)
+*   **User Story**: "Sebagai Kasir, saya ingin menyimpan sementara keranjang belanja pelanggan (Hold Bill) agar saya bisa melayani pelanggan lain sementara pelanggan sebelumnya masih ingin menambah pesanan atau menunda pembayaran (Open Bill)."
+*   **Tasks**:
+    *   [ ] **Database**: Tambahkan status `PENDING` pada tabel transaksi atau buat tabel `draft_orders` untuk penyimpanan sementara.
+    *   [ ] **UI**: Tombol "Simpan Bill" di halaman Kasir/POS.
+    *   [ ] **UI**: Lapisan "Daftar Bill Tersimpan" untuk melihat, mencari, dan memuat ulang (Resume) transaksi.
+    *   [ ] **Logic**: Manajemen stok — apakah stok dikurangi saat simpan bill atau hanya saat bayar (Configurable).
+    *   [ ] **Integration**: Hubungkan dengan fitur Manajemen Meja (Jika aktif) agar bill tersimpan otomatis terikat pada meja tertentu.
