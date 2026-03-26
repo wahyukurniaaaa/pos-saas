@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/features/auth/providers/owner_provider.dart';
@@ -22,6 +23,9 @@ import 'package:posify_app/features/pos/screens/inventory/global_stock_history_s
 import 'package:posify_app/features/pos/screens/inventory/ingredient_list_screen.dart';
 import 'package:posify_app/features/pos/screens/settings_tab.dart';
 import 'package:intl/intl.dart';
+import 'package:posify_app/features/dashboard/widgets/low_stock_widget.dart';
+import 'package:posify_app/features/inventory/screens/po/po_list_screen.dart';
+import 'package:posify_app/core/widgets/responsive_layout.dart';
 
 // ─── KPI data ──────────────────────────────────────────────────────────────────
 class _KpiData {
@@ -95,6 +99,8 @@ class _OwnerDashboardScreenState extends ConsumerState<OwnerDashboardScreen> {
 
   bool _isLoading = true;
   List<_KpiData> _kpis = [];
+  LowStockSummary _lowStockSummary =
+      const LowStockSummary(products: [], ingredients: []);
 
   @override
   void initState() {
@@ -121,6 +127,8 @@ class _OwnerDashboardScreenState extends ConsumerState<OwnerDashboardScreen> {
       db.getTotalTransactions(yestStart, yestEnd),
       db.getTopProducts(todayStart, todayEnd),
       db.getHourlySales(todayStart, todayEnd),
+      db.getLowStockProductsFiltered(),
+      db.getLowStockIngredients(),
     ]);
 
     final todayRev = results[0] as int;
@@ -129,6 +137,8 @@ class _OwnerDashboardScreenState extends ConsumerState<OwnerDashboardScreen> {
     final yestTrx = results[3] as int;
     final topProds = results[4] as dynamic;
     final hourly = results[5] as dynamic;
+    final lowStockProds = results[6] as List<Product>;
+    final lowStockIngs = results[7] as List<Ingredient>;
 
     final aov = todayTrx > 0 ? (todayRev / todayTrx).round() : 0;
 
@@ -191,9 +201,13 @@ class _OwnerDashboardScreenState extends ConsumerState<OwnerDashboardScreen> {
             value: topProduct,
             subtitle: 'Produk top hari ini',
             icon: Icons.emoji_events_rounded,
-            color: const Color(0xFFE67E22),
+            color: AppTheme.secondaryColor,
           ),
         ];
+        _lowStockSummary = LowStockSummary(
+          products: lowStockProds,
+          ingredients: lowStockIngs,
+        );
         _isLoading = false;
       });
     }
@@ -221,15 +235,22 @@ class _OwnerDashboardScreenState extends ConsumerState<OwnerDashboardScreen> {
         onRefresh: _loadStats,
         color: AppTheme.primaryColor,
         displacement: 100,
-        child: CustomScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          slivers: [
-            // ── Hero with KPI cards embedded ──────────────────────────────
+        child: ResponsiveCenter(
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              // ── Hero with KPI cards embedded ──────────────────────────────
             SliverToBoxAdapter(
               child: _buildHero(session?.name ?? 'Owner', isOwner),
             ),
 
             const SliverToBoxAdapter(child: SizedBox(height: 20)),
+
+            // ── Low Stock Warning ──────────────────────────────────────────
+            if (_lowStockSummary.totalCount > 0)
+              SliverToBoxAdapter(
+                child: LowStockWidget(summary: _lowStockSummary),
+              ),
 
             // ── Quick Action Grid ─────────────────────────────────────────
             SliverToBoxAdapter(
@@ -326,6 +347,13 @@ class _OwnerDashboardScreenState extends ConsumerState<OwnerDashboardScreen> {
                           onTap: () => _nav(const SupplierListScreen()),
                         ),
                         _MenuTile(
+                          icon: Icons.receipt_long_rounded,
+                          label: 'Purchase Order',
+                          subtitle: 'Buat & kelola PO ke supplier',
+                          color: Colors.teal,
+                          onTap: () => _nav(const PoListScreen()),
+                        ),
+                        _MenuTile(
                           icon: Icons.people_rounded,
                           label: 'Kelola Karyawan',
                           subtitle: 'Tambah & kelola akses karyawan',
@@ -390,6 +418,7 @@ class _OwnerDashboardScreenState extends ConsumerState<OwnerDashboardScreen> {
 
             const SliverToBoxAdapter(child: SizedBox(height: 40)),
           ],
+        ),
         ),
       ),
     );

@@ -83,7 +83,7 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                           children: [
                             _buildStatChip(Icons.category_outlined, '$totalProducts', 'Produk', Colors.white),
                             const SizedBox(width: 10),
-                            _buildStatChip(Icons.warning_amber_rounded, '$lowStock', 'Stok Rendah', Colors.orange.shade300),
+                            _buildStatChip(Icons.warning_amber_rounded, '$lowStock', 'Stok Rendah', AppTheme.secondaryColor),
                             const SizedBox(width: 10),
                             _buildStatChip(Icons.block_rounded, '$outOfStock', 'Habis', Colors.red.shade300),
                           ],
@@ -195,7 +195,7 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                             context,
                             icon: Icons.file_upload_outlined,
                             label: 'Import CSV',
-                            color: const Color(0xFF7C3AED),
+                            color: AppTheme.secondaryColor,
                             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ImportProductScreen())),
                           ),
                       ],
@@ -221,9 +221,9 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(colors: [Colors.orange.shade700, Colors.orange.shade500]),
+                            gradient: LinearGradient(colors: [AppTheme.secondaryColor, AppTheme.secondaryColor.withValues(alpha: 0.8)]),
                             borderRadius: BorderRadius.circular(20),
-                            boxShadow: [BoxShadow(color: Colors.orange.withValues(alpha: 0.3), blurRadius: 16, offset: const Offset(0, 6))],
+                            boxShadow: [BoxShadow(color: AppTheme.secondaryColor.withValues(alpha: 0.3), blurRadius: 16, offset: const Offset(0, 6))],
                           ),
                           child: Column(
                             children: lowStockItems.take(3).map((pwv) => Padding(
@@ -231,15 +231,15 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                               child: Row(children: [
                                 Container(
                                   padding: const EdgeInsets.all(6),
-                                  decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(8)),
-                                  child: const Icon(Icons.inventory_2_outlined, color: Colors.white, size: 16),
+                                  decoration: BoxDecoration(color: AppTheme.primaryColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+                                  child: const Icon(Icons.inventory_2_outlined, color: AppTheme.primaryColor, size: 16),
                                 ),
                                 const SizedBox(width: 10),
-                                Expanded(child: Text(pwv.product.name, style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13))),
+                                Expanded(child: Text(pwv.product.name, style: GoogleFonts.poppins(color: AppTheme.primaryColor, fontWeight: FontWeight.w700, fontSize: 13))),
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                  decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.25), borderRadius: BorderRadius.circular(8)),
-                                  child: Text('Sisa ${pwv.totalStock}', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12)),
+                                  decoration: BoxDecoration(color: AppTheme.primaryColor.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(8)),
+                                  child: Text('Sisa ${pwv.totalStock}', style: GoogleFonts.poppins(color: AppTheme.primaryColor, fontWeight: FontWeight.w800, fontSize: 12)),
                                 ),
                               ]),
                             )).toList()
@@ -249,7 +249,7 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                                 child: GestureDetector(
                                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProductListScreen())),
                                   child: Center(child: Text('+${lowStockItems.length - 3} produk lainnya →',
-                                    style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12, decoration: TextDecoration.underline))),
+                                    style: GoogleFonts.poppins(color: AppTheme.primaryColor, fontWeight: FontWeight.w700, fontSize: 12, decoration: TextDecoration.underline))),
                                 ),
                               )
                             ] : []),
@@ -482,7 +482,7 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
                 _buildPickerOption(
                   icon: Icons.photo_library_rounded,
                   label: 'Galeri',
-                  color: Colors.purple,
+                  color: AppTheme.tertiaryColor,
                   onTap: () {
                     Navigator.pop(ctx);
                     _pickImage(ImageSource.gallery);

@@ -48,6 +48,12 @@
 @import share_plus;
 #endif
 
+#if __has_include(<sqlcipher_flutter_libs/Sqlite3FlutterLibsPlugin.h>)
+#import <sqlcipher_flutter_libs/Sqlite3FlutterLibsPlugin.h>
+#else
+@import sqlcipher_flutter_libs;
+#endif
+
 @implementation GeneratedPluginRegistrant
 
 + (void)registerWithRegistry:(NSObject<FlutterPluginRegistry>*)registry {
@@ -58,6 +64,7 @@
   [FLTImagePickerPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTImagePickerPlugin"]];
   [MobileScannerPlugin registerWithRegistrar:[registry registrarForPlugin:@"MobileScannerPlugin"]];
   [FPPSharePlusPlugin registerWithRegistrar:[registry registrarForPlugin:@"FPPSharePlusPlugin"]];
+  [Sqlite3FlutterLibsPlugin registerWithRegistrar:[registry registrarForPlugin:@"Sqlite3FlutterLibsPlugin"]];
 }
 
 @end

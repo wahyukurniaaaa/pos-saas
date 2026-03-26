@@ -2,15 +2,19 @@
 
 **Produk:** Aplikasi Sistem Kasir (POS) SaaS Offline-First
 
-**Versi:** 2.3 (Stock Opname Bahan Baku & UoM Conversion)
+**Versi:** 2.4 (UI Responsiveness & Brand Refresh)
 
-**Status:** Implementasi Progresif (Phase 1-3, Phase 7-9 Selesai)
+**Status:** Implementasi Progresif (Phase 1-3, Phase 7-10 Selesai)
+
+## **Update Log (v2.4):**
+*   **UI Responsiveness & Brand Harmonization**: Standardisasi layout tablet menggunakan `ResponsiveCenter` (max-width 768px). Harmonisasi warna brand menggunakan Navy (`primaryColor`) dan Kuning (`secondaryColor`) di seluruh layar utama (Dashboard, PO, Inventory).
+*   **Purple Ban Enforcement**: Pembersihan seluruh elemen UI dari warna ungu terlarang untuk menjaga konsistensi identitas brand.
+*   **Versi App**: Bump ke `2.0.0 (Beta UI Refresh)`.
 
 ## **Update Log (v2.3):**
 *   **Stock Opname Bahan Baku (Phase 8)**: Layar audit stok fisik untuk bahan baku. User memasukkan stok fisik, sistem otomatis menghitung selisih dan membuat entri `ADJUST` di `ingredient_stock_history`.
 *   **Unit of Measure (UoM) Conversion (Phase 9)**: Tabel `unit_conversions` baru untuk aturan konversi satuan fleksibel (misal: 1 kg = 1000 gr). Layar manajemen konversi tersedia di Pengaturan (role Owner).
 *   **Database Migration v11**: Penambahan tabel `unit_conversions` pada skema database SQLite.
-*   **Versi App**: Bump ke `1.4.0+8`.
 
 ## **Update Log (v2.2):**
 *   **Advanced Inventory**: Implementasi fitur "Stok Keluar" dengan alasan (Waste/Expired/Damage).

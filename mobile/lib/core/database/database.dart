@@ -27,6 +27,7 @@ import 'tables/ingredient_stock_history_table.dart';
 import 'tables/unit_conversions_table.dart';
 import 'tables/stock_opname_table.dart';
 import 'tables/stock_opname_items_table.dart';
+import 'tables/purchase_orders_table.dart';
 
 part 'database.g.dart';
 
@@ -63,6 +64,8 @@ class StockTransactionWithProduct {
     UnitConversions,
     StockOpname,
     StockOpnameItems,
+    PurchaseOrders,
+    PurchaseOrderItems,
   ],
 )
 class PosifyDatabase extends _$PosifyDatabase {
@@ -72,7 +75,7 @@ class PosifyDatabase extends _$PosifyDatabase {
   PosifyDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 12;
+  int get schemaVersion => 13;
 
   @override
   MigrationStrategy get migration {
@@ -132,6 +135,10 @@ class PosifyDatabase extends _$PosifyDatabase {
         if (from < 12) {
           await m.createTable(stockOpname);
           await m.createTable(stockOpnameItems);
+        }
+        if (from < 13) {
+          await m.createTable(purchaseOrders);
+          await m.createTable(purchaseOrderItems);
         }
       },
     );
@@ -555,6 +562,109 @@ class PosifyDatabase extends _$PosifyDatabase {
     return all
         .where((p) => p.lowStockThreshold > 0 && p.stock <= p.lowStockThreshold)
         .toList();
+  }
+
+  Future<List<Ingredient>> getLowStockIngredients() async {
+    final all = await select(ingredients).get();
+    return all
+        .where((i) => i.minStockThreshold > 0 && i.stockQuantity <= i.minStockThreshold)
+        .toList();
+  }
+
+  // ===== Purchase Order (PO) Queries =====
+
+  Future<List<PurchaseOrder>> getAllPurchaseOrders() =>
+      (select(purchaseOrders)
+        ..orderBy([(po) => OrderingTerm.desc(po.orderedAt)]))
+          .get();
+
+  Stream<List<PurchaseOrder>> watchAllPurchaseOrders() =>
+      (select(purchaseOrders)
+        ..orderBy([(po) => OrderingTerm.desc(po.orderedAt)]))
+          .watch();
+
+  Future<List<PurchaseOrderItem>> getPurchaseOrderItems(int poId) =>
+      (select(purchaseOrderItems)
+        ..where((i) => i.purchaseOrderId.equals(poId)))
+          .get();
+
+  Future<int> createPurchaseOrder(PurchaseOrdersCompanion entry) =>
+      into(purchaseOrders).insert(entry);
+
+  Future<void> addPurchaseOrderItem(PurchaseOrderItemsCompanion entry) =>
+      into(purchaseOrderItems).insert(entry).then((_) {});
+
+  Future<void> updatePurchaseOrderStatus(int poId, String status) =>
+      (update(purchaseOrders)..where((po) => po.id.equals(poId))).write(
+        PurchaseOrdersCompanion(
+          status: Value(status),
+          updatedAt: Value(DateTime.now().toIso8601String()),
+        ),
+      );
+
+  /// Marks PO as received, updates received quantities,
+  /// and auto-increments product or ingredient stock.
+  Future<void> receivePurchaseOrder({
+    required int poId,
+    required List<({int itemId, double receivedQty})> receivedItems,
+  }) async {
+    await transaction(() async {
+      final now = DateTime.now().toIso8601String();
+
+      for (final received in receivedItems) {
+        // Update received quantity on the PO item
+        await (update(purchaseOrderItems)
+              ..where((i) => i.id.equals(received.itemId)))
+            .write(
+          PurchaseOrderItemsCompanion(
+            receivedQuantity: Value(received.receivedQty),
+          ),
+        );
+
+        // Fetch the PO item to determine which stock to update
+        final item = await (select(purchaseOrderItems)
+              ..where((i) => i.id.equals(received.itemId)))
+            .getSingleOrNull();
+        if (item == null || received.receivedQty <= 0) continue;
+
+        if (item.productId != null) {
+          // Update product stock
+          final product = await (select(products)
+                ..where((p) => p.id.equals(item.productId!)))
+              .getSingleOrNull();
+          if (product != null) {
+            final qty = received.receivedQty.round();
+            final newStock = product.stock + qty;
+            await (update(products)..where((p) => p.id.equals(product.id)))
+                .write(ProductsCompanion(stock: Value(newStock)));
+            await into(stockTransactions).insert(
+              StockTransactionsCompanion.insert(
+                productId: product.id,
+                type: 'IN',
+                quantity: qty,
+                previousStock: product.stock,
+                newStock: newStock,
+                reason: Value('Penerimaan PO #$poId'),
+                reference: Value('PO-$poId'),
+                createdAt: now,
+              ),
+            );
+          }
+        } else if (item.ingredientId != null) {
+          // Update ingredient stock
+          await deductIngredientStock(
+            ingredientId: item.ingredientId!,
+            quantityInBaseUnit: -received.receivedQty, // negative = add
+            type: 'PURCHASE',
+            referenceId: 'PO-$poId',
+            reason: 'Penerimaan PO #$poId',
+          );
+        }
+      }
+
+      // Mark PO as received
+      await updatePurchaseOrderStatus(poId, 'received');
+    });
   }
 
   // ===== Checkout Process =====

@@ -35,6 +35,11 @@ erDiagram
     ingredients ||--o{ product_recipes : "digunakan"
     ingredients ||--o{ ingredient_stock_history : "memiliki riwayat"
 
+    suppliers ||--o{ purchase_orders : "menerima pesanan"
+    purchase_orders ||--|{ purchase_order_items : "memiliki detail item"
+    products ||--o{ purchase_order_items : "dipesan dalam PO"
+    ingredients ||--o{ purchase_order_items : "dipesan dalam PO"
+
     %% Definisi Entitas %%
 
     licenses {
@@ -194,6 +199,27 @@ erDiagram
         TEXT created_at "ISO 8601"
     }
 
+    purchase_orders {
+        INTEGER id PK "Auto Increment"
+        INTEGER supplier_id FK "Nullable"
+        TEXT status "draft/sent/received/cancelled"
+        INTEGER total_estimate "Estimasi nilai PO (Rp)"
+        TEXT notes "Catatan (Opsional)"
+        TEXT ordered_at "ISO 8601"
+        TEXT updated_at "ISO 8601"
+    }
+
+    purchase_order_items {
+        INTEGER id PK "Auto Increment"
+        INTEGER purchase_order_id FK
+        INTEGER product_id FK "Nullable"
+        INTEGER ingredient_id FK "Nullable"
+        TEXT item_name "Snapshot nama saat PO dibuat"
+        TEXT unit "Snapshot satuan"
+        REAL quantity "Jumlah yang dipesan"
+        INTEGER purchase_price "Harga beli per unit"
+        REAL received_quantity "Jumlah yang telah diterima"
+    }
 
     printer_settings {
         INTEGER id PK "Auto Increment"

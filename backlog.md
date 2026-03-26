@@ -1,78 +1,90 @@
 # Product Backlog: Advanced Inventory & POS
 
-Berikut adalah backlog fitur untuk pengembangan **Posify Inventory Phase 2 & 3**, disusun berdasarkan prioritas bisnis dan kelengkapan fitur kompetitor (Moka/Majoo).
+Berikut adalah backlog fitur untuk pengembangan **Posify Inventory Phase 2, 3, & 4**, disusun berdasarkan prioritas bisnis dan kelengkapan fitur kompetitor (Moka/Majoo).
 
 ---
 
-## 🟢 Priority 1: Core F&B & Financials (High Impact)
+## 🟢 Priority 1: Core F&B & Financials (High Impact) - COMPLETED
 
 ### 1. Recipe & Ingredient Management (Sistem Bahan Baku)
-*   **Goal**: Otomasi pemotongan stok bahan baku berdasarkan penjualan produk jadi.
-*   **Tasks**:
-    *   [x] Create `ingredients` table (id, name, unit, sku, stock).
-    *   [x] Create `product_recipes` join table (productId, ingredientId, quantityNeeded).
-    *   [x] Implement deduction logic in `processCheckout` transaction.
-    *   [x] UI: Ingredient selection in Product Form.
+*   [x] Recipe deduction logic, ingredient tables, and UI selection.
 
 ### 2. COGS (HPP) & Average Cost Tracking
-*   **Goal**: Menghitung keuntungan bersih yang presisi berdasarkan harga beli historis.
-*   **Tasks**:
-    *   [x] Add `purchase_price` to `stock_transactions` (Implemented via `IngredientStockHistory`).
-    *   [x] Implement "Moving Average" cost algorithm in database.
-    *   [x] Report: Gross Profit (Laba Kotor) per Product/Category.
-    *   [ ] **Retail HPP Support**: Tambahkan `purchase_price` di tabel `Products` & `ProductVariants` untuk mendukung profit ritel tanpa resep.
-
+*   [x] Moving average cost algorithm and Gross Profit reporting.
+*   [ ] **Retail HPP Support**: Tambahkan `purchase_price` di tabel `Products` untuk profit ritel tanpa resep.
 
 ### 3. Stock Opname & Variance Audit
-*   **Goal**: Pencatatan selisih stok (fisik vs sistem) untuk mencegah kerugian.
-*   **Tasks**:
-    *   [x] Create `stock_opname` table and `opname_items`.
-    *   [x] Implement `StockOpnameScreen` and `IngredientOpnameScreen` with DRAFT/COMPLETED flow and auto-adjust.
-    *   [x] Implementation of "Variance Reason" (e.g., Waste, Stolen, Sample).
-    *   [x] Report: Stock Loss/Waste value summary per periode.
-
+*   [x] Physical vs System stock reconciliation with variance reason.
 
 ---
 
 ## 🟡 Priority 2: Operational Efficiency (Medium Impact)
 
 ### 4. Unit of Measure (UoM) Conversion
-*   **Goal**: Mendukung satuan yang berbeda antara pembelian (Box/Karung) dan penggunaan (Gr/Pcs).
-*   **Tasks**:
-    *   [x] Logic to auto-convert 1kg → 1000g during Stock In. (Implemented in Ingredient Stock In Modal)
-    *   [x] Create `unit_conversions` table (schema v11) untuk aturan konversi satuan fleksibel.
-    *   [x] UI: `UnitConversionScreen` — Owner dapat CRUD aturan konversi dari Pengaturan.
+*   [x] `unit_conversions` table and rule-based conversion (KG to Gram, etc).
 
-
-### 5. Low Stock Dashboard & Notifications
-*   **Goal**: Memindahkan sistem alert dari pasif (banner) ke aktif (proaktif).
+### 5. Low Stock Dashboard Widget
+*   **User Story**: "Sebagai Kasir, saya ingin melihat ringkasan stok yang menipis di dashboard agar saya tahu apa yang harus dipromosikan (atau jangan dijual)."
 *   **Tasks**:
-    *   [ ] Dashboard Widget: Top 5 Stock Out of Stock.
-    *   [ ] Background Job: Check low stock daily alert.
-    *   [ ] Action: One-Click Reorder to Supplier.
+    *   [ ] UI: Widget "Stok Menipis" di Dashboard POS.
+    *   [ ] UI: Filter "Hampir Habis" di Product Grid.
 
 ### 6. Batch & Expiry Tracking
-*   **Goal**: Pelacakan tanggal kadaluwarsa per kelompok barang masuk.
+*   **User Story**: "Sebagai Owner, saya ingin melacak tanggal kadaluwarsa barang agar saya tidak menjual produk basi (Loss Prevention)."
 *   **Tasks**:
     *   [ ] Add `expiry_date` & `batch_number` to mutations.
     *   [ ] UI Filter: Show products expiring within 30 days.
 
 ---
 
-## 🔵 Priority 3: Expansion (Scale Up)
+## 🔵 Priority 3: Expansion & Ecosystem (Scale Up)
 
-### 7. Multi-Warehouse & Stock Transfer
-*   **Goal**: Mendukung operasional antar cabang atau pusat-ke-toko.
+### 7. Multi-Outlet & Stock Transfer
+*   **User Story**: "Sebagai Owner, saya ingin mengelola stok di banyak cabang dan melakukan transfer stok antar cabang agar distribusi barang terpantau."
 *   **Tasks**:
-    *   [ ] Create `outlets` table.
-    *   [ ] Implementation of "Stock Move" logic between outlets.
-    *   [ ] UI: Request Stock form for Cashiers.
+    *   [ ] Create `outlets` table (id, name, address, phone).
+    *   [ ] Refactor `products` & `ingredients` stock to be outlet-specific (mapping table).
+    *   [ ] Create `stock_transfers` table (fromOutlet, toOutlet, items, status).
+    *   [ ] UI: Outlet Switcher di Dashboard & Pengaturan.
+    *   [ ] UI: Form Mutasi Stok antar Cabang.
 
-### 8. Purchase Order (PO) Workflow
-*   **Goal**: Manajemen pemesanan ke Supplier secara bertahap.
-*   *Workflow*: **Draft** -> **Sent** -> **Partially Received** -> **Received**.
+### 8. Dynamic QRIS API Integration
+*   **User Story**: "Sebagai Kasir, saya ingin menampilkan QRIS dinamis otomatis agar pelanggan bisa bayar instan tanpa saya harus cek mutasi manual."
+*   **Tasks**:
+    *   [ ] Backend: Integrasi API Payment Gateway (Xendit/Midtrans).
+    *   [ ] Backend: Webhook listener untuk update status transaksi `paid`.
+    *   [ ] UI: QR Display di `PaymentModal` saat memilih metode QRIS.
+    *   [ ] Mobile: Real-time payment check (Polling/WebSocket).
+
+### 9. Purchase Order (PO) Workflow
+*   **User Story**: "Sebagai Manager, saya ingin membuat pesanan resmi ke supplier dan melacaknya hingga barang diterima agar procurement terdokumentasi."
+*   **Tasks**:
+    *   [ ] Create `purchase_orders` & `po_items` tables.
+    *   [ ] Logic: Status flow (Draft -> Sent -> Partially Received -> Received).
+    *   [ ] Automation: Update stok otomatis saat PO berstatus `Received`.
+    *   [ ] UI: PO Management Screen (List & Form).
+
+---
+
+## 🟣 Priority 4: Loyalty & Automation (Growth)
+
+### 10. Loyalty & Membership System (Points)
+*   **User Story**: "Sebagai Owner, saya ingin memberikan poin setiap belanja agar pelanggan kembali lagi (retensi)."
+*   **Tasks**:
+    *   [ ] Add `points` column to `customers` table.
+    *   [ ] Create `loyalty_rules` (e.g., Rp 10.000 = 1 Point).
+    *   [ ] Implementation of `Point Calculation` in checkout transaction.
+    *   [ ] UI: Tukar Poin menjadi diskon di halaman Pembayaran.
+    *   [ ] Report: Member most active analytics.
+
+### 11. Proactive Low Stock Alerts (Push Notifications)
+*   **User Story**: "Sebagai Bagian Gudang, saya ingin ada notifikasi otomatis saat stok menipis agar tidak telat restock."
+*   **Tasks**:
+    *   [ ] Backend: Cron Job untuk cek `low_stock_threshold` setiap jam.
+    *   [ ] Integration with Firebase Cloud Messaging (FCM).
+    *   [ ] UI: Low Stock Notification setup di Pengaturan.
 
 ---
 
 > [!NOTE]
-> Backlog ini bersifat dinamis dan akan diperbarui seiring dengan perkembangan kebutuhan pengguna dan validasi pasar.
+> Backlog ini disusun kembali menggunakan agen `project-planner` untuk memastikan struktur User Story yang berpusat pada pengguna dan Task Breakdown yang teknis.
