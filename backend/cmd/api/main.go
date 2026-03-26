@@ -67,7 +67,7 @@ func main() {
 	})
 
 	// Database Connection
-	db := database.InitDB()
+	db := database.Connect()
 
 	// API Groups
 	api := app.Group("/api/v1")
