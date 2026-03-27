@@ -19,8 +19,6 @@ import 'package:posify_app/features/pos/screens/settings/printer_settings_screen
 import 'package:posify_app/features/settings/screens/customers/customer_list_screen.dart';
 import 'package:posify_app/features/settings/screens/suppliers/supplier_list_screen.dart';
 import 'package:posify_app/features/pos/screens/inventory/global_stock_history_screen.dart';
-import 'package:posify_app/features/pos/screens/inventory/ingredient_list_screen.dart';
-import 'package:posify_app/features/pos/screens/settings_tab.dart';
 import 'package:posify_app/features/pos/screens/settings/discount_management_screen.dart';
 import 'package:posify_app/features/pos/screens/settings/expense_management_screen.dart';
 import 'package:posify_app/features/dashboard/screens/cashflow_screen.dart';
@@ -614,66 +612,27 @@ class _OwnerDashboardScreenState extends ConsumerState<OwnerDashboardScreen> {
         onTap: () => _nav(const ExpenseManagementScreen()),
       ),
       _ActionItem(
-        icon: Icons.people_rounded,
-        label: 'Karyawan',
-        color: Colors.teal,
-        onTap: () => _nav(const EmployeeListScreen()),
-      ),
-      _ActionItem(
         icon: Icons.people_outline_rounded,
         label: 'Pelanggan',
         color: AppTheme.tertiaryColor,
         onTap: () => _nav(const CustomerListScreen()),
       ),
       _ActionItem(
-        icon: Icons.business_rounded,
-        label: 'Supplier',
-        color: Colors.amber,
-        onTap: () => _nav(const SupplierListScreen()),
-      ),
-      if (isOwner)
-        _ActionItem(
-          icon: Icons.store_mall_directory_rounded,
-          label: 'Profil Toko',
-          color: Colors.indigo,
-          onTap: () => _nav(const StoreProfileScreen()),
-        ),
-      _ActionItem(
         icon: Icons.access_time_rounded,
         label: 'Shift',
         color: Colors.deepPurple,
         onTap: () => _nav(const ShiftHistoryScreen()),
       ),
-      _ActionItem(
-        icon: Icons.print_rounded,
-        label: 'Printer',
-        color: Colors.blueGrey,
-        onTap: () => _nav(const PrinterSettingsScreen()),
-      ),
-      if (isOwner) ...[
-        _ActionItem(
-          icon: Icons.kitchen_rounded,
-          label: 'Bahan Baku',
-          color: const Color(0xFF0D9488),
-          onTap: () => _nav(const IngredientListScreen()),
-        ),
-        _ActionItem(
-          icon: Icons.settings_rounded,
-          label: 'Pengaturan',
-          color: Colors.blueGrey,
-          onTap: () => _nav(const SettingsTab()),
-        ),
-      ],
     ];
 
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
+        crossAxisCount: 3,
         mainAxisSpacing: 12,
         crossAxisSpacing: 12,
-        childAspectRatio: 0.85,
+        childAspectRatio: 1.1,
       ),
       itemCount: actions.length,
       itemBuilder: (ctx, i) => _ActionTile(data: actions[i]),

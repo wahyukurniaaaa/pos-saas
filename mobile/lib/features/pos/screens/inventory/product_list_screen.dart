@@ -69,12 +69,23 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                     itemBuilder: (_, i) => _buildProductCard(context, products[i], isCashier),
                   ),
                 ),
-                if (!isCashier) _buildBottomActions(context),
               ],
             );
           },
         ),
       ),
+      floatingActionButton: !isCashier && (productsAsync.value?.isNotEmpty ?? false) ? Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: FloatingActionButton.extended(
+          onPressed: () => _showAddProductSheet(context),
+          backgroundColor: AppTheme.primaryColor,
+          elevation: 4,
+          icon: const Icon(Icons.add_rounded, color: Colors.white),
+          label: Text('Tambah Produk Baru', 
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w700, color: Colors.white, fontSize: 13)),
+        ),
+      ) : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
@@ -276,65 +287,72 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
   }
 
   Widget _buildEmpty(BuildContext context, bool isCashier) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
+    return SizedBox.expand(
+      child: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
           Container(
             padding: const EdgeInsets.all(32),
-            decoration: BoxDecoration(color: Colors.grey.shade100, shape: BoxShape.circle),
-            child: Icon(Icons.inventory_2_outlined, size: 80, color: Colors.grey.shade400),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.inventory_2_outlined,
+              size: 80,
+              color: Colors.grey.shade400,
+            ),
           ),
           const SizedBox(height: 24),
-          Text('Belum ada produk', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
+          Text(
+            'Belum ada produk',
+            style: GoogleFonts.poppins(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.textPrimary,
+            ),
+          ),
           const SizedBox(height: 8),
-          Text('Mulai tambahkan produk jualan Anda.', style: GoogleFonts.poppins(fontSize: 14, color: AppTheme.textSecondary)),
+          Text(
+            'Mulai tambahkan produk jualan Anda.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: AppTheme.textSecondary,
+            ),
+          ),
           if (!isCashier) ...[
             const SizedBox(height: 32),
             ElevatedButton.icon(
               onPressed: () => _showAddProductSheet(context),
-              icon: const Icon(Icons.add_rounded),
-              label: const Text('Tambah Produk Pertama'),
+              icon: const Icon(Icons.add_rounded, size: 18),
+              label: Text(
+                'Tambah Produk Pertama',
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryColor,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: const StadiumBorder(),
+                elevation: 2,
               ),
             ),
           ],
         ],
       ),
-    );
-  }
+    ),
+  ),
+);
+}
 
-  Widget _buildBottomActions(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: ElevatedButton.icon(
-              onPressed: () => _showAddProductSheet(context),
-              icon: const Icon(Icons.add_rounded),
-              label: Text('Tambah Produk Baru', style: GoogleFonts.poppins(fontWeight: FontWeight.w700)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryColor,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                elevation: 0,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+
 
   void _showAddProductSheet(BuildContext context) {
     showModalBottomSheet(

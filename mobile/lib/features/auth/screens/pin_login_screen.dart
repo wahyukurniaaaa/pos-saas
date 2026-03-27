@@ -81,7 +81,8 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen>
     if (employee != null) {
       // Route based on role
       final role = employee.role;
-      final route = (role == 'owner' || role == 'supervisor')
+      // Supervisor defaults to POS (Solusi 3)
+      final route = (role == 'owner')
           ? '/dashboard'
           : '/pos';
       Navigator.pushReplacementNamed(context, route);

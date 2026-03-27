@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
@@ -30,6 +30,19 @@ class _PrinterSettingsScreenState extends ConsumerState<PrinterSettingsScreen> {
   Future<void> _initBluetooth() async {
     setState(() => _isLoading = true);
     try {
+      final isOn = await bluetooth.isOn ?? false;
+      if (!isOn) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Bluetooth belum aktif. Silakan nyalakan bluetooth Anda.'),
+              backgroundColor: Colors.orange,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+
       final devices = await bluetooth.getBondedDevices();
       final isConnected = await bluetooth.isConnected ?? false;
       setState(() {
@@ -223,7 +236,37 @@ class _PrinterSettingsScreenState extends ConsumerState<PrinterSettingsScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 20),
+          
+          // Info Note for Android Location
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.blue.shade100),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.info_outline, color: Colors.blue, size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Izin Lokasi (GPS) diperlukan sistem Android untuk pemindaian Bluetooth. Ini adalah aturan standar OS Android.',
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        color: Colors.blue.shade900,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          
+          const SizedBox(height: 16),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Text(

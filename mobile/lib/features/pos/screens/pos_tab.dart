@@ -1104,14 +1104,19 @@ class CartPanel extends ConsumerWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.local_offer_outlined, size: 13, color: AppTheme.primaryColor),
+                        const Icon(Icons.local_offer_outlined,
+                            size: 13, color: AppTheme.primaryColor),
                         const SizedBox(width: 4),
-                        Text(
-                          'Gunakan Diskon Item',
-                          style: GoogleFonts.poppins(
-                            fontSize: 11,
-                            color: AppTheme.primaryColor,
-                            fontWeight: FontWeight.w600,
+                        Flexible(
+                          child: Text(
+                            'Gunakan Diskon Item',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.poppins(
+                              fontSize: 11,
+                              color: AppTheme.primaryColor,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ],

@@ -4,18 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:posify_app/features/auth/providers/owner_provider.dart';
 import 'package:posify_app/features/pos/screens/settings/printer_settings_screen.dart';
-import 'package:posify_app/features/settings/screens/employee_list_screen.dart';
-import 'package:posify_app/features/settings/screens/store_profile_screen.dart';
 import 'package:posify_app/features/settings/screens/transaction_history_screen.dart';
 import 'package:posify_app/features/settings/screens/shift_history_screen.dart';
-import 'package:posify_app/features/reports/screens/sales_analytics_screen.dart';
-import 'package:posify_app/features/settings/screens/category_management_screen.dart';
-import 'package:posify_app/features/settings/screens/tax_service_settings_screen.dart';
 import 'package:posify_app/features/settings/screens/database_settings_screen.dart';
-import 'package:posify_app/features/settings/screens/customers/customer_list_screen.dart';
-import 'package:posify_app/features/settings/screens/suppliers/supplier_list_screen.dart';
-import 'package:posify_app/features/pos/screens/inventory/ingredient_list_screen.dart';
-import 'package:posify_app/features/settings/screens/unit_conversion_screen.dart';
 import 'package:posify_app/core/widgets/responsive_layout.dart';
 
 class SettingsTab extends ConsumerWidget {
@@ -50,97 +41,31 @@ class SettingsTab extends ConsumerWidget {
             final session = ref.watch(sessionProvider).value;
             final isOwner = session?.role == 'owner';
             final isSupervisor = session?.role == 'supervisor';
-            final isAtLeastSupervisor = isOwner || isSupervisor;
+            final canAccessDashboard = isOwner || isSupervisor;
 
             return ListView(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
               children: [
-                // Toko & Karyawan
-                if (isOwner)
+                // Navigasi Backoffice
+                if (canAccessDashboard)
                   _buildSection(
                     context: context,
-                    title: 'Toko & Karyawan',
+                    title: 'Manajemen Data',
                     items: [
                       _SettingsItem(
-                        icon: Icons.store_mall_directory_rounded,
-                        title: 'Profil Toko',
-                        subtitle: 'Nama toko, alamat, logo & struk',
-                        onTap: () => _navigate(context, const StoreProfileScreen()),
-                      ),
-                      _SettingsItem(
-                        icon: Icons.people_rounded,
-                        title: 'Kelola Karyawan',
-                        subtitle: 'Tambah & kelola akses karyawan',
-                        onTap: () => _navigate(context, const EmployeeListScreen()),
+                        icon: Icons.dashboard_rounded,
+                        title: 'Masuk ke Backoffice',
+                        subtitle: 'Pindah ke modul Manajemen (Dashboard)',
+                        onTap: () => Navigator.pushReplacementNamed(context, '/dashboard'),
                         isLast: true,
                       ),
                     ],
                   ),
-
-                // Produk
-                _buildSection(
-                  context: context,
-                  title: 'Produk & Inventori',
-                  items: [
-                    _SettingsItem(
-                      icon: Icons.label_rounded,
-                      title: 'Kelola Kategori Produk',
-                      subtitle: 'Tambah, edit, hapus kategori',
-                      isEnabled: isAtLeastSupervisor,
-                      onTap: () => _navigate(context, const CategoryManagementScreen()),
-                    ),
-                    _SettingsItem(
-                      icon: Icons.kitchen_rounded,
-                      title: 'Kelola Bahan Baku',
-                      subtitle: 'Pantau stok & konversi unit resep',
-                      isEnabled: isAtLeastSupervisor,
-                      onTap: () => _navigate(context, const IngredientListScreen()),
-                    ),
-                    if (isOwner)
-                      _SettingsItem(
-                        icon: Icons.swap_horiz_rounded,
-                        title: 'Konversi Satuan (UoM)',
-                        subtitle: 'Atur aturan kg → gr, liter → ml, dsb.',
-                        onTap: () => _navigate(context, const UnitConversionScreen()),
-                        isLast: true,
-                      ),
-                  ],
-                ),
-
-                // Mitra Bisnis
-                if (isAtLeastSupervisor)
-                  _buildSection(
-                    context: context,
-                    title: 'Mitra & Pelanggan',
-                    items: [
-                      _SettingsItem(
-                        icon: Icons.people_rounded,
-                        title: 'Manajemen Pelanggan',
-                        subtitle: 'Kelola data pelanggan & member',
-                        onTap: () => _navigate(context, const CustomerListScreen()),
-                      ),
-                      _SettingsItem(
-                        icon: Icons.local_shipping_rounded,
-                        title: 'Manajemen Supplier',
-                        subtitle: 'Kelola data supplier',
-                        onTap: () => _navigate(context, const SupplierListScreen()),
-                        isLast: true,
-                      ),
-                    ],
-                  ),
-
                 // Laporan & Riwayat
                 _buildSection(
                   context: context,
                   title: 'Laporan & Riwayat',
                   items: [
-                    if (isAtLeastSupervisor)
-                      _SettingsItem(
-                        icon: Icons.analytics_rounded,
-                        title: 'Analitik Penjualan',
-                        subtitle: 'Dashboard dan tren penjualan',
-                        onTap: () => _navigate(context, const SalesAnalyticsScreen()),
-                      ),
                     _SettingsItem(
                       icon: Icons.receipt_long_rounded,
                       title: 'Riwayat Transaksi',
@@ -167,15 +92,8 @@ class SettingsTab extends ConsumerWidget {
                       title: 'Pengaturan Printer',
                       subtitle: 'Bluetooth thermal printer',
                       onTap: () => _navigate(context, const PrinterSettingsScreen()),
+                      isLast: !isOwner,
                     ),
-                    if (isAtLeastSupervisor)
-                      _SettingsItem(
-                        icon: Icons.calculate_rounded,
-                        title: 'Pajak & Service Charge',
-                        subtitle: 'PPN, service, diskon default',
-                        onTap: () => _navigate(context, const TaxServiceSettingsScreen()),
-                        isLast: !isOwner,
-                      ),
                     if (isOwner)
                       _SettingsItem(
                         icon: Icons.storage_rounded,
@@ -288,7 +206,6 @@ class _SettingsItem extends StatelessWidget {
   final String title;
   final String subtitle;
   final bool isDestructive;
-  final bool isEnabled;
   final VoidCallback? onTap;
   final bool isLast;
 
@@ -297,7 +214,6 @@ class _SettingsItem extends StatelessWidget {
     required this.title,
     required this.subtitle,
     this.isDestructive = false,
-    this.isEnabled = true,
     this.onTap,
     this.isLast = false,
   });
@@ -307,7 +223,7 @@ class _SettingsItem extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: isEnabled ? onTap : null,
+        onTap: onTap,
         borderRadius: BorderRadius.circular(isLast ? 16 : 0),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -317,9 +233,7 @@ class _SettingsItem extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: !isEnabled
-                      ? Theme.of(context).colorScheme.surfaceContainerHighest
-                      : isDestructive
+                  color: isDestructive
                           ? AppTheme.errorColor.withValues(alpha: 0.1)
                           : Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(12),
@@ -327,9 +241,7 @@ class _SettingsItem extends StatelessWidget {
                 child: Icon(
                   icon,
                   size: 20,
-                  color: !isEnabled
-                      ? Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.4)
-                      : isDestructive
+                  color: isDestructive
                           ? AppTheme.errorColor
                           : Theme.of(context).colorScheme.primary,
                 ),
@@ -344,9 +256,7 @@ class _SettingsItem extends StatelessWidget {
                       style: GoogleFonts.poppins(
                         fontWeight: FontWeight.w600,
                         fontSize: 15,
-                        color: !isEnabled
-                            ? Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.4)
-                            : isDestructive
+                        color: isDestructive
                                 ? AppTheme.errorColor
                                 : Theme.of(context).colorScheme.onSurface,
                       ),
@@ -356,7 +266,7 @@ class _SettingsItem extends StatelessWidget {
                       subtitle,
                       style: GoogleFonts.poppins(
                         fontSize: 12,
-                        color: isEnabled ? Theme.of(context).colorScheme.onSurfaceVariant : Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -365,7 +275,7 @@ class _SettingsItem extends StatelessWidget {
               Icon(
                 Icons.chevron_right_rounded,
                 size: 20,
-                color: isEnabled ? Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.3) : Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.1),
+                color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
               ),
             ],
           ),

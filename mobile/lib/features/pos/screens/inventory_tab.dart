@@ -36,22 +36,29 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            // ===== Hero Header =====
-            SliverToBoxAdapter(
-              child: Container(
+      body: CustomScrollView(
+        slivers: [
+          // ===== Sliver Header =====
+          SliverAppBar(
+            expandedHeight: 220,
+            pinned: true,
+            elevation: 0,
+            stretch: true,
+            backgroundColor: AppTheme.primaryColor,
+            leading: widget.showBackButton ? const BackButton(color: Colors.white) : null,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [AppTheme.primaryColor, Color(0xFF1E2EB0)],
+                    colors: [AppTheme.primaryColor, AppTheme.tertiaryColor],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                 ),
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+                padding: const EdgeInsets.fromLTRB(20, 60, 20, 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -59,14 +66,35 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Manajemen Stok', style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -0.5)),
-                            Text('Kelola inventori bisnis Anda', style: GoogleFonts.poppins(fontSize: 13, color: Colors.white60)),
+                            Text(
+                              'Manajemen Stok',
+                              style: GoogleFonts.poppins(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                            Text(
+                              'Kelola inventori bisnis Anda',
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                color: Colors.white.withValues(alpha: 0.7),
+                              ),
+                            ),
                           ],
                         ),
                         Container(
                           padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), shape: BoxShape.circle),
-                          child: const Icon(Icons.inventory_2_rounded, color: Colors.white, size: 26),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.15),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.inventory_2_rounded,
+                            color: Colors.white,
+                            size: 26,
+                          ),
                         ),
                       ],
                     ),
@@ -77,15 +105,35 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                       error: (_, __) => const SizedBox.shrink(),
                       data: (products) {
                         final totalProducts = products.length;
-                        final lowStock = products.where((pwv) => pwv.product.lowStockThreshold > 0 && pwv.totalStock <= pwv.product.lowStockThreshold).length;
-                        final outOfStock = products.where((pwv) => pwv.totalStock <= 0).length;
+                        final lowStock = products
+                            .where((pwv) =>
+                                pwv.product.lowStockThreshold > 0 &&
+                                pwv.totalStock <= pwv.product.lowStockThreshold)
+                            .length;
+                        final outOfStock =
+                            products.where((pwv) => pwv.totalStock <= 0).length;
                         return Row(
                           children: [
-                            _buildStatChip(Icons.category_outlined, '$totalProducts', 'Produk', Colors.white),
+                            _buildStatChip(
+                              Icons.category_outlined,
+                              '$totalProducts',
+                              'Produk',
+                              Colors.white,
+                            ),
                             const SizedBox(width: 10),
-                            _buildStatChip(Icons.warning_amber_rounded, '$lowStock', 'Stok Rendah', AppTheme.secondaryColor),
+                            _buildStatChip(
+                              Icons.warning_amber_rounded,
+                              '$lowStock',
+                              'Stok Rendah',
+                              AppTheme.secondaryColor,
+                            ),
                             const SizedBox(width: 10),
-                            _buildStatChip(Icons.block_rounded, '$outOfStock', 'Habis', Colors.red.shade300),
+                            _buildStatChip(
+                              Icons.block_rounded,
+                              '$outOfStock',
+                              'Habis',
+                              Colors.red.shade300,
+                            ),
                           ],
                         );
                       },
@@ -94,6 +142,7 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
                 ),
               ),
             ),
+          ),
 
             // ===== Primary Actions (Large Cards) =====
             SliverToBoxAdapter(
@@ -268,7 +317,6 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
             const SliverToBoxAdapter(child: SizedBox(height: 32)),
           ],
         ),
-      ),
     );
   }
 
@@ -1365,12 +1413,12 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
 
   Widget _buildBottomStickyButton() {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+      padding: const EdgeInsets.fromLTRB(32, 16, 32, 32),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withValues(alpha: 0.04),
             offset: const Offset(0, -5),
             blurRadius: 15,
           ),
@@ -1384,10 +1432,9 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
           style: ElevatedButton.styleFrom(
             backgroundColor: AppTheme.primaryColor,
             foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            elevation: 0,
+            shape: const StadiumBorder(),
+            elevation: 4,
+            shadowColor: AppTheme.primaryColor.withValues(alpha: 0.4),
           ),
           child: _isLoading
               ? const SizedBox(
