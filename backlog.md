@@ -4,7 +4,15 @@ Berikut adalah backlog fitur untuk pengembangan **Posify Inventory Phase 2, 3, &
 
 ---
 
-## 🟢 Priority 1: Core F&B & Financials (High Impact) - COMPLETED
+## 🟢 Priority 1: Core F&B & Financials (High Impact) - COMPLETED (Updated)
+
+### 0. Simplified License Activation (UX Refinement)
+*   **User Story**: "Sebagai Owner, saya ingin kode lisensi yang saya terima lebih sederhana (hanya 10 digit alfanumerik, tanpa prefix) agar proses input aktivasi di aplikasi mobile menjadi sangat cepat dan minim kesalahan."
+*   **Tasks**:
+    *   [ ] **Backend (Go)**: Update fungsi `Generate` di `license/service.go` untuk menghasilkan kode alfanumerik 10 karakter murni (Contoh: `X8Y2K9J1P5`).
+    *   [ ] **Backend (Mailer)**: Update template email lisensi untuk format baru.
+    *   [ ] **Mobile (UI/UX)**: Sesuaikan `ActivationScreen` untuk input 10 karakter (tambahkan auto-focus/masking jika perlu).
+    *   [ ] **Mobile (Validation)**: Update regex validasi di Flutter.
 
 ### 1. Recipe & Ingredient Management (Sistem Bahan Baku)
 *   [x] Recipe deduction logic, ingredient tables, and UI selection.
