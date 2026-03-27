@@ -84,9 +84,10 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
     * **Inventory Input:** Integrasi scanner pada form tambah/edit produk untuk mengisi SKU secara otomatis.
     * setiap pergerakan stok dicatat di **Kartu Stok** sehingga ada *audit trail* yang jelas (Histori masuk/keluar/terjual).
     * Notifikasi **Low Stock Alert** jika stok mendekati batas minimum.
-* **Manajemen Pemasok (Supplier):** [BARU]
+* **Manajemen Pemasok (Supplier) & Pembelian (Purchase Order):** [BARU]
     * Mendata profil pemasok (Nama, Kontak, Alamat).
-    * Menautkan pemasok saat mencatat "Barang Masuk" (Stock In) untuk bahan baku, memudahkan pelacakan asal usul dan riwayat harga.
+    * Membuat *Purchase Order* (PO) untuk dikirim ke pemasok.
+    * Melacak status PO dan menerima pesanan (otomatis memotong stok PO menjadi *Stock In* bahan baku/produk).
 * **Manajemen Bahan Baku & Resep (Advanced Inventory) [BARU]:**
     * **Ingredient Maintenance**: Mengelola stok mentah (biji kopi, susu, gula) dengan satuan dasar (gr, ml, pcs).
     * **Stock Out & Waste Management**: Fitur "Stok Keluar" manual dengan pencatatan alasan (Misal: Kedaluwarsa, Rusak, Tumpah) untuk transparansi pengurangan inventaris.
@@ -266,3 +267,27 @@ Tekan Ikon Laporan (Header) \-\> Cek Laporan Shift Berjalan (Current Shift Analy
 
 Generate Recovery Key (HP Lama) \-\> Export File Backup \-\> Kirim/Pindah File \-\> Install App (HP Baru) \-\> Import Backup \-\> Input Recovery Key \-\> Database Terpulihkan \-\> Validasi Ulang Lisensi (Online) \-\> Aktivasi Selesai.
 
+## **15\. Daftar Use Case Sistem Lengkap**
+
+Bagian ini merangkum kapabilitas utama berdasarkan *Use Case* operasional POS.
+
+### **15.1. Autentikasi & Manajemen Sesi**
+*   **UC-AUTH:** Aktivasi Lisensi, Pendaftaran Akun Owner, Pemilihan Akun Kasir, Login via PIN 6-digit, dan *Logout* aman.
+
+### **15.2. Transaksi Kasir (Point of Sales)**
+*   **UC-POS:** Buka Shift (modal awal), Pencarian/Pindai Barang, Kelola Keranjang, Terapkan Diskon (Item/Global), Proses Pembayaran, Cetak Struk, Catat Pengeluaran Operasional (Kas Bon), dan Tutup Shift (Validasi Uang Laci).
+
+### **15.3. Manajemen Stok & Backoffice**
+*   **UC-INV:** Kelola Master Produk, Import/Export Massal (CSV), Catat *Stock In* & *Stock Out* (dengan alasan waste), Lacak Kartu Stok (Mutasi log), *Stock Opname* (audit fisik vs sistem), dan Manajemen Resep/Bahan Baku.
+
+### **15.4. Pembelian & Supplier (Purchasing)**
+*   **UC-PUR:** Pendaftaran Database Supplier, Pembuatan Dokumen *Purchase Order* (PO), dan Pelacakan Status Penerimaan Barang.
+
+### **15.5. Laporan & Metrik Analitik**
+*   **UC-RPT:** Dashboard Owner *Real-Time* (Laba Kotor), Grafik Tren Penjualan, Laporan Barang Hilang/Susut, Analitik Loyalitas Pelanggan (CRM *Whale*), dan Pemantauan Arus Kas Komprehensif.
+
+### **15.6. Lacak Histori Administrasi**
+*   **UC-HIS:** Pencarian Riwayat Transaksi Historis, Proses Void/Refund Transaksi, Cetak Ulang Nota (*Reprint*), serta Laporan Shift Karyawan Lampau.
+
+### **15.7. Pengaturan Sistem Global**
+*   **UC-SET:** Konfigurasi Profil Toko/Kustomisasi Struk, Manajemen Tingkat Akses Karyawan, Buku Alamat Pelanggan, Manajemen Konversi Satuan (UoM), Pajak/Servis Otomatis, Manajemen Promo, Setel Printer Bluetooth, dan Ekspor/Backup Database Keamanan Terenkripsi.
