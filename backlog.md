@@ -201,3 +201,15 @@ Berikut adalah backlog fitur untuk pengembangan **Posify Inventory Phase 2, 3, &
     *   [ ] **UI**: Tambahkan field input "Catatan" di `PaymentModal` atau sebelum masuk ke layar pembayaran.
     *   [ ] **Display**: Tampilkan catatan pada daftar riwayat transaksi dan detail transaksi.
     *   [ ] **Receipts**: Cetak catatan pada struk thermal dan struk WhatsApp jika terisi.
+
+### 25. Printer Receipt Configuration (Kustomisasi Struk)
+*   **User Story**: "Sebagai Owner, saya ingin mengonfigurasi informasi yang tercetak di struk (Header tambahan, Footer, dan Social Media) agar nota belanja saya terlihat lebih profesional dan informatif bagi pelanggan."
+*   **Tasks**:
+    *   [ ] **Database**: Update tabel `store_profile` (Migration v16) untuk menambah kolom `receipt_footer`, `social_media_handle`, `website_url`, dan `show_logo_on_receipt`.
+    *   [ ] **UI**: `ReceiptConfigScreen` — Form untuk mengedit:
+        *   **Header**: Toggle Logo, Nama Outlet, No. Telepon.
+        *   **Social Info**: Input Instagram/TikTok handle & Website.
+        *   **Footer**: Pesan kustom (Slogan, WiFi Password, atau Pesan Terima Kasih).
+    *   [ ] **UI Preview**: Tampilkan *Live Preview* draf struk di dalam layar pengaturan agar user tidak perlu print fisik untuk cek hasil.
+    *   [ ] **Logo Optimization**: Fitur upload & cropping logo agar pas dengan resolusi printer thermal (Hitam-Putih/Monokrom).
+    *   [ ] **Logic**: Integrasi variabel kustom ini ke dalam `PrinterService` (Helper Bluetooth).
