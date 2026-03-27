@@ -11,12 +11,13 @@ class CategoryNotifier extends AsyncNotifier<List<Category>> {
   Future<List<Category>> build() async {
     final db = ref.watch(databaseProvider);
     
-    // Listen to changes and apply dummy if empty
-    db.watchAllCategories().listen((categories) {
+    final subscription = db.watchAllCategories().listen((categories) {
       if (ref.mounted) {
         state = AsyncValue.data(categories.isEmpty ? _getDummyCategories() : categories);
       }
     });
+
+    ref.onDispose(() => subscription.cancel());
 
     final all = await db.getAllCategories();
     return all.isEmpty ? _getDummyCategories() : all;
@@ -41,13 +42,28 @@ final categoryProvider =
 class ProductNotifier extends AsyncNotifier<List<Product>> {
   String? _searchQuery;
   int? _categoryId;
+  List<Product> _allProducts = [];
 
   @override
   Future<List<Product>> build() async {
     final db = ref.watch(databaseProvider);
-    final allProducts = await db.getAllProducts();
-    
-    return allProducts.where((p) {
+
+    // Stream for realtime updates
+    final subscription = db.watchAllProducts().listen((products) {
+      if (ref.mounted) {
+        _allProducts = products;
+        state = AsyncValue.data(_filter(products));
+      }
+    });
+
+    ref.onDispose(() => subscription.cancel());
+
+    _allProducts = await db.getAllProducts();
+    return _filter(_allProducts);
+  }
+
+  List<Product> _filter(List<Product> products) {
+    return products.where((p) {
       final matchesCategory =
           _categoryId == null || p.categoryId == _categoryId;
       final matchesSearch =
@@ -59,14 +75,13 @@ class ProductNotifier extends AsyncNotifier<List<Product>> {
 
   void setSearch(String? query) {
     _searchQuery = query;
-    ref.invalidateSelf();
+    state = AsyncValue.data(_filter(_allProducts));
   }
 
   void setCategory(int? id) {
     _categoryId = id;
-    ref.invalidateSelf();
+    state = AsyncValue.data(_filter(_allProducts));
   }
-
 }
 
 final productProvider = AsyncNotifierProvider<ProductNotifier, List<Product>>(
@@ -379,16 +394,122 @@ final historyFilterProvider = NotifierProvider<HistoryFilterNotifier, HistoryFil
   HistoryFilterNotifier.new,
 );
 
+// ===== History Data Provider (eliminates nested StreamBuilders) =====
+
+class HistoryData {
+  final StoreProfileData? profile;
+  final Shift? openShift;
+  final List<Transaction> transactions;
+
+  const HistoryData({
+    this.profile,
+    this.openShift,
+    required this.transactions,
+  });
+}
+
+class HistoryDataNotifier extends AsyncNotifier<HistoryData> {
+  @override
+  Future<HistoryData> build() async {
+    final db = ref.watch(databaseProvider);
+    final filter = ref.watch(historyFilterProvider);
+
+    final profile = await db.getStoreProfile();
+
+    // Watch open shift for realtime updates
+    final shiftSub = db.watchOpenShift().listen((shift) async {
+      if (!ref.mounted) return;
+      final txns = await _getTransactions(db, filter, shift);
+      state = AsyncValue.data(HistoryData(
+        profile: profile,
+        openShift: shift,
+        transactions: txns,
+      ));
+    });
+    ref.onDispose(() => shiftSub.cancel());
+
+    // Get initial shift
+    Shift? openShift;
+    try {
+      openShift = await db.getOpenShift();
+    } catch (_) {}
+
+    // Watch transactions for realtime updates
+    final txnStream = _getTransactionStream(db, filter, openShift);
+    final txnSub = txnStream.listen((txns) {
+      if (!ref.mounted) return;
+      state = AsyncValue.data(HistoryData(
+        profile: profile,
+        openShift: openShift,
+        transactions: txns,
+      ));
+    });
+    ref.onDispose(() => txnSub.cancel());
+
+    final txns = await _getTransactions(db, filter, openShift);
+    return HistoryData(
+      profile: profile,
+      openShift: openShift,
+      transactions: txns,
+    );
+  }
+
+  Stream<List<Transaction>> _getTransactionStream(
+    PosifyDatabase db, HistoryFilter filter, Shift? openShift,
+  ) {
+    if (filter.type == HistoryFilterType.currentShift) {
+      if (openShift == null) return Stream.value([]);
+      return db.watchTransactionsByShift(openShift.id);
+    }
+    final range = _getDateRange(filter);
+    if (range == null) return db.watchAllTransactions();
+    return db.watchTransactionsByRange(range.start, range.end);
+  }
+
+  Future<List<Transaction>> _getTransactions(
+    PosifyDatabase db, HistoryFilter filter, Shift? openShift,
+  ) {
+    return _getTransactionStream(db, filter, openShift).first;
+  }
+
+  DateTimeRange? _getDateRange(HistoryFilter filter) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    switch (filter.type) {
+      case HistoryFilterType.today:
+        return DateTimeRange(start: today, end: now);
+      case HistoryFilterType.thisWeek:
+        final startOfWeek = today.subtract(Duration(days: now.weekday - 1));
+        return DateTimeRange(start: startOfWeek, end: now);
+      case HistoryFilterType.thisMonth:
+        return DateTimeRange(start: DateTime(now.year, now.month, 1), end: now);
+      case HistoryFilterType.thisYear:
+        return DateTimeRange(start: DateTime(now.year, 1, 1), end: now);
+      case HistoryFilterType.custom:
+        return filter.range;
+      case HistoryFilterType.currentShift:
+        return null;
+    }
+  }
+}
+
+final historyDataProvider = AsyncNotifierProvider<HistoryDataNotifier, HistoryData>(
+  HistoryDataNotifier.new,
+);
+
 // ===== Customer Provider =====
 
 class CustomerNotifier extends AsyncNotifier<List<Customer>> {
   @override
   Future<List<Customer>> build() async {
     final db = ref.watch(databaseProvider);
-    db.watchAllCustomers().listen((data) {
+
+    final subscription = db.watchAllCustomers().listen((data) {
       if (ref.mounted) state = AsyncValue.data(data);
     });
-    return db.watchAllCustomers().first;
+    ref.onDispose(() => subscription.cancel());
+
+    return db.getAllCustomers();
   }
 }
 
@@ -402,10 +523,13 @@ class SupplierNotifier extends AsyncNotifier<List<Supplier>> {
   @override
   Future<List<Supplier>> build() async {
     final db = ref.watch(databaseProvider);
-    db.watchAllSuppliers().listen((data) {
+
+    final subscription = db.watchAllSuppliers().listen((data) {
       if (ref.mounted) state = AsyncValue.data(data);
     });
-    return db.watchAllSuppliers().first;
+    ref.onDispose(() => subscription.cancel());
+
+    return db.getAllSuppliers();
   }
 }
 
@@ -420,10 +544,11 @@ class StockHistoryNotifier extends AsyncNotifier<List<StockTransactionWithProduc
   Future<List<StockTransactionWithProduct>> build() async {
     final db = ref.watch(databaseProvider);
     
-    // Watch stream for updates
-    db.watchAllStockTransactionsWithProduct().listen((data) {
+    final subscription = db.watchAllStockTransactionsWithProduct().listen((data) {
       if (ref.mounted) state = AsyncValue.data(data);
     });
+
+    ref.onDispose(() => subscription.cancel());
 
     // Initial data
     final query = db.select(db.stockTransactions).join([

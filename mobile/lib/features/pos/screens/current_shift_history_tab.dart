@@ -16,8 +16,8 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final db = ref.watch(databaseProvider);
     final currentFilter = ref.watch(historyFilterProvider);
+    final historyAsync = ref.watch(historyDataProvider);
     
     final currency = NumberFormat.currency(
       locale: 'id_ID',
@@ -41,7 +41,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
           IconButton(
             icon: Icon(Icons.refresh_rounded, color: Theme.of(context).colorScheme.onSurface),
             onPressed: () {
-              ref.invalidate(databaseProvider);
+              ref.invalidate(historyDataProvider);
               ref.invalidate(historyFilterProvider);
             },
           ),
@@ -51,86 +51,66 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
         children: [
           _buildFilterBar(context, ref),
           Expanded(
-            child: StreamBuilder<StoreProfileData?>(
-              stream: db.watchStoreProfile(),
-              builder: (context, profileSnapshot) {
-                final profile = profileSnapshot.data;
-                
-                return StreamBuilder<Shift?>(
-                  stream: db.watchOpenShift(),
-                  builder: (context, shiftSnapshot) {
-                    final openShift = shiftSnapshot.data;
-                    
-                    if (shiftSnapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
+            child: historyAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Center(child: Text('Error: $e')),
+              data: (data) {
+                final txns = data.transactions;
+                final openShift = data.openShift;
+                final profile = data.profile;
 
-                    // Handle Stream for Transactions based on filter
-                    return StreamBuilder<List<Transaction>>(
-                      stream: _getTransactionStream(db, currentFilter, openShift),
-                      builder: (context, txnSnapshot) {
-                        if (txnSnapshot.connectionState == ConnectionState.waiting) {
-                          return const Center(child: CircularProgressIndicator());
-                        }
+                if (currentFilter.type == HistoryFilterType.currentShift && openShift == null) {
+                  return _buildNoShiftState();
+                }
 
-                        final txns = txnSnapshot.data ?? [];
-
-                        if (currentFilter.type == HistoryFilterType.currentShift && openShift == null) {
-                          return _buildNoShiftState();
-                        }
-
-                        return CustomScrollView(
-                          slivers: [
-                            SliverPadding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                              sliver: SliverToBoxAdapter(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                                  children: [
-                                    _buildSummaryCard(context, txns, currency, openShift, profile, currentFilter),
-                                    const SizedBox(height: 24),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                          Text(
-                                            _getListTitle(currentFilter),
-                                            style: GoogleFonts.poppins(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700,
-                                              color: Theme.of(context).colorScheme.onSurface,
-                                            ),
-                                          ),
-                                        Text(
-                                          '${txns.length}',
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
-                                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                          ),
-                                        ),
-                                      ],
+                return CustomScrollView(
+                  slivers: [
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                      sliver: SliverToBoxAdapter(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _buildSummaryCard(context, txns, currency, openShift, profile, currentFilter),
+                            const SizedBox(height: 24),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                  Text(
+                                    _getListTitle(currentFilter),
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700,
+                                      color: Theme.of(context).colorScheme.onSurface,
                                     ),
-                                    const SizedBox(height: 16),
-                                    if (txns.isEmpty) _buildEmptyState(),
-                                  ],
+                                  ),
+                                Text(
+                                  '${txns.length}',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
-                            if (txns.isNotEmpty)
-                              SliverPadding(
-                                padding: const EdgeInsets.only(left: 20, right: 20, bottom: 16),
-                                sliver: SliverList.builder(
-                                  itemCount: txns.length,
-                                  itemBuilder: (context, index) {
-                                    return _buildTransactionCard(context, ref, txns[index], currency);
-                                  },
-                                ),
-                              ),
+                            const SizedBox(height: 16),
+                            if (txns.isEmpty) _buildEmptyState(),
                           ],
-                        );
-                      },
-                    );
-                  },
+                        ),
+                      ),
+                    ),
+                    if (txns.isNotEmpty)
+                      SliverPadding(
+                        padding: const EdgeInsets.only(left: 20, right: 20, bottom: 16),
+                        sliver: SliverList.builder(
+                          itemCount: txns.length,
+                          itemBuilder: (context, index) {
+                            return _buildTransactionCard(context, ref, txns[index], currency);
+                          },
+                        ),
+                      ),
+                  ],
                 );
               },
             ),
@@ -140,26 +120,15 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
     );
   }
 
-  Stream<List<Transaction>> _getTransactionStream(
-    PosifyDatabase db, 
-    HistoryFilter filter, 
-    Shift? openShift
-  ) {
-    if (filter.type == HistoryFilterType.currentShift) {
-      if (openShift == null) return Stream.value([]);
-      return db.watchTransactionsByShift(openShift.id);
-    }
-
-    final range = _getDateRange(filter);
-    if (range == null) return db.watchAllTransactions();
-    
-    return db.watchTransactionsByRange(range.start, range.end);
+  String _getListTitle(HistoryFilter filter) {
+    if (filter.type == HistoryFilterType.currentShift) return 'Transaksi Shift Ini';
+    return 'Daftar Transaksi';
   }
 
+  // Display-only helper for date range label in summary card
   DateTimeRange? _getDateRange(HistoryFilter filter) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    
     switch (filter.type) {
       case HistoryFilterType.today:
         return DateTimeRange(start: today, end: now);
@@ -175,11 +144,6 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
       case HistoryFilterType.currentShift:
         return null;
     }
-  }
-
-  String _getListTitle(HistoryFilter filter) {
-    if (filter.type == HistoryFilterType.currentShift) return 'Transaksi Shift Ini';
-    return 'Daftar Transaksi';
   }
 
   Widget _buildFilterBar(BuildContext context, WidgetRef ref) {
