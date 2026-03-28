@@ -33,7 +33,7 @@ class _DiscountSelectionSheet extends ConsumerWidget {
 
     return Container(
       constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.75),
+          maxHeight: MediaQuery.sizeOf(context).height * 0.75),
       decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24))),

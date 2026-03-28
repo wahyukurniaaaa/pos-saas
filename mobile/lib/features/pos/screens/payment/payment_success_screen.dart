@@ -98,7 +98,7 @@ class PaymentSuccessScreen extends ConsumerWidget {
                         formatCurrency.format(changeAmount),
                         isTotal: true,
                       ),
-                      if (pointsEarned > 0) ...[
+                      if (pointsEarned > 0 && customerPointsAfter != null) ...[
                         const Divider(height: 24),
                         Row(
                           children: [

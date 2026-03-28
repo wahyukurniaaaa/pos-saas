@@ -73,17 +73,6 @@ class DiscountManagementScreen extends ConsumerWidget {
           Text('Buat promo untuk meningkatkan penjualan.',
               style: GoogleFonts.poppins(fontSize: 14, color: AppTheme.textSecondary)),
           const SizedBox(height: 32),
-          ElevatedButton.icon(
-            onPressed: () => _showDiscountForm(context, ref, null),
-            icon: const Icon(Icons.add_rounded),
-            label: const Text('Buat Promo Pertama'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.secondaryColor,
-              foregroundColor: AppTheme.primaryColor,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-          ),
         ],
       ),
     );
@@ -286,15 +275,13 @@ class DiscountManagementScreen extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        margin:
-            EdgeInsets.only(top: MediaQuery.of(context).padding.top + 20),
-        decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-        child: _DiscountFormSheet(existing: existing),
+      enableDrag: true,
+      showDragHandle: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
+      builder: (ctx) => _DiscountFormSheet(existing: existing),
     );
   }
 }
@@ -405,20 +392,10 @@ class _DiscountFormSheetState extends ConsumerState<_DiscountFormSheet> {
       child: Form(
         key: _formKey,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Handle + Title
-              Center(
-                child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                        color: Colors.grey.shade300,
-                        borderRadius: BorderRadius.circular(2))),
-              ),
-              const SizedBox(height: 20),
               Text(title,
                   style: GoogleFonts.poppins(
                       fontSize: 20, fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),

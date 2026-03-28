@@ -68,7 +68,8 @@ class ProductNotifier extends AsyncNotifier<List<Product>> {
           _categoryId == null || p.categoryId == _categoryId;
       final matchesSearch =
           _searchQuery == null ||
-          p.name.toLowerCase().contains(_searchQuery!.toLowerCase());
+          p.name.toLowerCase().contains(_searchQuery!.toLowerCase()) ||
+          p.sku.toLowerCase().contains(_searchQuery!.toLowerCase());
       return matchesCategory && matchesSearch;
     }).toList();
   }
@@ -239,6 +240,10 @@ class CartNotifier extends Notifier<List<CartItem>> {
       state = [...state, CartItem(product: product, variant: variant)];
     }
   }
+
+  /// Alias for backward compatibility
+  void addItem(Product product, [ProductVariant? variant]) =>
+      addToCart(product, variant: variant);
 
   void removeFromCart(String cartKey) {
     state = state.where((item) => item.cartKey != cartKey).toList();

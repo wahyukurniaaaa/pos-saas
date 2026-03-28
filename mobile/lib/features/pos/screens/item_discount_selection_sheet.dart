@@ -21,7 +21,7 @@ class ItemDiscountSelectionSheet extends ConsumerWidget {
     final selectedDiscount = cartItem.appliedDiscount;
 
     return Container(
-      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.75),
+      constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.75),
       decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24))),

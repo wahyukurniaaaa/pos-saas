@@ -191,66 +191,62 @@ class _InventoryTabState extends ConsumerState<InventoryTab> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Menu Lainnya', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.textSecondary, letterSpacing: 0.5)),
-                    const SizedBox(height: 12),
-                    GridView.count(
-                      crossAxisCount: 3,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                      childAspectRatio: 1.0,
-                      children: [
-                        _buildMenuCard(
-                          context,
-                          icon: Icons.store_rounded,
-                          label: 'Produk',
-                          color: AppTheme.primaryColor,
-                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProductListScreen())),
-                        ),
-                        _buildMenuCard(
-                          context,
-                          icon: Icons.kitchen_rounded,
-                          label: 'Bahan Baku',
-                          color: const Color(0xFF0D9488),
-                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const IngredientListScreen())),
-                        ),
-                        _buildMenuCard(
-                          context,
-                          icon: Icons.inventory_2_outlined,
-                          label: 'Stock Opname',
-                          color: AppTheme.tertiaryColor,
-                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const StockOpnameScreen())),
-                        ),
-                        _buildMenuCard(
-                          context,
-                          icon: Icons.fact_check_outlined,
-                          label: 'Opname Bahan',
-                          color: AppTheme.errorColor,
-                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const IngredientOpnameScreen())),
-                        ),
-                        _buildMenuCard(
-                          context,
-                          icon: Icons.history_rounded,
-                          label: 'Riwayat Stok',
-                          color: const Color(0xFF0891B2),
-                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GlobalStockHistoryScreen())),
-                        ),
-                        if (!isCashier)
-                          _buildMenuCard(
-                            context,
-                            icon: Icons.file_upload_outlined,
-                            label: 'Import CSV',
-                            color: AppTheme.secondaryColor,
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ImportProductScreen())),
-                          ),
-                      ],
+                child: Text('Menu Lainnya', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.textSecondary, letterSpacing: 0.5)),
+              ),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 12)),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+              sliver: SliverGrid.count(
+                crossAxisCount: 3,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 1.0,
+                children: [
+                  _buildMenuCard(
+                    context,
+                    icon: Icons.store_rounded,
+                    label: 'Produk',
+                    color: AppTheme.primaryColor,
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProductListScreen())),
+                  ),
+                  _buildMenuCard(
+                    context,
+                    icon: Icons.kitchen_rounded,
+                    label: 'Bahan Baku',
+                    color: const Color(0xFF0D9488),
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const IngredientListScreen())),
+                  ),
+                  _buildMenuCard(
+                    context,
+                    icon: Icons.inventory_2_outlined,
+                    label: 'Stock Opname',
+                    color: AppTheme.tertiaryColor,
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const StockOpnameScreen())),
+                  ),
+                  _buildMenuCard(
+                    context,
+                    icon: Icons.fact_check_outlined,
+                    label: 'Opname Bahan',
+                    color: AppTheme.errorColor,
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const IngredientOpnameScreen())),
+                  ),
+                  _buildMenuCard(
+                    context,
+                    icon: Icons.history_rounded,
+                    label: 'Riwayat Stok',
+                    color: const Color(0xFF0891B2),
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GlobalStockHistoryScreen())),
+                  ),
+                  if (!isCashier)
+                    _buildMenuCard(
+                      context,
+                      icon: Icons.file_upload_outlined,
+                      label: 'Import CSV',
+                      color: AppTheme.secondaryColor,
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ImportProductScreen())),
                     ),
-                  ],
-                ),
+                ],
               ),
             ),
 

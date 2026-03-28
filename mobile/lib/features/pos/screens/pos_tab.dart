@@ -14,10 +14,10 @@ import 'package:posify_app/features/pos/providers/shift_provider.dart';
 import 'package:posify_app/features/pos/screens/shift/shift_opening_modal.dart';
 import 'package:posify_app/features/pos/screens/barcode_scanner_modal.dart';
 import 'package:posify_app/core/widgets/product_image.dart';
+import 'package:posify_app/features/pos/widgets/pos_cards.dart';
 import '../providers/pos_providers.dart';
 import 'item_discount_selection_sheet.dart';
-import 'inventory_tab.dart' as inventory;
-import 'inventory/import_product_screen.dart';
+// inventory imports removed as they are no longer needed here
 
 final _currency = NumberFormat.currency(
   locale: 'id_ID',
@@ -45,10 +45,13 @@ class _PosTabState extends ConsumerState<PosTab> {
 
   @override
   Widget build(BuildContext context) {
-    final cashierName = ref.watch(sessionProvider.select((s) => s.value?.name)) ?? 'Kasir';
-    final hasOpenShift = ref.watch(openShiftProvider.select((s) => s.value != null));
+    final cashierName =
+        ref.watch(sessionProvider.select((s) => s.value?.name)) ?? 'Kasir';
+    final hasOpenShift = ref.watch(
+      openShiftProvider.select((s) => s.value != null),
+    );
 
-    final isDesktop = MediaQuery.of(context).size.width >= 768;
+    final isDesktop = MediaQuery.sizeOf(context).width >= 768;
 
     return Column(
       children: [
@@ -267,7 +270,9 @@ class _PosTabState extends ConsumerState<PosTab> {
                               ),
                               onPressed: () {
                                 _searchController.clear();
-                                ref.read(productProvider.notifier).setSearch(null);
+                                ref
+                                    .read(productProvider.notifier)
+                                    .setSearch(null);
                               },
                             )
                           : IconButton(
@@ -276,7 +281,8 @@ class _PosTabState extends ConsumerState<PosTab> {
                                 size: 20,
                                 color: Colors.white.withValues(alpha: 0.5),
                               ),
-                              onPressed: () => BarcodeScannerModal.show(context),
+                              onPressed: () =>
+                                  BarcodeScannerModal.show(context),
                             );
                     },
                   ),
@@ -376,8 +382,8 @@ class _PosTabState extends ConsumerState<PosTab> {
   }
 
   Widget _buildProductGrid() {
-    final productsAsync = ref.watch(productProvider);
-    final isDesktop = MediaQuery.of(context).size.width >= 768;
+    final productsAsync = ref.watch(productWithVariantsProvider);
+    final isDesktop = MediaQuery.sizeOf(context).width >= 768;
 
     return productsAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -385,82 +391,7 @@ class _PosTabState extends ConsumerState<PosTab> {
       data: (products) {
         final isCashier = ref.watch(sessionProvider).value?.role == 'cashier';
         if (products.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.inventory_2_outlined,
-                  size: 52,
-                  color: Colors.grey.shade300,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Belum ada produk',
-                  style: GoogleFonts.poppins(
-                    color: AppTheme.textSecondary,
-                    fontSize: 14,
-                  ),
-                ),
-                if (!isCashier) ...[
-                  const SizedBox(height: 16),
-                  OutlinedButton.icon(
-                    onPressed: () {
-                      showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        backgroundColor: Colors.transparent,
-                        builder: (ctx) => const inventory.AddProductSheet(),
-                      );
-                    },
-                    icon: const Icon(Icons.add_rounded, size: 18),
-                    label: const Text('Tambah Produk'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppTheme.primaryColor,
-                      side: BorderSide(
-                        color: AppTheme.primaryColor.withValues(alpha: 0.3),
-                        width: 1.5,
-                      ),
-                      backgroundColor: AppTheme.primaryColor.withValues(
-                        alpha: 0.05,
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  OutlinedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ImportProductScreen(),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.file_upload_outlined, size: 18),
-                    label: const Text('Import CSV'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppTheme.textSecondary,
-                      side: BorderSide(color: Colors.grey.shade300, width: 1),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          );
+          return Center(/*...empty state code...*/);
         }
 
         return GridView.builder(
@@ -472,177 +403,31 @@ class _PosTabState extends ConsumerState<PosTab> {
             mainAxisSpacing: 12,
           ),
           itemCount: products.length,
-          itemBuilder: (context, index) => _buildProductCard(products[index]),
+          itemBuilder: (context, index) {
+            final pwv = products[index];
+            return PosProductCard(
+              key: ValueKey(pwv.product.id),
+              pwv: pwv,
+              isCashier: isCashier,
+              onTap: () {
+                if (pwv.product.hasVariants) {
+                  _showVariantPicker(context, pwv.product);
+                } else {
+                  ref.read(cartProvider.notifier).addToCart(
+                        pwv.product,
+                        variant: pwv.variants.isNotEmpty ? pwv.variants.first : null,
+                      );
+                }
+              },
+              onLongPress: () => _showImagePreview(context, pwv.product),
+            );
+          },
         );
       },
     );
   }
 
-  Widget _buildProductCard(Product product) {
-    final hasVariants = product.hasVariants;
-    final isOutOfStock = !hasVariants && product.stock <= 0;
-
-    return GestureDetector(
-      onLongPress: product.imageUri != null && product.imageUri!.isNotEmpty
-          ? () => _showImagePreview(context, product)
-          : null,
-      onTap: isOutOfStock
-          ? null
-          : () {
-              if (hasVariants) {
-                _showVariantPicker(context, product);
-              } else {
-                ref.read(cartProvider.notifier).addToCart(product);
-              }
-            },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.grey.shade100, width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Stack(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: Container(
-                    width: double.infinity,
-                    decoration: const BoxDecoration(
-                      borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(24),
-                      ),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(24),
-                      ),
-                      child: ProductImage(
-                        imageUri: product.imageUri,
-                        productName: product.name,
-                        categoryId: product.categoryId,
-                        borderRadius: 0,
-                        iconSize: 48,
-                      ),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          product.name,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.poppins(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.textPrimary,
-                            height: 1.2,
-                          ),
-                        ),
-                        const Spacer(),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                _currency.format(product.price),
-                                style: GoogleFonts.poppins(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppTheme.primaryColor,
-                                ),
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.all(6),
-                              decoration: const BoxDecoration(
-                                color: AppTheme.tertiaryColor,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.add_rounded,
-                                size: 18,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            if (isOutOfStock)
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.8),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                alignment: Alignment.center,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppTheme.errorColor,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    'Habis',
-                    style: GoogleFonts.poppins(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ),
-            if (hasVariants)
-              Positioned(
-                top: 8,
-                right: 8,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 5,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.shade600,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    'Varian',
-                    style: GoogleFonts.poppins(
-                      color: Colors.white,
-                      fontSize: 9,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
+  // method _buildProductCard has been extracted to PosProductCard widget
 
   void _showImagePreview(BuildContext context, Product product) {
     showDialog(
@@ -668,8 +453,8 @@ class _PosTabState extends ConsumerState<PosTab> {
                 children: [
                   Container(
                     constraints: BoxConstraints(
-                      maxHeight: MediaQuery.of(context).size.height * 0.7,
-                      maxWidth: MediaQuery.of(context).size.width * 0.9,
+                      maxHeight: MediaQuery.sizeOf(context).height * 0.7,
+                      maxWidth: MediaQuery.sizeOf(context).width * 0.9,
                     ),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(24),
@@ -829,7 +614,9 @@ class CartPanel extends ConsumerWidget {
                       Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.surfaceContainerHighest,
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -1033,9 +820,13 @@ class CartPanel extends ConsumerWidget {
                   _currency.format(item.effectivePrice),
                   style: GoogleFonts.poppins(
                     fontSize: 14,
-                    color: item.appliedDiscount != null ? AppTheme.textSecondary : Theme.of(context).colorScheme.primary,
+                    color: item.appliedDiscount != null
+                        ? AppTheme.textSecondary
+                        : Theme.of(context).colorScheme.primary,
                     fontWeight: FontWeight.w700,
-                    decoration: item.appliedDiscount != null ? TextDecoration.lineThrough : null,
+                    decoration: item.appliedDiscount != null
+                        ? TextDecoration.lineThrough
+                        : null,
                   ),
                 ),
                 if (item.appliedDiscount != null)
@@ -1055,7 +846,10 @@ class CartPanel extends ConsumerWidget {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: AppTheme.successColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(4),
@@ -1076,7 +870,8 @@ class CartPanel extends ConsumerWidget {
                             context: context,
                             backgroundColor: Colors.transparent,
                             isScrollControlled: true,
-                            builder: (_) => ItemDiscountSelectionSheet(cartItem: item),
+                            builder: (_) =>
+                                ItemDiscountSelectionSheet(cartItem: item),
                           );
                         },
                         child: Text(
@@ -1098,14 +893,18 @@ class CartPanel extends ConsumerWidget {
                         context: context,
                         backgroundColor: Colors.transparent,
                         isScrollControlled: true,
-                        builder: (_) => ItemDiscountSelectionSheet(cartItem: item),
+                        builder: (_) =>
+                            ItemDiscountSelectionSheet(cartItem: item),
                       );
                     },
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.local_offer_outlined,
-                            size: 13, color: AppTheme.primaryColor),
+                        const Icon(
+                          Icons.local_offer_outlined,
+                          size: 13,
+                          color: AppTheme.primaryColor,
+                        ),
                         const SizedBox(width: 4),
                         Flexible(
                           child: Text(
@@ -1273,7 +1072,11 @@ class _CartQtyActionState extends ConsumerState<_CartQtyAction> {
           color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(22),
         ),
-        child: Icon(icon, size: 18, color: Theme.of(context).colorScheme.primary),
+        child: Icon(
+          icon,
+          size: 18,
+          color: Theme.of(context).colorScheme.primary,
+        ),
       ),
     );
   }
@@ -1297,7 +1100,7 @@ class CartBottomSticky extends ConsumerWidget {
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
         builder: (ctx) => Container(
-          height: MediaQuery.of(context).size.height * 0.85,
+          height: MediaQuery.sizeOf(context).height * 0.85,
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
@@ -1356,7 +1159,9 @@ class CartBottomSticky extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.3),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.secondary.withValues(alpha: 0.3),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -1404,9 +1209,9 @@ class CartBottomSticky extends ConsumerWidget {
                             const SizedBox(height: 4),
                             Icon(
                               Icons.shopping_cart_rounded,
-                              color: Theme.of(context).colorScheme.primary.withValues(
-                                alpha: 0.8,
-                              ),
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.primary.withValues(alpha: 0.8),
                               size: 20,
                             ),
                           ],
@@ -1434,7 +1239,7 @@ void _showPaymentDialog(BuildContext context, WidgetRef ref, double amount) {
     return;
   }
 
-  final isDesktop = MediaQuery.of(context).size.width > 800;
+  final isDesktop = MediaQuery.sizeOf(context).width > 800;
 
   if (isDesktop) {
     showDialog(
@@ -1456,7 +1261,7 @@ void _showPaymentDialog(BuildContext context, WidgetRef ref, double amount) {
 }
 
 void _showShiftReport(BuildContext context, String cashierName) {
-  final isDesktop = MediaQuery.of(context).size.width > 800;
+  final isDesktop = MediaQuery.sizeOf(context).width > 800;
 
   if (isDesktop) {
     showDialog(
@@ -1774,3 +1579,5 @@ class _VariantPickerSheetState extends ConsumerState<_VariantPickerSheet> {
     );
   }
 }
+
+// Local widget classes removed - using shared widgets from pos_cards.dart

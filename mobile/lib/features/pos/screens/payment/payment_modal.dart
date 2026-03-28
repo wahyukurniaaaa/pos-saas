@@ -195,8 +195,8 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
 
         return Container(
           constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.9,
-            maxWidth: MediaQuery.of(context).size.width > 768
+            maxHeight: MediaQuery.sizeOf(context).height * 0.9,
+            maxWidth: MediaQuery.sizeOf(context).width > 768
                 ? 600
                 : double.infinity,
           ),
@@ -811,6 +811,15 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
     }
   }
 
+  void _clearCustomer() {
+    setState(() {
+      _selectedCustomer = null;
+      _phoneController.clear();
+      _nameController.clear();
+      _usePoints = false;
+    });
+  }
+
   Widget _buildCustomerInfoSection() {
     final customers = ref.watch(customerProvider).value ?? [];
 
@@ -830,224 +839,250 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          'Informasi Pelanggan (CRM)',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Informasi Pelanggan (CRM)',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 16),
+            ),
+            if (_selectedCustomer != null)
+              TextButton.icon(
+                onPressed: _clearCustomer,
+                icon: const Icon(Icons.refresh_rounded, size: 14),
+                label: Text('Ganti', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600)),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppTheme.errorColor,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
+          ],
         ),
         const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: AppTheme.infoColor.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppTheme.infoColor.withValues(alpha: 0.1), width: 2),
+        _selectedCustomer != null
+            ? _buildSelectedCustomerCard(_selectedCustomer!)
+            : _buildCustomerInputForm(showSuggestions, suggestions),
+      ],
+    );
+  }
+
+  Widget _buildSelectedCustomerCard(Customer customer) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.successColor.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.successColor.withValues(alpha: 0.2), width: 1.5),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            backgroundColor: AppTheme.successColor.withValues(alpha: 0.1),
+            child: Text(
+              customer.name.substring(0, 1).toUpperCase(),
+              style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.successColor),
+            ),
           ),
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _phoneController,
-                keyboardType: TextInputType.phone,
-                style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-                onChanged: (val) {
-                  if (_selectedCustomer != null) {
-                    _selectedCustomer = null; 
-                  }
-                  setState(() {});
-                },
-                decoration: InputDecoration(
-                  labelText: 'Nomor WhatsApp',
-                  labelStyle: GoogleFonts.poppins(color: AppTheme.textSecondary, fontSize: 14),
-                  prefixIcon: const Icon(Icons.phone_outlined, color: AppTheme.tertiaryColor),
-                  hintText: '08123456789',
-                  hintStyle: GoogleFonts.poppins(color: Colors.grey.shade400, fontSize: 14),
-                  filled: true,
-                  fillColor: Theme.of(context).colorScheme.surface,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: Theme.of(context).colorScheme.tertiary, width: 1.5),
-                  ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  customer.name,
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 15, color: AppTheme.textPrimary),
                 ),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _nameController,
-                textCapitalization: TextCapitalization.words,
-                onChanged: (val) {
-                  if (_selectedCustomer != null) {
-                    _selectedCustomer = null;
-                  }
-                  setState(() {});
-                },
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.w500,
-                  color: Theme.of(context).colorScheme.onSurface,
+                Text(
+                  customer.phone ?? 'Tidak ada nomor WhatsApp',
+                  style: GoogleFonts.poppins(fontSize: 12, color: AppTheme.textSecondary),
                 ),
-                decoration: InputDecoration(
-                  labelText: 'Nama Pelanggan / Member (Opsional)',
-                  labelStyle: GoogleFonts.poppins(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    fontSize: 14,
-                  ),
-                  prefixIcon: Icon(Icons.person_outline, color: Theme.of(context).colorScheme.tertiary),
-                  hintText: 'Budi Santoso',
-                  hintStyle: GoogleFonts.poppins(color: Colors.grey.shade400, fontSize: 14),
-                  filled: true,
-                  fillColor: Theme.of(context).colorScheme.surface,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: Theme.of(context).colorScheme.tertiary, width: 1.5),
-                  ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Column(
+              children: [
+                Text('Poin', style: GoogleFonts.poppins(fontSize: 10, color: AppTheme.textSecondary)),
+                Text(
+                  customer.points.toString(),
+                  style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w800, color: AppTheme.primaryColor),
                 ),
-              ),
-              if (_selectedCustomer != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.check_circle, color: AppTheme.successColor, size: 16),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Member Terpilih: ${_selectedCustomer!.name}',
-                        style: GoogleFonts.poppins(color: AppTheme.successColor, fontSize: 13, fontWeight: FontWeight.w600),
-                      ),
-                    ],
-                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCustomerInputForm(bool showSuggestions, List<Customer> suggestions) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppTheme.infoColor.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.infoColor.withValues(alpha: 0.1), width: 1.5),
+      ),
+      child: Column(
+        children: [
+          // WhatsApp Phone Field with Auto-Match
+          TextFormField(
+            controller: _phoneController,
+            keyboardType: TextInputType.phone,
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+            onChanged: (val) {
+              if (val.length >= 8) {
+                // Smart Auto-Match: Look for exact phone match in existing customers
+                final customers = ref.read(customerProvider).value ?? [];
+                final match = customers.where((c) => c.phone == val).toList();
+                if (match.isNotEmpty) {
+                  setState(() {
+                    _selectedCustomer = match.first;
+                    _nameController.text = match.first.name;
+                    FocusScope.of(context).unfocus();
+                  });
+                  return;
+                }
+              }
+              setState(() {});
+            },
+            decoration: _inputCRMDeco('Nomor WhatsApp', Icons.phone_android_rounded, '0812...'),
+          ),
+          const SizedBox(height: 16),
+          // Name Field
+          TextFormField(
+            controller: _nameController,
+            textCapitalization: TextCapitalization.words,
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+            onChanged: (_) => setState(() {}),
+            decoration: _inputCRMDeco('Nama Pelanggan (Opsional)', Icons.person_add_alt_1_rounded, 'Budi Santoso'),
+          ),
+
+          // Suggestion List
+          if (showSuggestions && suggestions.isNotEmpty)
+            _buildSuggestionsList(suggestions),
+
+          // No Member Found Message
+          if (showSuggestions && suggestions.isEmpty)
+            _buildNoMemberPrompt(),
+
+          // Registration Action
+          if (_selectedCustomer == null && (_nameController.text.isNotEmpty || _phoneController.text.isNotEmpty))
+            _buildRegisterAction(),
+        ],
+      ),
+    );
+  }
+
+  InputDecoration _inputCRMDeco(String label, IconData icon, String hint) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: GoogleFonts.poppins(color: AppTheme.textSecondary, fontSize: 13, fontWeight: FontWeight.w500),
+      prefixIcon: Icon(icon, color: AppTheme.tertiaryColor, size: 20),
+      hintText: hint,
+      hintStyle: GoogleFonts.poppins(color: Colors.grey.shade400, fontSize: 13),
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: AppTheme.tertiaryColor, width: 1.5),
+      ),
+    );
+  }
+
+  Widget _buildSuggestionsList(List<Customer> suggestions) {
+    return Container(
+      margin: const EdgeInsets.only(top: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade100),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10)],
+      ),
+      child: ListView.separated(
+        shrinkWrap: true,
+        padding: EdgeInsets.zero,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: suggestions.length,
+        separatorBuilder: (_, __) => Divider(color: Colors.grey.shade50, height: 1),
+        itemBuilder: (context, index) {
+          final option = suggestions[index];
+          return ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            leading: CircleAvatar(
+              radius: 18,
+              backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
+              child: Text(option.name.substring(0, 1).toUpperCase(),
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primaryColor)),
+            ),
+            title: Text(option.name, style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 13)),
+            subtitle: option.phone != null
+                ? Text(option.phone!, style: GoogleFonts.poppins(fontSize: 11, color: AppTheme.textSecondary))
+                : null,
+            onTap: () {
+              setState(() {
+                _selectedCustomer = option;
+                _phoneController.text = option.phone ?? '';
+                _nameController.text = option.name;
+              });
+              FocusScope.of(context).unfocus();
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildNoMemberPrompt() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Row(
+        children: [
+          Icon(Icons.help_outline_rounded, color: AppTheme.textSecondary, size: 14),
+          const SizedBox(width: 8),
+          Text('Klik di bawah untuk daftarkan member baru',
+              style: GoogleFonts.poppins(color: AppTheme.textSecondary, fontSize: 11)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRegisterAction() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 16),
+      child: IntrinsicWidth(
+        child: InkWell(
+          onTap: _saveNewCustomer,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.person_add_rounded, size: 16, color: AppTheme.primaryColor),
+                const SizedBox(width: 10),
+                Text(
+                  'Daftarkan Sebagai Member Baru',
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 13, color: AppTheme.primaryColor),
                 ),
-              if (showSuggestions && suggestions.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Row(
-                    children: [
-                      Icon(Icons.info_outline, color: AppTheme.textSecondary.withValues(alpha: 0.8), size: 16),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Pencarian member: Tidak ditemukan',
-                        style: GoogleFonts.poppins(color: AppTheme.textSecondary, fontSize: 12),
-                      ),
-                    ],
-                  ),
-                )
-              else if (showSuggestions && suggestions.isNotEmpty)
-                Container(
-                  margin: const EdgeInsets.only(top: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: ListView.separated(
-                    shrinkWrap: true,
-                    padding: EdgeInsets.zero,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: suggestions.length,
-                    separatorBuilder: (_, __) => Divider(color: Colors.grey.shade100, height: 1),
-                    itemBuilder: (context, index) {
-                      final option = suggestions[index];
-                      return ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
-                          child: Text(
-                            option.name.substring(0, 1).toUpperCase(),
-                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primaryColor),
-                          ),
-                        ),
-                        title: Text(
-                          option.name,
-                          style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 14),
-                        ),
-                        subtitle: option.phone != null
-                            ? Text(option.phone!, style: GoogleFonts.poppins(fontSize: 12, color: AppTheme.textSecondary))
-                            : null,
-                        onTap: () {
-                          setState(() {
-                            _selectedCustomer = option;
-                            _phoneController.text = option.phone ?? '';
-                            _nameController.text = option.name;
-                          });
-                          // Move focus away to collapse keyboard safely
-                          FocusScope.of(context).unfocus();
-                        },
-                      );
-                    },
-                  ),
-                ),
-              if (_selectedCustomer == null && (_nameController.text.isNotEmpty || _phoneController.text.isNotEmpty))
-                Padding(
-                  padding: const EdgeInsets.only(top: 12),
-                  child: TextButton.icon(
-                    onPressed: _saveNewCustomer,
-                    icon: const Icon(Icons.person_add_alt_1_rounded, size: 18),
-                    label: Text(
-                      'Daftarkan Sebagai Member Baru',
-                      style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
-                        color: AppTheme.primaryColor,
-                      ),
-                    ),
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                  ),
-                ),
-              if (_selectedCustomer != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 12),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.check_circle_rounded, color: Colors.green, size: 14),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Member Terdaftar',
-                          style: GoogleFonts.poppins(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.green,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
-      ],
+      ),
     );
   }
 

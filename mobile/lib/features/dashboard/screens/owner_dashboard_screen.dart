@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -102,10 +103,25 @@ class _OwnerDashboardScreenState extends ConsumerState<OwnerDashboardScreen> {
   LowStockSummary _lowStockSummary =
       const LowStockSummary(products: [], ingredients: []);
 
+  StreamSubscription? _txnSubscription;
+
   @override
   void initState() {
     super.initState();
     _loadStats();
+    
+    // Auto-refresh KPI without pull-to-refresh
+    _txnSubscription = ref.read(databaseProvider).watchAllTransactions().listen((_) {
+      if (mounted && !_isLoading) {
+        _loadStats();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _txnSubscription?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadStats() async {

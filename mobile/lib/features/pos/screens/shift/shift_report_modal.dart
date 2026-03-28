@@ -44,7 +44,7 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
+    final size = MediaQuery.sizeOf(context);
     final isDesktop = size.width > 768;
 
     final shiftAsync = ref.watch(openShiftProvider);
@@ -88,7 +88,7 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
 
     return Container(
       constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.9,
+        maxHeight: MediaQuery.sizeOf(context).height * 0.9,
         maxWidth: isDesktop ? 500 : double.infinity,
       ),
       decoration: const BoxDecoration(

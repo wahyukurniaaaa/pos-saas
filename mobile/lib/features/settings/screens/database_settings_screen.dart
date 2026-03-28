@@ -1,4 +1,4 @@
-﻿import 'dart:io';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -339,16 +339,28 @@ class _DatabaseSettingsScreenState
           FloatingActionButton.extended(
             heroTag: 'import',
             onPressed: _handleImport,
-            label: const Text('Import dari HP Lain'),
-            icon: const Icon(Icons.file_download_rounded),
-            backgroundColor: Colors.orange[700],
+            label: Text(
+              'Import dari HP Lain',
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w700,
+                color: AppTheme.textPrimary,
+              ),
+            ),
+            icon: const Icon(Icons.file_download_rounded, color: AppTheme.textPrimary),
+            backgroundColor: AppTheme.secondaryColor,
           ),
           const SizedBox(height: 16),
           FloatingActionButton.extended(
             heroTag: 'backup',
             onPressed: _handleBackup,
-            label: const Text('Backup Sekarang'),
-            icon: const Icon(Icons.backup_rounded),
+            label: Text(
+              'Backup Sekarang',
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+            icon: const Icon(Icons.backup_rounded, color: Colors.white),
             backgroundColor: AppTheme.primaryColor,
           ),
         ],
@@ -407,9 +419,9 @@ class _DatabaseSettingsScreenState
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: const Color(0xFFF3E5F5),
+        color: AppTheme.secondaryColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.purple.withValues(alpha: 0.2)),
+        border: Border.all(color: AppTheme.secondaryColor.withValues(alpha: 0.3)),
       ),
       child: Material(
         color: Colors.transparent,
@@ -420,7 +432,7 @@ class _DatabaseSettingsScreenState
             padding: const EdgeInsets.all(16.0),
             child: Row(
               children: [
-                const Icon(Icons.vignette_rounded, color: Colors.purple),
+                const Icon(Icons.vpn_key_rounded, color: AppTheme.primaryColor),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -430,20 +442,20 @@ class _DatabaseSettingsScreenState
                         'Kunci Pemulihan (Recovery Key)',
                         style: GoogleFonts.poppins(
                           fontWeight: FontWeight.bold,
-                          color: Colors.purple[900],
+                          color: AppTheme.textPrimary,
                         ),
                       ),
                       Text(
                         'Penting untuk pindah ke HP baru',
                         style: GoogleFonts.poppins(
                           fontSize: 12,
-                          color: Colors.purple[700],
+                          color: AppTheme.textSecondary,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right_rounded, color: Colors.purple),
+                const Icon(Icons.chevron_right_rounded, color: AppTheme.textSecondary),
               ],
             ),
           ),
@@ -489,9 +501,13 @@ class _DatabaseSettingsScreenState
             borderRadius: BorderRadius.circular(12),
           ),
           child: ListTile(
-            leading: const CircleAvatar(
-              backgroundColor: Color(0xFFE8F5E9),
-              child: Icon(Icons.description_rounded, color: Colors.green),
+            leading: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppTheme.successColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.description_rounded, color: AppTheme.successColor, size: 20),
             ),
             title: Text(
               filename,
