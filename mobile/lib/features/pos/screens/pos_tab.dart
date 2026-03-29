@@ -17,7 +17,7 @@ import 'package:posify_app/core/widgets/product_image.dart';
 import 'package:posify_app/features/pos/widgets/pos_cards.dart';
 import '../providers/pos_providers.dart';
 import 'item_discount_selection_sheet.dart';
-// inventory imports removed as they are no longer needed here
+import 'package:posify_app/features/pos/widgets/held_bills_dialog.dart';
 
 final _currency = NumberFormat.currency(
   locale: 'id_ID',
@@ -194,36 +194,42 @@ class _PosTabState extends ConsumerState<PosTab> {
                       ),
                     ],
                   ),
-                  // Current Shift Status
-                  Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () {
-                        if (hasOpenShift) {
-                          _showShiftReport(context, cashierName);
-                        } else {
-                          showDialog(
-                            context: context,
-                            builder: (context) => const ShiftOpeningModal(),
-                          );
-                        }
-                      },
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.1),
+                  // Current Shift Status & Held Bills
+                  Row(
+                    children: [
+                      _HeldBillsBadge(),
+                      const SizedBox(width: 12),
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            if (hasOpenShift) {
+                              _showShiftReport(context, cashierName);
+                            } else {
+                              showDialog(
+                                context: context,
+                                builder: (context) => const ShiftOpeningModal(),
+                              );
+                            }
+                          },
                           borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          hasOpenShift
-                              ? Icons.storefront_rounded
-                              : Icons.lock_outline_rounded,
-                          color: Colors.white,
-                          size: 20,
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(
+                              hasOpenShift
+                                  ? Icons.storefront_rounded
+                                  : Icons.lock_outline_rounded,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
                 ],
               ),
@@ -700,38 +706,82 @@ class CartPanel extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context); // Close bottom sheet
-                      _showPaymentDialog(context, ref, subtotal);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryColor,
-                      foregroundColor: AppTheme.secondaryColor, // Yellow text
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 1,
+                      child: SizedBox(
+                        height: 56,
+                        child: OutlinedButton(
+                          onPressed: () async {
+                            final activeShift = ref.read(openShiftProvider).value;
+                            if (activeShift == null) {
+                              _showPaymentDialog(context, ref, subtotal);
+                              return;
+                            }
+                            
+                            final id = await ref.read(cartProvider.notifier).holdBill(
+                              shiftId: activeShift.id,
+                            );
+                            
+                            if (id != null && context.mounted) {
+                              Navigator.pop(context); // Close bottom sheet
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Bill berhasil disimpan (ID: $id)'),
+                                  behavior: SnackBarBehavior.floating,
+                                  backgroundColor: AppTheme.successColor,
+                                ),
+                              );
+                            }
+                          },
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: AppTheme.primaryColor, width: 2),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: Icon(Icons.pause_circle_outline_rounded, color: AppTheme.primaryColor),
+                        ),
                       ),
-                      elevation: 0,
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.payment_rounded, size: 20),
-                        const SizedBox(width: 12),
-                        Text(
-                          'Checkout Sekarang',
-                          style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 16,
-                            letterSpacing: 0.5,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      flex: 3,
+                      child: SizedBox(
+                        height: 56,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(context); // Close bottom sheet
+                            _showPaymentDialog(context, ref, subtotal);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.primaryColor,
+                            foregroundColor: AppTheme.secondaryColor, // Yellow text
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.payment_rounded, size: 20),
+                              const SizedBox(width: 12),
+                              Text(
+                                'Checkout',
+                                style: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 16,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ],
             ),
@@ -1580,4 +1630,59 @@ class _VariantPickerSheetState extends ConsumerState<_VariantPickerSheet> {
   }
 }
 
-// Local widget classes removed - using shared widgets from pos_cards.dart
+class _HeldBillsBadge extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final pendingTransactions = ref.watch(pendingTransactionsProvider);
+
+    return pendingTransactions.maybeWhen(
+      data: (txs) {
+        if (txs.isEmpty) return const SizedBox.shrink();
+        return GestureDetector(
+          onTap: () {
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (context) => const HeldBillsDialog(),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppTheme.secondaryColor,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.receipt_long_rounded,
+                  size: 14,
+                  color: AppTheme.primaryColor,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '${txs.length} Bill',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.primaryColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+      orElse: () => const SizedBox.shrink(),
+    );
+  }
+}

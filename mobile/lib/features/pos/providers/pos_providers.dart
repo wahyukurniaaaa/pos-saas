@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
+import 'cart_notes_provider.dart';
 
 // ===== Category Provider =====
 
@@ -63,13 +64,17 @@ class ProductNotifier extends AsyncNotifier<List<Product>> {
   }
 
   List<Product> _filter(List<Product> products) {
+    final query = _searchQuery?.toLowerCase() ?? '';
+    
     return products.where((p) {
-      final matchesCategory =
-          _categoryId == null || p.categoryId == _categoryId;
+      final matchesCategory = _categoryId == null || p.categoryId == _categoryId;
+      
+      if (query.isEmpty) return matchesCategory;
+      
       final matchesSearch =
-          _searchQuery == null ||
-          p.name.toLowerCase().contains(_searchQuery!.toLowerCase()) ||
-          p.sku.toLowerCase().contains(_searchQuery!.toLowerCase());
+          p.name.toLowerCase().contains(query) ||
+          p.sku.toLowerCase().contains(query);
+          
       return matchesCategory && matchesSearch;
     }).toList();
   }
@@ -114,11 +119,17 @@ class ProductWithVariantsNotifier extends AsyncNotifier<List<ProductWithVariants
   }
 
   List<ProductWithVariants> _filter(List<ProductWithVariants> data) {
+    final query = _searchQuery?.toLowerCase() ?? '';
+    
     return data.where((pwv) {
       final matchesCategory = _categoryId == null || pwv.product.categoryId == _categoryId;
-      final matchesSearch = _searchQuery == null ||
-          pwv.product.name.toLowerCase().contains(_searchQuery!.toLowerCase()) ||
-          pwv.product.sku.toLowerCase().contains(_searchQuery!.toLowerCase());
+      
+      if (query.isEmpty) return matchesCategory;
+      
+      final matchesSearch = 
+          pwv.product.name.toLowerCase().contains(query) ||
+          pwv.product.sku.toLowerCase().contains(query);
+          
       return matchesCategory && matchesSearch;
     }).toList();
   }
@@ -197,18 +208,24 @@ class CartItem {
   }
 
   /// Variant price takes priority over product base price.
-  int get effectivePrice =>
-      (variant?.price != null && variant!.price! > 0)
-          ? variant!.price!
-          : product.price;
+  int get effectivePrice {
+    final v = variant;
+    if (v != null && v.price != null && v.price! > 0) {
+      return v.price!;
+    }
+    return product.price;
+  }
 
   int get itemDiscountAmount {
-    if (appliedDiscount == null) return 0;
+    final discount = appliedDiscount;
+    if (discount == null) return 0;
+    
     final baseAmount = effectivePrice * quantity;
-    if (appliedDiscount!.type == 'fixed') {
-      return appliedDiscount!.value.toInt().clamp(0, baseAmount);
+    if (discount.type == 'fixed') {
+      return discount.value.toInt().clamp(0, baseAmount);
     }
-    return ((baseAmount * appliedDiscount!.value / 100)).round().clamp(0, baseAmount);
+    // Percentage
+    return ((baseAmount * discount.value / 100)).round().clamp(0, baseAmount);
   }
 
   double get total => ((effectivePrice * quantity) - itemDiscountAmount).toDouble();
@@ -267,7 +284,10 @@ class CartNotifier extends Notifier<List<CartItem>> {
     ];
   }
 
-  void clearCart() => state = [];
+  void clearCart() {
+    state = [];
+    ref.read(cartNotesProvider.notifier).state = null;
+  }
 
   double get subtotal => state.fold(0, (sum, item) => sum + item.total);
 
@@ -283,6 +303,7 @@ class CartNotifier extends Notifier<List<CartItem>> {
     int discountAmount = 0,
     int pointsEarned = 0,
     int pointsRedeemed = 0,
+    String? notes,
   }) async {
     try {
       if (state.isEmpty) return null;
@@ -295,13 +316,13 @@ class CartNotifier extends Notifier<List<CartItem>> {
       final total = subtotal + taxAmount + serviceCharge;
 
       final transactionEntry = TransactionsCompanion.insert(
-        receiptNumber: receiptNumber,
+        receiptNumber: drift.Value(receiptNumber),
         shiftId: shiftId,
         subtotal: subtotal.toInt(),
         taxAmount: drift.Value(taxAmount.toInt()),
         serviceChargeAmount: drift.Value(serviceCharge.toInt()),
         totalAmount: total.toInt(),
-        paymentMethod: paymentMethod,
+        paymentMethod: drift.Value(paymentMethod),
         customerPhone: drift.Value(customerPhone),
         customerName: drift.Value(customerName),
         customerId: drift.Value(customerId),
@@ -309,6 +330,7 @@ class CartNotifier extends Notifier<List<CartItem>> {
         discountAmount: drift.Value(discountAmount),
         pointsEarned: drift.Value(pointsEarned),
         pointsRedeemed: drift.Value(pointsRedeemed),
+        notes: drift.Value(notes),
       );
 
       final itemsParams = state.map((item) {
@@ -341,6 +363,107 @@ class CartNotifier extends Notifier<List<CartItem>> {
     } catch (e) {
       debugPrint('Checkout error: $e');
       return null;
+    }
+  }
+
+  Future<int?> holdBill({
+    required int shiftId,
+    String? customerName,
+    int? customerId,
+    String? notes,
+  }) async {
+    try {
+      if (state.isEmpty) return null;
+
+      final db = ref.read(databaseProvider);
+      
+      // Total for draft usually doesn't include tax/service yet unless specified
+      final total = subtotal;
+
+      final transactionEntry = TransactionsCompanion.insert(
+        shiftId: shiftId,
+        subtotal: subtotal.toInt(),
+        totalAmount: total.toInt(),
+        paymentStatus: const drift.Value('pending'),
+        customerName: drift.Value(customerName),
+        customerId: drift.Value(customerId),
+        notes: drift.Value(notes),
+      );
+
+      final itemsParams = state.map((item) {
+        final variantLabel = item.variant != null
+            ? '${item.variant!.name}: ${item.variant!.optionValue}'
+            : null;
+
+        return TransactionItemsCompanion.insert(
+          transactionId: 0,
+          productId: item.product.id,
+          variantId: drift.Value(item.variant?.id),
+          variantName: drift.Value(variantLabel),
+          quantity: item.quantity,
+          priceAtTransaction: item.effectivePrice,
+          subtotal: item.total.toInt(),
+          discountId: drift.Value(item.appliedDiscount?.id),
+          discountAmount: drift.Value(item.itemDiscountAmount),
+        );
+      }).toList();
+
+      final id = await db.processCheckout(
+        transactionEntry: transactionEntry,
+        itemsParams: itemsParams,
+      );
+
+      clearCart();
+      return id;
+    } catch (e) {
+      debugPrint('Hold bill error: $e');
+      return null;
+    }
+  }
+
+  Future<void> resumeBill(Transaction transaction, List<TransactionItem> items) async {
+    try {
+      final db = ref.read(databaseProvider);
+      
+      // Clear current cart before resuming
+      clearCart();
+      
+      final List<CartItem> resumedItems = [];
+      
+      for (final item in items) {
+        final product = await db.getProduct(item.productId);
+        if (product == null) continue;
+        
+        ProductVariant? variant;
+        if (item.variantId != null) {
+          variant = await db.getVariant(item.variantId!);
+        }
+        
+        // Handle discount if any
+        Discount? discount;
+        if (item.discountId != null) {
+          final allDiscounts = await db.getAllDiscounts();
+          discount = allDiscounts.where((d) => d.id == item.discountId).firstOrNull;
+        }
+        
+        resumedItems.add(CartItem(
+          product: product,
+          variant: variant,
+          quantity: item.quantity,
+          appliedDiscount: discount,
+        ));
+      }
+      
+      state = resumedItems;
+      
+      // Set notes to provider
+      ref.read(cartNotesProvider.notifier).state = transaction.notes;
+      
+      // Delete the pending transaction after successful resume 
+      // (or keep it if you want to support manual save/resume without deletion)
+      await db.deleteTransaction(transaction.id);
+    } catch (e) {
+      debugPrint('Resume bill error: $e');
     }
   }
 }
@@ -575,3 +698,10 @@ class StockHistoryNotifier extends AsyncNotifier<List<StockTransactionWithProduc
 final stockHistoryProvider = AsyncNotifierProvider<StockHistoryNotifier, List<StockTransactionWithProduct>>(
   StockHistoryNotifier.new,
 );
+
+// ===== Pending Transactions Provider =====
+
+final pendingTransactionsProvider = StreamProvider<List<Transaction>>((ref) {
+  final db = ref.watch(databaseProvider);
+  return db.watchPendingTransactions();
+});

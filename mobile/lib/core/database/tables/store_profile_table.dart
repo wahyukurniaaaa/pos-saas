@@ -15,4 +15,6 @@ class StoreProfile extends Table {
       integer().withDefault(const Constant(10000))();
   IntColumn get loyaltyPointValue =>
       integer().withDefault(const Constant(100))();
+  BoolColumn get deductStockOnHold =>
+      boolean().withDefault(const Constant(false))();
 }

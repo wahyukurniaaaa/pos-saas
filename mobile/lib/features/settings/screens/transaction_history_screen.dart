@@ -115,7 +115,7 @@ class TransactionHistoryScreen extends ConsumerWidget {
                                 ),
                               ),
                               title: Text(
-                                txn.receiptNumber,
+                                txn.receiptNumber ?? 'DRAFT',
                                 style: GoogleFonts.poppins(
                                   fontWeight: FontWeight.w600,
                                   fontSize: 14,
@@ -126,7 +126,7 @@ class TransactionHistoryScreen extends ConsumerWidget {
                                 children: [
                                   const SizedBox(height: 4),
                                   Text(
-                                    '${dateFmt.format(txn.createdAt)} | ${currency.format(txn.totalAmount)} (${txn.paymentMethod})',
+                                    '${dateFmt.format(txn.createdAt)} | ${currency.format(txn.totalAmount)} (${txn.paymentMethod ?? 'Draft'})',
                                     style: GoogleFonts.poppins(
                                       fontSize: 12,
                                       color: AppTheme.textSecondary,

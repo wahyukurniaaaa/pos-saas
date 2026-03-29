@@ -80,7 +80,7 @@ class PosifyDatabase extends _$PosifyDatabase {
   PosifyDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 17;
+  int get schemaVersion => 20;
 
   @override
   MigrationStrategy get migration {
@@ -175,6 +175,15 @@ class PosifyDatabase extends _$PosifyDatabase {
           await m.addColumn(transactions, transactions.pointsRedeemed);
           await m.addColumn(storeProfile, storeProfile.loyaltyPointConversion);
           await m.addColumn(storeProfile, storeProfile.loyaltyPointValue);
+        }
+        if (from < 20) {
+          // Force recreate transactions to handle nullable constraints and notes field cleanly
+          await m.database.customStatement('PRAGMA foreign_keys = OFF;');
+          await m.database.customStatement('DROP TABLE IF EXISTS transaction_items;');
+          await m.database.customStatement('DROP TABLE IF EXISTS transactions;');
+          await m.createTable(transactions);
+          await m.createTable(transactionItems);
+          await m.database.customStatement('PRAGMA foreign_keys = ON;');
         }
       },
     );
@@ -897,10 +906,16 @@ class PosifyDatabase extends _$PosifyDatabase {
       // 1. Insert Transaction
       final txId = await into(transactions).insert(transactionEntry);
 
-      // 2. Insert Items & 3. Update Stocks (supports both simple and variant products)
+      final isPending = transactionEntry.paymentStatus.present && 
+                        transactionEntry.paymentStatus.value == 'pending';
+
+      // 2. Insert Items & 3. Update Stocks
       for (final itemParam in itemsParams) {
         final finalItem = itemParam.copyWith(transactionId: Value(txId));
         await into(transactionItems).insert(finalItem);
+
+        // If it's a pending bill (Hold Bill), we DON'T deduct stock yet.
+        if (isPending) continue;
 
         final qty = itemParam.quantity.value;
         final variantId = itemParam.variantId.present
@@ -921,6 +936,10 @@ class PosifyDatabase extends _$PosifyDatabase {
                 .write(ProductVariantsCompanion(
                   stock: Value(newStock),
                 ));
+            final refStr = transactionEntry.receiptNumber.present && transactionEntry.receiptNumber.value != null
+                ? transactionEntry.receiptNumber.value!
+                : 'TX-$txId';
+
             await into(stockTransactions).insert(StockTransactionsCompanion.insert(
               productId: productId,
               variantId: Value(variant.id),
@@ -928,7 +947,7 @@ class PosifyDatabase extends _$PosifyDatabase {
               quantity: -qty,
               previousStock: variant.stock,
               newStock: newStock,
-              reference: transactionEntry.receiptNumber,
+              reference: Value(refStr),
               createdAt: DateTime.now().toIso8601String(),
             ));
           }
@@ -941,13 +960,17 @@ class PosifyDatabase extends _$PosifyDatabase {
             final newStock = product.stock - qty;
             await update(products)
                 .replace(product.copyWith(stock: newStock));
+            final refStr = transactionEntry.receiptNumber.present && transactionEntry.receiptNumber.value != null
+                ? transactionEntry.receiptNumber.value!
+                : 'TX-$txId';
+
             await into(stockTransactions).insert(StockTransactionsCompanion.insert(
               productId: productId,
               type: 'SALE',
               quantity: -qty,
               previousStock: product.stock,
               newStock: newStock,
-              reference: transactionEntry.receiptNumber,
+              reference: Value(refStr),
               createdAt: DateTime.now().toIso8601String(),
             ));
           }
@@ -955,20 +978,24 @@ class PosifyDatabase extends _$PosifyDatabase {
 
         // 4. Update Ingredients Stock (New Recipe Integration)
         final recipes = await getRecipesByProductId(productId);
+        final refStr = transactionEntry.receiptNumber.present && transactionEntry.receiptNumber.value != null
+            ? transactionEntry.receiptNumber.value!
+            : 'TX-$txId';
+            
         for (final recipe in recipes) {
-          final totalDeduction = recipe.quantityNeeded * qty;
-          await deductIngredientStock(
-            ingredientId: recipe.ingredientId,
-            quantityInBaseUnit: totalDeduction,
-            type: 'SALE',
-            referenceId: transactionEntry.receiptNumber.value,
-            reason: 'Penjualan: ${transactionEntry.receiptNumber.value}',
-          );
+            final totalDeduction = recipe.quantityNeeded * qty;
+            await deductIngredientStock(
+              ingredientId: recipe.ingredientId,
+              quantityInBaseUnit: totalDeduction,
+              type: 'SALE',
+              referenceId: refStr,
+              reason: 'Penjualan: $refStr',
+            );
         }
       }
 
-      // 5. Update Customer Points
-      if (transactionEntry.customerId.present && transactionEntry.customerId.value != null) {
+      // 5. Update Customer Points (Only for paid transactions)
+      if (!isPending && transactionEntry.customerId.present && transactionEntry.customerId.value != null) {
         final customerId = transactionEntry.customerId.value!;
         final earned = transactionEntry.pointsEarned.present ? transactionEntry.pointsEarned.value : 0;
         final redeemed = transactionEntry.pointsRedeemed.present ? transactionEntry.pointsRedeemed.value : 0;
@@ -994,6 +1021,23 @@ class PosifyDatabase extends _$PosifyDatabase {
   Stream<List<Transaction>> watchAllTransactions() => (select(
     transactions,
   )..orderBy([(t) => OrderingTerm.desc(t.createdAt)])).watch();
+
+  Stream<List<Transaction>> watchPendingTransactions() =>
+      (select(transactions)
+            ..where((t) => t.paymentStatus.equals('pending'))
+            ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
+          .watch();
+
+  Future<void> deleteTransaction(int id) async {
+    await transaction(() async {
+      await (delete(transactionItems)..where((t) => t.transactionId.equals(id))).go();
+      await (delete(transactions)..where((t) => t.id.equals(id))).go();
+    });
+  }
+
+  Future<List<TransactionItem>> getTransactionItems(int transactionId) {
+    return (select(transactionItems)..where((t) => t.transactionId.equals(transactionId))).get();
+  }
 
   Stream<List<Transaction>> watchTransactionsByRange(
     DateTime start,

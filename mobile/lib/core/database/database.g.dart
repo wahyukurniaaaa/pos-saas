@@ -1163,6 +1163,21 @@ class $StoreProfileTable extends StoreProfile
     requiredDuringInsert: false,
     defaultValue: const Constant(100),
   );
+  static const VerificationMeta _deductStockOnHoldMeta = const VerificationMeta(
+    'deductStockOnHold',
+  );
+  @override
+  late final GeneratedColumn<bool> deductStockOnHold = GeneratedColumn<bool>(
+    'deduct_stock_on_hold',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("deduct_stock_on_hold" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1175,6 +1190,7 @@ class $StoreProfileTable extends StoreProfile
     logoUri,
     loyaltyPointConversion,
     loyaltyPointValue,
+    deductStockOnHold,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1259,6 +1275,15 @@ class $StoreProfileTable extends StoreProfile
         ),
       );
     }
+    if (data.containsKey('deduct_stock_on_hold')) {
+      context.handle(
+        _deductStockOnHoldMeta,
+        deductStockOnHold.isAcceptableOrUnknown(
+          data['deduct_stock_on_hold']!,
+          _deductStockOnHoldMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -1308,6 +1333,10 @@ class $StoreProfileTable extends StoreProfile
         DriftSqlType.int,
         data['${effectivePrefix}loyalty_point_value'],
       )!,
+      deductStockOnHold: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}deduct_stock_on_hold'],
+      )!,
     );
   }
 
@@ -1329,6 +1358,7 @@ class StoreProfileData extends DataClass
   final String? logoUri;
   final int loyaltyPointConversion;
   final int loyaltyPointValue;
+  final bool deductStockOnHold;
   const StoreProfileData({
     required this.id,
     required this.name,
@@ -1340,6 +1370,7 @@ class StoreProfileData extends DataClass
     this.logoUri,
     required this.loyaltyPointConversion,
     required this.loyaltyPointValue,
+    required this.deductStockOnHold,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1360,6 +1391,7 @@ class StoreProfileData extends DataClass
     }
     map['loyalty_point_conversion'] = Variable<int>(loyaltyPointConversion);
     map['loyalty_point_value'] = Variable<int>(loyaltyPointValue);
+    map['deduct_stock_on_hold'] = Variable<bool>(deductStockOnHold);
     return map;
   }
 
@@ -1381,6 +1413,7 @@ class StoreProfileData extends DataClass
           : Value(logoUri),
       loyaltyPointConversion: Value(loyaltyPointConversion),
       loyaltyPointValue: Value(loyaltyPointValue),
+      deductStockOnHold: Value(deductStockOnHold),
     );
   }
 
@@ -1404,6 +1437,7 @@ class StoreProfileData extends DataClass
         json['loyaltyPointConversion'],
       ),
       loyaltyPointValue: serializer.fromJson<int>(json['loyaltyPointValue']),
+      deductStockOnHold: serializer.fromJson<bool>(json['deductStockOnHold']),
     );
   }
   @override
@@ -1422,6 +1456,7 @@ class StoreProfileData extends DataClass
       'logoUri': serializer.toJson<String?>(logoUri),
       'loyaltyPointConversion': serializer.toJson<int>(loyaltyPointConversion),
       'loyaltyPointValue': serializer.toJson<int>(loyaltyPointValue),
+      'deductStockOnHold': serializer.toJson<bool>(deductStockOnHold),
     };
   }
 
@@ -1436,6 +1471,7 @@ class StoreProfileData extends DataClass
     Value<String?> logoUri = const Value.absent(),
     int? loyaltyPointConversion,
     int? loyaltyPointValue,
+    bool? deductStockOnHold,
   }) => StoreProfileData(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -1449,6 +1485,7 @@ class StoreProfileData extends DataClass
     loyaltyPointConversion:
         loyaltyPointConversion ?? this.loyaltyPointConversion,
     loyaltyPointValue: loyaltyPointValue ?? this.loyaltyPointValue,
+    deductStockOnHold: deductStockOnHold ?? this.deductStockOnHold,
   );
   StoreProfileData copyWithCompanion(StoreProfileCompanion data) {
     return StoreProfileData(
@@ -1470,6 +1507,9 @@ class StoreProfileData extends DataClass
       loyaltyPointValue: data.loyaltyPointValue.present
           ? data.loyaltyPointValue.value
           : this.loyaltyPointValue,
+      deductStockOnHold: data.deductStockOnHold.present
+          ? data.deductStockOnHold.value
+          : this.deductStockOnHold,
     );
   }
 
@@ -1485,7 +1525,8 @@ class StoreProfileData extends DataClass
           ..write('serviceChargePercentage: $serviceChargePercentage, ')
           ..write('logoUri: $logoUri, ')
           ..write('loyaltyPointConversion: $loyaltyPointConversion, ')
-          ..write('loyaltyPointValue: $loyaltyPointValue')
+          ..write('loyaltyPointValue: $loyaltyPointValue, ')
+          ..write('deductStockOnHold: $deductStockOnHold')
           ..write(')'))
         .toString();
   }
@@ -1502,6 +1543,7 @@ class StoreProfileData extends DataClass
     logoUri,
     loyaltyPointConversion,
     loyaltyPointValue,
+    deductStockOnHold,
   );
   @override
   bool operator ==(Object other) =>
@@ -1516,7 +1558,8 @@ class StoreProfileData extends DataClass
           other.serviceChargePercentage == this.serviceChargePercentage &&
           other.logoUri == this.logoUri &&
           other.loyaltyPointConversion == this.loyaltyPointConversion &&
-          other.loyaltyPointValue == this.loyaltyPointValue);
+          other.loyaltyPointValue == this.loyaltyPointValue &&
+          other.deductStockOnHold == this.deductStockOnHold);
 }
 
 class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
@@ -1530,6 +1573,7 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
   final Value<String?> logoUri;
   final Value<int> loyaltyPointConversion;
   final Value<int> loyaltyPointValue;
+  final Value<bool> deductStockOnHold;
   const StoreProfileCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
@@ -1541,6 +1585,7 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
     this.logoUri = const Value.absent(),
     this.loyaltyPointConversion = const Value.absent(),
     this.loyaltyPointValue = const Value.absent(),
+    this.deductStockOnHold = const Value.absent(),
   });
   StoreProfileCompanion.insert({
     this.id = const Value.absent(),
@@ -1553,6 +1598,7 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
     this.logoUri = const Value.absent(),
     this.loyaltyPointConversion = const Value.absent(),
     this.loyaltyPointValue = const Value.absent(),
+    this.deductStockOnHold = const Value.absent(),
   }) : name = Value(name);
   static Insertable<StoreProfileData> custom({
     Expression<int>? id,
@@ -1565,6 +1611,7 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
     Expression<String>? logoUri,
     Expression<int>? loyaltyPointConversion,
     Expression<int>? loyaltyPointValue,
+    Expression<bool>? deductStockOnHold,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1579,6 +1626,7 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
       if (loyaltyPointConversion != null)
         'loyalty_point_conversion': loyaltyPointConversion,
       if (loyaltyPointValue != null) 'loyalty_point_value': loyaltyPointValue,
+      if (deductStockOnHold != null) 'deduct_stock_on_hold': deductStockOnHold,
     });
   }
 
@@ -1593,6 +1641,7 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
     Value<String?>? logoUri,
     Value<int>? loyaltyPointConversion,
     Value<int>? loyaltyPointValue,
+    Value<bool>? deductStockOnHold,
   }) {
     return StoreProfileCompanion(
       id: id ?? this.id,
@@ -1607,6 +1656,7 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
       loyaltyPointConversion:
           loyaltyPointConversion ?? this.loyaltyPointConversion,
       loyaltyPointValue: loyaltyPointValue ?? this.loyaltyPointValue,
+      deductStockOnHold: deductStockOnHold ?? this.deductStockOnHold,
     );
   }
 
@@ -1647,6 +1697,9 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
     if (loyaltyPointValue.present) {
       map['loyalty_point_value'] = Variable<int>(loyaltyPointValue.value);
     }
+    if (deductStockOnHold.present) {
+      map['deduct_stock_on_hold'] = Variable<bool>(deductStockOnHold.value);
+    }
     return map;
   }
 
@@ -1662,7 +1715,8 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
           ..write('serviceChargePercentage: $serviceChargePercentage, ')
           ..write('logoUri: $logoUri, ')
           ..write('loyaltyPointConversion: $loyaltyPointConversion, ')
-          ..write('loyaltyPointValue: $loyaltyPointValue')
+          ..write('loyaltyPointValue: $loyaltyPointValue, ')
+          ..write('deductStockOnHold: $deductStockOnHold')
           ..write(')'))
         .toString();
   }
@@ -4410,9 +4464,9 @@ class $TransactionsTable extends Transactions
   late final GeneratedColumn<String> receiptNumber = GeneratedColumn<String>(
     'receipt_number',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
   );
   static const VerificationMeta _shiftIdMeta = const VerificationMeta(
@@ -4492,9 +4546,9 @@ class $TransactionsTable extends Transactions
   late final GeneratedColumn<String> paymentMethod = GeneratedColumn<String>(
     'payment_method',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _paymentStatusMeta = const VerificationMeta(
     'paymentStatus',
@@ -4604,6 +4658,15 @@ class $TransactionsTable extends Transactions
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -4624,6 +4687,7 @@ class $TransactionsTable extends Transactions
     discountAmount,
     pointsEarned,
     pointsRedeemed,
+    notes,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -4648,8 +4712,6 @@ class $TransactionsTable extends Transactions
           _receiptNumberMeta,
         ),
       );
-    } else if (isInserting) {
-      context.missing(_receiptNumberMeta);
     }
     if (data.containsKey('shift_id')) {
       context.handle(
@@ -4707,8 +4769,6 @@ class $TransactionsTable extends Transactions
           _paymentMethodMeta,
         ),
       );
-    } else if (isInserting) {
-      context.missing(_paymentMethodMeta);
     }
     if (data.containsKey('payment_status')) {
       context.handle(
@@ -4782,6 +4842,12 @@ class $TransactionsTable extends Transactions
         ),
       );
     }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
     return context;
   }
 
@@ -4798,7 +4864,7 @@ class $TransactionsTable extends Transactions
       receiptNumber: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}receipt_number'],
-      )!,
+      ),
       shiftId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}shift_id'],
@@ -4826,7 +4892,7 @@ class $TransactionsTable extends Transactions
       paymentMethod: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}payment_method'],
-      )!,
+      ),
       paymentStatus: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}payment_status'],
@@ -4863,6 +4929,10 @@ class $TransactionsTable extends Transactions
         DriftSqlType.int,
         data['${effectivePrefix}points_redeemed'],
       )!,
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      ),
     );
   }
 
@@ -4874,14 +4944,14 @@ class $TransactionsTable extends Transactions
 
 class Transaction extends DataClass implements Insertable<Transaction> {
   final int id;
-  final String receiptNumber;
+  final String? receiptNumber;
   final int shiftId;
   final int? customerId;
   final int subtotal;
   final int taxAmount;
   final int serviceChargeAmount;
   final int totalAmount;
-  final String paymentMethod;
+  final String? paymentMethod;
   final String paymentStatus;
   final int? voidBy;
   final DateTime createdAt;
@@ -4891,16 +4961,17 @@ class Transaction extends DataClass implements Insertable<Transaction> {
   final int discountAmount;
   final int pointsEarned;
   final int pointsRedeemed;
+  final String? notes;
   const Transaction({
     required this.id,
-    required this.receiptNumber,
+    this.receiptNumber,
     required this.shiftId,
     this.customerId,
     required this.subtotal,
     required this.taxAmount,
     required this.serviceChargeAmount,
     required this.totalAmount,
-    required this.paymentMethod,
+    this.paymentMethod,
     required this.paymentStatus,
     this.voidBy,
     required this.createdAt,
@@ -4910,12 +4981,15 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     required this.discountAmount,
     required this.pointsEarned,
     required this.pointsRedeemed,
+    this.notes,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
-    map['receipt_number'] = Variable<String>(receiptNumber);
+    if (!nullToAbsent || receiptNumber != null) {
+      map['receipt_number'] = Variable<String>(receiptNumber);
+    }
     map['shift_id'] = Variable<int>(shiftId);
     if (!nullToAbsent || customerId != null) {
       map['customer_id'] = Variable<int>(customerId);
@@ -4924,7 +4998,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     map['tax_amount'] = Variable<int>(taxAmount);
     map['service_charge_amount'] = Variable<int>(serviceChargeAmount);
     map['total_amount'] = Variable<int>(totalAmount);
-    map['payment_method'] = Variable<String>(paymentMethod);
+    if (!nullToAbsent || paymentMethod != null) {
+      map['payment_method'] = Variable<String>(paymentMethod);
+    }
     map['payment_status'] = Variable<String>(paymentStatus);
     if (!nullToAbsent || voidBy != null) {
       map['void_by'] = Variable<int>(voidBy);
@@ -4942,13 +5018,18 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     map['discount_amount'] = Variable<int>(discountAmount);
     map['points_earned'] = Variable<int>(pointsEarned);
     map['points_redeemed'] = Variable<int>(pointsRedeemed);
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
     return map;
   }
 
   TransactionsCompanion toCompanion(bool nullToAbsent) {
     return TransactionsCompanion(
       id: Value(id),
-      receiptNumber: Value(receiptNumber),
+      receiptNumber: receiptNumber == null && nullToAbsent
+          ? const Value.absent()
+          : Value(receiptNumber),
       shiftId: Value(shiftId),
       customerId: customerId == null && nullToAbsent
           ? const Value.absent()
@@ -4957,7 +5038,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       taxAmount: Value(taxAmount),
       serviceChargeAmount: Value(serviceChargeAmount),
       totalAmount: Value(totalAmount),
-      paymentMethod: Value(paymentMethod),
+      paymentMethod: paymentMethod == null && nullToAbsent
+          ? const Value.absent()
+          : Value(paymentMethod),
       paymentStatus: Value(paymentStatus),
       voidBy: voidBy == null && nullToAbsent
           ? const Value.absent()
@@ -4975,6 +5058,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       discountAmount: Value(discountAmount),
       pointsEarned: Value(pointsEarned),
       pointsRedeemed: Value(pointsRedeemed),
+      notes: notes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(notes),
     );
   }
 
@@ -4985,7 +5071,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Transaction(
       id: serializer.fromJson<int>(json['id']),
-      receiptNumber: serializer.fromJson<String>(json['receiptNumber']),
+      receiptNumber: serializer.fromJson<String?>(json['receiptNumber']),
       shiftId: serializer.fromJson<int>(json['shiftId']),
       customerId: serializer.fromJson<int?>(json['customerId']),
       subtotal: serializer.fromJson<int>(json['subtotal']),
@@ -4994,7 +5080,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
         json['serviceChargeAmount'],
       ),
       totalAmount: serializer.fromJson<int>(json['totalAmount']),
-      paymentMethod: serializer.fromJson<String>(json['paymentMethod']),
+      paymentMethod: serializer.fromJson<String?>(json['paymentMethod']),
       paymentStatus: serializer.fromJson<String>(json['paymentStatus']),
       voidBy: serializer.fromJson<int?>(json['voidBy']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
@@ -5004,6 +5090,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       discountAmount: serializer.fromJson<int>(json['discountAmount']),
       pointsEarned: serializer.fromJson<int>(json['pointsEarned']),
       pointsRedeemed: serializer.fromJson<int>(json['pointsRedeemed']),
+      notes: serializer.fromJson<String?>(json['notes']),
     );
   }
   @override
@@ -5011,14 +5098,14 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
-      'receiptNumber': serializer.toJson<String>(receiptNumber),
+      'receiptNumber': serializer.toJson<String?>(receiptNumber),
       'shiftId': serializer.toJson<int>(shiftId),
       'customerId': serializer.toJson<int?>(customerId),
       'subtotal': serializer.toJson<int>(subtotal),
       'taxAmount': serializer.toJson<int>(taxAmount),
       'serviceChargeAmount': serializer.toJson<int>(serviceChargeAmount),
       'totalAmount': serializer.toJson<int>(totalAmount),
-      'paymentMethod': serializer.toJson<String>(paymentMethod),
+      'paymentMethod': serializer.toJson<String?>(paymentMethod),
       'paymentStatus': serializer.toJson<String>(paymentStatus),
       'voidBy': serializer.toJson<int?>(voidBy),
       'createdAt': serializer.toJson<DateTime>(createdAt),
@@ -5028,19 +5115,20 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       'discountAmount': serializer.toJson<int>(discountAmount),
       'pointsEarned': serializer.toJson<int>(pointsEarned),
       'pointsRedeemed': serializer.toJson<int>(pointsRedeemed),
+      'notes': serializer.toJson<String?>(notes),
     };
   }
 
   Transaction copyWith({
     int? id,
-    String? receiptNumber,
+    Value<String?> receiptNumber = const Value.absent(),
     int? shiftId,
     Value<int?> customerId = const Value.absent(),
     int? subtotal,
     int? taxAmount,
     int? serviceChargeAmount,
     int? totalAmount,
-    String? paymentMethod,
+    Value<String?> paymentMethod = const Value.absent(),
     String? paymentStatus,
     Value<int?> voidBy = const Value.absent(),
     DateTime? createdAt,
@@ -5050,16 +5138,21 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     int? discountAmount,
     int? pointsEarned,
     int? pointsRedeemed,
+    Value<String?> notes = const Value.absent(),
   }) => Transaction(
     id: id ?? this.id,
-    receiptNumber: receiptNumber ?? this.receiptNumber,
+    receiptNumber: receiptNumber.present
+        ? receiptNumber.value
+        : this.receiptNumber,
     shiftId: shiftId ?? this.shiftId,
     customerId: customerId.present ? customerId.value : this.customerId,
     subtotal: subtotal ?? this.subtotal,
     taxAmount: taxAmount ?? this.taxAmount,
     serviceChargeAmount: serviceChargeAmount ?? this.serviceChargeAmount,
     totalAmount: totalAmount ?? this.totalAmount,
-    paymentMethod: paymentMethod ?? this.paymentMethod,
+    paymentMethod: paymentMethod.present
+        ? paymentMethod.value
+        : this.paymentMethod,
     paymentStatus: paymentStatus ?? this.paymentStatus,
     voidBy: voidBy.present ? voidBy.value : this.voidBy,
     createdAt: createdAt ?? this.createdAt,
@@ -5071,6 +5164,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     discountAmount: discountAmount ?? this.discountAmount,
     pointsEarned: pointsEarned ?? this.pointsEarned,
     pointsRedeemed: pointsRedeemed ?? this.pointsRedeemed,
+    notes: notes.present ? notes.value : this.notes,
   );
   Transaction copyWithCompanion(TransactionsCompanion data) {
     return Transaction(
@@ -5116,6 +5210,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       pointsRedeemed: data.pointsRedeemed.present
           ? data.pointsRedeemed.value
           : this.pointsRedeemed,
+      notes: data.notes.present ? data.notes.value : this.notes,
     );
   }
 
@@ -5139,7 +5234,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           ..write('discountId: $discountId, ')
           ..write('discountAmount: $discountAmount, ')
           ..write('pointsEarned: $pointsEarned, ')
-          ..write('pointsRedeemed: $pointsRedeemed')
+          ..write('pointsRedeemed: $pointsRedeemed, ')
+          ..write('notes: $notes')
           ..write(')'))
         .toString();
   }
@@ -5164,6 +5260,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     discountAmount,
     pointsEarned,
     pointsRedeemed,
+    notes,
   );
   @override
   bool operator ==(Object other) =>
@@ -5186,19 +5283,20 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           other.discountId == this.discountId &&
           other.discountAmount == this.discountAmount &&
           other.pointsEarned == this.pointsEarned &&
-          other.pointsRedeemed == this.pointsRedeemed);
+          other.pointsRedeemed == this.pointsRedeemed &&
+          other.notes == this.notes);
 }
 
 class TransactionsCompanion extends UpdateCompanion<Transaction> {
   final Value<int> id;
-  final Value<String> receiptNumber;
+  final Value<String?> receiptNumber;
   final Value<int> shiftId;
   final Value<int?> customerId;
   final Value<int> subtotal;
   final Value<int> taxAmount;
   final Value<int> serviceChargeAmount;
   final Value<int> totalAmount;
-  final Value<String> paymentMethod;
+  final Value<String?> paymentMethod;
   final Value<String> paymentStatus;
   final Value<int?> voidBy;
   final Value<DateTime> createdAt;
@@ -5208,6 +5306,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
   final Value<int> discountAmount;
   final Value<int> pointsEarned;
   final Value<int> pointsRedeemed;
+  final Value<String?> notes;
   const TransactionsCompanion({
     this.id = const Value.absent(),
     this.receiptNumber = const Value.absent(),
@@ -5227,17 +5326,18 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     this.discountAmount = const Value.absent(),
     this.pointsEarned = const Value.absent(),
     this.pointsRedeemed = const Value.absent(),
+    this.notes = const Value.absent(),
   });
   TransactionsCompanion.insert({
     this.id = const Value.absent(),
-    required String receiptNumber,
+    this.receiptNumber = const Value.absent(),
     required int shiftId,
     this.customerId = const Value.absent(),
     required int subtotal,
     this.taxAmount = const Value.absent(),
     this.serviceChargeAmount = const Value.absent(),
     required int totalAmount,
-    required String paymentMethod,
+    this.paymentMethod = const Value.absent(),
     this.paymentStatus = const Value.absent(),
     this.voidBy = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -5247,11 +5347,10 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     this.discountAmount = const Value.absent(),
     this.pointsEarned = const Value.absent(),
     this.pointsRedeemed = const Value.absent(),
-  }) : receiptNumber = Value(receiptNumber),
-       shiftId = Value(shiftId),
+    this.notes = const Value.absent(),
+  }) : shiftId = Value(shiftId),
        subtotal = Value(subtotal),
-       totalAmount = Value(totalAmount),
-       paymentMethod = Value(paymentMethod);
+       totalAmount = Value(totalAmount);
   static Insertable<Transaction> custom({
     Expression<int>? id,
     Expression<String>? receiptNumber,
@@ -5271,6 +5370,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     Expression<int>? discountAmount,
     Expression<int>? pointsEarned,
     Expression<int>? pointsRedeemed,
+    Expression<String>? notes,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -5292,19 +5392,20 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       if (discountAmount != null) 'discount_amount': discountAmount,
       if (pointsEarned != null) 'points_earned': pointsEarned,
       if (pointsRedeemed != null) 'points_redeemed': pointsRedeemed,
+      if (notes != null) 'notes': notes,
     });
   }
 
   TransactionsCompanion copyWith({
     Value<int>? id,
-    Value<String>? receiptNumber,
+    Value<String?>? receiptNumber,
     Value<int>? shiftId,
     Value<int?>? customerId,
     Value<int>? subtotal,
     Value<int>? taxAmount,
     Value<int>? serviceChargeAmount,
     Value<int>? totalAmount,
-    Value<String>? paymentMethod,
+    Value<String?>? paymentMethod,
     Value<String>? paymentStatus,
     Value<int?>? voidBy,
     Value<DateTime>? createdAt,
@@ -5314,6 +5415,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     Value<int>? discountAmount,
     Value<int>? pointsEarned,
     Value<int>? pointsRedeemed,
+    Value<String?>? notes,
   }) {
     return TransactionsCompanion(
       id: id ?? this.id,
@@ -5334,6 +5436,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       discountAmount: discountAmount ?? this.discountAmount,
       pointsEarned: pointsEarned ?? this.pointsEarned,
       pointsRedeemed: pointsRedeemed ?? this.pointsRedeemed,
+      notes: notes ?? this.notes,
     );
   }
 
@@ -5394,6 +5497,9 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     if (pointsRedeemed.present) {
       map['points_redeemed'] = Variable<int>(pointsRedeemed.value);
     }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
     return map;
   }
 
@@ -5417,7 +5523,8 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
           ..write('discountId: $discountId, ')
           ..write('discountAmount: $discountAmount, ')
           ..write('pointsEarned: $pointsEarned, ')
-          ..write('pointsRedeemed: $pointsRedeemed')
+          ..write('pointsRedeemed: $pointsRedeemed, ')
+          ..write('notes: $notes')
           ..write(')'))
         .toString();
   }
@@ -13765,6 +13872,7 @@ typedef $$StoreProfileTableCreateCompanionBuilder =
       Value<String?> logoUri,
       Value<int> loyaltyPointConversion,
       Value<int> loyaltyPointValue,
+      Value<bool> deductStockOnHold,
     });
 typedef $$StoreProfileTableUpdateCompanionBuilder =
     StoreProfileCompanion Function({
@@ -13778,6 +13886,7 @@ typedef $$StoreProfileTableUpdateCompanionBuilder =
       Value<String?> logoUri,
       Value<int> loyaltyPointConversion,
       Value<int> loyaltyPointValue,
+      Value<bool> deductStockOnHold,
     });
 
 class $$StoreProfileTableFilterComposer
@@ -13836,6 +13945,11 @@ class $$StoreProfileTableFilterComposer
 
   ColumnFilters<int> get loyaltyPointValue => $composableBuilder(
     column: $table.loyaltyPointValue,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get deductStockOnHold => $composableBuilder(
+    column: $table.deductStockOnHold,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -13898,6 +14012,11 @@ class $$StoreProfileTableOrderingComposer
     column: $table.loyaltyPointValue,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<bool> get deductStockOnHold => $composableBuilder(
+    column: $table.deductStockOnHold,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$StoreProfileTableAnnotationComposer
@@ -13944,6 +14063,11 @@ class $$StoreProfileTableAnnotationComposer
 
   GeneratedColumn<int> get loyaltyPointValue => $composableBuilder(
     column: $table.loyaltyPointValue,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get deductStockOnHold => $composableBuilder(
+    column: $table.deductStockOnHold,
     builder: (column) => column,
   );
 }
@@ -13993,6 +14117,7 @@ class $$StoreProfileTableTableManager
                 Value<String?> logoUri = const Value.absent(),
                 Value<int> loyaltyPointConversion = const Value.absent(),
                 Value<int> loyaltyPointValue = const Value.absent(),
+                Value<bool> deductStockOnHold = const Value.absent(),
               }) => StoreProfileCompanion(
                 id: id,
                 name: name,
@@ -14004,6 +14129,7 @@ class $$StoreProfileTableTableManager
                 logoUri: logoUri,
                 loyaltyPointConversion: loyaltyPointConversion,
                 loyaltyPointValue: loyaltyPointValue,
+                deductStockOnHold: deductStockOnHold,
               ),
           createCompanionCallback:
               ({
@@ -14017,6 +14143,7 @@ class $$StoreProfileTableTableManager
                 Value<String?> logoUri = const Value.absent(),
                 Value<int> loyaltyPointConversion = const Value.absent(),
                 Value<int> loyaltyPointValue = const Value.absent(),
+                Value<bool> deductStockOnHold = const Value.absent(),
               }) => StoreProfileCompanion.insert(
                 id: id,
                 name: name,
@@ -14028,6 +14155,7 @@ class $$StoreProfileTableTableManager
                 logoUri: logoUri,
                 loyaltyPointConversion: loyaltyPointConversion,
                 loyaltyPointValue: loyaltyPointValue,
+                deductStockOnHold: deductStockOnHold,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
@@ -16664,14 +16792,14 @@ typedef $$DiscountsTableProcessedTableManager =
 typedef $$TransactionsTableCreateCompanionBuilder =
     TransactionsCompanion Function({
       Value<int> id,
-      required String receiptNumber,
+      Value<String?> receiptNumber,
       required int shiftId,
       Value<int?> customerId,
       required int subtotal,
       Value<int> taxAmount,
       Value<int> serviceChargeAmount,
       required int totalAmount,
-      required String paymentMethod,
+      Value<String?> paymentMethod,
       Value<String> paymentStatus,
       Value<int?> voidBy,
       Value<DateTime> createdAt,
@@ -16681,18 +16809,19 @@ typedef $$TransactionsTableCreateCompanionBuilder =
       Value<int> discountAmount,
       Value<int> pointsEarned,
       Value<int> pointsRedeemed,
+      Value<String?> notes,
     });
 typedef $$TransactionsTableUpdateCompanionBuilder =
     TransactionsCompanion Function({
       Value<int> id,
-      Value<String> receiptNumber,
+      Value<String?> receiptNumber,
       Value<int> shiftId,
       Value<int?> customerId,
       Value<int> subtotal,
       Value<int> taxAmount,
       Value<int> serviceChargeAmount,
       Value<int> totalAmount,
-      Value<String> paymentMethod,
+      Value<String?> paymentMethod,
       Value<String> paymentStatus,
       Value<int?> voidBy,
       Value<DateTime> createdAt,
@@ -16702,6 +16831,7 @@ typedef $$TransactionsTableUpdateCompanionBuilder =
       Value<int> discountAmount,
       Value<int> pointsEarned,
       Value<int> pointsRedeemed,
+      Value<String?> notes,
     });
 
 final class $$TransactionsTableReferences
@@ -16869,6 +16999,11 @@ class $$TransactionsTableFilterComposer
 
   ColumnFilters<int> get pointsRedeemed => $composableBuilder(
     column: $table.pointsRedeemed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -17051,6 +17186,11 @@ class $$TransactionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$ShiftsTableOrderingComposer get shiftId {
     final $$ShiftsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -17197,6 +17337,9 @@ class $$TransactionsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
   $$ShiftsTableAnnotationComposer get shiftId {
     final $$ShiftsTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -17326,14 +17469,14 @@ class $$TransactionsTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                Value<String> receiptNumber = const Value.absent(),
+                Value<String?> receiptNumber = const Value.absent(),
                 Value<int> shiftId = const Value.absent(),
                 Value<int?> customerId = const Value.absent(),
                 Value<int> subtotal = const Value.absent(),
                 Value<int> taxAmount = const Value.absent(),
                 Value<int> serviceChargeAmount = const Value.absent(),
                 Value<int> totalAmount = const Value.absent(),
-                Value<String> paymentMethod = const Value.absent(),
+                Value<String?> paymentMethod = const Value.absent(),
                 Value<String> paymentStatus = const Value.absent(),
                 Value<int?> voidBy = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
@@ -17343,6 +17486,7 @@ class $$TransactionsTableTableManager
                 Value<int> discountAmount = const Value.absent(),
                 Value<int> pointsEarned = const Value.absent(),
                 Value<int> pointsRedeemed = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
               }) => TransactionsCompanion(
                 id: id,
                 receiptNumber: receiptNumber,
@@ -17362,18 +17506,19 @@ class $$TransactionsTableTableManager
                 discountAmount: discountAmount,
                 pointsEarned: pointsEarned,
                 pointsRedeemed: pointsRedeemed,
+                notes: notes,
               ),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                required String receiptNumber,
+                Value<String?> receiptNumber = const Value.absent(),
                 required int shiftId,
                 Value<int?> customerId = const Value.absent(),
                 required int subtotal,
                 Value<int> taxAmount = const Value.absent(),
                 Value<int> serviceChargeAmount = const Value.absent(),
                 required int totalAmount,
-                required String paymentMethod,
+                Value<String?> paymentMethod = const Value.absent(),
                 Value<String> paymentStatus = const Value.absent(),
                 Value<int?> voidBy = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
@@ -17383,6 +17528,7 @@ class $$TransactionsTableTableManager
                 Value<int> discountAmount = const Value.absent(),
                 Value<int> pointsEarned = const Value.absent(),
                 Value<int> pointsRedeemed = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
               }) => TransactionsCompanion.insert(
                 id: id,
                 receiptNumber: receiptNumber,
@@ -17402,6 +17548,7 @@ class $$TransactionsTableTableManager
                 discountAmount: discountAmount,
                 pointsEarned: pointsEarned,
                 pointsRedeemed: pointsRedeemed,
+                notes: notes,
               ),
           withReferenceMapper: (p0) => p0
               .map(

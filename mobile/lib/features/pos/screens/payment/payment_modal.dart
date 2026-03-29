@@ -12,6 +12,7 @@ import '../../providers/pos_providers.dart';
 import '../../providers/discount_provider.dart';
 import 'discount_selection_sheet.dart';
 import 'payment_success_screen.dart';
+import '../../providers/cart_notes_provider.dart';
 
 final _currency = NumberFormat.currency(
   locale: 'id_ID',
@@ -37,6 +38,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
   // Customer info controllers
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _notesController = TextEditingController();
   Customer? _selectedCustomer;
 
   // Loyalty
@@ -49,12 +51,18 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
   void initState() {
     super.initState();
     _calculateQuickCash(widget.totalAmount);
+    // Initialize notes from provider
+    final savedNotes = ref.read(cartNotesProvider);
+    if (savedNotes != null) {
+      _notesController.text = savedNotes;
+    }
   }
 
   @override
   void dispose() {
     _phoneController.dispose();
     _nameController.dispose();
+    _notesController.dispose();
     super.dispose();
   }
 
@@ -79,6 +87,11 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
 
     // Default to Uang Pas
     _cashReceivedString = amount.toStringAsFixed(0);
+    
+    // If called from addPostFrameCallback or other places, ensure UI updates
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   double get _cashReceived {
@@ -326,6 +339,8 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                           _selectedCustomer!.points,
                           loyaltyPointValue,
                         ),
+                      const SizedBox(height: 24),
+                      _buildNotesSection(),
                     ],
                   ),
                 ),
@@ -344,47 +359,76 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                     ),
                   ],
                 ),
-                child: ElevatedButton(
-                  onPressed:
-                      (_cashReceived >= finalTotal ||
-                              _selectedMethod != 'Tunai') &&
-                          !_isProcessing
-                      ? () => _processPayment(
-                          finalTotal,
-                          taxAmount,
-                          serviceCharge,
-                          pointsEarned,
-                          pointsToRedeem,
-                        )
-                      : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 0,
-                    disabledBackgroundColor: AppTheme.primaryColor.withValues(
-                      alpha: 0.3,
-                    ),
-                  ),
-                  child: _isProcessing
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : Text(
-                          'Konfirmasi & Cetak Struk',
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 1,
+                      child: OutlinedButton(
+                        onPressed: _isProcessing ? null : () => _handleHoldBill(),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          side: BorderSide(color: AppTheme.primaryColor),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
+                        child: Text(
+                          'Simpan',
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.primaryColor,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      flex: 2,
+                      child: ElevatedButton(
+                        onPressed:
+                            (_cashReceived >= finalTotal ||
+                                    _selectedMethod != 'Tunai') &&
+                                !_isProcessing
+                            ? () => _processPayment(
+                                finalTotal,
+                                taxAmount,
+                                serviceCharge,
+                                pointsEarned,
+                                pointsToRedeem,
+                              )
+                            : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primaryColor,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                          disabledBackgroundColor: AppTheme.primaryColor.withValues(
+                            alpha: 0.3,
+                          ),
+                        ),
+                        child: _isProcessing
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Text(
+                                'Bayar & Cetak',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -1086,6 +1130,103 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
     );
   }
 
+  Widget _buildNotesSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Catatan Khusus',
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _notesController,
+          maxLines: 2,
+          style: GoogleFonts.poppins(fontSize: 14),
+          decoration: InputDecoration(
+            hintText: 'Tambahkan catatan untuk pesanan ini...',
+            hintStyle: GoogleFonts.poppins(color: AppTheme.textSecondary, fontSize: 13),
+            prefixIcon: const Icon(Icons.note_alt_rounded, color: AppTheme.primaryColor),
+            filled: true,
+            fillColor: Colors.grey.shade50,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: Colors.grey.shade200),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: Colors.grey.shade200),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: AppTheme.primaryColor, width: 1.5),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _handleHoldBill() async {
+    if (_isProcessing) return;
+    setState(() => _isProcessing = true);
+
+    try {
+      final shiftAsync = ref.read(openShiftProvider);
+      final shiftOpt = shiftAsync.value;
+      if (shiftOpt == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Tidak ada shift yang terbuka!')),
+        );
+        return;
+      }
+
+      final transactionId = await ref.read(cartProvider.notifier).holdBill(
+            shiftId: shiftOpt.id,
+            customerName: _nameController.text.trim().isNotEmpty 
+                ? _nameController.text.trim() 
+                : null,
+            customerId: _selectedCustomer?.id,
+            notes: _notesController.text.trim().isNotEmpty
+                ? _notesController.text.trim()
+                : null,
+          );
+
+      if (!mounted) return;
+
+      if (transactionId != null) {
+        Navigator.pop(context); // Close Payment Modal
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Pesanan berhasil disimpan sementara.'),
+            backgroundColor: AppTheme.successColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Gagal menyimpan pesanan.')),
+        );
+      }
+    } catch (e) {
+      debugPrint('Hold bill error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal menyimpan: $e'),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isProcessing = false);
+    }
+  }
+
   Widget _buildLoyaltySection(
     int pointsEarned,
     int pointsToRedeem,
@@ -1247,6 +1388,9 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
             customerPhone: enteredPhone.isNotEmpty ? enteredPhone : null,
             customerName: enteredName.isNotEmpty ? enteredName : null,
             customerId: assignedCustomerId,
+            notes: _notesController.text.trim().isNotEmpty
+                ? _notesController.text.trim()
+                : null,
             pointsEarned: pointsEarned,
             pointsRedeemed: pointsToRedeem,
             discountId: ref.read(selectedDiscountProvider)?.id,
@@ -1291,6 +1435,16 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Gagal memproses pembayaran.')),
+        );
+      }
+    } catch (e) {
+      debugPrint('Process payment error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal memproses: $e'),
+            backgroundColor: AppTheme.errorColor,
+          ),
         );
       }
     } finally {

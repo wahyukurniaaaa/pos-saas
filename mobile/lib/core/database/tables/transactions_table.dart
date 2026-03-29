@@ -5,7 +5,7 @@ import 'discounts_table.dart';
 
 class Transactions extends Table {
   IntColumn get id => integer().autoIncrement()();
-  TextColumn get receiptNumber => text().unique()();
+  TextColumn get receiptNumber => text().unique().nullable()();
   IntColumn get shiftId => integer().references(Shifts, #id)();
   IntColumn get customerId => integer().nullable()();
   IntColumn get subtotal => integer()();
@@ -13,9 +13,9 @@ class Transactions extends Table {
   IntColumn get serviceChargeAmount =>
       integer().withDefault(const Constant(0))();
   IntColumn get totalAmount => integer()();
-  TextColumn get paymentMethod => text()(); // cash, qris, debit, credit, bon
+  TextColumn get paymentMethod => text().nullable()(); // cash, qris, debit, credit, bon (nullable for drafts)
   TextColumn get paymentStatus =>
-      text().withDefault(const Constant('paid'))(); // paid, void
+      text().withDefault(const Constant('paid'))(); // paid, void, pending
   IntColumn get voidBy => integer().nullable().references(Employees, #id)();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   TextColumn get customerPhone => text().nullable()();
@@ -26,4 +26,6 @@ class Transactions extends Table {
   // Loyalty Points
   IntColumn get pointsEarned => integer().withDefault(const Constant(0))();
   IntColumn get pointsRedeemed => integer().withDefault(const Constant(0))();
+  // Notes
+  TextColumn get notes => text().nullable()();
 }

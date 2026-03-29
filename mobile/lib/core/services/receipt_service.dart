@@ -47,7 +47,7 @@ class ReceiptService {
     await bluetooth.printCustom('--------------------------------', 0, 1);
 
     // 2. Transaction Info
-    await bluetooth.printCustom('No: ${transaction.receiptNumber}', 0, 0);
+    await bluetooth.printCustom('No: ${transaction.receiptNumber ?? 'DRAFT'}', 0, 0);
     await bluetooth.printCustom(
       'Tgl: ${dateFmt.format(transaction.createdAt)}',
       0,
@@ -102,10 +102,14 @@ class ReceiptService {
 
     await bluetooth.printCustom('--------------------------------', 0, 1);
     await bluetooth.printCustom(
-      'Metode Bayar: ${transaction.paymentMethod.toUpperCase()}',
+      'Metode Bayar: ${(transaction.paymentMethod ?? 'Draft').toUpperCase()}',
       0,
       1,
     );
+    
+    if (transaction.notes != null && transaction.notes!.isNotEmpty) {
+      await bluetooth.printCustom('Catatan: ${transaction.notes}', 0, 1);
+    }
 
     await bluetooth.printNewLine();
     await bluetooth.printCustom('Terima Kasih', 1, 1);
@@ -143,7 +147,7 @@ class ReceiptService {
     // 2. Save to Temp
     final tempDir = await getTemporaryDirectory();
     final file = await File(
-      '${tempDir.path}/struk_${data.transaction.receiptNumber}.png',
+      '${tempDir.path}/struk_${data.transaction.receiptNumber ?? 'DRAFT'}.png',
     ).writeAsBytes(imageBytes);
 
     // 3. Format Text
@@ -167,7 +171,7 @@ class ReceiptService {
 
     buffer.writeln('🛍️ *STRUK BELANJA - ${profile?.name ?? 'POSIFY'}*');
     buffer.writeln('--------------------------------');
-    buffer.writeln('No. Struk: ${data.transaction.receiptNumber}');
+    buffer.writeln('No. Struk: ${data.transaction.receiptNumber ?? 'DRAFT'}');
     buffer.writeln(
       'Tanggal: ${DateFormat('dd/MM/yyyy HH:mm').format(data.transaction.createdAt)}',
     );
@@ -186,8 +190,11 @@ class ReceiptService {
     buffer.writeln('');
     buffer.writeln('*TOTAL: ${currency.format(data.transaction.totalAmount)}*');
     buffer.writeln(
-      'Metode Bayar: ${data.transaction.paymentMethod.toUpperCase()}',
+      'Metode Bayar: ${(data.transaction.paymentMethod ?? 'Draft').toUpperCase()}',
     );
+    if (data.transaction.notes != null && data.transaction.notes!.isNotEmpty) {
+      buffer.writeln('Catatan: ${data.transaction.notes}');
+    }
     buffer.writeln('');
     buffer.writeln('Terima kasih sudah berbelanja! 🙏');
 

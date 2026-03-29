@@ -145,20 +145,21 @@ erDiagram
 
     transactions {
         INTEGER id PK "Auto Increment"
-        TEXT receipt_number "Unik: POS-YYYYMMDD-XXX"
+        TEXT receipt_number "Unik, Nullable (Draft)"
         INTEGER shift_id FK 
         INTEGER customer_id FK "Nullable"
         INTEGER subtotal "Subtotal Item"
         INTEGER tax_amount "Nominal Pajak"
         INTEGER service_charge_amount "Nominal Biaya Layanan"
         INTEGER total_amount "Total Bayar Akhir"
-        TEXT payment_method "cash/qris/debit/credit"
-        TEXT payment_status "paid/void"
+        TEXT payment_method "cash/qris/debit/credit/bon, Nullable (Draft)"
+        TEXT payment_status "paid/void/pending"
         INTEGER void_by FK "ID Pegawai L1/L2, Nullable"
         INTEGER discount_id FK "Discounts ID, Nullable"
         INTEGER discount_amount "Nominal Diskon (Total)"
         INTEGER points_earned "Poin yg didapat dari transaksi"
         INTEGER points_redeemed "Poin yg ditukarkan dari saldo"
+        TEXT notes "Catatan Transaksi (Opsional)"
         TEXT customer_name "Snapshot data member"
         TEXT customer_phone "Snapshot data member"
         TEXT created_at "Waktu Transaksi"
@@ -325,6 +326,8 @@ Sebuah transaksi (*receipt*) tidak bisa terjadi jika di device tersebut tidak ad
 ### e) `transactions` & `transaction_items` (Nota)
 - Data historis (`price_at_transaction`) disimpan secara terpisah di tabel detail. Mengapa? Supaya kalau besok harga produk naik, nota lama yang sudah terjadi tidak ikut membengkak harganya.
 - Nilai Pajak (`tax_amount`) dan Service (`service_charge_amount`) di-record per nota secara mutlak (angka rupiahnya) pada saat transaksi final. Ini memastikan rekap harian tidak bocor ketika Owner merubah persentase pajaknya di kemudian hari.
+- Fitur **Save Bill (Hold Transaction)** didukung dengan membolehkan `receipt_number` dan `payment_method` bernilai `NULL` sementara transaksi berstatus `pending`.
+- Kolom `notes` memungkinkan kasir menambahkan instruksi khusus (misal: "Tanpa sambal", "Meja 5") yang akan dicetak di struk.
 - Jika transaksi di-*Refund* (batal), maka `payment_status` akan berubah jadi `void`, dan `void_by` mencatat `employee_id` sang *Supervisor* (L2) atau *Owner* (L1) yang memberi ACC pembatalan tersebut.
 
 ### f) `stock_transactions` (Kartu Stok / Audit Trail)

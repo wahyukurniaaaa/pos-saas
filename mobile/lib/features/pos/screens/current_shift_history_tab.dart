@@ -313,7 +313,8 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
     
     Map<String, int> paymentTotals = {};
     for (var txn in txns.where((t) => t.paymentStatus != 'void')) {
-      paymentTotals[txn.paymentMethod] = (paymentTotals[txn.paymentMethod] ?? 0) + txn.totalAmount;
+      final method = txn.paymentMethod ?? 'Draft';
+      paymentTotals[method] = (paymentTotals[method] ?? 0) + txn.totalAmount;
     }
 
     final dateFmt = DateFormat('dd MMM yyyy');
@@ -483,7 +484,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              txn.receiptNumber,
+                              txn.receiptNumber ?? 'DRAFT',
                               style: GoogleFonts.poppins(
                                 fontWeight: FontWeight.w800,
                                 fontSize: 16,
@@ -547,6 +548,27 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
                           ),
                         ],
                       ),
+                      if (txn.notes != null && txn.notes!.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const Icon(Icons.note_rounded, size: 14, color: AppTheme.primaryColor),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                txn.notes!,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  color: AppTheme.primaryColor,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -651,7 +673,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Refund Transaksi?', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-        content: Text('Apakah Anda yakin ingin membatalkan transaksi ${txn.receiptNumber}? Stok akan dikembalikan.', style: GoogleFonts.poppins()),
+        content: Text('Apakah Anda yakin ingin membatalkan transaksi ${txn.receiptNumber ?? 'DRAFT'}? Stok akan dikembalikan.', style: GoogleFonts.poppins()),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
           TextButton(
@@ -669,7 +691,7 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
       // Use the established SupervisorAuthDialog for authorization
       final supervisorId = await SupervisorAuthDialog.show(
         context,
-        actionDescription: 'Otorisasi refund (VOID) transaksi ${txn.receiptNumber}?',
+        actionDescription: 'Otorisasi refund (VOID) transaksi ${txn.receiptNumber ?? 'DRAFT'}?',
       );
 
       if (supervisorId != null) {

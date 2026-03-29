@@ -157,7 +157,7 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
                         const SizedBox(height: 16),
                       ],
                       Text(
-                        txn.receiptNumber,
+                        txn.receiptNumber ?? 'DRAFT',
                         style: GoogleFonts.poppins(
                           fontSize: 20,
                           fontWeight: FontWeight.w800,
@@ -183,7 +183,7 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
                             ),
                           ),
                           Text(
-                            txn.paymentMethod.toUpperCase(),
+                            (txn.paymentMethod ?? 'Draft').toUpperCase(),
                             style: GoogleFonts.poppins(
                               fontWeight: FontWeight.w600,
                               color: cs.onSurface,
@@ -191,6 +191,33 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
                           ),
                         ],
                       ),
+                      if (txn.notes != null && txn.notes!.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        const Divider(height: 1),
+                        const SizedBox(height: 12),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Catatan:',
+                              style: GoogleFonts.poppins(
+                                color: cs.onSurfaceVariant,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                txn.notes!,
+                                textAlign: TextAlign.right,
+                                style: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.w500,
+                                  color: cs.onSurface,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),

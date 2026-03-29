@@ -71,7 +71,7 @@ class WhatsAppReceiptWidget extends StatelessWidget {
                 ),
               ),
               Text(
-                data.transaction.receiptNumber,
+                data.transaction.receiptNumber ?? 'DRAFT',
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
@@ -189,7 +189,7 @@ class WhatsAppReceiptWidget extends StatelessWidget {
                 ),
               ),
               Text(
-                data.transaction.paymentMethod.toUpperCase(),
+                (data.transaction.paymentMethod ?? 'Draft').toUpperCase(),
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
