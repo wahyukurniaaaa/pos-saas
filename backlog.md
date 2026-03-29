@@ -221,3 +221,68 @@ Berikut adalah backlog fitur untuk pengembangan **Posify Inventory Phase 2, 3, &
     *   [ ] **UI Preview**: Tampilkan *Live Preview* draf struk di dalam layar pengaturan agar user tidak perlu print fisik untuk cek hasil.
     *   [ ] **Logo Optimization**: Fitur upload & cropping logo agar pas dengan resolusi printer thermal (Hitam-Putih/Monokrom).
     *   [ ] **Logic**: Integrasi variabel kustom ini ke dalam `PrinterService` (Helper Bluetooth).
+
+---
+
+## ☁️ Priority 7: Tier Pro - Cloud Core & Multi-Outlet (Infrastructure)
+
+### 26. Multi-Outlet Infrastructure & Identity (The UUID Migration)
+*   **User Story**: "Sebagai Owner, saya ingin mengelola lebih dari satu cabang bisnis dalam satu akun agar saya bisa melihat performa keseluruhan tanpa harus berganti perangkat (Multi-Outlet Management)."
+*   **Tasks**:
+    *   [ ] **Database Migration v20 (UUID Overhaul)**: Mengonversi semua Primary Key (PK) dari `INTEGER AUTOINCREMENT` ke `TEXT (UUID)`. Wajib dilakukan agar tidak terjadi ID bentrok (*Collision*) saat banyak perangkat offline melakukan sinkronisasi ke satu database Cloud yang sama.
+    *   [ ] **Outlet Mapping Schema**: Membuat tabel `outlets` dan menambahkan kolom `outlet_id` (FK) pada tabel `transactions`, `stock_transactions`, `products`, `ingredients`, dan `employees`.
+    *   [ ] **Soft-Delete Architecture**: Menambahkan kolom `deleted_at` pada semua tabel utama untuk menggantikan penghapusan fisik (`DELETE`), memastikan status penghapusan data tersinkronisasi ke seluruh perangkat terhubung.
+    *   [ ] **Global vs Local Scoping**: Implementasi logika filter data agar Kasir hanya melihat data outletnya sendiri, sementara Owner dapat mengakses akses "Super-Set" data (seluruh outlet).
+
+### 27. Cloud Persistence (PowerSync & Supabase Integration)
+*   **User Story**: "Sebagai Merchant, saya ingin data operasional saya tersambung ke Cloud secara otomatis (Seamless Sync) agar keamanan data terjamin tanpa perlu melakukan backup manual setiap hari."
+*   **Tasks**:
+    *   [ ] **Supabase Backend Setup**: Konfigurasi PostgreSQL di Supabase sebagai *Side-Car* database Cloud yang akan menampung data dari ribuan perangkat lokal.
+    *   [ ] **PowerSync SDK Integration**: Mengintegrasikan PowerSync ke dalam Drift ORM Flutter. PowerSync akan menangani sinkronisasi incremental, penanganan konflik (*Conflict Resolution*), dan persistensi data offline secara otomatis.
+    *   [ ] **Sync Buckets & Rules**: Menetapkan "Sync Buckets" di sisi server untuk mengatur efisiensi bandwidth; perangkat hanya akan mengunduh baris data yang memiliki akses atau relevansi dengan `outlet_id` tersebut.
+    *   [ ] **Auth Transition (SaaS Model)**: Migrasi dari "Activation Key" Tier Lite ke **Supabase Auth (Email & Password)**. User Tier Pro akan login menggunakan akun tetap yang terikat pada langganan bulanan/tahunan.
+
+### 28. Inter-Outlet Stock Transfer & Visibility
+*   **User Story**: "Sebagai Owner, saya ingin memindahkan stok antar cabang (Stock Transfer) dan melihat ketersediaan barang di cabang lain langsung dari aplikasi kasir untuk kebutuhan stok mendadak."
+*   **Tasks**:
+    *   [ ] **Stock Transfer Module**: Membuat entitas `stock_transfers` yang mencatat perpindahan stok: `from_outlet_id` -> `to_outlet_id` dengan status `SENT / RECEIVED`.
+    *   [ ] **Cross-Outlet Stock Checker**: Menambahkan button "Cek Cabang Lain" pada Product Grid untuk pengecekan stok real-time (butuh internet aktif untuk cek data outlet lain).
+    *   [ ] **Cloud Dashboard (Backoffice)**: Inisiasi Dashboard berbasis Web (Next.js) yang mengambil data dari Supabase untuk rekap laporan Multi-Outlet bagi Owner.
+
+---
+
+## 🛍️ Priority 8: Automated Marketplace Fulfillment (TikTok, Shopee, Tokopedia)
+
+### 29. Webhook Proxy & Order Automation
+*   **User Story**: "Sebagai Owner, saya ingin pesanan dari TikTok/Shopee/Tokopedia diproses secara instan (No-Touch Fulfillment) agar pembeli langsung mendapatkan kode lisensi dan saya tidak perlu mengirim email manual."
+*   **Tasks**:
+    - [ ] **Marketplace Connector (Go)**: Implementasi handler untuk webhook TikTok, Shopee, dan Tokopedia.
+    - [ ] **SKU Filter Logic**: Menambahkan tabel `mapping_skus` di database untuk membedakan pesanan lisensi POSify dengan produk fisik lain di toko.
+    - [ ] **License Auto-Generator**: Logika untuk men-*generate* 10-digit kode lisensi unik di tabel `license_inventory` segera setelah webhook `PAID`/`COMPLETED` diterima.
+    - [ ] **Transaction Audit Log**: Mencatat `order_id` dari marketplace ke dalam tabel lisensi untuk keperluan rekonsiliasi keuangan.
+
+### 30. Transactional Email Automation
+*   **User Story**: "Sebagai Pembeli, saya ingin menerima email panduan instalasi dan kode lisensi segera setelah pembayaran saya terverifikasi oleh marketplace."
+*   **Tasks**:
+    - [ ] **Email Service Integration**: Menghubungkan Go Backend dengan service pihak ketiga (Resend, SendGrid, atau Mailgun).
+    - [ ] **Branded Email Template**: Mendesain template email responsif yang berisi:
+        - Selamat datang & Nama Produk (Lite/Pro).
+        - **Kode Lisensi (10-Digit)** yang di-generate.
+        - Link download APK (Google Drive/Firebase).
+        - Tombol **"Aktivasi Sekarang"** (Deep Link ke aplikasi).
+    - [ ] **Retry Mechanism**: Logika pengiriman ulang email jika terjadi kegagalan pada provider email.
+
+### 31. Unified Registration (The "One-Step" Onboarding)
+*   **User Story**: "Sebagai User Baru, saya ingin mendaftarkan akun sekaligus mengaktifkan lisensi dalam satu langkah mudah via link email atau input manual agar proses onboarding cepat."
+*   **Tasks**:
+    - [ ] **Hybrid Registration Flow (Mobile)**: Implementasi layar pendaftaran yang mendukung pengisian otomatis via **Deep Link** (parsing parameter `code`) dan input manual 10-digit kode.
+    - [ ] **Auth Integration (App)**: Menghubungkan Flutter Auth dengan endpoint `/auth/register-with-license` (Kode lisensi bersifat opsional untuk pendaftaran Free/Pro langsung).
+    - [ ] **Account Hydration**: Setelah registrasi sukses, aplikasi otomatis melakukan inisiasi data profil (Tier & Source) ke dalam SQLite lokal.
+
+### 32. In-App Pro Subscription Upgrade
+*   **User Story**: "Sebagai user Free/Lite, saya ingin melakukan upgrade ke Tier Pro langsung dari aplikasi agar saya bisa segera menggunakan fitur Multi-Outlet dan Cloud Sync."
+*   **Tasks**:
+    - [ ] **Payment Gateway Integration (Go)**: Integrasi dengan Midtrans/Xendit untuk pembuatan invoice subscription (Snap/Redirect).
+    - [ ] **Billing Webview (Mobile)**: Layar pembayaran di dalam aplikasi menggunakan Webview untuk menyelesaikan transaksi.
+    - [ ] **Subscription Webhook Listener**: Handler di backend Go untuk menerima notifikasi pembayaran sukses dan melakukan update status `tier` menjadi `pro` di database Supabase.
+    - [ ] **Cloud Sync Awakening**: Logika di aplikasi mobile untuk mengaktifkan PowerSync segera setelah terdeteksi perubahan tier menjadi `pro`.
