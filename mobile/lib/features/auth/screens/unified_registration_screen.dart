@@ -408,7 +408,7 @@ class _UnifiedRegistrationScreenState extends ConsumerState<UnifiedRegistrationS
     final password = _passwordController.text;
     final licenseCode = _licenseController.text.trim();
 
-    final result = await ref.read(authProvider.notifier).registerWithLicense(
+    final result = await ref.read(authProvider.notifier).signUp(
       email: email,
       password: password,
       licenseCode: licenseCode,
@@ -421,26 +421,13 @@ class _UnifiedRegistrationScreenState extends ConsumerState<UnifiedRegistrationS
     final serverError = result.$2;
 
     if (success) {
-      if (licenseCode.isNotEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-             content: Text('Registrasi sukses. Lisensi Anda kini aktif!'),
-             backgroundColor: AppTheme.successColor,
-             behavior: SnackBarBehavior.floating,
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-             content: Text('Registrasi tanpa lisensi sukses.'),
-             backgroundColor: AppTheme.successColor,
-             behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-      // Usually AppBootstrap will rebuild to another screen if license is active
-      // or we can manually push if we are logged in without a license.
-      // But for now, returning success should be enough logic.
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Registrasi sukses! Silakan cek email untuk verifikasi akun.'),
+          backgroundColor: AppTheme.successColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     } else {
       setState(() => _errorMessage = serverError ?? 'Gagal menghubungi server.');
     }

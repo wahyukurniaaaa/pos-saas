@@ -12,7 +12,22 @@ class AppConstants {
     final url = dotenv.get('BASE_URL', fallback: 'http://10.0.2.2:3000/api/v1');
     return url.endsWith('/') ? url : '$url/';
   }
+
   static String get appClientKey => dotenv.get('APP_CLIENT_KEY', fallback: '');
+
+  // Supabase
+  static String get supabaseUrl => dotenv.get(
+        'SUPABASE_URL',
+        fallback: 'https://lyakoidtbdsdtnbourav.supabase.co',
+      );
+  static String get supabaseAnonKey =>
+      dotenv.get('SUPABASE_ANON_KEY', fallback: '');
+
+  // Google OAuth
+  static String get googleWebClientId =>
+      dotenv.get('GOOGLE_WEB_CLIENT_ID', fallback: '');
+  static String get googleIosClientId =>
+      dotenv.get('GOOGLE_IOS_CLIENT_ID', fallback: '');
 
   // PIN
   static const int pinLength = 6;
