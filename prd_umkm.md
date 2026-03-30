@@ -2,9 +2,18 @@
 
 **Produk:** Aplikasi Sistem Kasir (POS) SaaS Offline-First
 
-**Versi:** 2.7 (Loyalty & Membership System)
+**Versi:** 2.9 (Unified Registration)
 
-**Status:** Implementasi Progresif (Phase 1-3, Phase 7-13 Selesai)
+**Status:** Implementasi Progresif (Phase 0, Phase 1-3, Phase 7-13 Selesai)
+
+## **Update Log (v2.9):**
+*   **Unified Registration (Phase 2)**: Implementasi pendaftaran akun SaaS (Email & Password) yang terintegrasi langsung dengan aktivasi lisensi (Hybrid Flow) dalam satu langkah.
+*   **Deep Link Integration**: Dukungan *Custom URL Scheme* (`posify://register`) untuk pengisian otomatis kode lisensi dari email/marketplaces.
+*   **Backend Auth Module**: Penambahan sistem autentikasi berbasis PostgreSQL (GORM) di sisi server untuk keamanan akun *Owner*.
+
+## **Update Log (v2.8):**
+*   **Essential POS UX (Phase 0)**: Penambahan fitur Save Bill (Hold Transaction) dan Transaction Notes untuk operasional kasir yang lebih fleksibel.
+*   **Expense Management**: Implementasi sistem pencatatan Kas Keluar (Expense) dengan dukungan kategori khusus (Ikon & Warna) dan histori pengeluaran untuk akurasi Laba Bersih.
 
 ## **Update Log (v2.7):**
 *   **Loyalty & Membership System (Phase 10)**: Sistem poin member terintegrasi. Pelanggan mendapatkan poin berdasarkan nominal belanja yang dapat ditukarkan menjadi diskon langsung di kasir.
@@ -58,9 +67,9 @@ Aplikasi POSify adalah sistem Point of Sale (POS) yang dirancang khusus untuk UM
 
 ## **4\. Fitur Utama (Functional Requirements)**
 
-### **4.1. Modul Lisensi & Aktivasi**
+### **4.1. Modul Lisensi & Aktivasi (Unified Registration)**
 
-* **Sistem Aktivasi:** Pengguna memasukkan kode lisensi dari email. Aplikasi melakukan validasi ke server Golang untuk mencatat *Device Fingerprint*.  
+* **Sistem Registrasi & Aktivasi:** Pengguna melakukan pendaftaran akun SaaS (Email & Password) sekaligus aktivasi lisensi dalam satu layar. Mendukung input manual atau pengisian otomatis melalui **Deep Link** (`posify://register?code=...`) yang dikirimkan via email pasca-pembelian.
 * **Verification Heartbeat:** Sistem melakukan verifikasi berkala ke server setiap 24 jam untuk memastikan lisensi tidak dipindah-tangankan secara ilegal ke perangkat lain.
 * **Offline Limit:** Aplikasi mendukung penggunaan offline penuh maksimal **7 hari**. Jika dalam 7 hari perangkat tidak pernah terhubung ke internet untuk verifikasi, aplikasi akan terkunci otomatis (Hard Block) hingga verifikasi ulang berhasil dilakukan.
 * **Offline Mode:** Seluruh fungsi kasir dan manajemen stok tetap bekerja 100% tanpa internet selama masa berlaku *heartbeat* (cache) masih aktif.
@@ -160,14 +169,15 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
 
 ## **6\. Arsitektur Teknis & Tech Stack**
 
-* **Backend:** **Go (Fiber)** untuk server generator & aktivasi lisensi.
-* **Database Backend:** **PostgreSQL** untuk database lisensi (melalui GORM).
-* **Database App:** **SQLite (via Drift ORM)** (Lokal) & **Supabase** (Master lisensi & akun owner).
-* **Mobile Framework:** **Flutter** (Target Android APK).
+* **Backend:** **Go (Fiber)** untuk server generator & aktivasi lisensi. Sistem autentikasi mandiri berbasis GORM untuk data *SaaS Account*.
+* **Database Backend:** **PostgreSQL** untuk database lisensi & user account (melalui GORM).
+* **Database App:** **SQLite (via Drift ORM ^2.32.0)** (Lokal) & **Supabase** (Master lisensi & akun owner).
+* **Mobile Framework:** **Flutter ^3.11.0** dengan *State Management* **Riverpod ^3.2.1** (Target Android APK).
 * **Integrasi:** Google Drive API (Backup) & ESC/POS (Printing).
 
 ## **7\. Fase Pengembangan (Roadmap)**
 
+* **Fase 0 (Pre-Requisite):** Setup struktur ERD utama, fitur kasir inti, Save Bill, dan Expense Management. **(SELESAI)**
 * **Fase 1 (Bulan 1):** Development Backend License Generator (Go), Setup Supabase, & Integrasi Email Lisensi.  
 * **Fase 2 (Bulan 2):** Development App Kasir (Flutter), SQLite, Modul Import Excel, & Manajemen Stok Lokal.  
 * **Fase 3 (Bulan 3):** Implementasi Modul Aktivasi Offline, Google Drive Backup, & Peluncuran Resmi APK Tier 1\.  
@@ -219,7 +229,7 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
 
 ## **11\. Spesifikasi Hardware Minimum**
 
-* **OS:** Android 10+ / iOS 14+.  
+* **OS:** Android 10+ (iOS 14+ secara arsitektur didukung, namun rilis utama saat ini dikonfigurasi khusus untuk Android APK demi menekan beban biaya App Store bagi UMKM).
 * **RAM:** Minimum 3GB (Rekomendasi 4GB).  
 * **Storage:** Sisa 1GB untuk database SQLite.  
 * **Printer:** Bluetooth/USB Thermal Printer standard ESC/POS.
@@ -237,9 +247,9 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
 
 ## **14\. User Flows Utama**
 
-### **14.1. Alur Aktivasi Lisensi**
+### **14.1. Alur Unified Registration & Aktivasi**
 
-Input Kode Lisensi \-\> Validasi Backend Go \-\> Generate Device Fingerprint \-\> Simpan Token ke SQLite \-\> Mode Offline Aktif.
+Input Email & Password -> [Opsional] Input/Deep Link Kode Lisensi -> Validasi & Simpan User (Backend) -> Aktivasi Lisensi & Sync Device Fingerprint -> Simpan Status ke SQLite -> Onboarding Selesai.
 
 ### **14.2. Alur Transaksi & Navigasi Utama**
 
@@ -272,13 +282,14 @@ Generate Recovery Key (HP Lama) \-\> Export File Backup \-\> Kirim/Pindah File \
 Bagian ini merangkum kapabilitas utama berdasarkan *Use Case* operasional POS.
 
 ### **15.1. Autentikasi & Manajemen Sesi**
-*   **UC-AUTH:** Aktivasi Lisensi, Pendaftaran Akun Owner, Pemilihan Akun Kasir, Login via PIN 6-digit, dan *Logout* aman.
+*   **UC-AUTH:** Pendaftaran Akun (Email/Password), Aktivasi Lisensi (Manual/Deep Link), Login via PIN 6-digit (Lokal), dan *Logout*.
 
 ### **15.2. Transaksi Kasir (Point of Sales)**
-*   **UC-POS:** Buka Shift (modal awal), Pencarian/Pindai Barang, Kelola Keranjang, Terapkan Diskon (Item/Global), Proses Pembayaran, Cetak Struk, Catat Pengeluaran Operasional (Kas Bon), dan Tutup Shift (Validasi Uang Laci).
+*   **UC-POS:** Buka Shift (modal awal), Pencarian/Pindai Barang, Kelola Keranjang (termasuk fitur *Hold/Save Bill*), Terapkan Diskon (Item/Global), Proses Pembayaran, Cetak Struk, dan Tutup Shift (Validasi Uang Laci).
 
 ### **15.3. Manajemen Stok & Backoffice**
 *   **UC-INV:** Kelola Master Produk, Import/Export Massal (CSV), Catat *Stock In* & *Stock Out* (dengan alasan waste), Lacak Kartu Stok (Mutasi log), *Stock Opname* (audit fisik vs sistem), dan Manajemen Resep/Bahan Baku.
+*   **UC-EXP:** Manajemen Kas Keluar (Expense) untuk operasional, pengkategorian jenis pengeluaran, dan pelampiran foto bukti kuitansi demi pelaporan pendanaan/laba rugi yang akurat.
 
 ### **15.4. Pembelian & Supplier (Purchasing)**
 *   **UC-PUR:** Pendaftaran Database Supplier, Pembuatan Dokumen *Purchase Order* (PO), dan Pelacakan Status Penerimaan Barang.

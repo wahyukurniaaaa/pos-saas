@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/theme/app_theme.dart';
-import 'features/auth/screens/license_activation_screen.dart';
+import 'features/auth/screens/unified_registration_screen.dart';
 import 'features/auth/screens/owner_setup_screen.dart';
 import 'features/auth/screens/pin_login_screen.dart';
 import 'features/auth/screens/employee_selection_screen.dart';
@@ -33,7 +33,8 @@ class PosifyApp extends StatelessWidget {
       themeMode: ThemeMode.light,
       home: const AppBootstrap(),
       routes: {
-        '/license': (context) => const LicenseActivationScreen(),
+        '/register': (context) => const UnifiedRegistrationScreen(),
+        '/license': (context) => const UnifiedRegistrationScreen(),
         '/owner-setup': (context) => const OwnerSetupScreen(),
         '/pin-login': (context) {
           final employee = ModalRoute.of(context)!.settings.arguments;
@@ -63,10 +64,10 @@ class AppBootstrap extends ConsumerWidget {
 
     return licenseAsync.when(
       loading: () => const _SplashScreen(),
-      error: (error, stackTrace) => const LicenseActivationScreen(),
+      error: (error, stackTrace) => const UnifiedRegistrationScreen(),
       data: (license) {
         if (license == null) {
-          return const LicenseActivationScreen();
+          return const UnifiedRegistrationScreen();
         }
 
         return ownerAsync.when(

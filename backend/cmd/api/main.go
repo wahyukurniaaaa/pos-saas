@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 	"os"
+	"posify-backend/internal/auth"
+	"posify-backend/internal/fulfillment"
 	"posify-backend/internal/license"
 	"posify-backend/internal/middleware"
 	"posify-backend/pkg/database"
@@ -84,6 +86,11 @@ func main() {
 		port = "8080"
 	}
 
+	// 10. Dependency Injection Fulfillment (Webhook)
+	fulfillmentRepo := fulfillment.NewRepository(db)
+	fulfillmentSvc := fulfillment.NewService(fulfillmentRepo, licenseSvc)
+	fulfillmentHandler := fulfillment.NewHandler(fulfillmentSvc)
+
 	// License Routes
 	licenseRoutes := api.Group("/license", middleware.RequireAppClientKey, limiterConf)
 	licenseHandler.RegisterRoutes(licenseRoutes)
@@ -91,6 +98,18 @@ func main() {
 	// Admin Routes (License Management)
 	adminRoutes := api.Group("/admin/license", middleware.RequireAdminSecretKey, limiterConf)
 	licenseHandler.RegisterAdminRoutes(adminRoutes)
+
+	// Webhook Routes (No global secret middleware, handled internally via HMAC)
+	webhookRoutes := api.Group("/webhooks")
+	fulfillmentHandler.RegisterRoutes(webhookRoutes)
+
+	// Auth Routes (Unified Registration / Login)
+	authRepo := auth.NewRepository(db)
+	authSvc := auth.NewService(authRepo, licenseSvc)
+	authHandler := auth.NewHandler(authSvc)
+	
+	authRoutes := api.Group("/auth", limiterConf)
+	authHandler.RegisterRoutes(authRoutes)
 
 	// Special Admin Access for testing full flow from UI
 	api.Post("/license/reset", middleware.RequireAdminSecretKey, licenseHandler.Deregister)

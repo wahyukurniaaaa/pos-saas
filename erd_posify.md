@@ -8,10 +8,15 @@ Dokumen ini memuat skema database relasional (SQLite via Drift ORM) untuk menduk
 
 ```mermaid
 erDiagram
+    users ||--o{ licenses : "memiliki"
     licenses ||--o{ employees : "mengaktifkan aplikasi"
     licenses ||--o| store_profile : "mempunyai data toko"
     employees ||--o{ shifts : "membuka shift"
     employees ||--o{ transactions : "membatalkan (void)"
+    
+    expense_categories ||--o{ expenses : "menggolongkan"
+    employees ||--o{ expenses : "mencatat"
+    shifts ||--o{ expenses : "mencatat (opsional)"
     
     customers ||--o{ transactions : "melakukan"
     suppliers ||--o{ stock_transactions : "menyuplai"
@@ -44,10 +49,20 @@ erDiagram
 
     %% Definisi Entitas %%
 
+    %% Backend-Only SaaS Base Schema %%
+    users {
+        INTEGER id PK "Auto Increment"
+        TEXT email "Unik"
+        TEXT password_hash "Bcrypt"
+        TEXT created_at "ISO 8601"
+    }
+
     licenses {
         INTEGER id PK "Auto Increment"
-        TEXT license_code "Unik (Dari Email)"
-        TEXT device_fingerprint "Unik UUID"
+        INTEGER user_id FK "Owner Akun"
+        TEXT license_code "Unik (10-Digit Alfanumerik)"
+        INTEGER tier_level "1 (Lite) / 2 (Pro)"
+        TEXT device_fingerprint "Unik Perangkat"
         TEXT activation_date "ISO 8601"
         TEXT last_verified "ISO 8601, Nullable"
         TEXT status "active/suspended"
@@ -301,6 +316,26 @@ erDiagram
         TEXT created_at "ISO 8601"
     }
 
+    expense_categories {
+        INTEGER id PK "Auto Increment"
+        TEXT name "Unik"
+        TEXT icon "Material icon name"
+        TEXT color "Hex color"
+        BOOLEAN is_default "Default True/False"
+        TEXT created_at "ISO 8601"
+    }
+
+    expenses {
+        INTEGER id PK "Auto Increment"
+        INTEGER category_id FK "expense_categories"
+        INTEGER shift_id FK "Nullable"
+        INTEGER recorded_by FK "employees"
+        INTEGER amount "Nominal pengeluaran (Rp)"
+        TEXT note "Catatan (Opsional)"
+        TEXT photo_uri "Path lokal foto kuitansi (Opsional)"
+        TEXT created_at "ISO 8601"
+    }
+
 ```
 
 ---
@@ -309,11 +344,12 @@ erDiagram
 
 Di dalam SQLite (yang diatur via Drift ORM), tipe data utama yang dipakai adalah `TEXT` dan `INTEGER`. Tanggal dan UUID akan disesuaikan menjadi *class type-safe* di layer Dart dengan *fallback* fungsi penyimpanan secara `TEXT` berformat `ISO 8601` untuk standar lokalisasi dan sinkronisasi log di Tier 2 nanti.
 
-### a) `licenses` (Otorisasi Perangkat)
-Satu perangkat SQLite hanya perlu `SELECT * FROM licenses LIMIT 1`. Jika perangkat terganti, *device fingerprint* tidak akan cocok dan aplikasi akan terkunci otomatis.
+### a) `users` & `licenses` (SaaS Account & Otorisasi)
+- **`users` (Backend)**: Master data akun SaaS di sisi PostgreSQL. Owner mendaftarkan email & password untuk manajemen lisensi serta profil usaha secara terpusat.
+- **`licenses` (SQLite)**: Satu perangkat hanya memiliki satu lisensi aktif. Tabel ini menyimpan `license_code` 10-digit unik yang mengaktifkan fitur aplikasi sesuai tier yang dibeli. Jika perangkat terganti, *device fingerprint* tidak akan cocok dan aplikasi akan terkunci otomatis.
 
 ### b) `employees` (Pengguna & Hak Akses)
-Keamanan L1/L2/L3 dari PRD diimplementasikan lewat tabel ini. Kolom `pin` sifatnya *UNIQUE* sehingga query login sangat cepat dan bebas ambigu. Apabila salah login 5x, kolom `locked_until` akan terisi jam berapa akun bisa dipakai lagi.
+Keamanan L1/L2/L3 dari PRD diimplementasikan lewat tabel ini (SQLite Lokal). Kolom `pin` sifatnya *UNIQUE* sehingga query login sangat cepat dan bebas ambigu. PIN login berbeda dengan Password Akun SaaS (User). Apabila salah login 5x, kolom `locked_until` akan terisi jam berapa akun bisa dipakai lagi.
 
 ### c) `categories` & `products` (Katalog)
 `sku` wajib *UNIQUE* untuk memastikan operasional barcode scanner berjalan dengan semestinya. Gambar produk disimpan di variabel `image_uri` yang berisi path absolut ke internal storage HP, agar aplikasi tidak berat menampung BLOB dalam SQLite. 
@@ -359,6 +395,13 @@ Menyimpan data printer terakhir yang digunakan agar aplikasi bisa otomatis *re-c
 - `scope`: Menentukan apakah diskon memotong total nota (`transaction`) atau potongan per baris produk (`item`).
 - `is_stackable`: Jika `false`, maka diskon ini tidak bisa digabung dengan promo lainnya dalam satu transaksi.
 - History penggunaan diskon tercatat secara permanen di kolom `discount_id` dan `discount_amount` pada tabel `transactions` dan `transaction_items` untuk keperluan audit dan laporan performa promo.
+
+### m) `expenses` & `expense_categories` (Kas Keluar / Operasional)
+- **`expense_categories`**: Tabel referensi kategori untuk mengelompokkan jenis pengeluaran operasional (seperti Listrik, Bensin, Belanja Sayur). Mendukung properti kustom (warna Hex & Icon nama string dari MaterialIcons).
+- **`expenses`**: Riwayat pencatatan uang keluar.
+- Relasi `shift_id` bernilai Nullable, ini disengaja agar *Owner* dapat mencatat pengeluaran di belakang layar (*backoffice*) tanpa harus ada sesi kasir/shift yang sedang berjalan saat itu.
+- Kolom `recorded_by` tetap merekam secara mutlak identitas pegawai (`employee_id`) yang memasukkan data pengeluaran tersebut sebagai mitigasi audit kas.
+- Bukti struk/kuitansi dapat diabadikan dengan kamera, di mana path absolut sistem operasinya disimpan di parameter `photo_uri`.
 
 ---
 ## 3. Catatan Logic & Perhitungan Bisnis

@@ -144,6 +144,81 @@
                     "response": []
                 }
             ]
+        },
+        {
+            "name": "Webhooks (Marketplace)",
+            "item": [
+                {
+                    "name": "1. TikTok Webhook",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "X-Tiktok-Signature",
+                                "value": "dummy-signature-untuk-testing",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"type\": 1,\n  \"tts_notification_id\": \"7327112393057371910\",\n  \"shop_id\": \"7494049642642441621\",\n  \"timestamp\": 1644412885,\n  \"data\": {\n    \"order_id\": \"TK-12345-TEST\",\n    \"order_status\": \"AWAITING_SHIPMENT\",\n    \"is_on_hold_order\": false,\n    \"update_time\": 1644412885\n  }\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/webhooks/tiktok",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "webhooks",
+                                "tiktok"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "2. Shopee Webhook",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "dummy-signature-untuk-testing",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"shop_id\": 987654321,\n  \"code\": 3,\n  \"timestamp\": 1644412885,\n  \"data\": {\n    \"ordersn\": \"SHP-12345-TEST\",\n    \"status\": \"READY_TO_SHIP\"\n  }\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/webhooks/shopee",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "webhooks",
+                                "shopee"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
         }
     ],
     "event": [

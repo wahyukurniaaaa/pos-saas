@@ -1,15 +1,16 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:crypto/crypto.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/core/providers/dio_provider.dart';
-import 'package:posify_app/core/database/database.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'dart:convert';
-import 'package:crypto/crypto.dart';
 
 /// Notifier for license activation and status check.
 class LicenseNotifier extends AsyncNotifier<License?> {
@@ -259,3 +260,89 @@ class LicenseNotifier extends AsyncNotifier<License?> {
 final licenseProvider = AsyncNotifierProvider<LicenseNotifier, License?>(
   LicenseNotifier.new,
 );
+
+class AuthNotifier extends AsyncNotifier<void> {
+  @override
+  FutureOr<void> build() {}
+
+  Future<(bool, String?)> registerWithLicense({
+    required String email,
+    required String password,
+    String? licenseCode,
+  }) async {
+    final dio = ref.read(dioProvider);
+    final lNotifier = ref.read(licenseProvider.notifier);
+
+    try {
+      final deviceId = await lNotifier._getDeviceId();
+      // Call backend
+      final response = await dio.post(
+        'auth/register-with-license',
+        data: {
+          'email': email,
+          'password': password,
+          if (licenseCode != null && licenseCode.isNotEmpty)
+            'license_code': licenseCode,
+          'device_fingerprint': deviceId,
+        },
+      );
+
+      final data = response.data;
+      final isSuccess = (data is Map && data['status'] == 'success') ||
+          response.statusCode == 201;
+
+      if (isSuccess && data is Map) {
+        final resData = data['data'];
+        if (resData is Map && resData['license'] != null) {
+            // License was activated as part of registration. Hydrate it to DB!
+            final db = ref.read(databaseProvider);
+            // Save the server time
+            await lNotifier._storage.write(
+              key: LicenseNotifier._serverTimeKey, 
+              value: DateTime.now().toIso8601String()
+            );
+
+            // Clear old if any
+            await (db.delete(db.licenses)).go();
+
+            // Insert new license snippet
+            final lData = resData['license'];
+            final tierLevel = lData['tier_level']?.toString();
+
+            await db.into(db.licenses).insert(
+              LicensesCompanion.insert(
+                licenseCode: licenseCode ?? lData['license_code'] ?? '',
+                deviceFingerprint: Value(deviceId),
+                activationDate: Value(DateTime.now()),
+                status: const Value('active'),
+              ),
+            );
+
+            // Trigger app reload
+            ref.invalidate(licenseProvider);
+        }
+        return (true, null);
+      }
+
+      final errorMsg = (data is Map && data['message'] != null)
+          ? data['message']!.toString()
+          : 'Registrasi gagal: Status ${response.statusCode}';
+      return (false, errorMsg);
+    } on DioException catch (e) {
+      if (e.response?.data is Map) {
+        final msg = (e.response!.data as Map)['message']?.toString();
+        if (msg != null && msg.isNotEmpty) {
+           return (false, msg);
+        }
+      }
+      return (false, 'Network error. Pastikan tersambung internet.');
+    } catch (e) {
+      return (false, e.toString());
+    }
+  }
+}
+
+final authProvider = AsyncNotifierProvider.autoDispose<AuthNotifier, void>(
+  AuthNotifier.new,
+);
+

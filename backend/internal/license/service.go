@@ -2,10 +2,8 @@ package license
 
 import (
 	"crypto/rand"
-	"encoding/hex"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"posify-backend/internal/models"
@@ -17,6 +15,18 @@ var (
 	ErrLicenseUsed     = errors.New("Batas maksimum perangkat untuk lisensi ini telah tercapai. Silakan hubungi CS untuk reset.")
 	ErrLicenseBanned   = errors.New("Lisensi telah diblokir/disuspend.")
 )
+
+func generate10DigitCode() (string, error) {
+	const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	bytes := make([]byte, 10)
+	if _, err := rand.Read(bytes); err != nil {
+		return "", err
+	}
+	for i, b := range bytes {
+		bytes[i] = charset[b%byte(len(charset))]
+	}
+	return string(bytes), nil
+}
 
 type Service interface {
 	Activate(req ActivateRequest) (*models.License, error)
@@ -133,20 +143,16 @@ func (s *service) Verify(req VerifyRequest) (bool, error) {
 
 // Generate creates a new random license code
 func (s *service) Generate(req GenerateRequest) (*models.License, error) {
-	// Generate format POS-L1-XXXXX-XXXXX
-	bytes := make([]byte, 5)
-	if _, err := rand.Read(bytes); err != nil {
+	// Generate format 10 digit random alphanumeric
+	code, err := generate10DigitCode()
+	if err != nil {
 		return nil, err
 	}
-	part1 := strings.ToUpper(hex.EncodeToString(bytes))
 
-	bytes2 := make([]byte, 5)
-	if _, err := rand.Read(bytes2); err != nil {
-		return nil, err
+	source := req.Source
+	if source == "" {
+		source = "manual"
 	}
-	part2 := strings.ToUpper(hex.EncodeToString(bytes2))
-
-	code := fmt.Sprintf("POS-L1-%s-%s", part1, part2)
 
 	license := &models.License{
 		LicenseCode:   code,
@@ -154,6 +160,8 @@ func (s *service) Generate(req GenerateRequest) (*models.License, error) {
 		MaxDevices:    req.MaxDevices,
 		CustomerEmail: req.CustomerEmail,
 		IsActive:      true,
+		OrderID:       req.OrderID,
+		Source:        source,
 	}
 
 	if err := s.repo.Create(license); err != nil {

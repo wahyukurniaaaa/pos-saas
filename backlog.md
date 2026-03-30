@@ -9,7 +9,7 @@ Dokumen ini mendefinisikan urutan eksekusi fitur untuk transisi dari **Tier Lite
 | Phase | Goal | Key Features | Status |
 | :--- | :--- | :--- | :--- |
 | **Phase 0** | **Essential POS UX** | **Save Bill (Hold)**, **Transaction Notes**. | ✅ COMPLETED |
-| **Phase 1** | **Growth & Automation** | Marketplace Webhooks, Auto-License Email, Unified Onboarding. | 🔜 Ready |
+| **Phase 1** | **Growth & Automation** | Marketplace Webhooks, Auto-License Email, Unified Onboarding. | 🕒 IN PROGRESS |
 | **Phase 2** | **Core Infrastructure** | **UUID Migration (v20)**, Outlet Mapping, Soft-Delete. | 🔜 Ready |
 | **Phase 3** | **Cloud Sync & Pro**| PowerSync & Supabase Integration, Multi-Outlet Visibility. | 🔜 Ready |
 | **Phase 4** | **Scale & Monetization**| In-App Pro Billing, Dashboard, Advanced F&B, KDS, Tables. | 🔜 Ready |
@@ -44,28 +44,27 @@ Dokumen ini mendefinisikan urutan eksekusi fitur untuk transisi dari **Tier Lite
 ### 29. Webhook Proxy & Order Automation (Marketplace Fulfillment)
 *   **User Story**: "Sebagai Owner, saya ingin pesanan dari TikTok/Shopee/Tokopedia diproses secara instan (No-Touch Fulfillment) agar pembeli langsung mendapatkan kode lisensi dan saya tidak perlu mengirim email manual."
 *   **Tasks**:
-    - [ ] **Marketplace Connector (Go)**: Implementasi handler untuk webhook TikTok, Shopee, dan Tokopedia.
-    - [ ] **SKU Filter Logic**: Menambahkan tabel `mapping_skus` di database untuk membedakan pesanan lisensi POSify dengan produk fisik lain di toko.
-    - [ ] **License Auto-Generator**: Logika untuk men-*generate* 10-digit kode lisensi unik di tabel `license_inventory` segera setelah webhook `PAID`/`COMPLETED` diterima.
-    - [ ] **Transaction Audit Log**: Mencatat `order_id` dari marketplace ke dalam tabel lisensi untuk keperluan rekonsiliasi keuangan.
+    - [x] **Marketplace Connector (Go)**: Implementasi handler untuk webhook TikTok (HMAC verified) dan Shopee (READY_TO_SHIP).
+    - [x] **SKU Filter Logic**: Menambahkan tabel `mapping_skus` dan repository lookup untuk memvalidasi produk lisensi.
+    - [x] **License Auto-Generator**: Menghasilkan 10-digit alfanumerik kapital acak (`crypto/rand`) tanpa prefix lama.
+    - [x] **Transaction Audit Log**: Mencatat `order_id` dan `source` ke tabel `licenses` serta pengecekan duplikasi pesanan.
+    - [x] **Testing**: Unit Test coverage untuk `ProcessTikTokOrder` dan `ProcessShopeeOrder`.
 
 ### 30. Transactional Email Automation
 *   **User Story**: "Sebagai Pembeli, saya ingin menerima email panduan instalasi dan kode lisensi segera setelah pembayaran saya terverifikasi oleh marketplace."
 *   **Tasks**:
-    - [ ] **Email Service Integration**: Menghubungkan Go Backend dengan service pihak ketiga (Resend, SendGrid, atau Mailgun).
-    - [ ] **Branded Email Template**: Mendesain template email responsif yang berisi:
-        - Selamat datang & Nama Produk (Lite/Pro).
-        - **Kode Lisensi (10-Digit)** yang di-generate.
-        - Link download APK (Google Drive/Firebase).
-        - Tombol **"Aktivasi Sekarang"** (Deep Link ke aplikasi).
-    - [ ] **Retry Mechanism**: Logika pengiriman ulang email jika terjadi kegagalan pada provider email.
+    - [x] **Email Service Integration**: Menggunakan **Resend Go SDK** dengan API Key terkonfigurasi.
+    - [x] **Branded Email Template**: Template HTML premium (Brand Indigo #1A237E) dengan placeholder dinamis untuk lisensi dan tier.
+    - [x] **Integration**: Terhubung langsung dengan `License.Generate` yang dipicu oleh Webhook.
+    - [ ] **Retry Mechanism**: (Next Path) Implementasi background worker (Asynq/Machinery) jika volume tinggi.
 
 ### 31. Unified Registration (The "One-Step" Onboarding)
+*   **Status**: **SELESAI**
 *   **User Story**: "Sebagai User Baru, saya ingin mendaftarkan akun sekaligus mengaktifkan lisensi dalam satu langkah mudah via link email atau input manual agar proses onboarding cepat."
 *   **Tasks**:
-    - [ ] **Hybrid Registration Flow (Mobile)**: Implementasi layar pendaftaran yang mendukung pengisian otomatis via **Deep Link** (parsing parameter `code`) dan input manual 10-digit kode.
-    - [ ] **Auth Integration (App)**: Menghubungkan Flutter Auth dengan endpoint `/auth/register-with-license` (Kode lisensi bersifat opsional untuk pendaftaran Free/Pro langsung).
-    - [ ] **Account Hydration**: Setelah registrasi sukses, aplikasi otomatis melakukan inisiasi data profil (Tier & Source) ke dalam SQLite lokal.
+    - [x] **Hybrid Registration Flow (Mobile)**: Implementasi layar pendaftaran yang mendukung pengisian otomatis via **Deep Link** (parsing parameter `code`) dan input manual 10-digit kode.
+    - [x] **Auth Integration (App)**: Menghubungkan Flutter Auth dengan endpoint `/auth/register-with-license` (Kode lisensi bersifat opsional untuk pendaftaran Free/Pro langsung).
+    - [x] **Account Hydration**: Setelah registrasi sukses, aplikasi otomatis melakukan inisiasi data profil (Tier & Source) ke dalam SQLite lokal.
 
 ---
 

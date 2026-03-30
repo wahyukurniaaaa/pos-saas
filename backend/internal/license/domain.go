@@ -27,6 +27,8 @@ type GenerateRequest struct {
 	TierLevel     string `json:"tier_level" validate:"required"`
 	MaxDevices    int    `json:"max_devices" validate:"required,min=1"`
 	CustomerEmail string `json:"customer_email" validate:"required,email"`
+	OrderID       string `json:"order_id"`
+	Source        string `json:"source"`
 }
 
 type GenerateResponseData struct {
