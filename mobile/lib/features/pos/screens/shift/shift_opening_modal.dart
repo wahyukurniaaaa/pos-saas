@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter/services.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:posify_app/features/pos/providers/shift_provider.dart';
+import 'package:posify_app/core/utils/currency_input_formatter.dart';
 
 class ShiftOpeningModal extends ConsumerStatefulWidget {
   const ShiftOpeningModal({super.key});
@@ -13,7 +15,18 @@ class ShiftOpeningModal extends ConsumerStatefulWidget {
 
 class _ShiftOpeningModalState extends ConsumerState<ShiftOpeningModal> {
   final _amountController = TextEditingController(text: '0');
+  final _focusNode = FocusNode();
   bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode.addListener(() {
+      if (_focusNode.hasFocus && _amountController.text == '0') {
+        _amountController.clear();
+      }
+    });
+  }
 
   void _submit() async {
     final amountText = _amountController.text.replaceAll(RegExp(r'[^0-9]'), '');
@@ -40,6 +53,7 @@ class _ShiftOpeningModalState extends ConsumerState<ShiftOpeningModal> {
 
   @override
   void dispose() {
+    _focusNode.dispose();
     _amountController.dispose();
     super.dispose();
   }
@@ -52,7 +66,7 @@ class _ShiftOpeningModalState extends ConsumerState<ShiftOpeningModal> {
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
       child: Center(
         child: Container(
-          width: 420,
+          constraints: const BoxConstraints(maxWidth: 420),
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             color: Colors.white,
@@ -138,7 +152,12 @@ class _ShiftOpeningModalState extends ConsumerState<ShiftOpeningModal> {
                     const SizedBox(height: 12),
                     TextField(
                       controller: _amountController,
+                      focusNode: _focusNode,
                       keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        CurrencyInputFormatter(),
+                      ],
                       style: GoogleFonts.poppins(
                         fontSize: 28,
                         fontWeight: FontWeight.w700,

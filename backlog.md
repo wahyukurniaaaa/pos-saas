@@ -8,7 +8,7 @@ Dokumen ini mendefinisikan urutan eksekusi fitur untuk transisi dari **Tier Lite
 
 | Phase | Goal | Key Features | Status |
 | :--- | :--- | :--- | :--- |
-| **Phase 0** | **Essential POS UX** | **Save Bill (Hold)**, **Transaction Notes**. | ✅ COMPLETED |
+| **Phase 0** | **Essential POS UX** | **Save Bill**, **Split Bill/Payment**, **Notes**. | ✅ Partial |
 | **Phase 1** | **Growth & Automation** | Marketplace Webhooks, Auto-License Email, Unified Onboarding. | 🕒 IN PROGRESS |
 | **Phase 2** | **Core Infrastructure** | **UUID Migration (v20)**, Outlet Mapping, Soft-Delete. | 🔜 Ready |
 | **Phase 3** | **Cloud Sync & Pro**| PowerSync & Supabase Integration, Multi-Outlet Visibility. | 🔜 Ready |
@@ -35,6 +35,23 @@ Dokumen ini mendefinisikan urutan eksekusi fitur untuk transisi dari **Tier Lite
     - [x] **UI**: Tambahkan field input "Catatan" di `PaymentModal` atau sebelum masuk ke layar pembayaran.
     - [x] **Display**: Tampilkan catatan pada daftar riwayat transaksi dan detail transaksi.
     - [x] **Receipts**: Cetak catatan pada struk thermal dan struk WhatsApp jika terisi.
+
+### 25. Split Bill (Pecah Tagihan)
+*   **User Story**: "Sebagai Kasir, saya ingin membagi tagihan pesanan menjadi beberapa pembayaran terpisah (Split Bill) agar rombongan pelanggan bisa membayar bagiannya masing-masing secara individu (berdasarkan item atau jumlah)."
+*   **Tasks**:
+    - [ ] **UI/UX**: Implementasi layar "Split Bill" yang memungkinkan kasir memilih item mana yang akan dibayar terlebih dahulu.
+    - [ ] **Logic**: Manajemen sub-keranjang (Partial Checkout) sehingga sisa item tetap berada di keranjang utama atau menjadi Bill tertunda baru.
+    - [ ] **Database**: Pelacakan relasi antar transaksi yang dipecah (Parent Transaction ID) untuk laporan rekonsiliasi yang akurat.
+    - [ ] **Validation**: Validasi total pembayaran agar jumlah seluruh pecahan tagihan sesuai dengan nilai transaksi original.
+    - [ ] **Receipts**: Cetak struk terpisah untuk setiap pecahan tagihan dengan indikator "Partial Payment".
+
+### 26. Split Payment (Multi-Metode Pembayaran)
+*   **User Story**: "Sebagai Kasir, saya ingin menerima lebih dari satu metode pembayaran untuk satu transaksi (Split Payment) agar pelanggan dapat membayar sebagian dengan tunai dan sisanya dengan kartu atau QRIS dalam satu struk."
+*   **Tasks**:
+    - [ ] **UI/UX**: Desain alur input multi-pembayaran di `PaymentModal` yang memungkinkan penambahan baris pembayaran baru.
+    - [ ] **Logic**: Kalkulator sisa saldo pembayaran yang otomatis berkurang saat satu metode pembayaran dikonfirmasi (Remaining Balance logic).
+    - [ ] **Database**: Penyesuaian skema untuk menyimpan rincian metode pembayaran ganda per transaksi (Linked payments).
+    - [ ] **Receipts**: Modifikasi struk agar menampilkan rincian dari setiap metode pembayaran yang digunakan.
 
 ---
 

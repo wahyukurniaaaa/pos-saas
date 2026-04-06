@@ -4,6 +4,8 @@ import 'package:drift/drift.dart' as drift;
 import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'cart_notes_provider.dart';
+import 'selected_customer_provider.dart';
+import 'split_payment_provider.dart';
 
 // ===== Category Provider =====
 
@@ -287,13 +289,17 @@ class CartNotifier extends Notifier<List<CartItem>> {
   void clearCart() {
     state = [];
     ref.read(cartNotesProvider.notifier).state = null;
+    // Clear customer info
+    ref.read(selectedCustomerProvider.notifier).state = null;
+    ref.read(manualCustomerNameProvider.notifier).state = null;
+    ref.read(manualCustomerPhoneProvider.notifier).state = null;
   }
 
   double get subtotal => state.fold(0, (sum, item) => sum + item.total);
 
   Future<int?> checkout({
     required int shiftId,
-    required String paymentMethod,
+    required List<PaymentEntry> payments,
     required double taxAmount,
     required double serviceCharge,
     String? customerPhone,
@@ -307,6 +313,7 @@ class CartNotifier extends Notifier<List<CartItem>> {
   }) async {
     try {
       if (state.isEmpty) return null;
+      if (payments.isEmpty) return null;
 
       final db = ref.read(databaseProvider);
       final now = DateTime.now();
@@ -315,6 +322,11 @@ class CartNotifier extends Notifier<List<CartItem>> {
 
       final total = subtotal + taxAmount + serviceCharge;
 
+      // Determine the paymentMethod string for the main transaction record
+      final effectiveMethod = payments.length == 1
+          ? payments.first.method.toLowerCase()
+          : 'mixed';
+
       final transactionEntry = TransactionsCompanion.insert(
         receiptNumber: drift.Value(receiptNumber),
         shiftId: shiftId,
@@ -322,7 +334,7 @@ class CartNotifier extends Notifier<List<CartItem>> {
         taxAmount: drift.Value(taxAmount.toInt()),
         serviceChargeAmount: drift.Value(serviceCharge.toInt()),
         totalAmount: total.toInt(),
-        paymentMethod: drift.Value(paymentMethod),
+        paymentMethod: drift.Value(effectiveMethod),
         customerPhone: drift.Value(customerPhone),
         customerName: drift.Value(customerName),
         customerId: drift.Value(customerId),
@@ -334,13 +346,12 @@ class CartNotifier extends Notifier<List<CartItem>> {
       );
 
       final itemsParams = state.map((item) {
-        // Snapshot variant label for permanent audit trail on receipts/history
         final variantLabel = item.variant != null
             ? '${item.variant!.name}: ${item.variant!.optionValue}'
             : null;
 
         return TransactionItemsCompanion.insert(
-          transactionId: 0, // Overridden by processCheckout
+          transactionId: 0,
           productId: item.product.id,
           variantId: drift.Value(item.variant?.id),
           variantName: drift.Value(variantLabel),
@@ -352,9 +363,31 @@ class CartNotifier extends Notifier<List<CartItem>> {
         );
       }).toList();
 
+      // Build payment breakdown for the split payment table
+      // Calculate remaining after non-cash methods to find true cash change
+      double nonCashTotal = payments
+          .where((p) => p.method.toLowerCase() != 'tunai')
+          .fold(0.0, (sum, p) => sum + p.amount);
+      double cashRemaining = total - nonCashTotal;
+
+      final paymentEntries = payments.map((p) {
+        int changeGiven = 0;
+        if (p.method.toLowerCase() == 'tunai') {
+          final change = p.amount - cashRemaining;
+          changeGiven = change > 0 ? change.toInt() : 0;
+        }
+        return TransactionPaymentsCompanion.insert(
+          transactionId: 0, // Overridden by processCheckout
+          method: p.method.toLowerCase(),
+          amount: p.amount.toInt(),
+          changeGiven: drift.Value(changeGiven),
+        );
+      }).toList();
+
       final id = await db.processCheckout(
         transactionEntry: transactionEntry,
         itemsParams: itemsParams,
+        paymentEntries: paymentEntries,
       );
 
       ref.invalidate(productProvider);
@@ -458,10 +491,30 @@ class CartNotifier extends Notifier<List<CartItem>> {
       
       // Set notes to provider
       ref.read(cartNotesProvider.notifier).state = transaction.notes;
+
+      // === NEW: RESTORE CUSTOMER INFO ===
+      if (transaction.customerId != null) {
+        final customers = await db.getAllCustomers();
+        final selected = customers.where((c) => c.id == transaction.customerId).firstOrNull;
+        if (selected != null) {
+          ref.read(selectedCustomerProvider.notifier).state = selected;
+        }
+      }
       
-      // Delete the pending transaction after successful resume 
-      // (or keep it if you want to support manual save/resume without deletion)
-      await db.deleteTransaction(transaction.id);
+      if (transaction.customerName != null) {
+        ref.read(manualCustomerNameProvider.notifier).state = transaction.customerName;
+      }
+      
+      if (transaction.customerPhone != null) {
+        ref.read(manualCustomerPhoneProvider.notifier).state = transaction.customerPhone;
+      }
+      // ===================================
+      
+      // Mark as resumed instead of deleting to prevent loss if crash before re-saved
+      // This also removes it from the pending list (since it only watches status='pending')
+      await (db.update(db.transactions)..where((t) => t.id.equals(transaction.id)))
+          .write(const TransactionsCompanion(paymentStatus: drift.Value('resumed')));
+          
     } catch (e) {
       debugPrint('Resume bill error: $e');
     }

@@ -143,7 +143,8 @@ class _PosTabState extends ConsumerState<PosTab> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
+                  Expanded(
+                    child: Row(
                     children: [
                       if (showBackButton)
                         IconButton(
@@ -172,63 +173,85 @@ class _PosTabState extends ConsumerState<PosTab> {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Selamat Pagi,',
-                            style: GoogleFonts.poppins(
-                              color: Colors.white.withValues(alpha: 0.7),
-                              fontSize: 12,
-                            ),
-                          ),
-                          Text(
-                            cashierName,
-                            style: GoogleFonts.poppins(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Selamat Pagi,',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.white.withValues(alpha: 0.7),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                Text(
+                                  cashierName,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                    ),
                   // Current Shift Status & Held Bills
                   Row(
                     children: [
                       _HeldBillsBadge(),
                       const SizedBox(width: 12),
-                      Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () {
-                            if (hasOpenShift) {
-                              _showShiftReport(context, cashierName);
-                            } else {
-                              showDialog(
-                                context: context,
-                                builder: (context) => const ShiftOpeningModal(),
-                              );
-                            }
-                          },
-                          borderRadius: BorderRadius.circular(12),
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(12),
+                      hasOpenShift
+                          ? Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () => _showShiftMenu(context, cashierName),
+                                borderRadius: BorderRadius.circular(12),
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Icon(
+                                    Icons.storefront_rounded,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                ),
+                              ),
+                            )
+                          : ElevatedButton.icon(
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => const ShiftOpeningModal(),
+                                );
+                              },
+                              icon: const Icon(Icons.lock_open_rounded, size: 16),
+                              label: Text(
+                                'Buka Kasir',
+                                style: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppTheme.secondaryColor,
+                                foregroundColor: AppTheme.primaryColor,
+                                minimumSize: const Size(0, 36),
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
                             ),
-                            child: Icon(
-                              hasOpenShift
-                                  ? Icons.storefront_rounded
-                                  : Icons.lock_outline_rounded,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                 ],
@@ -740,8 +763,23 @@ class CartPanel extends ConsumerWidget {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),
+                            padding: EdgeInsets.zero,
                           ),
-                          child: Icon(Icons.pause_circle_outline_rounded, color: AppTheme.primaryColor),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.archive_outlined, color: AppTheme.primaryColor, size: 20),
+                              Text(
+                                'SIMPAN', 
+                                style: GoogleFonts.poppins(
+                                  fontSize: 9, 
+                                  fontWeight: FontWeight.w800, 
+                                  color: AppTheme.primaryColor,
+                                  letterSpacing: 0.5,
+                                )
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -1310,7 +1348,99 @@ void _showPaymentDialog(BuildContext context, WidgetRef ref, double amount) {
   }
 }
 
-void _showShiftReport(BuildContext context, String cashierName) {
+void _showShiftMenu(BuildContext context, String cashierName) {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: Colors.transparent,
+    isScrollControlled: true,
+    builder: (ctx) => Container(
+      decoration: const BoxDecoration(
+        color: AppTheme.backgroundLight,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.paddingOf(context).bottom + 20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Menu Shift',
+                style: GoogleFonts.poppins(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+              IconButton(
+                onPressed: () => Navigator.pop(ctx),
+                icon: const Icon(Icons.close),
+              )
+            ],
+          ),
+          const SizedBox(height: 16),
+          ListTile(
+            onTap: () {
+              Navigator.pop(ctx);
+              _showShiftReport(context, cashierName, focusCloseShift: false);
+            },
+            contentPadding: EdgeInsets.zero,
+            leading: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppTheme.infoColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.analytics_outlined, color: AppTheme.infoColor),
+            ),
+            title: Text(
+              'Laporan Shift Saat Ini',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+            ),
+            subtitle: Text(
+              'Lihat rekapitulasi penjualan hari ini',
+              style: GoogleFonts.poppins(fontSize: 12, color: AppTheme.textSecondary),
+            ),
+            trailing: const Icon(Icons.chevron_right_rounded, color: AppTheme.textSecondary),
+          ),
+          const Divider(height: 24),
+          ListTile(
+            onTap: () {
+              Navigator.pop(ctx);
+              _showShiftReport(context, cashierName, focusCloseShift: true);
+            },
+            contentPadding: EdgeInsets.zero,
+            leading: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppTheme.dangerColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.lock_outline_rounded, color: AppTheme.dangerColor),
+            ),
+            title: Text(
+              'Tutup Kasir',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w600, color: AppTheme.dangerColor),
+            ),
+            subtitle: Text(
+              'Lakukan rekonsiliasi kas dan akhiri sesi',
+              style: GoogleFonts.poppins(fontSize: 12, color: AppTheme.textSecondary),
+            ),
+            trailing: const Icon(Icons.chevron_right_rounded, color: AppTheme.textSecondary),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+void _showShiftReport(
+  BuildContext context,
+  String cashierName, {
+  bool focusCloseShift = false,
+}) {
   final isDesktop = MediaQuery.sizeOf(context).width > 800;
 
   if (isDesktop) {
@@ -1319,7 +1449,10 @@ void _showShiftReport(BuildContext context, String cashierName) {
       builder: (ctx) => Dialog(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        child: ShiftReportModal(cashierName: cashierName),
+        child: ShiftReportModal(
+          cashierName: cashierName,
+          focusCloseShift: focusCloseShift,
+        ),
       ),
     );
   } else {
@@ -1327,7 +1460,10 @@ void _showShiftReport(BuildContext context, String cashierName) {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => ShiftReportModal(cashierName: cashierName),
+      builder: (ctx) => ShiftReportModal(
+        cashierName: cashierName,
+        focusCloseShift: focusCloseShift,
+      ),
     );
   }
 }
@@ -1638,46 +1774,57 @@ class _HeldBillsBadge extends ConsumerWidget {
     return pendingTransactions.maybeWhen(
       data: (txs) {
         if (txs.isEmpty) return const SizedBox.shrink();
-        return GestureDetector(
-          onTap: () {
-            showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              backgroundColor: Colors.transparent,
-              builder: (context) => const HeldBillsDialog(),
-            );
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: AppTheme.secondaryColor,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.receipt_long_rounded,
-                  size: 14,
-                  color: AppTheme.primaryColor,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  '${txs.length} Bill',
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
+        return TweenAnimationBuilder<double>(
+          duration: const Duration(seconds: 1),
+          tween: Tween(begin: 0.95, end: 1.05),
+          curve: Curves.easeInOut,
+          builder: (context, scale, child) => Transform.scale(
+            scale: scale,
+            child: child,
+          ),
+          onEnd: () {}, // Not real loop but can be achieved with a StatefulWidget if needed. 
+          // For now, let's just make it appear nicely.
+          child: GestureDetector(
+            onTap: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => const HeldBillsDialog(),
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppTheme.secondaryColor,
+                borderRadius: BorderRadius.circular(10), // More professional than fully round in this context
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.history_rounded,
+                    size: 14,
                     color: AppTheme.primaryColor,
                   ),
-                ),
-              ],
+                  const SizedBox(width: 4),
+                  Text(
+                    '${txs.length} Bill',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: AppTheme.primaryColor,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );

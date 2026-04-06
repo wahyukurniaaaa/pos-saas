@@ -7,11 +7,25 @@ import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:posify_app/features/pos/providers/pos_providers.dart';
 
-class HeldBillsDialog extends ConsumerWidget {
+class HeldBillsDialog extends ConsumerStatefulWidget {
   const HeldBillsDialog({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HeldBillsDialog> createState() => _HeldBillsDialogState();
+}
+
+class _HeldBillsDialogState extends ConsumerState<HeldBillsDialog> {
+  String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final pendingTransactionsAsync = ref.watch(pendingTransactionsProvider);
     final currency = NumberFormat.currency(
       locale: 'id_ID',
@@ -57,6 +71,30 @@ class HeldBillsDialog extends ConsumerWidget {
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
+          const SizedBox(height: 20),
+          // NEW: Search Bar
+          TextField(
+            controller: _searchController,
+            onChanged: (val) => setState(() => _searchQuery = val),
+            decoration: InputDecoration(
+              hintText: 'Cari nama atau ID...',
+              hintStyle: GoogleFonts.poppins(fontSize: 13, color: AppTheme.textSecondary),
+              prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.primaryColor, size: 20),
+              suffixIcon: _searchQuery.isNotEmpty 
+                ? IconButton(
+                    onPressed: () {
+                      _searchController.clear();
+                      setState(() => _searchQuery = '');
+                    },
+                    icon: const Icon(Icons.clear_rounded, size: 18),
+                  ) 
+                : null,
+              filled: true,
+              fillColor: Colors.grey.shade50,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+            ),
+          ),
           const SizedBox(height: 24),
           Flexible(
             child: pendingTransactionsAsync.when(
@@ -88,12 +126,31 @@ class HeldBillsDialog extends ConsumerWidget {
                   );
                 }
 
+                final filtered = transactions.where((tx) {
+                  final q = _searchQuery.toLowerCase();
+                  if (q.isEmpty) return true;
+                  return (tx.customerName?.toLowerCase().contains(q) ?? false) || 
+                         tx.id.toString().contains(q);
+                }).toList();
+
+                if (filtered.isEmpty) {
+                   return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 40),
+                      child: Text(
+                        'Pencarian tidak ditemukan',
+                        style: GoogleFonts.poppins(color: AppTheme.textSecondary),
+                      ),
+                    ),
+                  );
+                }
+
                 return ListView.separated(
                   shrinkWrap: true,
-                  itemCount: transactions.length,
+                  itemCount: filtered.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 12),
                   itemBuilder: (context, index) {
-                    final tx = transactions[index];
+                    final tx = filtered[index];
                     return _HeldBillCard(
                       transaction: tx,
                       currency: currency,
@@ -131,7 +188,7 @@ class HeldBillsDialog extends ConsumerWidget {
   }
 }
 
-class _HeldBillCard extends StatelessWidget {
+class _HeldBillCard extends ConsumerWidget {
   final Transaction transaction;
   final NumberFormat currency;
   final VoidCallback onTap;
@@ -145,33 +202,41 @@ class _HeldBillCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final timeStr = DateFormat('HH:mm').format(transaction.createdAt);
+    final db = ref.read(databaseProvider);
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(24),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(24),
           border: Border.all(
             color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
             width: 1.5,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           children: [
             Container(
-              width: 48,
-              height: 48,
+              width: 52,
+              height: 52,
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
+                color: AppTheme.primaryColor.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(16),
               ),
               child: const Icon(
-                Icons.history_rounded,
+                Icons.receipt_long_rounded,
                 color: AppTheme.primaryColor,
               ),
             ),
@@ -181,18 +246,51 @@ class _HeldBillCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    transaction.customerName ?? 'Tanpa Nama',
+                    transaction.customerName ?? 'Pelanggan Umum',
                     style: GoogleFonts.poppins(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textPrimary,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  Text(
-                    'Pukul $timeStr • ID: ${transaction.id}',
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      Icon(Icons.access_time_rounded, size: 12, color: AppTheme.textSecondary),
+                    const SizedBox(width: 4),
+                      Text(
+                        '$timeStr • ID: ${transaction.id}',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: AppTheme.textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  FutureBuilder<List<TransactionItem>>(
+                    future: db.getTransactionItems(transaction.id),
+                    builder: (context, snapshot) {
+                      final count = snapshot.data?.length ?? 0;
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          '$count Item',
+                          style: GoogleFonts.poppins(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.textSecondary,
+                          ),
+                        ),
+                      );
+                    }
                   ),
                 ],
               ),
@@ -203,9 +301,9 @@ class _HeldBillCard extends StatelessWidget {
                 Text(
                   currency.format(transaction.totalAmount),
                   style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: Theme.of(context).colorScheme.primary,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.primaryColor,
                   ),
                 ),
                 GestureDetector(

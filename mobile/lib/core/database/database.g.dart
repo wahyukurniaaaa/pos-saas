@@ -12979,6 +12979,367 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
   }
 }
 
+class $TransactionPaymentsTable extends TransactionPayments
+    with TableInfo<$TransactionPaymentsTable, TransactionPayment> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TransactionPaymentsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _transactionIdMeta = const VerificationMeta(
+    'transactionId',
+  );
+  @override
+  late final GeneratedColumn<int> transactionId = GeneratedColumn<int>(
+    'transaction_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES transactions (id)',
+    ),
+  );
+  static const VerificationMeta _methodMeta = const VerificationMeta('method');
+  @override
+  late final GeneratedColumn<String> method = GeneratedColumn<String>(
+    'method',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _amountMeta = const VerificationMeta('amount');
+  @override
+  late final GeneratedColumn<int> amount = GeneratedColumn<int>(
+    'amount',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _changeGivenMeta = const VerificationMeta(
+    'changeGiven',
+  );
+  @override
+  late final GeneratedColumn<int> changeGiven = GeneratedColumn<int>(
+    'change_given',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    transactionId,
+    method,
+    amount,
+    changeGiven,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'transaction_payments';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TransactionPayment> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('transaction_id')) {
+      context.handle(
+        _transactionIdMeta,
+        transactionId.isAcceptableOrUnknown(
+          data['transaction_id']!,
+          _transactionIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_transactionIdMeta);
+    }
+    if (data.containsKey('method')) {
+      context.handle(
+        _methodMeta,
+        method.isAcceptableOrUnknown(data['method']!, _methodMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_methodMeta);
+    }
+    if (data.containsKey('amount')) {
+      context.handle(
+        _amountMeta,
+        amount.isAcceptableOrUnknown(data['amount']!, _amountMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_amountMeta);
+    }
+    if (data.containsKey('change_given')) {
+      context.handle(
+        _changeGivenMeta,
+        changeGiven.isAcceptableOrUnknown(
+          data['change_given']!,
+          _changeGivenMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  TransactionPayment map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TransactionPayment(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      transactionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}transaction_id'],
+      )!,
+      method: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}method'],
+      )!,
+      amount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}amount'],
+      )!,
+      changeGiven: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}change_given'],
+      )!,
+    );
+  }
+
+  @override
+  $TransactionPaymentsTable createAlias(String alias) {
+    return $TransactionPaymentsTable(attachedDatabase, alias);
+  }
+}
+
+class TransactionPayment extends DataClass
+    implements Insertable<TransactionPayment> {
+  final int id;
+  final int transactionId;
+  final String method;
+  final int amount;
+  final int changeGiven;
+  const TransactionPayment({
+    required this.id,
+    required this.transactionId,
+    required this.method,
+    required this.amount,
+    required this.changeGiven,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['transaction_id'] = Variable<int>(transactionId);
+    map['method'] = Variable<String>(method);
+    map['amount'] = Variable<int>(amount);
+    map['change_given'] = Variable<int>(changeGiven);
+    return map;
+  }
+
+  TransactionPaymentsCompanion toCompanion(bool nullToAbsent) {
+    return TransactionPaymentsCompanion(
+      id: Value(id),
+      transactionId: Value(transactionId),
+      method: Value(method),
+      amount: Value(amount),
+      changeGiven: Value(changeGiven),
+    );
+  }
+
+  factory TransactionPayment.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TransactionPayment(
+      id: serializer.fromJson<int>(json['id']),
+      transactionId: serializer.fromJson<int>(json['transactionId']),
+      method: serializer.fromJson<String>(json['method']),
+      amount: serializer.fromJson<int>(json['amount']),
+      changeGiven: serializer.fromJson<int>(json['changeGiven']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'transactionId': serializer.toJson<int>(transactionId),
+      'method': serializer.toJson<String>(method),
+      'amount': serializer.toJson<int>(amount),
+      'changeGiven': serializer.toJson<int>(changeGiven),
+    };
+  }
+
+  TransactionPayment copyWith({
+    int? id,
+    int? transactionId,
+    String? method,
+    int? amount,
+    int? changeGiven,
+  }) => TransactionPayment(
+    id: id ?? this.id,
+    transactionId: transactionId ?? this.transactionId,
+    method: method ?? this.method,
+    amount: amount ?? this.amount,
+    changeGiven: changeGiven ?? this.changeGiven,
+  );
+  TransactionPayment copyWithCompanion(TransactionPaymentsCompanion data) {
+    return TransactionPayment(
+      id: data.id.present ? data.id.value : this.id,
+      transactionId: data.transactionId.present
+          ? data.transactionId.value
+          : this.transactionId,
+      method: data.method.present ? data.method.value : this.method,
+      amount: data.amount.present ? data.amount.value : this.amount,
+      changeGiven: data.changeGiven.present
+          ? data.changeGiven.value
+          : this.changeGiven,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TransactionPayment(')
+          ..write('id: $id, ')
+          ..write('transactionId: $transactionId, ')
+          ..write('method: $method, ')
+          ..write('amount: $amount, ')
+          ..write('changeGiven: $changeGiven')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, transactionId, method, amount, changeGiven);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TransactionPayment &&
+          other.id == this.id &&
+          other.transactionId == this.transactionId &&
+          other.method == this.method &&
+          other.amount == this.amount &&
+          other.changeGiven == this.changeGiven);
+}
+
+class TransactionPaymentsCompanion extends UpdateCompanion<TransactionPayment> {
+  final Value<int> id;
+  final Value<int> transactionId;
+  final Value<String> method;
+  final Value<int> amount;
+  final Value<int> changeGiven;
+  const TransactionPaymentsCompanion({
+    this.id = const Value.absent(),
+    this.transactionId = const Value.absent(),
+    this.method = const Value.absent(),
+    this.amount = const Value.absent(),
+    this.changeGiven = const Value.absent(),
+  });
+  TransactionPaymentsCompanion.insert({
+    this.id = const Value.absent(),
+    required int transactionId,
+    required String method,
+    required int amount,
+    this.changeGiven = const Value.absent(),
+  }) : transactionId = Value(transactionId),
+       method = Value(method),
+       amount = Value(amount);
+  static Insertable<TransactionPayment> custom({
+    Expression<int>? id,
+    Expression<int>? transactionId,
+    Expression<String>? method,
+    Expression<int>? amount,
+    Expression<int>? changeGiven,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (transactionId != null) 'transaction_id': transactionId,
+      if (method != null) 'method': method,
+      if (amount != null) 'amount': amount,
+      if (changeGiven != null) 'change_given': changeGiven,
+    });
+  }
+
+  TransactionPaymentsCompanion copyWith({
+    Value<int>? id,
+    Value<int>? transactionId,
+    Value<String>? method,
+    Value<int>? amount,
+    Value<int>? changeGiven,
+  }) {
+    return TransactionPaymentsCompanion(
+      id: id ?? this.id,
+      transactionId: transactionId ?? this.transactionId,
+      method: method ?? this.method,
+      amount: amount ?? this.amount,
+      changeGiven: changeGiven ?? this.changeGiven,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (transactionId.present) {
+      map['transaction_id'] = Variable<int>(transactionId.value);
+    }
+    if (method.present) {
+      map['method'] = Variable<String>(method.value);
+    }
+    if (amount.present) {
+      map['amount'] = Variable<int>(amount.value);
+    }
+    if (changeGiven.present) {
+      map['change_given'] = Variable<int>(changeGiven.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TransactionPaymentsCompanion(')
+          ..write('id: $id, ')
+          ..write('transactionId: $transactionId, ')
+          ..write('method: $method, ')
+          ..write('amount: $amount, ')
+          ..write('changeGiven: $changeGiven')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$PosifyDatabase extends GeneratedDatabase {
   _$PosifyDatabase(QueryExecutor e) : super(e);
   $PosifyDatabaseManager get managers => $PosifyDatabaseManager(this);
@@ -13020,6 +13381,8 @@ abstract class _$PosifyDatabase extends GeneratedDatabase {
   late final $ExpenseCategoriesTable expenseCategories =
       $ExpenseCategoriesTable(this);
   late final $ExpensesTable expenses = $ExpensesTable(this);
+  late final $TransactionPaymentsTable transactionPayments =
+      $TransactionPaymentsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -13049,6 +13412,7 @@ abstract class _$PosifyDatabase extends GeneratedDatabase {
     purchaseOrderItems,
     expenseCategories,
     expenses,
+    transactionPayments,
   ];
 }
 
@@ -16916,6 +17280,33 @@ final class $$TransactionsTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<
+    $TransactionPaymentsTable,
+    List<TransactionPayment>
+  >
+  _transactionPaymentsRefsTable(_$PosifyDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.transactionPayments,
+        aliasName: $_aliasNameGenerator(
+          db.transactions.id,
+          db.transactionPayments.transactionId,
+        ),
+      );
+
+  $$TransactionPaymentsTableProcessedTableManager get transactionPaymentsRefs {
+    final manager = $$TransactionPaymentsTableTableManager(
+      $_db,
+      $_db.transactionPayments,
+    ).filter((f) => f.transactionId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _transactionPaymentsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$TransactionsTableFilterComposer
@@ -17092,6 +17483,31 @@ class $$TransactionsTableFilterComposer
           }) => $$TransactionItemsTableFilterComposer(
             $db: $db,
             $table: $db.transactionItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> transactionPaymentsRefs(
+    Expression<bool> Function($$TransactionPaymentsTableFilterComposer f) f,
+  ) {
+    final $$TransactionPaymentsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.transactionPayments,
+      getReferencedColumn: (t) => t.transactionId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionPaymentsTableFilterComposer(
+            $db: $db,
+            $table: $db.transactionPayments,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -17433,6 +17849,32 @@ class $$TransactionsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> transactionPaymentsRefs<T extends Object>(
+    Expression<T> Function($$TransactionPaymentsTableAnnotationComposer a) f,
+  ) {
+    final $$TransactionPaymentsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.transactionPayments,
+          getReferencedColumn: (t) => t.transactionId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$TransactionPaymentsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.transactionPayments,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$TransactionsTableTableManager
@@ -17453,6 +17895,7 @@ class $$TransactionsTableTableManager
             bool voidBy,
             bool discountId,
             bool transactionItemsRefs,
+            bool transactionPaymentsRefs,
           })
         > {
   $$TransactionsTableTableManager(_$PosifyDatabase db, $TransactionsTable table)
@@ -17564,11 +18007,13 @@ class $$TransactionsTableTableManager
                 voidBy = false,
                 discountId = false,
                 transactionItemsRefs = false,
+                transactionPaymentsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
                     if (transactionItemsRefs) db.transactionItems,
+                    if (transactionPaymentsRefs) db.transactionPayments,
                   ],
                   addJoins:
                       <
@@ -17657,6 +18102,27 @@ class $$TransactionsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (transactionPaymentsRefs)
+                        await $_getPrefetchedData<
+                          Transaction,
+                          $TransactionsTable,
+                          TransactionPayment
+                        >(
+                          currentTable: table,
+                          referencedTable: $$TransactionsTableReferences
+                              ._transactionPaymentsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$TransactionsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).transactionPaymentsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.transactionId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -17682,6 +18148,7 @@ typedef $$TransactionsTableProcessedTableManager =
         bool voidBy,
         bool discountId,
         bool transactionItemsRefs,
+        bool transactionPaymentsRefs,
       })
     >;
 typedef $$TransactionItemsTableCreateCompanionBuilder =
@@ -23974,6 +24441,343 @@ typedef $$ExpensesTableProcessedTableManager =
       Expense,
       PrefetchHooks Function({bool categoryId, bool recordedBy})
     >;
+typedef $$TransactionPaymentsTableCreateCompanionBuilder =
+    TransactionPaymentsCompanion Function({
+      Value<int> id,
+      required int transactionId,
+      required String method,
+      required int amount,
+      Value<int> changeGiven,
+    });
+typedef $$TransactionPaymentsTableUpdateCompanionBuilder =
+    TransactionPaymentsCompanion Function({
+      Value<int> id,
+      Value<int> transactionId,
+      Value<String> method,
+      Value<int> amount,
+      Value<int> changeGiven,
+    });
+
+final class $$TransactionPaymentsTableReferences
+    extends
+        BaseReferences<
+          _$PosifyDatabase,
+          $TransactionPaymentsTable,
+          TransactionPayment
+        > {
+  $$TransactionPaymentsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $TransactionsTable _transactionIdTable(_$PosifyDatabase db) =>
+      db.transactions.createAlias(
+        $_aliasNameGenerator(
+          db.transactionPayments.transactionId,
+          db.transactions.id,
+        ),
+      );
+
+  $$TransactionsTableProcessedTableManager get transactionId {
+    final $_column = $_itemColumn<int>('transaction_id')!;
+
+    final manager = $$TransactionsTableTableManager(
+      $_db,
+      $_db.transactions,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_transactionIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$TransactionPaymentsTableFilterComposer
+    extends Composer<_$PosifyDatabase, $TransactionPaymentsTable> {
+  $$TransactionPaymentsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get method => $composableBuilder(
+    column: $table.method,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get amount => $composableBuilder(
+    column: $table.amount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get changeGiven => $composableBuilder(
+    column: $table.changeGiven,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$TransactionsTableFilterComposer get transactionId {
+    final $$TransactionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.transactionId,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableFilterComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TransactionPaymentsTableOrderingComposer
+    extends Composer<_$PosifyDatabase, $TransactionPaymentsTable> {
+  $$TransactionPaymentsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get method => $composableBuilder(
+    column: $table.method,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get amount => $composableBuilder(
+    column: $table.amount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get changeGiven => $composableBuilder(
+    column: $table.changeGiven,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$TransactionsTableOrderingComposer get transactionId {
+    final $$TransactionsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.transactionId,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableOrderingComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TransactionPaymentsTableAnnotationComposer
+    extends Composer<_$PosifyDatabase, $TransactionPaymentsTable> {
+  $$TransactionPaymentsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get method =>
+      $composableBuilder(column: $table.method, builder: (column) => column);
+
+  GeneratedColumn<int> get amount =>
+      $composableBuilder(column: $table.amount, builder: (column) => column);
+
+  GeneratedColumn<int> get changeGiven => $composableBuilder(
+    column: $table.changeGiven,
+    builder: (column) => column,
+  );
+
+  $$TransactionsTableAnnotationComposer get transactionId {
+    final $$TransactionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.transactionId,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TransactionPaymentsTableTableManager
+    extends
+        RootTableManager<
+          _$PosifyDatabase,
+          $TransactionPaymentsTable,
+          TransactionPayment,
+          $$TransactionPaymentsTableFilterComposer,
+          $$TransactionPaymentsTableOrderingComposer,
+          $$TransactionPaymentsTableAnnotationComposer,
+          $$TransactionPaymentsTableCreateCompanionBuilder,
+          $$TransactionPaymentsTableUpdateCompanionBuilder,
+          (TransactionPayment, $$TransactionPaymentsTableReferences),
+          TransactionPayment,
+          PrefetchHooks Function({bool transactionId})
+        > {
+  $$TransactionPaymentsTableTableManager(
+    _$PosifyDatabase db,
+    $TransactionPaymentsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TransactionPaymentsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TransactionPaymentsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$TransactionPaymentsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> transactionId = const Value.absent(),
+                Value<String> method = const Value.absent(),
+                Value<int> amount = const Value.absent(),
+                Value<int> changeGiven = const Value.absent(),
+              }) => TransactionPaymentsCompanion(
+                id: id,
+                transactionId: transactionId,
+                method: method,
+                amount: amount,
+                changeGiven: changeGiven,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int transactionId,
+                required String method,
+                required int amount,
+                Value<int> changeGiven = const Value.absent(),
+              }) => TransactionPaymentsCompanion.insert(
+                id: id,
+                transactionId: transactionId,
+                method: method,
+                amount: amount,
+                changeGiven: changeGiven,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$TransactionPaymentsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({transactionId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (transactionId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.transactionId,
+                                referencedTable:
+                                    $$TransactionPaymentsTableReferences
+                                        ._transactionIdTable(db),
+                                referencedColumn:
+                                    $$TransactionPaymentsTableReferences
+                                        ._transactionIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$TransactionPaymentsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$PosifyDatabase,
+      $TransactionPaymentsTable,
+      TransactionPayment,
+      $$TransactionPaymentsTableFilterComposer,
+      $$TransactionPaymentsTableOrderingComposer,
+      $$TransactionPaymentsTableAnnotationComposer,
+      $$TransactionPaymentsTableCreateCompanionBuilder,
+      $$TransactionPaymentsTableUpdateCompanionBuilder,
+      (TransactionPayment, $$TransactionPaymentsTableReferences),
+      TransactionPayment,
+      PrefetchHooks Function({bool transactionId})
+    >;
 
 class $PosifyDatabaseManager {
   final _$PosifyDatabase _db;
@@ -24029,4 +24833,6 @@ class $PosifyDatabaseManager {
       $$ExpenseCategoriesTableTableManager(_db, _db.expenseCategories);
   $$ExpensesTableTableManager get expenses =>
       $$ExpensesTableTableManager(_db, _db.expenses);
+  $$TransactionPaymentsTableTableManager get transactionPayments =>
+      $$TransactionPaymentsTableTableManager(_db, _db.transactionPayments);
 }

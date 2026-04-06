@@ -13,6 +13,8 @@ import '../../providers/discount_provider.dart';
 import 'discount_selection_sheet.dart';
 import 'payment_success_screen.dart';
 import '../../providers/cart_notes_provider.dart';
+import '../../providers/selected_customer_provider.dart';
+import '../../providers/split_payment_provider.dart';
 
 final _currency = NumberFormat.currency(
   locale: 'id_ID',
@@ -47,6 +49,10 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
   // Quick cash options
   late List<double> _quickCashOptions;
 
+  // Processing & split mode flags
+  bool _isProcessing = false;
+  bool _isSplitMode = false;
+
   @override
   void initState() {
     super.initState();
@@ -56,6 +62,24 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
     if (savedNotes != null) {
       _notesController.text = savedNotes;
     }
+
+    // Initialize customer info from providers (restored from resumeBill or previous state)
+    final savedCustomer = ref.read(selectedCustomerProvider);
+    if (savedCustomer != null) {
+      _selectedCustomer = savedCustomer;
+      _nameController.text = savedCustomer.name;
+      _phoneController.text = savedCustomer.phone ?? '';
+    } else {
+      final mName = ref.read(manualCustomerNameProvider);
+      if (mName != null) _nameController.text = mName;
+      final mPhone = ref.read(manualCustomerPhoneProvider);
+      if (mPhone != null) _phoneController.text = mPhone;
+    }
+
+    // Reset split payment state when modal opens
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(splitPaymentProvider.notifier).reset();
+    });
   }
 
   @override
@@ -300,33 +324,55 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                       const SizedBox(height: 20),
 
                       // Payment Methods
-                      Text(
-                        'Metode Pembayaran',
-                        style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 16,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
                       Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          _buildMethodChip('Tunai'),
-                          const SizedBox(width: 8),
-                          _buildMethodChip('QRIS'),
-                          const SizedBox(width: 8),
-                          _buildMethodChip('Debit'),
-                          const SizedBox(width: 8),
-                          _buildMethodChip('Kasbon'),
+                          Text(
+                            'Metode Pembayaran',
+                            style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                          // Split mode toggle
+                          GestureDetector(
+                            onTap: () => setState(() => _isSplitMode = !_isSplitMode),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: _isSplitMode
+                                    ? AppTheme.primaryColor.withValues(alpha: 0.12)
+                                    : Colors.grey.shade100,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.call_split_rounded,
+                                    size: 14,
+                                    color: _isSplitMode ? AppTheme.primaryColor : AppTheme.textSecondary,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Split',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: _isSplitMode ? AppTheme.primaryColor : AppTheme.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ],
                       ),
-
-                      const SizedBox(height: 24),
-
-                      // Dynamic Content based on Method
-                      if (_selectedMethod == 'Tunai')
-                        _buildCashSection(finalTotal),
-                      if (_selectedMethod != 'Tunai') _buildNonCashSection(),
+                      const SizedBox(height: 16),
+                      
+                      if (!_isSplitMode) ..._buildSinglePaymentSection(finalTotal),
+                      if (_isSplitMode) _buildSplitPaymentSection(finalTotal, ref),
 
                       const SizedBox(height: 24),
                       _buildCustomerInfoSection(),
@@ -386,18 +432,20 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                     Expanded(
                       flex: 2,
                       child: ElevatedButton(
-                        onPressed:
-                            (_cashReceived >= finalTotal ||
-                                    _selectedMethod != 'Tunai') &&
-                                !_isProcessing
-                            ? () => _processPayment(
-                                finalTotal,
-                                taxAmount,
-                                serviceCharge,
-                                pointsEarned,
-                                pointsToRedeem,
-                              )
-                            : null,
+                        onPressed: () {
+                          // Determine if payment is complete
+                          bool canPay;
+                          if (_isSplitMode) {
+                            final splitNotifier = ref.read(splitPaymentProvider.notifier);
+                            canPay = splitNotifier.isComplete(finalTotal) && !_isProcessing;
+                          } else {
+                            canPay = (_cashReceived >= finalTotal || _selectedMethod != 'Tunai') && !_isProcessing;
+                          }
+                          if (!canPay) return;
+                          _processPayment(finalTotal, taxAmount, serviceCharge, pointsEarned, pointsToRedeem);
+                        },
+                        // Disable logic
+                        // ignore: avoid_positional_boolean_parameters
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppTheme.primaryColor,
                           foregroundColor: Colors.white,
@@ -512,6 +560,246 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Wraps the existing single-method chips + cash/non-cash views.
+  List<Widget> _buildSinglePaymentSection(double finalTotal) {
+    return [
+      Row(
+        children: [
+          _buildMethodChip('Tunai'),
+          const SizedBox(width: 8),
+          _buildMethodChip('QRIS'),
+          const SizedBox(width: 8),
+          _buildMethodChip('Debit'),
+          const SizedBox(width: 8),
+          _buildMethodChip('Kasbon'),
+        ],
+      ),
+      const SizedBox(height: 24),
+      if (_selectedMethod == 'Tunai') _buildCashSection(finalTotal),
+      if (_selectedMethod != 'Tunai') _buildNonCashSection(),
+    ];
+  }
+
+  /// Split payment UI with per-method rows and a remaining balance progress bar.
+  Widget _buildSplitPaymentSection(double finalTotal, WidgetRef ref) {
+    final splitEntries = ref.watch(splitPaymentProvider);
+    final splitNotifier = ref.read(splitPaymentProvider.notifier);
+    final totalPaid = splitNotifier.totalPaid;
+    final remaining = splitNotifier.remaining(finalTotal);
+    final isComplete = remaining <= 0;
+    final progress = (totalPaid / finalTotal).clamp(0.0, 1.0);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Progress bar card
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: isComplete
+                ? AppTheme.successColor.withValues(alpha: 0.1)
+                : AppTheme.primaryColor.withValues(alpha: 0.07),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isComplete
+                  ? AppTheme.successColor.withValues(alpha: 0.4)
+                  : AppTheme.primaryColor.withValues(alpha: 0.2),
+            ),
+          ),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    isComplete ? '✓ Lunas' : 'Sisa Tagihan',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: isComplete ? AppTheme.successColor : AppTheme.textSecondary,
+                    ),
+                  ),
+                  Text(
+                    isComplete ? 'Rp 0' : _currency.format(remaining),
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: isComplete ? AppTheme.successColor : AppTheme.errorColor,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: progress,
+                  minHeight: 6,
+                  backgroundColor: Colors.grey.shade200,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    isComplete ? AppTheme.successColor : AppTheme.primaryColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Payment rows
+        ...splitEntries.asMap().entries.map((entry) {
+          final idx = entry.key;
+          final item = entry.value;
+          return _buildSplitPaymentRow(idx, item, remaining, splitNotifier, splitEntries.length);
+        }),
+
+        const SizedBox(height: 12),
+
+        // Add method button
+        if (splitNotifier.canAddMore)
+          GestureDetector(
+            onTap: () {
+              splitNotifier.addPayment(
+                PaymentEntry(method: kSplitPaymentMethods.first, amount: remaining.clamp(0, double.infinity)),
+              );
+            },
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: AppTheme.primaryColor.withValues(alpha: 0.5),
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.add_circle_outline_rounded, size: 18, color: AppTheme.primaryColor),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Tambah Metode (${splitEntries.length}/$kMaxSplitMethods)',
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.primaryColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildSplitPaymentRow(
+    int index,
+    PaymentEntry entry,
+    double remaining,
+    SplitPaymentNotifier notifier,
+    int totalRows,
+  ) {
+    IconData methodIcon(String m) {
+      switch (m.toLowerCase()) {
+        case 'qris': return Icons.qr_code_2_rounded;
+        case 'debit': return Icons.credit_card_rounded;
+        case 'kredit': return Icons.credit_score_rounded;
+        default: return Icons.payments_outlined;
+      }
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        children: [
+          // Method selector
+          Expanded(
+            flex: 2,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryColor.withValues(alpha: 0.07),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.2)),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: entry.method,
+                  isExpanded: true,
+                  icon: Icon(Icons.expand_more_rounded, color: AppTheme.primaryColor, size: 18),
+                  items: kSplitPaymentMethods.map((m) {
+                    return DropdownMenuItem(
+                      value: m,
+                      child: Row(
+                        children: [
+                          Icon(methodIcon(m), size: 16, color: AppTheme.primaryColor),
+                          const SizedBox(width: 6),
+                          Text(m, style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w500)),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (val) {
+                    if (val != null) notifier.updatePayment(index, entry.copyWith(method: val));
+                  },
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          // Amount input
+          Expanded(
+            flex: 3,
+            child: TextFormField(
+              initialValue: entry.amount > 0 ? entry.amount.toStringAsFixed(0) : '',
+              keyboardType: TextInputType.number,
+              textAlign: TextAlign.right,
+              style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600),
+              decoration: InputDecoration(
+                prefixText: 'Rp ',
+                prefixStyle: GoogleFonts.poppins(
+                  fontSize: 13,
+                  color: AppTheme.textSecondary,
+                  fontWeight: FontWeight.w500,
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: AppTheme.primaryColor),
+                ),
+              ),
+              onChanged: (val) {
+                final amount = double.tryParse(val) ?? 0;
+                notifier.updatePayment(index, entry.copyWith(amount: amount));
+              },
+            ),
+          ),
+          const SizedBox(width: 8),
+          // Delete row (only when >1 row)
+          if (totalRows > 1)
+            GestureDetector(
+              onTap: () => notifier.removePayment(index),
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppTheme.errorColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(Icons.delete_outline_rounded, size: 18, color: AppTheme.errorColor),
+              ),
+            )
+          else
+            const SizedBox(width: 34),
+        ],
       ),
     );
   }
@@ -836,6 +1124,11 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
         setState(() {
           _selectedCustomer = newCustomer;
         });
+        // Sync with provider
+        ref.read(selectedCustomerProvider.notifier).state = newCustomer;
+        ref.read(manualCustomerNameProvider.notifier).state = null;
+        ref.read(manualCustomerPhoneProvider.notifier).state = null;
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Member "$name" berhasil didaftarkan!'),
@@ -862,6 +1155,10 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
       _nameController.clear();
       _usePoints = false;
     });
+    // Sync with provider
+    ref.read(selectedCustomerProvider.notifier).state = null;
+    ref.read(manualCustomerNameProvider.notifier).state = null;
+    ref.read(manualCustomerPhoneProvider.notifier).state = null;
   }
 
   Widget _buildCustomerInfoSection() {
@@ -981,6 +1278,9 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
             keyboardType: TextInputType.phone,
             style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
             onChanged: (val) {
+              // Sync with provider
+              ref.read(manualCustomerPhoneProvider.notifier).state = val.isEmpty ? null : val;
+              
               if (val.length >= 8) {
                 // Smart Auto-Match: Look for exact phone match in existing customers
                 final customers = ref.read(customerProvider).value ?? [];
@@ -991,6 +1291,8 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                     _nameController.text = match.first.name;
                     FocusScope.of(context).unfocus();
                   });
+                  // Sync selection with provider
+                  ref.read(selectedCustomerProvider.notifier).state = match.first;
                   return;
                 }
               }
@@ -1004,7 +1306,11 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
             controller: _nameController,
             textCapitalization: TextCapitalization.words,
             style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-            onChanged: (_) => setState(() {}),
+            onChanged: (val) {
+              // Sync with provider
+              ref.read(manualCustomerNameProvider.notifier).state = val.isEmpty ? null : val;
+              setState(() {});
+            },
             decoration: _inputCRMDeco('Nama Pelanggan (Opsional)', Icons.person_add_alt_1_rounded, 'Budi Santoso'),
           ),
 
@@ -1078,6 +1384,11 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
                 _phoneController.text = option.phone ?? '';
                 _nameController.text = option.name;
               });
+              // Sync with providers
+              ref.read(selectedCustomerProvider.notifier).state = option;
+              ref.read(manualCustomerNameProvider.notifier).state = null;
+              ref.read(manualCustomerPhoneProvider.notifier).state = null;
+              
               FocusScope.of(context).unfocus();
             },
           );
@@ -1335,7 +1646,6 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
     );
   }
 
-  bool _isProcessing = false;
 
   Future<void> _processPayment(
     double finalTotal,
@@ -1349,9 +1659,6 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
     setState(() => _isProcessing = true);
 
     try {
-      final changeAmount = _selectedMethod == 'Tunai'
-          ? _getChange(finalTotal).toInt()
-          : 0;
       final shiftOpt = ref.read(openShiftProvider).value;
       if (shiftOpt == null) {
         if (!mounted) return;
@@ -1362,27 +1669,42 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
         return;
       }
       final shiftId = shiftOpt.id;
-      // final subtotal = ref.read(cartProvider.notifier).subtotal; // No longer needed directly here
 
-      // Custom Create Customer logic if they type name/phone but it's not selected
       int? assignedCustomerId = _selectedCustomer?.id;
       final enteredName = _nameController.text.trim();
       final enteredPhone = _phoneController.text.trim();
-      
-      if (assignedCustomerId == null && (enteredName.isNotEmpty || enteredPhone.isNotEmpty)) {
-        // Create a new customer record automatically
-      }
-      
-      // Customer is only saved if the user explicitly clicked the "Daftarkan Member Baru" button.
-      // Otherwise, the name and phone are just attached to the transaction record without creating a Member.
 
+      // Build payment entries: Split mode vs. single mode
+      final List<PaymentEntry> payments;
+      if (_isSplitMode) {
+        payments = ref.read(splitPaymentProvider);
+      } else {
+        // Single mode: wrap into one PaymentEntry
+        final amount = _selectedMethod == 'Tunai' ? _cashReceived : finalTotal;
+        payments = [PaymentEntry(method: _selectedMethod, amount: amount)];
+      }
+
+      // Determine change for success screen (cash only)
+      final double changeAmount;
+      if (!_isSplitMode && _selectedMethod == 'Tunai') {
+        changeAmount = _getChange(finalTotal);
+      } else if (_isSplitMode) {
+        final splitNotifier = ref.read(splitPaymentProvider.notifier);
+        changeAmount = splitNotifier.changeFor(finalTotal);
+      } else {
+        changeAmount = 0;
+      }
+
+      final String displayMethod = _isSplitMode
+          ? payments.map((p) => p.method).join(' + ')
+          : _selectedMethod;
 
       // 1. Process Checkout in Database
       final transactionId = await ref
           .read(cartProvider.notifier)
           .checkout(
             shiftId: shiftId,
-            paymentMethod: _selectedMethod.toLowerCase(),
+            payments: payments,
             taxAmount: tax,
             serviceCharge: service,
             customerPhone: enteredPhone.isNotEmpty ? enteredPhone : null,
@@ -1422,11 +1744,11 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
             builder: (context) => PaymentSuccessScreen(
               transactionId: transactionId,
               totalAmount: finalTotal,
-              cashReceived: _selectedMethod == 'Tunai'
-                  ? _cashReceived
-                  : finalTotal,
-              changeAmount: changeAmount.toDouble(),
-              paymentMethod: _selectedMethod,
+              cashReceived: _isSplitMode
+                  ? finalTotal + changeAmount
+                  : (_selectedMethod == 'Tunai' ? _cashReceived : finalTotal),
+              changeAmount: changeAmount,
+              paymentMethod: displayMethod,
               pointsEarned: pointsEarned,
               customerPointsAfter: customerPointsAfter,
             ),

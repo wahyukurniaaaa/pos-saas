@@ -2,9 +2,14 @@
 
 **Produk:** Aplikasi Sistem Kasir (POS) SaaS Offline-First
 
-**Versi:** 2.9 (Unified Registration)
+**Versi:** 3.0 (Split Payment)
 
 **Status:** Implementasi Progresif (Phase 0, Phase 1-3, Phase 7-13 Selesai)
+
+## **Update Log (v3.0):**
+*   **Split Payment (Phase 0)**: Implementasi pembayaran multi-metode dalam satu transaksi (contoh: Tunai + QRIS). Didukung hingga **4 metode** sesuai standar POS kompetitor (Moka, iReap, Kasir Pintar). Kasbon tidak dapat digabung dalam split.
+*   **Tabel `transaction_payments`**: Skema database baru (Migrasi v21) untuk menyimpan rincian setiap metode bayar per transaksi secara individual.
+*   **Struk Terpisah Per Metode**: Struk termal & digital menampilkan baris rincian untuk setiap metode pembayaran yang digunakan.
 
 ## **Update Log (v2.9):**
 *   **Unified Registration (Phase 2)**: Implementasi pendaftaran akun SaaS (Email & Password) yang terintegrasi langsung dengan aktivasi lisensi (Hybrid Flow) dalam satu langkah.
@@ -110,7 +115,8 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
     * **Validation Rules**: Menetapkan syarat minimal belanja (Spend) atau minimal kuantitas item agar promo dapat digunakan.
     * **Time-Bound Promo**: Mengatur periode aktif promo (Tanggal Mulai/Selesai) untuk program musiman.
     * **Automatic vs Manual**: Promo dapat bersifat otomatis (terpasang saat syarat terpenuhi) atau voucher manual yang harus dipilih kasir.
-* **Pencatatan Pembayaran (Recording Only):** Memilih status pembayaran (**Tunai, QRIS, Debit, Kredit, Piutang/Bon**). Tidak ada integrasi gateway API untuk menghindari biaya MDR.  
+* **Pencatatan Pembayaran (Recording Only):** Memilih status pembayaran (**Tunai, QRIS, Debit, Kredit**) untuk pembayaran tunggal. Tidak ada integrasi gateway API untuk menghindari biaya MDR.
+* **Split Payment (Multi-Metode):** Kasir dapat menggabungkan hingga **4 metode pembayaran** dalam satu transaksi. Setiap baris pembayaran memiliki nominal sendiri, dan sisa tagihan (*remaining balance*) dihitung otomatis secara real-time. Kasbon/Bon **tidak dapat** digunakan dalam mode split. Kembalian dihitung dari input Tunai yang dimasukkan terakhir.
 * **Print & Share Engine:** 
     *   Cetak struk via Bluetooth/USB Thermal (Protokol ESC/POS).
     *   **WhatsApp Hybrid Sharing:** Mengirim struk digital (Image + Text summary) ke WhatsApp pelanggan. Incl. Info Poin Member.
@@ -160,8 +166,12 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
 | **Transaksi** | Nomor Nota | Format: POS-YYYYMMDD-HHMMSS (Unik berbasis waktu). |
 |  | Customer Info | `customerPhone` (WhatsApp) & `customerName` (Opsional). Digunakan untuk pengiriman struk digital & CRM. |
 |  | Nilai Transaksi | Integrasi Subtotal, Tax Amount, Service Amount, dan Total Akhir (Nilai Integer/Pembulatan Rupiah). |
-|  | Status Bayar | Enum: {Tunai, QRIS, Debit, Kredit, Piutang, **Void/Batal**}. |
+|  | Status Bayar | Enum: {Tunai, QRIS, Debit, Kredit, Piutang, **Void/Batal**, **Mixed (Split)**}. |
 |  | Void By | Jika status Void, field ini wajib terisi oleh PIN Supervisor/Owner (L2/L1). |
+| **Split Payment** | Jumlah Metode | Maksimum **4 metode** per transaksi. Minimum 1. |
+|  | Nilai Per Metode | Integer (Rp). Minimal Rp 1. Total semua metode harus **≥ Total Tagihan Akhir**. |
+|  | Metode Kasbon | Kasbon **tidak diperbolehkan** dalam kombinasi Split Payment. Hanya untuk transaksi tunggal. |
+|  | Kembalian (Change) | Hanya berlaku untuk metode **Tunai**. Dihitung sebagai `amount - sisa_tagihan` pada input Tunai terakhir. |
 | **Bahan Baku** | Nama Bahan | String, unik. Contoh: "Susu UHT", "Biji Kopi Arabica". |
 | (Baru) | Unit | Enum: {gr, ml, pcs}. Disimpan dalam satuan terkecil. |
 |  | HPP (Avg Cost) | Numeric. Dihitung otomatis (Weighted Average). |
@@ -209,7 +219,7 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
 
 * **Manajemen Shift:** Saya ingin melakukan "Buka Shift" (input saldo awal) dan "Tutup Shift" (closing) agar uang tunai di laci dapat dipertanggungjawabkan.  
 * **Transaksi Cepat (Hybrid):** Saya ingin tap produk biasa dan langsung masuk keranjang, ATAU jika produk punya Varian, saya ingin memilih ukuran/rasa spesifik sebelum masuk ke keranjang. Foto produk akan membedakan nama yang mirip.
-* **Pembayaran:** Saya ingin memilih metode pembayaran (Tunai/QRIS/Debit) secara manual agar laporan akhir shift akurat.  
+* **Pembayaran:** Saya ingin memilih metode pembayaran (Tunai/QRIS/Debit) secara manual. Jika pelanggan ingin membayar sebagian dengan Tunai dan sisanya dengan QRIS, saya dapat mengaktifkan mode **Split Payment** dan menambahkan baris metode bayar baru beserta nominalnya masing-masing hingga total lunas.  
 * **Struk Fisik:** Saya ingin mencetak struk belanja via Bluetooth segera setelah transaksi selesai sebagai bukti bagi pelanggan.  
 * **WhatsApp Sharing & CRM:** Saya ingin menanyakan nomor WhatsApp pelanggan dan mengirimkan struk digital secara instan untuk menghemat kertas dan membangun database pelanggan.
 * **Self-Monitoring:** Saya ingin melihat ringkasan penjualan saya selama shift berjalan untuk memastikan kesesuaian fisik uang tunai.
@@ -253,7 +263,7 @@ Input Email & Password -> [Opsional] Input/Deep Link Kode Lisensi -> Validasi & 
 
 ### **14.2. Alur Transaksi & Navigasi Utama**
 
-PIN Login Karyawan (L3/L2/L1) -> Dashboard Utama (4 Tab: Kasir, Riwayat, Stok, Setting) -> [Opsional] Buka Shift -> Scan Barcode -> Tekan Tombol BAYAR -> Cari/Input Data Pelanggan (Member) -> Pilih Metode Bayar -> Selesaikan Pembayaran -> Update Stok & Catat Kartu Stok (SALE) -> Tampil Animasi Sukses -> Pilih [Cetak Struk] atau [Bagikan ke WhatsApp]. Riwayat transaksi dapat diakses langsung dari navbar tanpa masuk ke menu Setting.
+PIN Login Karyawan (L3/L2/L1) -> Dashboard Utama (4 Tab: Kasir, Riwayat, Stok, Setting) -> [Opsional] Buka Shift -> Scan Barcode -> Tekan Tombol BAYAR -> Cari/Input Data Pelanggan (Member) -> Pilih Metode Bayar **[Tunggal atau Split (maks. 4 metode)]** -> Selesaikan Pembayaran -> Update Stok & Catat Kartu Stok (SALE) -> Tampil Animasi Sukses -> Pilih [Cetak Struk] atau [Bagikan ke WhatsApp]. Riwayat transaksi dapat diakses langsung dari navbar tanpa masuk ke menu Setting.
 
 ### **14.3. Alur Kelola Stok (In/Out/Opname)**
 
@@ -285,7 +295,7 @@ Bagian ini merangkum kapabilitas utama berdasarkan *Use Case* operasional POS.
 *   **UC-AUTH:** Pendaftaran Akun (Email/Password), Aktivasi Lisensi (Manual/Deep Link), Login via PIN 6-digit (Lokal), dan *Logout*.
 
 ### **15.2. Transaksi Kasir (Point of Sales)**
-*   **UC-POS:** Buka Shift (modal awal), Pencarian/Pindai Barang, Kelola Keranjang (termasuk fitur *Hold/Save Bill*), Terapkan Diskon (Item/Global), Proses Pembayaran, Cetak Struk, dan Tutup Shift (Validasi Uang Laci).
+*   **UC-POS:** Buka Shift (modal awal), Pencarian/Pindai Barang, Kelola Keranjang (termasuk fitur *Hold/Save Bill*), Terapkan Diskon (Item/Global), Proses Pembayaran **[Tunggal & Split Multi-Metode (maks. 4, tanpa Kasbon)]**, Cetak Struk (dengan rincian per metode bayar), dan Tutup Shift (Validasi Uang Laci).
 
 ### **15.3. Manajemen Stok & Backoffice**
 *   **UC-INV:** Kelola Master Produk, Import/Export Massal (CSV), Catat *Stock In* & *Stock Out* (dengan alasan waste), Lacak Kartu Stok (Mutasi log), *Stock Opname* (audit fisik vs sistem), dan Manajemen Resep/Bahan Baku.

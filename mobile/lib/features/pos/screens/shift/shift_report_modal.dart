@@ -7,6 +7,8 @@ import 'package:posify_app/features/pos/providers/shift_provider.dart';
 import 'package:posify_app/features/pos/providers/expense_provider.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/core/services/backup_service.dart';
+import 'package:flutter/services.dart';
+import 'package:posify_app/core/utils/currency_input_formatter.dart';
 
 final shiftTransactionsProvider = StreamProvider.family<List, int>((
   ref,
@@ -24,8 +26,13 @@ final _currency = NumberFormat.currency(
 
 class ShiftReportModal extends ConsumerStatefulWidget {
   final String cashierName;
+  final bool focusCloseShift;
 
-  const ShiftReportModal({super.key, required this.cashierName});
+  const ShiftReportModal({
+    super.key,
+    required this.cashierName,
+    this.focusCloseShift = false,
+  });
 
   @override
   ConsumerState<ShiftReportModal> createState() => _ShiftReportModalState();
@@ -36,9 +43,28 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
   final _actualCashController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
+  final _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.focusCloseShift) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_scrollController.hasClients) {
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
+      });
+    }
+  }
+
   @override
   void dispose() {
     _actualCashController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -86,15 +112,17 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
 
     final double expectedDrawer = startCash + cashSales - shiftExpenses;
 
-    return Container(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.sizeOf(context).height * 0.9,
-        maxWidth: isDesktop ? 500 : double.infinity,
-      ),
-      decoration: const BoxDecoration(
-        color: AppTheme.backgroundLight,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+      child: Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.sizeOf(context).height * 0.9,
+          maxWidth: isDesktop ? 500 : double.infinity,
+        ),
+        decoration: const BoxDecoration(
+          color: AppTheme.backgroundLight,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -137,6 +165,7 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
 
           Flexible(
             child: SingleChildScrollView(
+              controller: _scrollController,
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -231,6 +260,10 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
                           borderSide: BorderSide(color: Colors.grey.shade300),
                         ),
                       ),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        CurrencyInputFormatter(),
+                      ],
                       style: GoogleFonts.poppins(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
@@ -243,7 +276,7 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
                         if (value == null || value.isEmpty) {
                           return 'Wajib diisi';
                         }
-                        if (int.tryParse(value) == null) {
+                        if (int.tryParse(value.replaceAll('.', '')) == null) {
                           return 'Masukkan angka valid';
                         }
                         return null;
@@ -257,79 +290,84 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
 
                   const SizedBox(height: 24),
 
-                  // End Shift Action
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppTheme.dangerColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: AppTheme.dangerColor.withValues(alpha: 0.3),
+                ],
+              ),
+            ),
+          ),
+          
+          // Sticky End Shift Action at the bottom
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppTheme.dangerColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: AppTheme.dangerColor.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.info_outline,
+                        color: AppTheme.dangerColor,
+                        size: 20,
                       ),
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.info_outline,
-                              color: AppTheme.dangerColor,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                'Tutup shift akan mengakhiri sesi penjualan dan mengirim laporan harian.',
-                                style: GoogleFonts.poppins(
-                                  color: AppTheme.dangerColor,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: _isSubmitting
-                                ? null
-                                : () {
-                                    if (_formKey.currentState!.validate()) {
-                                      final actualCash =
-                                          int.parse(_actualCashController.text);
-                                      _showEndShiftConfirmation(
-                                        context,
-                                        activeShift.id,
-                                        actualCash,
-                                        expectedDrawer.toInt(),
-                                      );
-                                    }
-                                  },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.dangerColor,
-                              foregroundColor: Colors.white,
-                              elevation: 0,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                            ),
-                            child: _isSubmitting
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : Text(
-                                    'Kalkulasi & Tutup Shift',
-                                    style: GoogleFonts.poppins(
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Tutup shift akan mengakhiri sesi penjualan dan mengirim laporan harian.',
+                          style: GoogleFonts.poppins(
+                            color: AppTheme.dangerColor,
+                            fontSize: 13,
                           ),
                         ),
-                      ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isSubmitting
+                          ? null
+                          : () {
+                              if (_formKey.currentState!.validate()) {
+                                final actualCash = int.parse(
+                                  _actualCashController.text.replaceAll('.', ''),
+                                );
+                                _showEndShiftConfirmation(
+                                  context,
+                                  activeShift.id,
+                                  actualCash,
+                                  expectedDrawer.toInt(),
+                                );
+                              }
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.dangerColor,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: _isSubmitting
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Text(
+                              'Kalkulasi & Tutup Shift',
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                     ),
                   ),
                 ],
@@ -338,7 +376,8 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
           ),
         ],
       ),
-    );
+    ),
+   );
   }
 
   Widget _buildSectionTitle(String title) {
@@ -392,7 +431,8 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
   }
 
   Widget _buildDiscrepancyDisplay(double expected) {
-    final actual = double.tryParse(_actualCashController.text) ?? 0;
+    final actualText = _actualCashController.text.replaceAll('.', '');
+    final actual = double.tryParse(actualText) ?? 0;
     final diff = actual - expected;
     final isWarning = diff != 0;
 

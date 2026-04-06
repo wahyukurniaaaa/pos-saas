@@ -30,6 +30,7 @@ import 'tables/stock_opname_items_table.dart';
 import 'tables/purchase_orders_table.dart';
 import 'tables/discounts_table.dart';
 import 'tables/expenses_table.dart';
+import 'tables/transaction_payments_table.dart';
 
 part 'database.g.dart';
 
@@ -71,6 +72,7 @@ class StockTransactionWithProduct {
     Discounts,
     ExpenseCategories,
     Expenses,
+    TransactionPayments,
   ],
 )
 class PosifyDatabase extends _$PosifyDatabase {
@@ -80,7 +82,7 @@ class PosifyDatabase extends _$PosifyDatabase {
   PosifyDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 20;
+  int get schemaVersion => 21;
 
   @override
   MigrationStrategy get migration {
@@ -184,6 +186,9 @@ class PosifyDatabase extends _$PosifyDatabase {
           await m.createTable(transactions);
           await m.createTable(transactionItems);
           await m.database.customStatement('PRAGMA foreign_keys = ON;');
+        }
+        if (from < 21) {
+          await m.createTable(transactionPayments);
         }
       },
     );
@@ -901,6 +906,7 @@ class PosifyDatabase extends _$PosifyDatabase {
   Future<int> processCheckout({
     required TransactionsCompanion transactionEntry,
     required List<TransactionItemsCompanion> itemsParams,
+    List<TransactionPaymentsCompanion> paymentEntries = const [],
   }) async {
     return transaction(() async {
       // 1. Insert Transaction
@@ -1009,6 +1015,13 @@ class PosifyDatabase extends _$PosifyDatabase {
         }
       }
 
+      // 6. Insert payment breakdown rows (Split Payment support)
+      for (final payment in paymentEntries) {
+        await into(transactionPayments).insert(
+          payment.copyWith(transactionId: Value(txId)),
+        );
+      }
+
       return txId;
     });
   }
@@ -1030,9 +1043,16 @@ class PosifyDatabase extends _$PosifyDatabase {
 
   Future<void> deleteTransaction(int id) async {
     await transaction(() async {
+      await (delete(transactionPayments)..where((t) => t.transactionId.equals(id))).go();
       await (delete(transactionItems)..where((t) => t.transactionId.equals(id))).go();
       await (delete(transactions)..where((t) => t.id.equals(id))).go();
     });
+  }
+
+  Future<List<TransactionPayment>> getTransactionPayments(int transactionId) {
+    return (select(transactionPayments)
+          ..where((t) => t.transactionId.equals(transactionId)))
+        .get();
   }
 
   Future<List<TransactionItem>> getTransactionItems(int transactionId) {
