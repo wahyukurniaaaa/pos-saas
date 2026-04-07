@@ -8,7 +8,7 @@ import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:intl/intl.dart';
 import 'package:posify_app/core/widgets/responsive_layout.dart';
 
-class PaymentSuccessScreen extends ConsumerWidget {
+class PaymentSuccessScreen extends ConsumerStatefulWidget {
   final int transactionId;
   final double totalAmount;
   final double cashReceived;
@@ -30,7 +30,72 @@ class PaymentSuccessScreen extends ConsumerWidget {
   final int? customerPointsAfter;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PaymentSuccessScreen> createState() => _PaymentSuccessScreenState();
+}
+
+class _PaymentSuccessScreenState extends ConsumerState<PaymentSuccessScreen> {
+  bool _hasAutoPrinted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAndAutoPrint();
+  }
+
+  Future<void> _checkAndAutoPrint() async {
+    if (_hasAutoPrinted) return;
+    
+    try {
+      final db = ref.read(databaseProvider);
+      final settings = await (db.select(db.printerSettings)..limit(1)).getSingleOrNull();
+      
+      if (settings != null && settings.autoPrint) {
+        _hasAutoPrinted = true;
+        _doPrintReceipt();
+      }
+    } catch (e) {
+      debugPrint('Auto-print error: $e');
+    }
+  }
+
+  Future<void> _doPrintReceipt() async {
+    try {
+      final db = ref.read(databaseProvider);
+      final receiptService = ref.read(receiptServiceProvider);
+
+      final profile = await db.getStoreProfile();
+      final txnData = await db.getTransactionWithItems(widget.transactionId);
+
+      Customer? customer;
+      if (txnData?.transaction.customerId != null) {
+        customer = await (db.select(db.customers)
+          ..where((c) => c.id.equals(txnData!.transaction.customerId!)))
+          .getSingleOrNull();
+      }
+
+      if (txnData != null) {
+        await receiptService.printReceipt(
+          profile: profile,
+          transaction: txnData.transaction,
+          items: txnData.items,
+          payments: txnData.payments,
+          customer: customer,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal mencetak: $e'),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final formatCurrency = NumberFormat.currency(
       locale: 'id_ID',
       symbol: 'Rp ',
@@ -86,19 +151,19 @@ class PaymentSuccessScreen extends ConsumerWidget {
                     children: [
                       _buildDataRow(
                         'Total Belanja',
-                        formatCurrency.format(totalAmount),
+                        formatCurrency.format(widget.totalAmount),
                       ),
                       _buildDataRow(
-                        'Dibayar (${paymentMethod.toUpperCase()})',
-                        formatCurrency.format(cashReceived),
+                        'Dibayar (${widget.paymentMethod.toUpperCase()})',
+                        formatCurrency.format(widget.cashReceived),
                       ),
                       const Divider(height: 24),
                       _buildDataRow(
                         'Kembalian',
-                        formatCurrency.format(changeAmount),
+                        formatCurrency.format(widget.changeAmount),
                         isTotal: true,
                       ),
-                      if (pointsEarned > 0 && customerPointsAfter != null) ...[
+                      if (widget.pointsEarned > 0 && widget.customerPointsAfter != null) ...[
                         const Divider(height: 24),
                         Row(
                           children: [
@@ -114,7 +179,7 @@ class PaymentSuccessScreen extends ConsumerWidget {
                               ),
                             ),
                             Text(
-                              '+$pointsEarned Poin',
+                              '+${widget.pointsEarned} Poin',
                               style: GoogleFonts.poppins(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w800,
@@ -123,14 +188,14 @@ class PaymentSuccessScreen extends ConsumerWidget {
                             ),
                           ],
                         ),
-                        if (customerPointsAfter != null)
+                        if (widget.customerPointsAfter != null)
                           Padding(
                             padding: const EdgeInsets.only(top: 4),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
                                 Text(
-                                  'Total poin: $customerPointsAfter',
+                                  'Total poin: ${widget.customerPointsAfter}',
                                   style: GoogleFonts.poppins(
                                     fontSize: 12,
                                     color: AppTheme.textSecondary,
@@ -148,41 +213,7 @@ class PaymentSuccessScreen extends ConsumerWidget {
 
                 // Print Receipt Button
                 OutlinedButton.icon(
-                  onPressed: () async {
-                    try {
-                      final db = ref.read(databaseProvider);
-                      final receiptService = ref.read(receiptServiceProvider);
-
-                      final profile = await db.getStoreProfile();
-                      final txnData = await db.getTransactionWithItems(transactionId);
-
-                      // Fetch customer if linked
-                      Customer? customer;
-                      if (txnData?.transaction.customerId != null) {
-                        customer = await (db.select(db.customers)
-                          ..where((c) => c.id.equals(txnData!.transaction.customerId!)))
-                          .getSingleOrNull();
-                      }
-
-                      if (txnData != null) {
-                        await receiptService.printReceipt(
-                          profile: profile,
-                          transaction: txnData.transaction,
-                          items: txnData.items,
-                          customer: customer,
-                        );
-                      }
-                    } catch (e) {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Gagal mencetak: $e'),
-                            backgroundColor: AppTheme.errorColor,
-                          ),
-                        );
-                      }
-                    }
-                  },
+                  onPressed: () => _doPrintReceipt(),
                   icon: const Icon(Icons.print_rounded),
                   label: const Text('CETAK ULANG STRUK'),
                   style: OutlinedButton.styleFrom(
@@ -211,7 +242,7 @@ class PaymentSuccessScreen extends ConsumerWidget {
                       final receiptService = ref.read(receiptServiceProvider);
 
                       final profile = await db.getStoreProfile();
-                      final txnData = await db.getTransactionWithItems(transactionId);
+                      final txnData = await db.getTransactionWithItems(widget.transactionId);
 
                       // Fetch customer if linked
                       Customer? customer;

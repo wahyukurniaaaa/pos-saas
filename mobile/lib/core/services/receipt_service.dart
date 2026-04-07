@@ -14,6 +14,7 @@ class ReceiptService {
     required StoreProfileData? profile,
     required Transaction transaction,
     required List<TransactionItemWithProduct> items,
+    List<TransactionPayment> payments = const [],
     Customer? customer,
   }) async {
     final bool? isConnected = await bluetooth.isConnected;
@@ -29,11 +30,16 @@ class ReceiptService {
     final dateFmt = DateFormat('dd/MM/yy HH:mm');
 
     // 1. Header (Logo & Store Info)
-    if (profile?.logoUri != null && profile!.logoUri!.isNotEmpty) {
-      if (await File(profile.logoUri!).exists()) {
-        await bluetooth.printImage(profile.logoUri!);
-      }
-    }
+    // TEMP DISABLED TO FIX GIBBERISH BUG
+    // if (profile?.logoUri != null && profile!.logoUri!.isNotEmpty) {
+    //   if (await File(profile.logoUri!).exists()) {
+    //     try {
+    //       await bluetooth.printImage(profile.logoUri!);
+    //     } catch (e) {
+    //       debugPrint('Failed to print logo: $e');
+    //     }
+    //   }
+    // }
 
     await bluetooth.printCustom(profile?.name ?? 'POSIFY STORE', 2, 1);
 
@@ -101,11 +107,22 @@ class ReceiptService {
     await bluetooth.printCustom(totalLine, 1, 0);
 
     await bluetooth.printCustom('--------------------------------', 0, 1);
-    await bluetooth.printCustom(
-      'Metode Bayar: ${(transaction.paymentMethod ?? 'Draft').toUpperCase()}',
-      0,
-      1,
-    );
+    
+    if (transaction.paymentMethod?.toLowerCase() == 'split' && payments.isNotEmpty) {
+      await bluetooth.printCustom('Metode Bayar: SPLIT', 0, 1);
+      for (final p in payments) {
+        final String val = currency.format(p.amount);
+        final int spaceCount = 32 - p.method.length - val.length - 2; // -2 for "  " indent
+        final String line = "  ${p.method}" + (' ' * (spaceCount > 0 ? spaceCount : 1)) + val;
+        await bluetooth.printCustom(line, 0, 0);
+      }
+    } else {
+      await bluetooth.printCustom(
+        'Metode Bayar: ${(transaction.paymentMethod ?? 'Draft').toUpperCase()}',
+        0,
+        1,
+      );
+    }
     
     if (transaction.notes != null && transaction.notes!.isNotEmpty) {
       await bluetooth.printCustom('Catatan: ${transaction.notes}', 0, 1);
@@ -189,9 +206,18 @@ class ReceiptService {
 
     buffer.writeln('');
     buffer.writeln('*TOTAL: ${currency.format(data.transaction.totalAmount)}*');
-    buffer.writeln(
-      'Metode Bayar: ${(data.transaction.paymentMethod ?? 'Draft').toUpperCase()}',
-    );
+    
+    if (data.transaction.paymentMethod?.toLowerCase() == 'split' && data.payments.isNotEmpty) {
+      buffer.writeln('Metode Bayar: SPLIT');
+      for (final p in data.payments) {
+        buffer.writeln('  • ${p.method}: ${currency.format(p.amount)}');
+      }
+    } else {
+      buffer.writeln(
+        'Metode Bayar: ${(data.transaction.paymentMethod ?? 'Draft').toUpperCase()}',
+      );
+    }
+    
     if (data.transaction.notes != null && data.transaction.notes!.isNotEmpty) {
       buffer.writeln('Catatan: ${data.transaction.notes}');
     }

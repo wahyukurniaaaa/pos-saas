@@ -7811,8 +7811,29 @@ class $PrinterSettingsTable extends PrinterSettings
     requiredDuringInsert: false,
     defaultValue: const Constant('paired'),
   );
+  static const VerificationMeta _autoPrintMeta = const VerificationMeta(
+    'autoPrint',
+  );
   @override
-  List<GeneratedColumn> get $columns => [id, deviceName, macAddress, status];
+  late final GeneratedColumn<bool> autoPrint = GeneratedColumn<bool>(
+    'auto_print',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("auto_print" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    deviceName,
+    macAddress,
+    status,
+    autoPrint,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -7850,6 +7871,12 @@ class $PrinterSettingsTable extends PrinterSettings
         status.isAcceptableOrUnknown(data['status']!, _statusMeta),
       );
     }
+    if (data.containsKey('auto_print')) {
+      context.handle(
+        _autoPrintMeta,
+        autoPrint.isAcceptableOrUnknown(data['auto_print']!, _autoPrintMeta),
+      );
+    }
     return context;
   }
 
@@ -7875,6 +7902,10 @@ class $PrinterSettingsTable extends PrinterSettings
         DriftSqlType.string,
         data['${effectivePrefix}status'],
       )!,
+      autoPrint: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}auto_print'],
+      )!,
     );
   }
 
@@ -7889,11 +7920,13 @@ class PrinterSetting extends DataClass implements Insertable<PrinterSetting> {
   final String deviceName;
   final String macAddress;
   final String status;
+  final bool autoPrint;
   const PrinterSetting({
     required this.id,
     required this.deviceName,
     required this.macAddress,
     required this.status,
+    required this.autoPrint,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -7902,6 +7935,7 @@ class PrinterSetting extends DataClass implements Insertable<PrinterSetting> {
     map['device_name'] = Variable<String>(deviceName);
     map['mac_address'] = Variable<String>(macAddress);
     map['status'] = Variable<String>(status);
+    map['auto_print'] = Variable<bool>(autoPrint);
     return map;
   }
 
@@ -7911,6 +7945,7 @@ class PrinterSetting extends DataClass implements Insertable<PrinterSetting> {
       deviceName: Value(deviceName),
       macAddress: Value(macAddress),
       status: Value(status),
+      autoPrint: Value(autoPrint),
     );
   }
 
@@ -7924,6 +7959,7 @@ class PrinterSetting extends DataClass implements Insertable<PrinterSetting> {
       deviceName: serializer.fromJson<String>(json['deviceName']),
       macAddress: serializer.fromJson<String>(json['macAddress']),
       status: serializer.fromJson<String>(json['status']),
+      autoPrint: serializer.fromJson<bool>(json['autoPrint']),
     );
   }
   @override
@@ -7934,6 +7970,7 @@ class PrinterSetting extends DataClass implements Insertable<PrinterSetting> {
       'deviceName': serializer.toJson<String>(deviceName),
       'macAddress': serializer.toJson<String>(macAddress),
       'status': serializer.toJson<String>(status),
+      'autoPrint': serializer.toJson<bool>(autoPrint),
     };
   }
 
@@ -7942,11 +7979,13 @@ class PrinterSetting extends DataClass implements Insertable<PrinterSetting> {
     String? deviceName,
     String? macAddress,
     String? status,
+    bool? autoPrint,
   }) => PrinterSetting(
     id: id ?? this.id,
     deviceName: deviceName ?? this.deviceName,
     macAddress: macAddress ?? this.macAddress,
     status: status ?? this.status,
+    autoPrint: autoPrint ?? this.autoPrint,
   );
   PrinterSetting copyWithCompanion(PrinterSettingsCompanion data) {
     return PrinterSetting(
@@ -7958,6 +7997,7 @@ class PrinterSetting extends DataClass implements Insertable<PrinterSetting> {
           ? data.macAddress.value
           : this.macAddress,
       status: data.status.present ? data.status.value : this.status,
+      autoPrint: data.autoPrint.present ? data.autoPrint.value : this.autoPrint,
     );
   }
 
@@ -7967,13 +8007,15 @@ class PrinterSetting extends DataClass implements Insertable<PrinterSetting> {
           ..write('id: $id, ')
           ..write('deviceName: $deviceName, ')
           ..write('macAddress: $macAddress, ')
-          ..write('status: $status')
+          ..write('status: $status, ')
+          ..write('autoPrint: $autoPrint')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, deviceName, macAddress, status);
+  int get hashCode =>
+      Object.hash(id, deviceName, macAddress, status, autoPrint);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -7981,7 +8023,8 @@ class PrinterSetting extends DataClass implements Insertable<PrinterSetting> {
           other.id == this.id &&
           other.deviceName == this.deviceName &&
           other.macAddress == this.macAddress &&
-          other.status == this.status);
+          other.status == this.status &&
+          other.autoPrint == this.autoPrint);
 }
 
 class PrinterSettingsCompanion extends UpdateCompanion<PrinterSetting> {
@@ -7989,17 +8032,20 @@ class PrinterSettingsCompanion extends UpdateCompanion<PrinterSetting> {
   final Value<String> deviceName;
   final Value<String> macAddress;
   final Value<String> status;
+  final Value<bool> autoPrint;
   const PrinterSettingsCompanion({
     this.id = const Value.absent(),
     this.deviceName = const Value.absent(),
     this.macAddress = const Value.absent(),
     this.status = const Value.absent(),
+    this.autoPrint = const Value.absent(),
   });
   PrinterSettingsCompanion.insert({
     this.id = const Value.absent(),
     required String deviceName,
     required String macAddress,
     this.status = const Value.absent(),
+    this.autoPrint = const Value.absent(),
   }) : deviceName = Value(deviceName),
        macAddress = Value(macAddress);
   static Insertable<PrinterSetting> custom({
@@ -8007,12 +8053,14 @@ class PrinterSettingsCompanion extends UpdateCompanion<PrinterSetting> {
     Expression<String>? deviceName,
     Expression<String>? macAddress,
     Expression<String>? status,
+    Expression<bool>? autoPrint,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (deviceName != null) 'device_name': deviceName,
       if (macAddress != null) 'mac_address': macAddress,
       if (status != null) 'status': status,
+      if (autoPrint != null) 'auto_print': autoPrint,
     });
   }
 
@@ -8021,12 +8069,14 @@ class PrinterSettingsCompanion extends UpdateCompanion<PrinterSetting> {
     Value<String>? deviceName,
     Value<String>? macAddress,
     Value<String>? status,
+    Value<bool>? autoPrint,
   }) {
     return PrinterSettingsCompanion(
       id: id ?? this.id,
       deviceName: deviceName ?? this.deviceName,
       macAddress: macAddress ?? this.macAddress,
       status: status ?? this.status,
+      autoPrint: autoPrint ?? this.autoPrint,
     );
   }
 
@@ -8045,6 +8095,9 @@ class PrinterSettingsCompanion extends UpdateCompanion<PrinterSetting> {
     if (status.present) {
       map['status'] = Variable<String>(status.value);
     }
+    if (autoPrint.present) {
+      map['auto_print'] = Variable<bool>(autoPrint.value);
+    }
     return map;
   }
 
@@ -8054,7 +8107,8 @@ class PrinterSettingsCompanion extends UpdateCompanion<PrinterSetting> {
           ..write('id: $id, ')
           ..write('deviceName: $deviceName, ')
           ..write('macAddress: $macAddress, ')
-          ..write('status: $status')
+          ..write('status: $status, ')
+          ..write('autoPrint: $autoPrint')
           ..write(')'))
         .toString();
   }
@@ -19998,6 +20052,7 @@ typedef $$PrinterSettingsTableCreateCompanionBuilder =
       required String deviceName,
       required String macAddress,
       Value<String> status,
+      Value<bool> autoPrint,
     });
 typedef $$PrinterSettingsTableUpdateCompanionBuilder =
     PrinterSettingsCompanion Function({
@@ -20005,6 +20060,7 @@ typedef $$PrinterSettingsTableUpdateCompanionBuilder =
       Value<String> deviceName,
       Value<String> macAddress,
       Value<String> status,
+      Value<bool> autoPrint,
     });
 
 class $$PrinterSettingsTableFilterComposer
@@ -20033,6 +20089,11 @@ class $$PrinterSettingsTableFilterComposer
 
   ColumnFilters<String> get status => $composableBuilder(
     column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get autoPrint => $composableBuilder(
+    column: $table.autoPrint,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -20065,6 +20126,11 @@ class $$PrinterSettingsTableOrderingComposer
     column: $table.status,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<bool> get autoPrint => $composableBuilder(
+    column: $table.autoPrint,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$PrinterSettingsTableAnnotationComposer
@@ -20091,6 +20157,9 @@ class $$PrinterSettingsTableAnnotationComposer
 
   GeneratedColumn<String> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<bool> get autoPrint =>
+      $composableBuilder(column: $table.autoPrint, builder: (column) => column);
 }
 
 class $$PrinterSettingsTableTableManager
@@ -20134,11 +20203,13 @@ class $$PrinterSettingsTableTableManager
                 Value<String> deviceName = const Value.absent(),
                 Value<String> macAddress = const Value.absent(),
                 Value<String> status = const Value.absent(),
+                Value<bool> autoPrint = const Value.absent(),
               }) => PrinterSettingsCompanion(
                 id: id,
                 deviceName: deviceName,
                 macAddress: macAddress,
                 status: status,
+                autoPrint: autoPrint,
               ),
           createCompanionCallback:
               ({
@@ -20146,11 +20217,13 @@ class $$PrinterSettingsTableTableManager
                 required String deviceName,
                 required String macAddress,
                 Value<String> status = const Value.absent(),
+                Value<bool> autoPrint = const Value.absent(),
               }) => PrinterSettingsCompanion.insert(
                 id: id,
                 deviceName: deviceName,
                 macAddress: macAddress,
                 status: status,
+                autoPrint: autoPrint,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

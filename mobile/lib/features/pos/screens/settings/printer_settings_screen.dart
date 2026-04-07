@@ -5,6 +5,9 @@ import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:posify_app/core/widgets/responsive_layout.dart';
+import 'package:posify_app/core/providers/database_provider.dart';
+import 'package:posify_app/core/database/database.dart';
+import 'package:drift/drift.dart' as drift;
 
 class PrinterSettingsScreen extends ConsumerStatefulWidget {
   const PrinterSettingsScreen({super.key});
@@ -20,6 +23,7 @@ class _PrinterSettingsScreenState extends ConsumerState<PrinterSettingsScreen> {
   BluetoothDevice? _selectedDevice;
   bool _connected = false;
   bool _isLoading = false;
+  bool _autoPrint = false;
 
   @override
   void initState() {
@@ -45,9 +49,16 @@ class _PrinterSettingsScreenState extends ConsumerState<PrinterSettingsScreen> {
 
       final devices = await bluetooth.getBondedDevices();
       final isConnected = await bluetooth.isConnected ?? false;
+      
+      // Load auto print settings from DB
+      final db = ref.read(databaseProvider);
+      final settings = await (db.select(db.printerSettings)..limit(1)).getSingleOrNull();
+      final autoPrint = settings?.autoPrint ?? false;
+
       setState(() {
         _devices = devices;
         _connected = isConnected;
+        _autoPrint = autoPrint;
       });
     } on PlatformException catch (e) {
       debugPrint("Bluetooth error: $e");
@@ -161,6 +172,26 @@ class _PrinterSettingsScreenState extends ConsumerState<PrinterSettingsScreen> {
     }
   }
 
+  Future<void> _toggleAutoPrint(bool value) async {
+    setState(() => _autoPrint = value);
+    final db = ref.read(databaseProvider);
+    final settings = await (db.select(db.printerSettings)..limit(1)).getSingleOrNull();
+    
+    if (settings != null) {
+      await db.update(db.printerSettings).replace(
+            settings.copyWith(autoPrint: value),
+          );
+    } else {
+      await db.into(db.printerSettings).insert(
+            PrinterSettingsCompanion.insert(
+              deviceName: _selectedDevice?.name ?? 'Unknown',
+              macAddress: _selectedDevice?.address ?? '00:00',
+              autoPrint: drift.Value(value),
+            ),
+          );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -262,6 +293,37 @@ class _PrinterSettingsScreenState extends ConsumerState<PrinterSettingsScreen> {
                     ),
                   ),
                 ],
+              ),
+            ),
+          ),
+          
+          // Auto Print Toggle
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+            child: Card(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: Colors.grey.shade200),
+              ),
+              child: SwitchListTile(
+                title: Text(
+                  'Cetak Otomatis',
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+                subtitle: Text(
+                  'Langsung cetak struk setelah transaksi sukses',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: AppTheme.textSecondary,
+                  ),
+                ),
+                value: _autoPrint,
+                onChanged: _toggleAutoPrint,
+                activeColor: AppTheme.primaryColor,
               ),
             ),
           ),

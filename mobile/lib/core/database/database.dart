@@ -82,7 +82,7 @@ class PosifyDatabase extends _$PosifyDatabase {
   PosifyDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 21;
+  int get schemaVersion => 22;
 
   @override
   MigrationStrategy get migration {
@@ -189,6 +189,9 @@ class PosifyDatabase extends _$PosifyDatabase {
         }
         if (from < 21) {
           await m.createTable(transactionPayments);
+        }
+        if (from < 22) {
+          await m.addColumn(printerSettings, printerSettings.autoPrint);
         }
       },
     );
@@ -1128,7 +1131,13 @@ class PosifyDatabase extends _$PosifyDatabase {
       );
     }).toList();
 
-    return TransactionWithItems(transaction: transaction, items: itemsList);
+    final payments = await (select(transactionPayments)..where((p) => p.transactionId.equals(transactionId))).get();
+
+    return TransactionWithItems(
+      transaction: transaction, 
+      items: itemsList,
+      payments: payments,
+    );
   }
 
   Future<bool> voidTransaction(int transactionId, int supervisorId) async {
@@ -1835,7 +1844,12 @@ class ShiftWithEmployee {
 class TransactionWithItems {
   final Transaction transaction;
   final List<TransactionItemWithProduct> items;
-  TransactionWithItems({required this.transaction, required this.items});
+  final List<TransactionPayment> payments;
+  TransactionWithItems({
+    required this.transaction, 
+    required this.items, 
+    this.payments = const [],
+  });
 }
 
 class TransactionItemWithProduct {
