@@ -9,6 +9,7 @@ import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/features/pos/providers/pos_providers.dart';
 import 'package:posify_app/core/widgets/responsive_layout.dart';
 import 'package:intl/intl.dart';
+import 'stock_opname_history_screen.dart';
 
 class StockOpnameScreen extends ConsumerStatefulWidget {
   const StockOpnameScreen({super.key});
@@ -169,12 +170,24 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
+          IconButton(
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const StockOpnameHistoryScreen(type: 'PRODUCT'),
+              ),
+            ),
+            icon: const Icon(Icons.history_rounded),
+            tooltip: 'Riwayat Opname',
+          ),
           TextButton(
             onPressed: (_isSaving || _physicalStock.isEmpty) ? null : _saveOpname,
             child: Text(
               'Simpan',
               style: GoogleFonts.poppins(
-                color: (_isSaving || _physicalStock.isEmpty) ? Colors.white60 : Colors.white,
+                color: (_isSaving || _physicalStock.isEmpty)
+                    ? Colors.white60
+                    : Colors.white,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -298,18 +311,30 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
                                 const Divider(height: 32),
                                 ...variants.map((v) => Padding(
                                       padding: const EdgeInsets.only(bottom: 16),
-                                      child: _buildStockAdjuster(
+                                      child: _StockAdjusterItem(
                                         label: '${v.name}: ${v.optionValue}',
-                                        key: 'v_${v.id}',
+                                        itemKey: 'v_${v.id}',
                                         systemStock: v.stock,
+                                        physicalStock: _physicalStock['v_${v.id}'] ?? v.stock,
+                                        onChanged: (val) {
+                                          setState(() {
+                                            _physicalStock['v_${v.id}'] = val;
+                                          });
+                                        },
                                       ),
                                     )),
                               ] else ...[
                                 const Divider(height: 32),
-                                _buildStockAdjuster(
+                                _StockAdjusterItem(
                                   label: 'Stok Unit',
-                                  key: 'p_${product.id}',
+                                  itemKey: 'p_${product.id}',
                                   systemStock: product.stock,
+                                  physicalStock: _physicalStock['p_${product.id}'] ?? product.stock,
+                                  onChanged: (val) {
+                                    setState(() {
+                                      _physicalStock['p_${product.id}'] = val;
+                                    });
+                                  },
                                 ),
                               ],
                             ],
@@ -369,18 +394,57 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
       ),
     );
   }
+}
 
-  Widget _buildStockAdjuster({
-    required String label,
-    required String key,
-    required int systemStock,
-  }) {
-    final physical = _physicalStock[key] ?? systemStock;
-    final diff = physical - systemStock;
+class _StockAdjusterItem extends ConsumerStatefulWidget {
+  final String label;
+  final String itemKey;
+  final int systemStock;
+  final int physicalStock;
+  final ValueChanged<int> onChanged;
 
-    // Parse IDs for fetching last adjust date
-    final isVariant = key.startsWith('v_');
-    final id = int.parse(key.replaceFirst(isVariant ? 'v_' : 'p_', ''));
+  const _StockAdjusterItem({
+    required this.label,
+    required this.itemKey,
+    required this.systemStock,
+    required this.physicalStock,
+    required this.onChanged,
+  });
+
+  @override
+  ConsumerState<_StockAdjusterItem> createState() => _StockAdjusterItemState();
+}
+
+class _StockAdjusterItemState extends ConsumerState<_StockAdjusterItem> {
+  late TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.physicalStock.toString());
+  }
+
+  @override
+  void didUpdateWidget(_StockAdjusterItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.physicalStock != widget.physicalStock) {
+      final currentPos = _controller.selection;
+      _controller.text = widget.physicalStock.toString();
+      _controller.selection = currentPos;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final diff = widget.physicalStock - widget.systemStock;
+    final isVariant = widget.itemKey.startsWith('v_');
+    final id = int.parse(widget.itemKey.replaceFirst(isVariant ? 'v_' : 'p_', ''));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -390,7 +454,7 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
           children: [
             Expanded(
               child: Text(
-                label,
+                widget.label,
                 style: GoogleFonts.poppins(
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
@@ -400,7 +464,7 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
             ),
             FutureBuilder<String?>(
               future: ref.read(databaseProvider).getLastAdjustDate(
-                    isVariant ? 0 : id, // If variant, we need its specific product ID or we filter by variant in DB
+                    isVariant ? 0 : id,
                     variantId: isVariant ? id : null,
                   ),
               builder: (context, snapshot) {
@@ -440,7 +504,7 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
                     ),
                   ),
                   Text(
-                    '$systemStock',
+                    '${widget.systemStock}',
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
@@ -453,9 +517,8 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
               children: [
                 IconButton(
                   onPressed: () {
-                    setState(() {
-                      _physicalStock[key] = (physical - 1).clamp(0, 99999);
-                    });
+                    final newVal = (widget.physicalStock - 1).clamp(0, 99999);
+                    widget.onChanged(newVal);
                   },
                   icon: const Icon(Icons.remove_circle_outline),
                   color: AppTheme.errorColor,
@@ -463,28 +526,43 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
                   constraints: const BoxConstraints(),
                 ),
                 Container(
-                  width: 50,
+                  width: 70,
                   margin: const EdgeInsets.symmetric(horizontal: 8),
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: AppTheme.borderColor),
-                    borderRadius: BorderRadius.circular(8),
-                    color: Colors.white,
-                  ),
-                  child: Text(
-                    '$physical',
+                  child: TextField(
+                    controller: _controller,
+                    keyboardType: TextInputType.number,
                     textAlign: TextAlign.center,
+                    onChanged: (v) {
+                      final val = int.tryParse(v) ?? 0;
+                      widget.onChanged(val);
+                    },
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
+                    ),
+                    decoration: InputDecoration(
+                      contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: AppTheme.borderColor),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: AppTheme.borderColor),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: AppTheme.primaryColor),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
                     ),
                   ),
                 ),
                 IconButton(
                   onPressed: () {
-                    setState(() {
-                      _physicalStock[key] = physical + 1;
-                    });
+                    final newVal = widget.physicalStock + 1;
+                    widget.onChanged(newVal);
                   },
                   icon: const Icon(Icons.add_circle_outline),
                   color: AppTheme.successColor,

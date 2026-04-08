@@ -238,6 +238,11 @@ class PosifyDatabase extends _$PosifyDatabase {
   Future<bool> updateEmployee(Employee entry) =>
       update(employees).replace(entry);
 
+  Future<int> updateEmployeePin(int employeeId, String newPin) {
+    return (update(employees)..where((t) => t.id.equals(employeeId)))
+        .write(EmployeesCompanion(pin: Value(newPin)));
+  }
+
   // ===== Store Profile Queries =====
   Future<StoreProfileData?> getStoreProfile() =>
       (select(storeProfile)..limit(1)).getSingleOrNull();
@@ -429,6 +434,7 @@ class PosifyDatabase extends _$PosifyDatabase {
   Future<int> insertCustomer(CustomersCompanion entry) =>
       into(customers).insert(entry);
   Future<bool> updateCustomer(Customer entry) => update(customers).replace(entry);
+  Future<int> deleteCustomer(Customer entry) => (delete(customers)..where((c) => c.id.equals(entry.id))).go();
 
   /// Returns all customers who have at least 1 transaction, with aggregated stats.
   /// Sorted by points descending by default.
@@ -1292,22 +1298,55 @@ class PosifyDatabase extends _$PosifyDatabase {
     DateTime start,
     DateTime end,
   ) async {
-    final countExp = transactions.id.count();
-    final amountExp = transactions.totalAmount.sum();
-    final query = selectOnly(transactions)
-      ..addColumns([transactions.paymentMethod, countExp, amountExp])
+    // Aggregate from transaction_payments so split payments are attributed
+    // to their respective methods instead of showing "mixed".
+    final amountExp = transactionPayments.amount.sum();
+    final countExp = transactionPayments.transactionId.count();
+
+    final query = select(transactionPayments).join([
+      innerJoin(
+        transactions,
+        transactions.id.equalsExp(transactionPayments.transactionId),
+      ),
+    ])
+      ..addColumns([transactionPayments.method, amountExp, countExp])
       ..where(transactions.createdAt.isBetweenValues(start, end))
       ..where(transactions.paymentStatus.equals('paid'))
-      ..groupBy([transactions.paymentMethod]);
+      ..groupBy([transactionPayments.method]);
 
     final result = await query.get();
     return result.map((row) {
       return PaymentMethodSales(
-        row.read(transactions.paymentMethod) ?? 'unknown',
+        row.read(transactionPayments.method) ?? 'unknown',
         row.read(amountExp) ?? 0,
         row.read(countExp) ?? 0,
       );
     }).toList();
+  }
+
+  /// Returns total payment amount grouped by method for a specific shift.
+  /// Used by ShiftReportModal to accurately calculate cash in drawer,
+  /// including partial cash amounts from split payment transactions.
+  Future<Map<String, int>> getShiftPaymentTotals(int shiftId) async {
+    final amountExp = transactionPayments.amount.sum();
+
+    final query = select(transactionPayments).join([
+      innerJoin(
+        transactions,
+        transactions.id.equalsExp(transactionPayments.transactionId),
+      ),
+    ])
+      ..addColumns([transactionPayments.method, amountExp])
+      ..where(transactions.shiftId.equals(shiftId))
+      ..where(transactions.paymentStatus.equals('paid'))
+      ..groupBy([transactionPayments.method]);
+
+    final result = await query.get();
+    return {
+      for (final row in result)
+        (row.read(transactionPayments.method) ?? 'unknown'):
+            row.read(amountExp) ?? 0,
+    };
   }
 
   Future<int> getTotalGrossProfit(DateTime start, DateTime end) async {
@@ -1719,6 +1758,12 @@ class PosifyDatabase extends _$PosifyDatabase {
       await update(stockOpname).replace(opname.copyWith(status: 'COMPLETED'));
     });
   }
+
+  Stream<List<StockOpnameData>> watchCompletedOpnames(String type) =>
+      (select(stockOpname)
+        ..where((o) => o.status.equals('COMPLETED') & o.type.equals(type))
+        ..orderBy([(o) => OrderingTerm.desc(o.createdAt)]))
+          .watch();
 
   // ===== Stock Loss Report =====
   Future<List<StockLossItem>> getStockLossReport(DateTime start, DateTime end) async {

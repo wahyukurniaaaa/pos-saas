@@ -9,6 +9,7 @@ import 'package:posify_app/features/auth/providers/owner_provider.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/features/pos/providers/pos_providers.dart';
 import 'package:posify_app/core/widgets/responsive_layout.dart';
+import 'stock_opname_history_screen.dart';
 
 class IngredientOpnameScreen extends ConsumerStatefulWidget {
   const IngredientOpnameScreen({super.key});
@@ -147,12 +148,26 @@ class _IngredientOpnameScreenState extends ConsumerState<IngredientOpnameScreen>
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
+          IconButton(
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) =>
+                    const StockOpnameHistoryScreen(type: 'INGREDIENT'),
+              ),
+            ),
+            icon: const Icon(Icons.history_rounded),
+            tooltip: 'Riwayat Opname',
+          ),
           TextButton(
-            onPressed: (_isSaving || _physicalStock.isEmpty) ? null : _saveOpname,
+            onPressed:
+                (_isSaving || _physicalStock.isEmpty) ? null : _saveOpname,
             child: Text(
               'Simpan',
               style: GoogleFonts.poppins(
-                color: (_isSaving || _physicalStock.isEmpty) ? Colors.white60 : Colors.white,
+                color: (_isSaving || _physicalStock.isEmpty)
+                    ? Colors.white60
+                    : Colors.white,
                 fontWeight: FontWeight.w700,
               ),
             ),

@@ -153,9 +153,54 @@ class _PaymentSuccessScreenState extends ConsumerState<PaymentSuccessScreen> {
                         'Total Belanja',
                         formatCurrency.format(widget.totalAmount),
                       ),
-                      _buildDataRow(
-                        'Dibayar (${widget.paymentMethod.toUpperCase()})',
-                        formatCurrency.format(widget.cashReceived),
+                      const SizedBox(height: 8),
+                      // Better display for payment methods
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Dibayar:',
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              color: AppTheme.textSecondary,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          FutureBuilder<List<TransactionPayment>>(
+                            future: ref
+                                .read(databaseProvider)
+                                .getTransactionPayments(widget.transactionId),
+                            builder: (context, snapshot) {
+                              final payments = snapshot.data ?? [];
+                              if (payments.isEmpty) {
+                                return Text(
+                                  widget.paymentMethod.toUpperCase(),
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    color: AppTheme.textPrimary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                );
+                              }
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: payments
+                                    .map((p) => Text(
+                                          payments.length > 1
+                                              ? '${p.method.toUpperCase()}: ${formatCurrency.format(p.amount)}'
+                                              : p.method.toUpperCase(),
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 14,
+                                            color: AppTheme.textPrimary,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ))
+                                    .toList(),
+                              );
+                            },
+                          ),
+                        ],
                       ),
                       const Divider(height: 24),
                       _buildDataRow(

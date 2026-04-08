@@ -8,6 +8,7 @@ import 'package:posify_app/features/settings/screens/transaction_history_screen.
 import 'package:posify_app/features/settings/screens/shift_history_screen.dart';
 import 'package:posify_app/features/settings/screens/database_settings_screen.dart';
 import 'package:posify_app/core/widgets/responsive_layout.dart';
+import 'package:posify_app/features/auth/widgets/change_pin_dialog.dart';
 
 class SettingsTab extends ConsumerWidget {
   const SettingsTab({super.key});
@@ -115,7 +116,15 @@ class SettingsTab extends ConsumerWidget {
                       title: 'Ganti PIN',
                       subtitle: 'Ubah PIN pribadi',
                       onTap: () {
-                        // Implement Ganti PIN
+                        if (session != null) {
+                          showDialog(
+                            context: context,
+                            builder: (context) => ChangePinDialog(
+                              employee: session,
+                              isSelfChange: true,
+                            ),
+                          );
+                        }
                       },
                     ),
                     _SettingsItem(

@@ -18,6 +18,14 @@ final shiftTransactionsProvider = StreamProvider.family<List, int>((
   return db.watchTransactionsByShift(shiftId);
 });
 
+/// Provides accurate per-method payment totals from transaction_payments table.
+/// Correctly handles split payments by summing partial amounts per method.
+final shiftPaymentTotalsProvider =
+    FutureProvider.family<Map<String, int>, int>((ref, shiftId) {
+  final db = ref.watch(databaseProvider);
+  return db.getShiftPaymentTotals(shiftId);
+});
+
 final _currency = NumberFormat.currency(
   locale: 'id_ID',
   symbol: 'Rp ',
@@ -80,32 +88,42 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
       return const SizedBox.shrink();
     }
 
+    // Stream for void sales (still needed from transactions table)
     final transactionsAsync = ref.watch(
       shiftTransactionsProvider(activeShift.id),
     );
 
+    // Accurate payment totals from transaction_payments — splits are attributed correctly
+    final paymentTotalsAsync = ref.watch(
+      shiftPaymentTotalsProvider(activeShift.id),
+    );
+
     final expenseAsync = ref.watch(shiftExpenseTotalProvider(activeShift.id));
-    
+
     double startCash = activeShift.startingCash.toDouble();
     double cashSales = 0;
-    double qrisSales = 0;
+    double nonCashSales = 0;
     double voidSales = 0;
     double shiftExpenses = 0;
 
+    // Payment totals from transaction_payments — correctly handles split payments
+    if (paymentTotalsAsync.hasValue) {
+      final totals = paymentTotalsAsync.value!;
+      cashSales = (totals['tunai'] ?? 0).toDouble();
+      nonCashSales = totals.entries
+          .where((e) => e.key != 'tunai')
+          .fold(0.0, (sum, e) => sum + e.value);
+    }
+
+    // Void totals still read from consolidated transactions list
     if (transactionsAsync.hasValue) {
       for (final t in transactionsAsync.value!) {
-        if (t.paymentStatus == 'paid') {
-          if (t.paymentMethod == 'tunai') {
-            cashSales += t.totalAmount;
-          } else {
-            qrisSales += t.totalAmount;
-          }
-        } else if (t.paymentStatus == 'void') {
+        if (t.paymentStatus == 'void') {
           voidSales += t.totalAmount;
         }
       }
     }
-    
+
     if (expenseAsync.hasValue) {
       shiftExpenses = expenseAsync.value!.toDouble();
     }
@@ -215,7 +233,7 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
                   ),
                   _buildDetailRow(
                     'Total Penjualan Non-Tunai',
-                    qrisSales,
+                    nonCashSales,
                     isNonCash: true,
                   ),
                   _buildDetailRow(

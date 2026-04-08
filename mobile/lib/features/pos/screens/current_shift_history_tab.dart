@@ -10,6 +10,23 @@ import 'package:posify_app/features/auth/providers/owner_provider.dart';
 import 'package:posify_app/features/settings/screens/receipt_detail_screen.dart';
 import 'package:posify_app/features/auth/widgets/supervisor_auth_dialog.dart';
 import 'package:posify_app/features/pos/providers/pos_providers.dart';
+import 'package:posify_app/features/pos/screens/shift/shift_report_modal.dart';
+
+/// Payment totals for a date-range history filter, sourced from transaction_payments.
+final historyPaymentTotalsProvider =
+    FutureProvider.family<Map<String, int>, DateTimeRange?>((ref, range) async {
+  final db = ref.watch(databaseProvider);
+  if (range == null) {
+    // All-time: use a very wide range
+    final results = await db.getPaymentMethodBreakdown(
+      DateTime(2000),
+      DateTime(2100),
+    );
+    return {for (final r in results) r.method: r.totalAmount};
+  }
+  final results = await db.getPaymentMethodBreakdown(range.start, range.end);
+  return {for (final r in results) r.method: r.totalAmount};
+});
 
 class CurrentShiftHistoryTab extends ConsumerWidget {
   const CurrentShiftHistoryTab({super.key});
@@ -71,7 +88,9 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            _buildSummaryCard(context, txns, currency, openShift, profile, currentFilter),
+                            _buildSummaryCard(
+                              context, ref, txns, currency, openShift, profile, currentFilter,
+                            ),
                             const SizedBox(height: 24),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -300,21 +319,29 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
 
   Widget _buildSummaryCard(
     BuildContext context,
-    List<Transaction> txns, 
-    NumberFormat currency, 
-    Shift? openShift, 
+    WidgetRef ref,
+    List<Transaction> txns,
+    NumberFormat currency,
+    Shift? openShift,
     StoreProfileData? profile,
-    HistoryFilter filter
+    HistoryFilter filter,
   ) {
-    int totalSale = txns.where((t) => t.paymentStatus != 'void').fold(0, (sum, t) => sum + t.totalAmount);
-    
-    // Omzet is total sales - voids
-    // In this view, Omzet and total are handled similarly but showing both for clarity
-    
+    int totalSale = txns
+        .where((t) => t.paymentStatus != 'void')
+        .fold(0, (sum, t) => sum + t.totalAmount);
+
+    // Resolve accurate payment totals from transaction_payments table
+    // to eliminate 'mixed' from the breakdown display.
     Map<String, int> paymentTotals = {};
-    for (var txn in txns.where((t) => t.paymentStatus != 'void')) {
-      final method = txn.paymentMethod ?? 'Draft';
-      paymentTotals[method] = (paymentTotals[method] ?? 0) + txn.totalAmount;
+    if (filter.type == HistoryFilterType.currentShift && openShift != null) {
+      // For current shift: use the accurate per-method provider
+      final totalsAsync = ref.watch(shiftPaymentTotalsProvider(openShift.id));
+      if (totalsAsync.hasValue) paymentTotals = totalsAsync.value!;
+    } else {
+      // For date-range filters: use getPaymentMethodBreakdown (already rewritten)
+      final range = _getDateRange(filter);
+      final totalsAsync = ref.watch(historyPaymentTotalsProvider(range));
+      if (totalsAsync.hasValue) paymentTotals = totalsAsync.value!;
     }
 
     final dateFmt = DateFormat('dd MMM yyyy');
@@ -548,6 +575,26 @@ class CurrentShiftHistoryTab extends ConsumerWidget {
                           ),
                         ],
                       ),
+                      if (txn.customerName != null || txn.customerPhone != null) ...[
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const Icon(Icons.card_membership_rounded, size: 14, color: Color(0xFF0D9488)),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                'Member: ${txn.customerName ?? txn.customerPhone ?? "-"}',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 13,
+                                  color: const Color(0xFF0D9488),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                       if (txn.notes != null && txn.notes!.isNotEmpty) ...[
                         const SizedBox(height: 4),
                         Row(

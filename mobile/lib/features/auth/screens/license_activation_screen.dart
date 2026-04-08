@@ -156,7 +156,7 @@ class _LicenseActivationScreenState
                                     TextCapitalization.characters,
                                 inputFormatters: [
                                   FilteringTextInputFormatter.allow(
-                                    RegExp(r'[A-Za-z0-9\-]'),
+                                    RegExp(r'[A-Za-z0-9]'),
                                   ),
                                   UpperCaseTextFormatter(),
                                 ],
@@ -166,7 +166,7 @@ class _LicenseActivationScreenState
                                   letterSpacing: 1.5,
                                 ),
                                 decoration: InputDecoration(
-                                  hintText: 'POS-L1-XXXXX-XXXXX',
+                                  hintText: 'ABCD1234XY',
                                   hintStyle: GoogleFonts.jetBrainsMono(
                                     color: AppTheme.textSecondary.withValues(
                                       alpha: 0.4,
@@ -196,8 +196,8 @@ class _LicenseActivationScreenState
                                   if (value == null || value.isEmpty) {
                                     return 'Kode lisensi wajib diisi';
                                   }
-                                  if (value.length < 10) {
-                                    return 'Format kode lisensi tidak valid';
+                                  if (value.length != 10) {
+                                    return 'Kode lisensi harus 10 digit';
                                   }
                                   return null;
                                 },

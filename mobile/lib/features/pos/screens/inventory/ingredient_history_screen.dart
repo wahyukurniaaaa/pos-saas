@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:posify_app/core/database/database.dart';
-import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:posify_app/features/pos/providers/pos_providers.dart';
 
@@ -14,8 +13,7 @@ class IngredientHistoryScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final db = ref.watch(databaseProvider);
-    final historyAsync = ref.watch(StreamProvider((ref) => db.watchIngredientHistory(ingredient.id)));
+    final historyAsync = ref.watch(ingredientHistoryProvider(ingredient.id));
     final suppliersAsync = ref.watch(supplierProvider);
 
     return Scaffold(

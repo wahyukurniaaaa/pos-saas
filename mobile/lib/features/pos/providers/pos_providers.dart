@@ -758,3 +758,33 @@ final pendingTransactionsProvider = StreamProvider<List<Transaction>>((ref) {
   final db = ref.watch(databaseProvider);
   return db.watchPendingTransactions();
 });
+
+// ===== Ingredient History Provider =====
+
+final ingredientHistoryProvider = StreamProvider.family<List<IngredientStockHistoryData>, int>((ref, ingredientId) {
+  final db = ref.watch(databaseProvider);
+  return db.watchIngredientHistory(ingredientId);
+});
+
+class CustomerSearchNotifier extends Notifier<String> {
+  @override
+  String build() => '';
+
+  set state(String val) => super.state = val;
+}
+
+final customerSearchProvider = NotifierProvider<CustomerSearchNotifier, String>(
+  CustomerSearchNotifier.new,
+);
+
+// ===== Stock Opname History Providers =====
+
+final stockOpnameHistoryProvider = StreamProvider.family<List<StockOpnameData>, String>((ref, type) {
+  final db = ref.watch(databaseProvider);
+  return db.watchCompletedOpnames(type);
+});
+
+final stockOpnameItemsProvider = StreamProvider.family<List<StockOpnameItem>, int>((ref, opnameId) {
+  final db = ref.watch(databaseProvider);
+  return db.watchOpnameItems(opnameId);
+});

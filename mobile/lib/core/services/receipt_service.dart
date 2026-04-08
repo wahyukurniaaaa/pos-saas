@@ -107,13 +107,15 @@ class ReceiptService {
     await bluetooth.printCustom(totalLine, 1, 0);
 
     await bluetooth.printCustom('--------------------------------', 0, 1);
-    
-    if (transaction.paymentMethod?.toLowerCase() == 'split' && payments.isNotEmpty) {
-      await bluetooth.printCustom('Metode Bayar: SPLIT', 0, 1);
+
+    final paymentMethod = transaction.paymentMethod?.toLowerCase() ?? 'draft';
+    if ((paymentMethod == 'split' || paymentMethod == 'mixed') &&
+        payments.isNotEmpty) {
+      await bluetooth.printCustom('Metode Bayar: ${paymentMethod.toUpperCase()}', 0, 1);
       for (final p in payments) {
         final String val = currency.format(p.amount);
         final int spaceCount = 32 - p.method.length - val.length - 2; // -2 for "  " indent
-        final String line = "  ${p.method}" + (' ' * (spaceCount > 0 ? spaceCount : 1)) + val;
+        final String line = "  ${p.method}${' ' * (spaceCount > 0 ? spaceCount : 1)}$val";
         await bluetooth.printCustom(line, 0, 0);
       }
     } else {
@@ -206,9 +208,11 @@ class ReceiptService {
 
     buffer.writeln('');
     buffer.writeln('*TOTAL: ${currency.format(data.transaction.totalAmount)}*');
-    
-    if (data.transaction.paymentMethod?.toLowerCase() == 'split' && data.payments.isNotEmpty) {
-      buffer.writeln('Metode Bayar: SPLIT');
+
+    final paymentMethod = data.transaction.paymentMethod?.toLowerCase() ?? 'draft';
+    if ((paymentMethod == 'split' || paymentMethod == 'mixed') &&
+        data.payments.isNotEmpty) {
+      buffer.writeln('Metode Bayar: ${paymentMethod.toUpperCase()}');
       for (final p in data.payments) {
         buffer.writeln('  • ${p.method}: ${currency.format(p.amount)}');
       }

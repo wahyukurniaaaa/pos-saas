@@ -6,6 +6,7 @@ import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'employee_form_screen.dart';
 import 'package:posify_app/core/widgets/responsive_layout.dart';
+import 'package:posify_app/features/auth/widgets/change_pin_dialog.dart';
 
 class EmployeeListScreen extends ConsumerWidget {
   const EmployeeListScreen({super.key});
@@ -261,18 +262,47 @@ class _EmployeeCard extends StatelessWidget {
                   ),
                 ),
                 
-                // Edit Button
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade50,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    Icons.edit_rounded,
-                    size: 18,
-                    color: Colors.grey.shade500,
-                  ),
+                // Actions
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Reset PIN Button
+                    IconButton(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => ChangePinDialog(
+                            employee: employee,
+                            isSelfChange: false,
+                          ),
+                        );
+                      },
+                      icon: Icon(
+                        Icons.vpn_key_rounded,
+                        size: 20,
+                        color: AppTheme.primaryColor.withValues(alpha: 0.6),
+                      ),
+                      tooltip: 'Reset PIN',
+                      style: IconButton.styleFrom(
+                        backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.05),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Edit Button
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.edit_rounded,
+                        size: 18,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
+                  ],
                 )
               ],
             ),

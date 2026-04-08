@@ -21,6 +21,7 @@ class ReceiptDetailScreen extends ConsumerStatefulWidget {
 
 class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
   TransactionWithItems? _txnData;
+  List<TransactionPayment> _payments = [];
   bool _isLoading = true;
 
   @override
@@ -32,9 +33,11 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
   Future<void> _loadData() async {
     final db = ref.read(databaseProvider);
     final data = await db.getTransactionWithItems(widget.transactionId);
+    final payments = await db.getTransactionPayments(widget.transactionId);
     if (mounted) {
       setState(() {
         _txnData = data;
+        _payments = payments;
         _isLoading = false;
       });
     }
@@ -175,6 +178,7 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
                       const SizedBox(height: 16),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             'Metode Bayar:',
@@ -182,12 +186,29 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
                               color: cs.onSurfaceVariant,
                             ),
                           ),
-                          Text(
-                            (txn.paymentMethod ?? 'Draft').toUpperCase(),
-                            style: GoogleFonts.poppins(
-                              fontWeight: FontWeight.w600,
-                              color: cs.onSurface,
-                            ),
+                          // Display all payment methods from transaction_payments.
+                          // For split payments this shows each method & amount.
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: _payments.isNotEmpty
+                                ? _payments.map((p) => Text(
+                                    _payments.length > 1
+                                        ? '${p.method.toUpperCase()}: ${currency.format(p.amount)}'
+                                        : p.method.toUpperCase(),
+                                    style: GoogleFonts.poppins(
+                                      fontWeight: FontWeight.w600,
+                                      color: cs.onSurface,
+                                    ),
+                                  )).toList()
+                                : [
+                                    Text(
+                                      (txn.paymentMethod ?? 'Draft').toUpperCase(),
+                                      style: GoogleFonts.poppins(
+                                        fontWeight: FontWeight.w600,
+                                        color: cs.onSurface,
+                                      ),
+                                    ),
+                                  ],
                           ),
                         ],
                       ),
@@ -348,6 +369,7 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
                         profile: profile,
                         transaction: _txnData!.transaction,
                         items: _txnData!.items,
+                        payments: _txnData!.payments,
                       );
                     }
                   } catch (e) {

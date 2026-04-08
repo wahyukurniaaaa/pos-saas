@@ -179,6 +179,7 @@ class WhatsAppReceiptWidget extends StatelessWidget {
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'PEMBAYARAN:',
@@ -188,13 +189,32 @@ class WhatsAppReceiptWidget extends StatelessWidget {
                   color: AppTheme.textSecondary,
                 ),
               ),
-              Text(
-                (data.transaction.paymentMethod ?? 'Draft').toUpperCase(),
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.textPrimary,
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: data.payments.isNotEmpty
+                    ? data.payments
+                        .map((p) => Text(
+                              data.payments.length > 1
+                                  ? '${p.method.toUpperCase()}: ${currency.format(p.amount)}'
+                                  : p.method.toUpperCase(),
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: AppTheme.textPrimary,
+                              ),
+                            ))
+                        .toList()
+                    : [
+                        Text(
+                          (data.transaction.paymentMethod ?? 'Draft')
+                              .toUpperCase(),
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.textPrimary,
+                          ),
+                        ),
+                      ],
               ),
             ],
           ),

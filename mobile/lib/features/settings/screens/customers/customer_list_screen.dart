@@ -14,6 +14,7 @@ class CustomerListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final customersAsync = ref.watch(customerProvider);
+    final searchQuery = ref.watch(customerSearchProvider);
 
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
@@ -25,6 +26,28 @@ class CustomerListScreen extends ConsumerWidget {
         backgroundColor: AppTheme.primaryColor,
         foregroundColor: Colors.white,
         elevation: 0,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(70),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: TextField(
+              onChanged: (v) => ref.read(customerSearchProvider.notifier).state = v,
+              style: GoogleFonts.poppins(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: 'Cari nama atau nomor telepon...',
+                hintStyle: GoogleFonts.poppins(color: Colors.white70),
+                prefixIcon: const Icon(Icons.search_rounded, color: Colors.white70),
+                filled: true,
+                fillColor: Colors.white.withValues(alpha: 0.15),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(vertical: 0),
+              ),
+            ),
+          ),
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showCustomerForm(context, ref),
@@ -42,7 +65,12 @@ class CustomerListScreen extends ConsumerWidget {
         child: customersAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, s) => Center(child: Text('Error: $e')),
-          data: (customers) {
+          data: (allCustomers) {
+            final customers = allCustomers.where((c) {
+              final query = searchQuery.toLowerCase();
+              return c.name.toLowerCase().contains(query) ||
+                  (c.phone?.toLowerCase().contains(query) ?? false);
+            }).toList();
             if (customers.isEmpty) {
               return Center(
                 child: Column(
@@ -119,18 +147,22 @@ class CustomerListScreen extends ConsumerWidget {
                               ],
                             ),
                           ),
-                        if (c.email != null && c.email!.isNotEmpty)
+                        if (c.address != null && c.address!.isNotEmpty)
                           Padding(
                             padding: const EdgeInsets.only(top: 2),
                             child: Row(
                               children: [
-                                const Icon(Icons.email_outlined, size: 14, color: AppTheme.textSecondary),
+                                const Icon(Icons.location_on_outlined, size: 14, color: AppTheme.textSecondary),
                                 const SizedBox(width: 4),
-                                Text(
-                                  c.email!,
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 13,
-                                    color: AppTheme.textSecondary,
+                                Expanded(
+                                  child: Text(
+                                    c.address!,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 13,
+                                      color: AppTheme.textSecondary,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -174,6 +206,10 @@ class CustomerListScreen extends ConsumerWidget {
                           icon: const Icon(Icons.edit_outlined, color: AppTheme.primaryColor),
                           onPressed: () => _showCustomerForm(context, ref, customer: c),
                         ),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline_rounded, color: AppTheme.errorColor),
+                          onPressed: () => _handleDelete(context, ref, c),
+                        ),
                       ],
                     ),
                   ),
@@ -184,6 +220,41 @@ class CustomerListScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _handleDelete(BuildContext context, WidgetRef ref, Customer customer) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Hapus Pelanggan?', style: GoogleFonts.poppins(fontWeight: FontWeight.w700)),
+        content: Text('Apakah Anda yakin ingin menghapus data ${customer.name}? Tindakan ini tidak dapat dibatalkan.', style: GoogleFonts.poppins()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Batal', style: GoogleFonts.poppins(color: AppTheme.textSecondary)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: AppTheme.errorColor),
+            child: Text('Ya, Hapus', style: GoogleFonts.poppins(fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final db = ref.read(databaseProvider);
+      await db.deleteCustomer(customer);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Pelanggan berhasil dihapus'),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   void _showCustomerForm(BuildContext context, WidgetRef ref, {Customer? customer}) {
@@ -221,6 +292,7 @@ class _CustomerFormState extends ConsumerState<_CustomerForm> {
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
   final _addressController = TextEditingController();
+  final _pointsController = TextEditingController();
   bool _isMember = true;
 
   @override
@@ -231,7 +303,10 @@ class _CustomerFormState extends ConsumerState<_CustomerForm> {
       _phoneController.text = widget.customer!.phone ?? '';
       _emailController.text = widget.customer!.email ?? '';
       _addressController.text = widget.customer!.address ?? '';
+      _pointsController.text = widget.customer!.points.toString();
       _isMember = widget.customer!.isMember;
+    } else {
+      _pointsController.text = '0';
     }
   }
 
@@ -241,6 +316,7 @@ class _CustomerFormState extends ConsumerState<_CustomerForm> {
     _phoneController.dispose();
     _emailController.dispose();
     _addressController.dispose();
+    _pointsController.dispose();
     super.dispose();
   }
 
@@ -259,6 +335,7 @@ class _CustomerFormState extends ConsumerState<_CustomerForm> {
             email: drift.Value(_emailController.text.trim()),
             address: drift.Value(_addressController.text.trim()),
             isMember: _isMember,
+            points: int.tryParse(_pointsController.text) ?? 0,
             updatedAt: DateTime.now().toIso8601String(),
           ),
         );
@@ -270,6 +347,7 @@ class _CustomerFormState extends ConsumerState<_CustomerForm> {
             email: drift.Value(_emailController.text.trim()),
             address: drift.Value(_addressController.text.trim()),
             isMember: drift.Value(_isMember),
+            points: drift.Value(int.tryParse(_pointsController.text) ?? 0),
             createdAt: DateTime.now().toIso8601String(),
             updatedAt: DateTime.now().toIso8601String(),
           ),
@@ -372,6 +450,52 @@ class _CustomerFormState extends ConsumerState<_CustomerForm> {
                   borderSide: BorderSide(color: Colors.grey.shade300),
                 ),
                 prefixIcon: const Icon(Icons.email_outlined),
+                filled: true,
+                fillColor: Colors.grey.shade50,
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _pointsController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: 'Jumlah Poin',
+                labelStyle: GoogleFonts.poppins(color: AppTheme.textSecondary),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                prefixIcon: const Icon(Icons.stars_rounded, color: Colors.amber),
+                filled: true,
+                fillColor: Colors.grey.shade50,
+                suffixText: 'Poin',
+              ),
+              validator: (val) {
+                if (val == null || val.isEmpty) return 'Poin wajib diisi';
+                if (int.tryParse(val) == null) return 'Poin harus angka';
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _addressController,
+              maxLines: 2,
+              decoration: InputDecoration(
+                labelText: 'Alamat (Opsional)',
+                labelStyle: GoogleFonts.poppins(color: AppTheme.textSecondary),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                prefixIcon: const Icon(Icons.location_on_outlined),
                 filled: true,
                 fillColor: Colors.grey.shade50,
               ),
