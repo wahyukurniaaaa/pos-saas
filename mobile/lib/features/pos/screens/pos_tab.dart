@@ -14,6 +14,7 @@ import 'package:posify_app/features/pos/providers/shift_provider.dart';
 import 'package:posify_app/features/pos/screens/shift/shift_opening_modal.dart';
 import 'package:posify_app/features/pos/screens/barcode_scanner_modal.dart';
 import 'package:posify_app/core/widgets/product_image.dart';
+import 'package:posify_app/core/widgets/sync_status_indicator.dart';
 import 'package:posify_app/features/pos/widgets/pos_cards.dart';
 import '../providers/pos_providers.dart';
 import 'item_discount_selection_sheet.dart';
@@ -252,6 +253,9 @@ class _PosTabState extends ConsumerState<PosTab> {
                                 ),
                               ),
                             ),
+                      const SizedBox(width: 8),
+                      // The new cloud sync status indicator widget here:
+                      const SyncStatusIndicator(),
                     ],
                   ),
                 ],

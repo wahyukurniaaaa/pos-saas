@@ -1884,6 +1884,56 @@ class PosifyDatabase extends _$PosifyDatabase {
 
     return results;
   }
+
+  // ===== Cloud Sync Helpers =====
+
+  /// Fetches all dirty rows from a given table using raw SQL.
+  /// Returns results as a list of JSON-compatible maps for Supabase upsert.
+  Future<List<Map<String, dynamic>>> getDirtyRows(String tableName) async {
+    final allowedTables = {
+      'outlets', 'categories', 'suppliers', 'customers', 'products',
+      'product_variants', 'ingredients', 'discounts', 'employees', 'shifts',
+      'transactions', 'transaction_items', 'transaction_payments', 'expenses',
+      'purchase_orders', 'stock_opname', 'stock_opname_items', 'licenses',
+    };
+
+    if (!allowedTables.contains(tableName)) return [];
+
+    try {
+      final rows = await customSelect(
+        'SELECT * FROM $tableName WHERE is_dirty = 1',
+        readsFrom: {},
+      ).get();
+
+      return rows.map((row) {
+        final map = <String, dynamic>{};
+        for (final col in row.data.entries) {
+          final val = col.value;
+          // Convert DateTime int (unix ms) to ISO string for Supabase compatibility
+          if (val is int && col.key.contains('_at')) {
+            map[col.key] = DateTime.fromMillisecondsSinceEpoch(val).toUtc().toIso8601String();
+          } else if (val is int && col.key == 'is_dirty') {
+            map[col.key] = val == 1;
+          } else {
+            map[col.key] = val;
+          }
+        }
+        return map;
+      }).toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  /// Marks a batch of rows as clean (is_dirty = false) in a given table.
+  Future<void> markAsClean(String tableName, List<String> ids) async {
+    if (ids.isEmpty) return;
+    final placeholders = ids.map((_) => '?').join(', ');
+    await customStatement(
+      'UPDATE $tableName SET is_dirty = 0 WHERE id IN ($placeholders)',
+      ids,
+    );
+  }
 }
 
 class ProductWithVariants {

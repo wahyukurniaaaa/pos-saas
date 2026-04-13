@@ -15,6 +15,7 @@ import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/features/auth/screens/login_screen.dart';
 import 'package:posify_app/core/constants/app_constants.dart';
 import 'package:posify_app/core/providers/supabase_provider.dart';
+import 'package:posify_app/core/services/sync_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -70,11 +71,41 @@ class PosifyApp extends StatelessWidget {
 /// 2. License Status (Pro features & Sync)
 /// 3. Owner Setup (Store details)
 /// Then routes to Employee Selection for PIN Login.
-class AppBootstrap extends ConsumerWidget {
+class AppBootstrap extends ConsumerStatefulWidget {
   const AppBootstrap({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AppBootstrap> createState() => _AppBootstrapState();
+}
+
+class _AppBootstrapState extends ConsumerState<AppBootstrap> {
+  @override
+  void initState() {
+    super.initState();
+    // Start sync after the first frame so providers are ready
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _handleSyncLifecycle();
+    });
+  }
+
+  void _handleSyncLifecycle() {
+    final user = ref.read(authProvider).value;
+    final syncService = ref.read(syncServiceProvider);
+    if (user != null) {
+      syncService.start();
+    }
+    // Watch for auth changes to start/stop sync accordingly
+    ref.listen(authProvider, (_, next) {
+      if (next.value != null) {
+        syncService.start();
+      } else {
+        syncService.stop();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final session = ref.watch(supabaseSessionProvider);
     final licenseAsync = ref.watch(licenseProvider);
     final ownerAsync = ref.watch(ownerProvider);
