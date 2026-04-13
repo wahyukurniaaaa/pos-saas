@@ -21,8 +21,8 @@ class IngredientOpnameScreen extends ConsumerStatefulWidget {
 class _IngredientOpnameScreenState extends ConsumerState<IngredientOpnameScreen> {
   final _searchController = TextEditingController();
   final _reasonController = TextEditingController();
-  final Map<int, double> _physicalStock = {}; // ingredientId -> physical qty
-  final Map<int, TextEditingController> _inputControllers = {};
+  final Map<String, double> _physicalStock = {}; // ingredientId -> physical qty
+  final Map<String, TextEditingController> _inputControllers = {};
   bool _isSaving = false;
 
   @override

@@ -426,7 +426,7 @@ class _VariantInput {
 
 // ===== Recipe input form model =====
 class _RecipeInput {
-  int? ingredientId;
+  String? ingredientId;
   final quantityController = TextEditingController();
 
   void dispose() {
@@ -453,7 +453,7 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
   final _stockController = TextEditingController();
   final _skuController = TextEditingController();
   final _minStockController = TextEditingController(text: '0');
-  int? _selectedCategoryId;
+  String? _selectedCategoryId;
   bool _isLoading = false;
 
   // Variant mode
@@ -913,7 +913,7 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
                             children: [
                               Expanded(
                                 child: ref.watch(categoryProvider).when(
-                                  data: (categories) => DropdownButtonFormField<int>(
+                                  data: (categories) => DropdownButtonFormField<String>(
                                     initialValue: _selectedCategoryId,
                                     decoration: _inputDecoration('Kategori'),
                                     icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppTheme.textSecondary),
@@ -1309,13 +1309,13 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
                                         Expanded(
                                           flex: 2,
                                           child: ref.watch(ingredientProvider).when(
-                                            data: (ingredients) => DropdownButtonFormField<int>(
+                                            data: (ingredients) => DropdownButtonFormField<String>(
                                               isExpanded: true,
                                               value: ri.ingredientId,
                                               decoration: _inputDecoration('Bahan Baku', fillColor: Colors.white),
                                               icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppTheme.textSecondary),
                                               items: ingredients.map((ing) {
-                                                return DropdownMenuItem<int>(
+                                                return DropdownMenuItem<String>(
                                                   value: ing.id,
                                                   child: Text('${ing.name} (${ing.unit})'),
                                                 );
@@ -1480,7 +1480,7 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
         0;
     final stockVal = int.tryParse(_stockController.text) ?? 0;
 
-    int productId;
+    String productId;
 
     final minStockVal = int.tryParse(_minStockController.text) ?? 0;
 

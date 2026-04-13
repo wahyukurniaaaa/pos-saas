@@ -41,7 +41,7 @@ class _PoFormScreenState extends ConsumerState<PoFormScreen> {
           .where((i) => i.qty > 0)
           .map(
             (i) => PurchaseOrderItemsCompanion.insert(
-              purchaseOrderId: 0, 
+              purchaseOrderId: '', 
               itemName: i.name,
               unit: i.unit,
               quantity: i.qty,
@@ -261,7 +261,7 @@ class _PoFormScreenState extends ConsumerState<PoFormScreen> {
 }
 
 class _PoItemRow {
-  final int refId;
+  final String refId;
   final String type; 
   final String name;
   final String unit;

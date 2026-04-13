@@ -101,7 +101,7 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
 * **Manajemen Pemasok (Supplier) & Pembelian (Purchase Order):** [BARU]
     * Mendata profil pemasok (Nama, Kontak, Alamat).
     * Membuat *Purchase Order* (PO) untuk dikirim ke pemasok.
-    * Melacak status PO dan menerima pesanan (otomatis memotong stok PO menjadi *Stock In* bahan baku/produk).
+    * Melacak status PO (`draft` → `sent` → `received` | `cancelled`) dan menerima pesanan (otomatis memotong stok PO menjadi *Stock In* bahan baku/produk).
 * **Manajemen Bahan Baku & Resep (Advanced Inventory) [BARU]:**
     * **Ingredient Maintenance**: Mengelola stok mentah (biji kopi, susu, gula) dengan satuan dasar (gr, ml, pcs).
     * **Stock Out & Waste Management**: Fitur "Stok Keluar" manual dengan pencatatan alasan (Misal: Kedaluwarsa, Rusak, Tumpah) untuk transparansi pengurangan inventaris.
@@ -175,6 +175,7 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
 | **Bahan Baku** | Nama Bahan | String, unik. Contoh: "Susu UHT", "Biji Kopi Arabica". |
 | (Baru) | Unit | Enum: {gr, ml, pcs}. Disimpan dalam satuan terkecil. |
 |  | HPP (Avg Cost) | Numeric. Dihitung otomatis (Weighted Average). |
+|  | Histori Waktu | Metadata `updated_at` untuk mendukung sinkronisasi dan *audit trail*. |
 | **Resep** | Qty Needed | REAL. Jumlah bahan per 1 porsi produk. |
 
 ## **6\. Arsitektur Teknis & Tech Stack**

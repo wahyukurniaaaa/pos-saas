@@ -5,10 +5,10 @@ import 'package:posify_app/features/pos/providers/pos_providers.dart';
 void main() {
   group('CartItem', () {
     final product = Product(
-      id: 1,
+      id: '1',
       name: 'Test Product',
       price: 10000,
-      categoryId: 1,
+      categoryId: '1',
       stock: 10,
       sku: 'SKU123',
       hasVariants: false,
@@ -25,8 +25,8 @@ void main() {
 
     test('effectivePrice should use variant price when available', () {
       final variant = ProductVariant(
-        id: 10,
-        productId: 1,
+        id: '10',
+        productId: '1',
         name: 'Size',
         optionValue: 'Large',
         price: 15000,
@@ -49,8 +49,8 @@ void main() {
 
     test('cartKey should include variant id for variable products', () {
       final variant = ProductVariant(
-        id: 10,
-        productId: 1,
+        id: '10',
+        productId: '1',
         name: 'Size',
         optionValue: 'Large',
         price: 15000,
@@ -65,7 +65,7 @@ void main() {
       final cartItem = CartItem(product: product, quantity: 1);
       final updated = cartItem.copyWith(quantity: 5);
       expect(updated.quantity, 5);
-      expect(updated.product.id, 1);
+      expect(updated.product.id, '1');
     });
   });
 }

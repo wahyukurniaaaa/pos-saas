@@ -10,7 +10,7 @@ import 'package:intl/intl.dart';
 import 'package:posify_app/core/widgets/responsive_layout.dart';
 
 class ReceiptDetailScreen extends ConsumerStatefulWidget {
-  final int transactionId;
+  final String transactionId;
 
   const ReceiptDetailScreen({super.key, required this.transactionId});
 

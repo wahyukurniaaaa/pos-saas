@@ -6,7 +6,7 @@ void main() {
   group('Discount Calculation Logic', () {
     test('Percentage discount calculation', () {
       final discount = Discount(
-        id: 1,
+        id: '1',
         name: 'Test 10%',
         scope: 'transaction',
         type: 'percentage',
@@ -25,7 +25,7 @@ void main() {
 
     test('Fixed discount calculation', () {
       final discount = Discount(
-        id: 2,
+        id: '2',
         name: 'Test Rp 5000',
         scope: 'transaction',
         type: 'fixed',

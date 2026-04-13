@@ -28,9 +28,9 @@ class CategoryNotifier extends AsyncNotifier<List<Category>> {
 
   List<Category> _getDummyCategories() {
     return [
-      Category(id: 1, name: 'Makanan'),
-      Category(id: 2, name: 'Minuman'),
-      Category(id: 3, name: 'Camilan'),
+      Category(id: 'cat-1', name: 'Makanan'),
+      Category(id: 'cat-2', name: 'Minuman'),
+      Category(id: 'cat-3', name: 'Camilan'),
     ];
   }
 }
@@ -44,7 +44,7 @@ final categoryProvider =
 
 class ProductNotifier extends AsyncNotifier<List<Product>> {
   String? _searchQuery;
-  int? _categoryId;
+  String? _categoryId;
   List<Product> _allProducts = [];
 
   @override
@@ -86,7 +86,7 @@ class ProductNotifier extends AsyncNotifier<List<Product>> {
     state = AsyncValue.data(_filter(_allProducts));
   }
 
-  void setCategory(int? id) {
+  void setCategory(String? id) {
     _categoryId = id;
     state = AsyncValue.data(_filter(_allProducts));
   }
@@ -100,7 +100,7 @@ final productProvider = AsyncNotifierProvider<ProductNotifier, List<Product>>(
 
 class ProductWithVariantsNotifier extends AsyncNotifier<List<ProductWithVariants>> {
   String? _searchQuery;
-  int? _categoryId;
+  String? _categoryId;
 
   @override
   Future<List<ProductWithVariants>> build() async {
@@ -141,7 +141,7 @@ class ProductWithVariantsNotifier extends AsyncNotifier<List<ProductWithVariants
     ref.invalidateSelf();
   }
 
-  void setCategory(int? id) {
+  void setCategory(String? id) {
     _categoryId = id;
     ref.invalidateSelf();
   }
@@ -297,15 +297,15 @@ class CartNotifier extends Notifier<List<CartItem>> {
 
   double get subtotal => state.fold(0, (sum, item) => sum + item.total);
 
-  Future<int?> checkout({
-    required int shiftId,
+  Future<String?> checkout({
+    required String shiftId,
     required List<PaymentEntry> payments,
     required double taxAmount,
     required double serviceCharge,
     String? customerPhone,
     String? customerName,
-    int? customerId,
-    int? discountId,
+    String? customerId,
+    String? discountId,
     int discountAmount = 0,
     int pointsEarned = 0,
     int pointsRedeemed = 0,
@@ -351,7 +351,7 @@ class CartNotifier extends Notifier<List<CartItem>> {
             : null;
 
         return TransactionItemsCompanion.insert(
-          transactionId: 0,
+          transactionId: '',
           productId: item.product.id,
           variantId: drift.Value(item.variant?.id),
           variantName: drift.Value(variantLabel),
@@ -377,7 +377,7 @@ class CartNotifier extends Notifier<List<CartItem>> {
           changeGiven = change > 0 ? change.toInt() : 0;
         }
         return TransactionPaymentsCompanion.insert(
-          transactionId: 0, // Overridden by processCheckout
+          transactionId: '', // Overridden by processCheckout
           method: p.method.toLowerCase(),
           amount: p.amount.toInt(),
           changeGiven: drift.Value(changeGiven),
@@ -399,10 +399,10 @@ class CartNotifier extends Notifier<List<CartItem>> {
     }
   }
 
-  Future<int?> holdBill({
-    required int shiftId,
+  Future<String?> holdBill({
+    required String shiftId,
     String? customerName,
-    int? customerId,
+    String? customerId,
     String? notes,
   }) async {
     try {
@@ -429,7 +429,7 @@ class CartNotifier extends Notifier<List<CartItem>> {
             : null;
 
         return TransactionItemsCompanion.insert(
-          transactionId: 0,
+          transactionId: '',
           productId: item.product.id,
           variantId: drift.Value(item.variant?.id),
           variantName: drift.Value(variantLabel),
@@ -761,7 +761,7 @@ final pendingTransactionsProvider = StreamProvider<List<Transaction>>((ref) {
 
 // ===== Ingredient History Provider =====
 
-final ingredientHistoryProvider = StreamProvider.family<List<IngredientStockHistoryData>, int>((ref, ingredientId) {
+final ingredientHistoryProvider = StreamProvider.family<List<IngredientStockHistoryData>, String>((ref, ingredientId) {
   final db = ref.watch(databaseProvider);
   return db.watchIngredientHistory(ingredientId);
 });
@@ -784,7 +784,7 @@ final stockOpnameHistoryProvider = StreamProvider.family<List<StockOpnameData>, 
   return db.watchCompletedOpnames(type);
 });
 
-final stockOpnameItemsProvider = StreamProvider.family<List<StockOpnameItem>, int>((ref, opnameId) {
+final stockOpnameItemsProvider = StreamProvider.family<List<StockOpnameItem>, String>((ref, opnameId) {
   final db = ref.watch(databaseProvider);
   return db.watchOpnameItems(opnameId);
 });

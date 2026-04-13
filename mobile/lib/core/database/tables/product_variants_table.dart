@@ -1,9 +1,10 @@
 import 'package:drift/drift.dart';
+import '../../utils/uuid_generator.dart';
 import 'products_table.dart';
 
 class ProductVariants extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  IntColumn get productId => integer().references(Products, #id)();
+  TextColumn get id => text().clientDefault(() => UuidGenerator.generate())();
+  TextColumn get productId => text().references(Products, #id)();
   TextColumn get name => text().withLength(min: 1, max: 50)(); // e.g. "Ukuran", "Rasa"
   TextColumn get optionValue => text().withLength(min: 1, max: 50)(); // e.g. "L", "Coklat"
   IntColumn get price =>
@@ -12,4 +13,5 @@ class ProductVariants extends Table {
   TextColumn get sku => text().nullable()(); // Optional, for barcode-per-variant
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().nullable()();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
 }

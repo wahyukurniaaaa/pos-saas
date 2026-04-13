@@ -30,8 +30,8 @@ void main() {
 
   group('ShiftNotifier', () {
     final mockShift = Shift(
-      id: 1,
-      employeeId: 1,
+      id: '1',
+      employeeId: '1',
       startTime: DateTime.now(),
       startingCash: 100000,
       status: 'open',
@@ -40,9 +40,9 @@ void main() {
 
     final mockTransactions = [
       Transaction(
-        id: 1,
+        id: '1',
         receiptNumber: 'R1',
-        shiftId: 1,
+        shiftId: '1',
         totalAmount: 50000,
         paymentMethod: 'tunai',
         paymentStatus: 'paid',
@@ -55,9 +55,9 @@ void main() {
         createdAt: DateTime.now(),
       ),
       Transaction(
-        id: 2,
+        id: '2',
         receiptNumber: 'R2',
-        shiftId: 1,
+        shiftId: '1',
         totalAmount: 30000,
         paymentMethod: 'debit', // Should be ignored in cash calculation
         paymentStatus: 'paid',
@@ -73,13 +73,13 @@ void main() {
 
     test('closeShift should calculate expectedEndingCash correctly (startingCash + totalTunaiSales)', () async {
       when(() => mockDb.getOpenShift()).thenAnswer((_) async => mockShift);
-      when(() => mockDb.watchTransactionsByShift(1))
+      when(() => mockDb.watchTransactionsByShift('1'))
           .thenAnswer((_) => Stream.value(mockTransactions));
       
       when(() => mockDb.updateShift(any())).thenAnswer((_) async => true);
 
       final notifier = container.read(shiftControllerProvider.notifier);
-      final result = await notifier.closeShift(1, 150000);
+      final result = await notifier.closeShift('1', 150000);
 
       expect(result, isTrue);
       
@@ -95,7 +95,7 @@ void main() {
       when(() => mockDb.getOpenShift()).thenAnswer((_) async => null);
 
       final notifier = container.read(shiftControllerProvider.notifier);
-      final result = await notifier.closeShift(99, 100000);
+      final result = await notifier.closeShift('99', 100000);
 
       expect(result, isFalse);
     });

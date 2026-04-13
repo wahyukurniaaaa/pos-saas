@@ -26,6 +26,12 @@ erDiagram
     shifts ||--o{ transactions : "menampung nota"
     
     categories ||--|{ products : "mengkelompokkan"
+    outlets ||--o{ transactions : "menampung"
+    outlets ||--o{ stock_transactions : "menampung"
+    outlets ||--o{ products : "memiliki"
+    outlets ||--o{ ingredients : "memiliki"
+    outlets ||--o{ employees : "menugaskan"
+    outlets ||--o{ expenses : "mencatat"
     
     suppliers ||--o{ ingredients : "menyuplai terakhir"
     suppliers ||--o{ ingredient_stock_history : "disuplai pada"
@@ -51,26 +57,39 @@ erDiagram
     %% Definisi Entitas %%
 
     %% Backend-Only SaaS Base Schema %%
+    outlets {
+        TEXT id PK "UUID v7"
+        TEXT name
+        TEXT address "Opsional"
+        TEXT phone "Opsional"
+        TEXT created_at "ISO 8601"
+        TEXT updated_at "ISO 8601"
+        TEXT deleted_at "ISO 8601, Nullable"
+    }
+
     users {
-        INTEGER id PK "Auto Increment"
+        TEXT id PK "UUID v7"
         TEXT email "Unik"
         TEXT password_hash "Bcrypt"
         TEXT created_at "ISO 8601"
+        TEXT deleted_at "ISO 8601, Nullable"
     }
 
     licenses {
-        INTEGER id PK "Auto Increment"
-        INTEGER user_id FK "Owner Akun"
+        TEXT id PK "UUID v7"
+        TEXT user_id FK "Owner Akun"
         TEXT license_code "Unik (10-Digit Alfanumerik)"
         INTEGER tier_level "1 (Lite) / 2 (Pro)"
         TEXT device_fingerprint "Unik Perangkat"
         TEXT activation_date "ISO 8601"
         TEXT last_verified "ISO 8601, Nullable"
         TEXT status "active/suspended"
+        TEXT deleted_at "ISO 8601, Nullable"
     }
 
     employees {
-        INTEGER id PK "Auto Increment"
+        TEXT outlet_id FK "Nullable (Super/Global)"
+        TEXT id PK "UUID v7"
         TEXT name 
         TEXT pin "6 Digit, UNIQUE"
         TEXT role "owner/supervisor/cashier"
@@ -80,10 +99,11 @@ erDiagram
         TEXT photo_uri "Opsional, Path lokal gambar"
         TEXT created_at "ISO 8601"
         TEXT updated_at "ISO 8601"
+        TEXT deleted_at "ISO 8601, Nullable"
     }
 
     store_profile {
-        INTEGER id PK "Auto Increment"
+        TEXT id PK "UUID v7"
         TEXT name "Nama Toko"
         TEXT address "Alamat Toko (Opsional)"
         TEXT phone "Standar (+62) Opsional"
@@ -93,10 +113,11 @@ erDiagram
         INTEGER service_charge_percentage "Persen Service (0-100)"
         INTEGER loyalty_point_conversion "Nilai belanja per 1 poin"
         INTEGER loyalty_point_value "Nilai Rp per 1 poin (redeem)"
+        TEXT deleted_at "ISO 8601, Nullable"
     }
 
     customers {
-        INTEGER id PK "Auto Increment"
+        TEXT id PK "UUID v7"
         TEXT name
         TEXT phone "Opsional, Unik"
         TEXT email "Opsional"
@@ -105,25 +126,29 @@ erDiagram
         INTEGER points "Poin Member saat ini"
         TEXT created_at "ISO 8601"
         TEXT updated_at "ISO 8601"
+        TEXT deleted_at "ISO 8601, Nullable"
     }
 
     suppliers {
-        INTEGER id PK "Auto Increment"
+        TEXT id PK "UUID v7"
         TEXT name
         TEXT phone "Opsional"
         TEXT address "Opsional"
         TEXT created_at "ISO 8601"
         TEXT updated_at "ISO 8601"
+        TEXT deleted_at "ISO 8601, Nullable"
     }
 
     categories {
-        INTEGER id PK "Auto Increment"
+        TEXT id PK "UUID v7"
         TEXT name "Unik"
+        TEXT deleted_at "ISO 8601, Nullable"
     }
 
     products {
-        INTEGER id PK "Auto Increment"
-        INTEGER category_id FK 
+        TEXT outlet_id FK "Nullable (Super/Global)"
+        TEXT id PK "UUID v7"
+        TEXT category_id FK 
         TEXT name 
         TEXT sku "Barang Simple. Unik, Barcode"
         INTEGER price "Harga Jual (Jika simple)"
@@ -134,44 +159,48 @@ erDiagram
         TEXT image_uri "Path lokal gambar"
         TEXT created_at "ISO 8601"
         TEXT updated_at "ISO 8601"
+        TEXT deleted_at "ISO 8601, Nullable"
     }
 
 
     product_variants {
-        INTEGER id PK "Auto Increment"
-        INTEGER product_id FK
+        TEXT id PK "UUID v7"
+        TEXT product_id FK
         TEXT name "Contoh: L, XL, M"
         TEXT sku "Opsional, Unik"
         INTEGER price "Harga Varian"
         INTEGER stock "Stok Varian"
         TEXT created_at "ISO 8601"
         TEXT updated_at "ISO 8601"
+        TEXT deleted_at "ISO 8601, Nullable"
     }
 
     shifts {
-        INTEGER id PK "Auto Increment"
-        INTEGER employee_id FK "Siapa yg buka"
+        TEXT id PK "UUID v7"
+        TEXT employee_id FK "Siapa yg buka"
         TEXT start_time "ISO 8601"
         TEXT end_time "ISO 8601, Nullable"
         INTEGER starting_cash "Modal Uang Laci"
         INTEGER expected_ending_cash "Estimasi Sistem"
         INTEGER actual_ending_cash "Hitungan Fisik Laci"
         TEXT status "open/closed"
+        TEXT deleted_at "ISO 8601, Nullable"
     }
 
     transactions {
-        INTEGER id PK "Auto Increment"
+        TEXT outlet_id FK "Nullable (Super/Global)"
+        TEXT id PK "UUID v7"
         TEXT receipt_number "Unik, Nullable (Draft)"
-        INTEGER shift_id FK 
-        INTEGER customer_id FK "Nullable"
+        TEXT shift_id FK 
+        TEXT customer_id FK "Nullable"
         INTEGER subtotal "Subtotal Item"
         INTEGER tax_amount "Nominal Pajak"
         INTEGER service_charge_amount "Nominal Biaya Layanan"
         INTEGER total_amount "Total Bayar Akhir"
         TEXT payment_method "Metode utama / 'mixed' jika split. Nullable (Draft)"
         TEXT payment_status "paid/void/pending"
-        INTEGER void_by FK "ID Pegawai L1/L2, Nullable"
-        INTEGER discount_id FK "Discounts ID, Nullable"
+        TEXT void_by FK "Employee ID, Nullable"
+        TEXT discount_id FK "Discounts ID, Nullable"
         INTEGER discount_amount "Nominal Diskon (Total)"
         INTEGER points_earned "Poin yg didapat dari transaksi"
         INTEGER points_redeemed "Poin yg ditukarkan dari saldo"
@@ -179,56 +208,62 @@ erDiagram
         TEXT customer_name "Snapshot data member"
         TEXT customer_phone "Snapshot data member"
         TEXT created_at "Waktu Transaksi"
+        TEXT deleted_at "ISO 8601, Nullable"
     }
 
     transaction_payments {
-        INTEGER id PK "Auto Increment"
-        INTEGER transaction_id FK "Merujuk ke transactions.id"
+        TEXT id PK "UUID v7"
+        TEXT transaction_id FK "Merujuk ke transactions.id"
         TEXT method "tunai/qris/debit/kredit (bukan kasbon)"
         INTEGER amount "Nominal yang dibayarkan (Rp)"
         INTEGER change_given "Kembalian yang diberikan (Default 0)"
+        TEXT deleted_at "ISO 8601, Nullable"
     }
 
     transaction_items {
-        INTEGER id PK "Auto Increment"
-        INTEGER transaction_id FK 
-        INTEGER product_id FK 
-        INTEGER variant_id FK "Nullable"
+        TEXT id PK "UUID v7"
+        TEXT transaction_id FK 
+        TEXT product_id FK 
+        TEXT variant_id FK "Nullable"
         TEXT variant_name "Snapshot nama varian"
         INTEGER quantity "Jml Beli"
         INTEGER price_at_transaction "Harga saat dibeli"
-        INTEGER discount_id FK "Discounts ID, Nullable"
+        TEXT discount_id FK "Discounts ID, Nullable"
         INTEGER discount_amount "Diskon per unit"
         INTEGER subtotal "Q * Harga - Diskon"
+        TEXT deleted_at "ISO 8601, Nullable"
     }
 
     stock_opname {
-        INTEGER id PK "Auto Increment"
+        TEXT id PK "UUID v7"
         TEXT opname_number "Nomor Dokumen"
         TEXT type "PRODUCT / INGREDIENT"
         TEXT status "DRAFT / COMPLETED"
-        INTEGER created_by FK "Employee ID"
+        TEXT created_by FK "Employee ID"
         TEXT notes "Catatan (Opsional)"
         TEXT created_at "ISO 8601"
+        TEXT deleted_at "ISO 8601, Nullable"
     }
 
     stock_opname_items {
-        INTEGER id PK "Auto Increment"
-        INTEGER stock_opname_id FK
-        INTEGER product_id FK "Nullable"
-        INTEGER variant_id FK "Nullable"
-        INTEGER ingredient_id FK "Nullable"
+        TEXT id PK "UUID v7"
+        TEXT stock_opname_id FK
+        TEXT product_id FK "Nullable"
+        TEXT variant_id FK "Nullable"
+        TEXT ingredient_id FK "Nullable"
         REAL system_stock "Stok di sistem saat opname"
         REAL physical_stock "Stok fisik aktual"
         REAL variance "Selisih (fisik - sistem)"
         TEXT variance_reason "Keterangan (Waste/Rusak/Selisih dll)"
+        TEXT deleted_at "ISO 8601, Nullable"
     }
 
     stock_transactions {
-        INTEGER id PK "Auto Increment"
-        INTEGER product_id FK
-        INTEGER variant_id FK "Nullable"
-        INTEGER supplier_id FK "Nullable (utk IN)"
+        TEXT outlet_id FK "Nullable (Super/Global)"
+        TEXT id PK "UUID v7"
+        TEXT product_id FK
+        TEXT variant_id FK "Nullable"
+        TEXT supplier_id FK "Nullable (utk IN)"
         TEXT type "IN / OUT / ADJUST / SALE / VOID"
         INTEGER quantity "Jml perubahan"
         INTEGER previous_stock "Stok sistem sblmnya"
@@ -236,61 +271,69 @@ erDiagram
         TEXT reason "Alasan / Note (Opsional)"
         TEXT reference "No Invoice / No Nota / Bukti (Opsional)"
         TEXT created_at "ISO 8601"
+        TEXT deleted_at "ISO 8601, Nullable"
     }
 
     purchase_orders {
-        INTEGER id PK "Auto Increment"
-        INTEGER supplier_id FK "Nullable"
+        TEXT id PK "UUID v7"
+        TEXT supplier_id FK "Nullable"
         TEXT status "draft/sent/received/cancelled"
         INTEGER total_estimate "Estimasi nilai PO (Rp)"
         TEXT notes "Catatan (Opsional)"
         TEXT ordered_at "ISO 8601"
         TEXT updated_at "ISO 8601"
+        TEXT deleted_at "ISO 8601, Nullable"
     }
 
     purchase_order_items {
-        INTEGER id PK "Auto Increment"
-        INTEGER purchase_order_id FK
-        INTEGER product_id FK "Nullable"
-        INTEGER ingredient_id FK "Nullable"
+        TEXT id PK "UUID v7"
+        TEXT purchase_order_id FK
+        TEXT product_id FK "Nullable"
+        TEXT ingredient_id FK "Nullable"
         TEXT item_name "Snapshot nama saat PO dibuat"
         TEXT unit "Snapshot satuan"
         REAL quantity "Jumlah yang dipesan"
         INTEGER purchase_price "Harga beli per unit"
         REAL received_quantity "Jumlah yang telah diterima"
+        TEXT deleted_at "ISO 8601, Nullable"
     }
 
     printer_settings {
-        INTEGER id PK "Auto Increment"
+        TEXT id PK "UUID v7"
         TEXT device_name "Nama Printer"
         TEXT mac_address "Identitas Unik"
         TEXT status "paired/last_connected"
+        TEXT deleted_at "ISO 8601, Nullable"
     }
 
     ingredients {
-        INTEGER id PK "Auto Increment"
+        TEXT outlet_id FK "Nullable (Super/Global)"
+        TEXT id PK "UUID v7"
         TEXT name "Nama Bahan Baku"
         TEXT unit "Satuan Dasar (gr/ml/pcs)"
         REAL stock_quantity "Stok saat ini"
         REAL min_stock_threshold "Batas peringatan"
         REAL average_cost "HPP Rata-rata per satuan"
-        INTEGER last_supplier_id FK "Supplier terakhir"
+        TEXT last_supplier_id FK "Supplier terakhir"
         TEXT created_at "ISO 8601"
+        TEXT updated_at "ISO 8601"
+        TEXT deleted_at "ISO 8601, Nullable"
     }
 
     product_recipes {
-        INTEGER id PK "Auto Increment"
-        INTEGER product_id FK
-        INTEGER ingredient_id FK
+        TEXT id PK "UUID v7"
+        TEXT product_id FK
+        TEXT ingredient_id FK
         REAL quantity_needed "Jumlah yang dibutuhkan per porsi"
         TEXT created_at "ISO 8601"
+        TEXT deleted_at "ISO 8601, Nullable"
     }
 
 
     ingredient_stock_history {
-        INTEGER id PK "Auto Increment"
-        INTEGER ingredient_id FK
-        INTEGER supplier_id FK "Nullable, utk PURCHASE"
+        TEXT id PK "UUID v7"
+        TEXT ingredient_id FK
+        TEXT supplier_id FK "Nullable, utk PURCHASE"
         TEXT type "SALE/PURCHASE/ADJUST/WASTE"
         REAL quantity_change "Perubahan stok (+/-)"
         REAL previous_balance "Stok sebelum"
@@ -298,19 +341,21 @@ erDiagram
         TEXT reference_id "No Nota / No Batch"
         TEXT reason "Keterangan (Waste/Adjust)"
         TEXT created_at "ISO 8601"
+        TEXT deleted_at "ISO 8601, Nullable"
     }
 
     unit_conversions {
-        INTEGER id PK "Auto Increment"
+        TEXT id PK "UUID v7"
         TEXT from_unit "e.g., kg"
         TEXT to_unit "e.g., gr"
         REAL multiplier "misal 1000"
         TEXT notes "Catatan manual, nullable"
         TEXT created_at "ISO 8601"
+        TEXT deleted_at "ISO 8601, Nullable"
     }
 
     discounts {
-        INTEGER id PK "Auto Increment"
+        TEXT id PK "UUID v7"
         TEXT name "Voucher Makan / Promo Item"
         TEXT scope "transaction / item"
         TEXT type "fixed / percentage"
@@ -323,26 +368,30 @@ erDiagram
         TEXT start_date "ISO 8601, Nullable"
         TEXT end_date "ISO 8601, Nullable"
         TEXT created_at "ISO 8601"
+        TEXT deleted_at "ISO 8601, Nullable"
     }
 
     expense_categories {
-        INTEGER id PK "Auto Increment"
+        TEXT id PK "UUID v7"
         TEXT name "Unik"
         TEXT icon "Material icon name"
         TEXT color "Hex color"
         BOOLEAN is_default "Default True/False"
         TEXT created_at "ISO 8601"
+        TEXT deleted_at "ISO 8601, Nullable"
     }
 
     expenses {
-        INTEGER id PK "Auto Increment"
-        INTEGER category_id FK "expense_categories"
-        INTEGER shift_id FK "Nullable"
-        INTEGER recorded_by FK "employees"
+        TEXT outlet_id FK "Nullable (Super/Global)"
+        TEXT id PK "UUID v7"
+        TEXT category_id FK "expense_categories"
+        TEXT shift_id FK "Nullable"
+        TEXT recorded_by FK "employees"
         INTEGER amount "Nominal pengeluaran (Rp)"
         TEXT note "Catatan (Opsional)"
         TEXT photo_uri "Path lokal foto kuitansi (Opsional)"
         TEXT created_at "ISO 8601"
+        TEXT deleted_at "ISO 8601, Nullable"
     }
 
 ```

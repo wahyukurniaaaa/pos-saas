@@ -21,7 +21,7 @@ class ExpenseCategoryNotifier extends AsyncNotifier<List<ExpenseCategory>> {
     ref.invalidateSelf();
   }
 
-  Future<void> delete(int id) async {
+  Future<void> delete(String id) async {
     final db = ref.read(databaseProvider);
     await db.deleteExpenseCategory(id);
     ref.invalidateSelf();
@@ -55,7 +55,7 @@ class ExpenseNotifier extends AsyncNotifier<List<ExpenseWithCategory>> {
     ref.invalidateSelf();
   }
 
-  Future<void> delete(int id) async {
+  Future<void> delete(String id) async {
     final db = ref.read(databaseProvider);
     await db.deleteExpense(id);
     ref.invalidateSelf();
@@ -81,7 +81,7 @@ class CashFlowNotifier extends AsyncNotifier<CashFlowData> {
 // ─── Expense for current shift summary ───────────────────────────────────────
 
 final shiftExpenseTotalProvider =
-    FutureProvider.family<int, int>((ref, shiftId) async {
+    FutureProvider.family<int, String>((ref, shiftId) async {
   final db = ref.watch(databaseProvider);
   return db.getTotalExpenseByShift(shiftId);
 });

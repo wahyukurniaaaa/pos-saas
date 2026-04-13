@@ -1,9 +1,10 @@
 import 'package:drift/drift.dart';
+import '../../utils/uuid_generator.dart';
 
 // Scope: 'transaction' = applies to total bill; 'item' = applies per product.
 // Type:  'fixed' = nominal (Rp), 'percentage' = percent (%).
 class Discounts extends Table {
-  IntColumn get id => integer().autoIncrement()();
+  TextColumn get id => text().clientDefault(() => UuidGenerator.generate())();
   TextColumn get name => text().withLength(min: 2, max: 100)();
   TextColumn get scope => text().withDefault(const Constant('transaction'))(); // transaction | item
   TextColumn get type => text().withDefault(const Constant('percentage'))();   // fixed | percentage
@@ -16,4 +17,5 @@ class Discounts extends Table {
   TextColumn get startDate => text().nullable()(); // ISO8601 date string, null = no start restriction
   TextColumn get endDate => text().nullable()();   // ISO8601 date string, null = no end restriction
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
 }

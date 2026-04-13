@@ -1,7 +1,8 @@
 import 'package:drift/drift.dart';
+import '../../utils/uuid_generator.dart';
 
 class StoreProfile extends Table {
-  IntColumn get id => integer().autoIncrement()();
+  TextColumn get id => text().clientDefault(() => UuidGenerator.generate())();
   TextColumn get name => text().withLength(min: 1, max: 50)();
   TextColumn get address => text().nullable()();
   TextColumn get phone => text().nullable()();
@@ -17,4 +18,5 @@ class StoreProfile extends Table {
       integer().withDefault(const Constant(100))();
   BoolColumn get deductStockOnHold =>
       boolean().withDefault(const Constant(false))();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
 }

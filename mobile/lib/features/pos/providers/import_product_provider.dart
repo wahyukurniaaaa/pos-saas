@@ -84,7 +84,7 @@ class ImportProductNotifier extends Notifier<ImportProductState> {
         final stockStock =
             int.tryParse(row.length > 3 ? row[3].toString() : '0') ?? 0;
         final categoryId =
-            int.tryParse(row.length > 4 ? row[4].toString() : '1') ?? 1;
+            (row.length > 4 && row[4].toString().trim().isNotEmpty) ? row[4].toString().trim() : 'uuid-dimpor';
         final imageUri = (row.length > 5 && row[5].toString().trim().isNotEmpty)
             ? row[5].toString().trim()
             : null;

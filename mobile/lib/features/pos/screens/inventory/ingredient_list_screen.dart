@@ -352,7 +352,7 @@ class _IngredientListScreenState extends ConsumerState<IngredientListScreen> {
     );
   }
 
-  void _openForm({int? ingredientId}) {
+  void _openForm({String? ingredientId}) {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => IngredientFormScreen(ingredientId: ingredientId)),
@@ -510,7 +510,7 @@ class _AddStockModalState extends ConsumerState<_AddStockModal> {
   final _quantityController = TextEditingController();
   final _costController = TextEditingController();
   final _reasonController = TextEditingController();
-  int? _selectedSupplierId;
+  String? _selectedSupplierId;
   bool _isLoading = false;
 
   late String _selectedInputUnit;
@@ -610,7 +610,7 @@ class _AddStockModalState extends ConsumerState<_AddStockModal> {
               Consumer(builder: (context, ref, _) {
                 final suppliers = ref.watch(supplierProvider);
                 return suppliers.when(
-                  data: (list) => list.isEmpty ? const SizedBox.shrink() : DropdownButtonFormField<int>(
+                  data: (list) => list.isEmpty ? const SizedBox.shrink() : DropdownButtonFormField<String>(
                     decoration: _inputStyle('Supplier (Opsional)', icon: Icons.store_rounded),
                     items: list.map((s) => DropdownMenuItem(value: s.id, child: Text(s.name))).toList(),
                     onChanged: (v) => _selectedSupplierId = v,

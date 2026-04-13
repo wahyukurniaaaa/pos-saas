@@ -8,6 +8,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 import 'dart:math';
 
+import '../utils/uuid_generator.dart';
+
 import 'tables/licenses_table.dart';
 import 'tables/employees_table.dart';
 import 'tables/store_profile_table.dart';
@@ -31,6 +33,7 @@ import 'tables/purchase_orders_table.dart';
 import 'tables/discounts_table.dart';
 import 'tables/expenses_table.dart';
 import 'tables/transaction_payments_table.dart';
+import 'tables/outlets_table.dart';
 
 part 'database.g.dart';
 
@@ -73,6 +76,7 @@ class StockTransactionWithProduct {
     ExpenseCategories,
     Expenses,
     TransactionPayments,
+    Outlets,
   ],
 )
 class PosifyDatabase extends _$PosifyDatabase {
@@ -82,7 +86,7 @@ class PosifyDatabase extends _$PosifyDatabase {
   PosifyDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 22;
+  int get schemaVersion => 23;
 
   @override
   MigrationStrategy get migration {
@@ -201,8 +205,10 @@ class PosifyDatabase extends _$PosifyDatabase {
   Future<License?> getLocalLicense() =>
       (select(licenses)..limit(1)).getSingleOrNull();
 
-  Future<int> insertLicense(LicensesCompanion entry) =>
-      into(licenses).insert(entry);
+  Future<String> insertLicense(LicensesCompanion entry) async {
+    final row = await into(licenses).insertReturning(entry);
+    return row.id;
+  }
 
   Future<void> updateLicenseVerification(String code) {
     return (update(licenses)..where((t) => t.licenseCode.equals(code))).write(
@@ -232,13 +238,15 @@ class PosifyDatabase extends _$PosifyDatabase {
     employees,
   )..where((e) => e.role.equals('owner'))).getSingleOrNull();
 
-  Future<int> insertEmployee(EmployeesCompanion entry) =>
-      into(employees).insert(entry);
+  Future<String> insertEmployee(EmployeesCompanion entry) async {
+    final row = await into(employees).insertReturning(entry);
+    return row.id;
+  }
 
   Future<bool> updateEmployee(Employee entry) =>
       update(employees).replace(entry);
 
-  Future<int> updateEmployeePin(int employeeId, String newPin) {
+  Future<int> updateEmployeePin(String employeeId, String newPin) {
     return (update(employees)..where((t) => t.id.equals(employeeId)))
         .write(EmployeesCompanion(pin: Value(newPin)));
   }
@@ -250,8 +258,10 @@ class PosifyDatabase extends _$PosifyDatabase {
   Stream<StoreProfileData?> watchStoreProfile() =>
       (select(storeProfile)..limit(1)).watchSingleOrNull();
 
-  Future<int> insertStoreProfile(StoreProfileCompanion entry) =>
-      into(storeProfile).insert(entry);
+  Future<String> insertStoreProfile(StoreProfileCompanion entry) async {
+    final row = await into(storeProfile).insertReturning(entry);
+    return row.id;
+  }
 
   Future<bool> updateStoreProfile(StoreProfileData entry) =>
       update(storeProfile).replace(entry);
@@ -261,14 +271,18 @@ class PosifyDatabase extends _$PosifyDatabase {
 
   Stream<List<Category>> watchAllCategories() => select(categories).watch();
 
-  Future<int> insertCategory(CategoriesCompanion entry) =>
-      into(categories).insert(entry);
+  Future<String> insertCategory(CategoriesCompanion entry) async {
+    final row = await into(categories).insertReturning(entry);
+    return row.id;
+  }
 
   // ===== Product Management =====
   Future<List<Product>> getAllProducts() => select(products).get();
   Stream<List<Product>> watchAllProducts() => select(products).watch();
-  Future<int> insertProduct(ProductsCompanion entry) =>
-      into(products).insert(entry);
+  Future<String> insertProduct(ProductsCompanion entry) async {
+    final row = await into(products).insertReturning(entry);
+    return row.id;
+  }
   Future<bool> updateProduct(Product entry) => update(products).replace(entry);
   Future<int> deleteProduct(Product entry) => delete(products).delete(entry);
 
@@ -281,19 +295,21 @@ class PosifyDatabase extends _$PosifyDatabase {
   // ===== Product Variants =====
   Future<List<ProductVariant>> getAllVariants() => select(productVariants).get();
 
-  Stream<List<ProductVariant>> watchVariantsByProduct(int productId) =>
+  Stream<List<ProductVariant>> watchVariantsByProduct(String productId) =>
       (select(productVariants)
             ..where((v) => v.productId.equals(productId)))
           .watch();
 
-  Future<List<ProductVariant>> getVariantsByProduct(int productId) async {
+  Future<List<ProductVariant>> getVariantsByProduct(String productId) async {
     return (select(productVariants)
           ..where((v) => v.productId.equals(productId)))
         .get();
   }
 
-  Future<int> insertVariant(ProductVariantsCompanion entry) =>
-      into(productVariants).insert(entry);
+  Future<String> insertVariant(ProductVariantsCompanion entry) async {
+    final row = await into(productVariants).insertReturning(entry);
+    return row.id;
+  }
 
   Future<bool> updateVariant(ProductVariant entry) =>
       update(productVariants).replace(entry);
@@ -301,16 +317,16 @@ class PosifyDatabase extends _$PosifyDatabase {
   Future<int> deleteVariant(ProductVariant entry) =>
       delete(productVariants).delete(entry);
 
-  Future<ProductVariant?> getVariant(int id) =>
+  Future<ProductVariant?> getVariant(String id) =>
       (select(productVariants)..where((v) => v.id.equals(id))).getSingleOrNull();
 
-  Future<void> deleteVariantsByProduct(int productId) =>
+  Future<void> deleteVariantsByProduct(String productId) =>
       (delete(productVariants)
             ..where((v) => v.productId.equals(productId)))
           .go();
 
   Future<void> replaceVariants(
-    int productId,
+    String productId,
     List<ProductVariantsCompanion> newVariants,
   ) async {
     await transaction(() async {
@@ -322,13 +338,13 @@ class PosifyDatabase extends _$PosifyDatabase {
   }
 
   // ===== Shift Queries =====
-  Future<Product?> getProduct(int id) =>
+  Future<Product?> getProduct(String id) =>
       (select(products)..where((p) => p.id.equals(id))).getSingleOrNull();
 
   Future<Product?> getProductBySku(String sku) =>
       (select(products)..where((p) => p.sku.equals(sku))).getSingleOrNull();
 
-  Future<ProductWithVariants?> getProductWithVariants(int id) async {
+  Future<ProductWithVariants?> getProductWithVariants(String id) async {
     final product = await (select(products)..where((p) => p.id.equals(id))).getSingleOrNull();
     if (product == null) return null;
     
@@ -355,7 +371,7 @@ class PosifyDatabase extends _$PosifyDatabase {
     ]);
 
     return query.watch().map((rows) {
-      final results = <int, ProductWithVariants>{};
+      final results = <String, ProductWithVariants>{};
 
       for (final row in rows) {
         final product = row.readTable(products);
@@ -381,37 +397,46 @@ class PosifyDatabase extends _$PosifyDatabase {
     shifts,
   )..where((s) => s.status.equals('open'))).watchSingleOrNull();
 
-  Future<int> insertShift(ShiftsCompanion entry) => into(shifts).insert(entry);
+  Future<String> insertShift(ShiftsCompanion entry) async {
+    final row = await into(shifts).insertReturning(entry);
+    return row.id;
+  }
 
   Future<bool> updateShift(Shift entry) => update(shifts).replace(entry);
 
   // ===== Transaction Queries =====
-  Stream<List<Transaction>> watchTransactionsByShift(int shiftId) =>
+  Stream<List<Transaction>> watchTransactionsByShift(String shiftId) =>
       (select(transactions)..where((t) => t.shiftId.equals(shiftId))).watch();
 
-  Future<int> insertTransaction(TransactionsCompanion entry) =>
-      into(transactions).insert(entry);
+  Future<String> insertTransaction(TransactionsCompanion entry) async {
+    final row = await into(transactions).insertReturning(entry);
+    return row.id;
+  }
 
   Future<bool> updateTransaction(Transaction entry) =>
       update(transactions).replace(entry);
 
   // ===== Transaction Items =====
-  Future<List<TransactionItem>> getItemsByTransaction(int transactionId) =>
+  Future<List<TransactionItem>> getItemsByTransaction(String transactionId) =>
       (select(
         transactionItems,
       )..where((ti) => ti.transactionId.equals(transactionId))).get();
 
-  Future<int> insertTransactionItem(TransactionItemsCompanion entry) =>
-      into(transactionItems).insert(entry);
+  Future<String> insertTransactionItem(TransactionItemsCompanion entry) async {
+    final row = await into(transactionItems).insertReturning(entry);
+    return row.id;
+  }
 
   // ===== Stock Transactions =====
-  Future<int> insertStockTransaction(StockTransactionsCompanion entry) =>
-      into(stockTransactions).insert(entry);
+  Future<String> insertStockTransaction(StockTransactionsCompanion entry) async {
+    final row = await into(stockTransactions).insertReturning(entry);
+    return row.id;
+  }
 
-  Future<String?> getLastAdjustDate(int productId, {int? variantId}) async {
+  Future<String?> getLastAdjustDate(String productId, {String? variantId}) async {
     final query = select(stockTransactions);
     
-    if (productId != 0) {
+    if (productId != '0') {
       query.where((t) => t.productId.equals(productId));
     }
     
@@ -431,8 +456,10 @@ class PosifyDatabase extends _$PosifyDatabase {
   // ===== Customers & Suppliers =====
   Future<List<Customer>> getAllCustomers() => select(customers).get();
   Stream<List<Customer>> watchAllCustomers() => select(customers).watch();
-  Future<int> insertCustomer(CustomersCompanion entry) =>
-      into(customers).insert(entry);
+  Future<String> insertCustomer(CustomersCompanion entry) async {
+    final row = await into(customers).insertReturning(entry);
+    return row.id;
+  }
   Future<bool> updateCustomer(Customer entry) => update(customers).replace(entry);
   Future<int> deleteCustomer(Customer entry) => (delete(customers)..where((c) => c.id.equals(entry.id))).go();
 
@@ -455,7 +482,7 @@ class PosifyDatabase extends _$PosifyDatabase {
 
     return result.map((row) {
       final customer = Customer(
-        id: row.read<int>('id'),
+        id: row.read<String>('id'),
         name: row.read<String>('name'),
         phone: row.readNullable<String>('phone'),
         email: row.readNullable<String>('email'),
@@ -476,17 +503,19 @@ class PosifyDatabase extends _$PosifyDatabase {
 
   Future<List<Supplier>> getAllSuppliers() => select(suppliers).get();
   Stream<List<Supplier>> watchAllSuppliers() => select(suppliers).watch();
-  Future<int> insertSupplier(SuppliersCompanion entry) =>
-      into(suppliers).insert(entry);
+  Future<String> insertSupplier(SuppliersCompanion entry) async {
+    final row = await into(suppliers).insertReturning(entry);
+    return row.id;
+  }
   Future<bool> updateSupplier(Supplier entry) => update(suppliers).replace(entry);
 
   // ===== Stock In (Purchase from Supplier) =====
   Future<void> processStockIn({
-    required int productId,
-    int? variantId,
+    required String productId,
+    String? variantId,
     required int quantity,
     required int unitCost,
-    int? supplierId,
+    String? supplierId,
     String? note,
     String? invoiceRef,
   }) async {
@@ -581,10 +610,10 @@ class PosifyDatabase extends _$PosifyDatabase {
   }
 
   Future<void> processStockOut({
-    required int productId,
-    int? variantId,
+    required String productId,
+    String? variantId,
     required int quantity,
-    int? supplierId,
+    String? supplierId,
     String? note,
     String? invoiceRef,
   }) async {
@@ -668,7 +697,7 @@ class PosifyDatabase extends _$PosifyDatabase {
     });
   }
 
-  Future<List<StockTransaction>> getStockCard(int productId, {int? variantId}) {
+  Future<List<StockTransaction>> getStockCard(String productId, {String? variantId}) {
     final query = select(stockTransactions)
       ..where((t) => t.productId.equals(productId))
       ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]);
@@ -710,18 +739,20 @@ class PosifyDatabase extends _$PosifyDatabase {
         ..orderBy([(po) => OrderingTerm.desc(po.orderedAt)]))
           .watch();
 
-  Future<List<PurchaseOrderItem>> getPurchaseOrderItems(int poId) =>
+  Future<List<PurchaseOrderItem>> getPurchaseOrderItems(String poId) =>
       (select(purchaseOrderItems)
         ..where((i) => i.purchaseOrderId.equals(poId)))
           .get();
 
-  Future<int> createPurchaseOrder(PurchaseOrdersCompanion entry) =>
-      into(purchaseOrders).insert(entry);
+  Future<String> createPurchaseOrder(PurchaseOrdersCompanion entry) async {
+    final row = await into(purchaseOrders).insertReturning(entry);
+    return row.id;
+  }
 
   Future<void> addPurchaseOrderItem(PurchaseOrderItemsCompanion entry) =>
       into(purchaseOrderItems).insert(entry).then((_) {});
 
-  Future<void> updatePurchaseOrderStatus(int poId, String status) =>
+  Future<void> updatePurchaseOrderStatus(String poId, String status) =>
       (update(purchaseOrders)..where((po) => po.id.equals(poId))).write(
         PurchaseOrdersCompanion(
           status: Value(status),
@@ -732,8 +763,8 @@ class PosifyDatabase extends _$PosifyDatabase {
   /// Marks PO as received, updates received quantities,
   /// and auto-increments product or ingredient stock.
   Future<void> receivePurchaseOrder({
-    required int poId,
-    required List<({int itemId, double receivedQty})> receivedItems,
+    required String poId,
+    required List<({String itemId, double receivedQty})> receivedItems,
   }) async {
     await transaction(() async {
       final now = DateTime.now().toIso8601String();
@@ -805,7 +836,7 @@ class PosifyDatabase extends _$PosifyDatabase {
   Future<int> upsertDiscount(DiscountsCompanion entry) =>
       into(discounts).insertOnConflictUpdate(entry);
 
-  Future<int> deleteDiscount(int id) =>
+  Future<int> deleteDiscount(String id) =>
       (delete(discounts)..where((d) => d.id.equals(id))).go();
 
   Future<List<Discount>> getValidDiscounts({required double cartTotal, required String scope}) async {
@@ -829,7 +860,7 @@ class PosifyDatabase extends _$PosifyDatabase {
   Future<int> upsertExpenseCategory(ExpenseCategoriesCompanion entry) =>
       into(expenseCategories).insertOnConflictUpdate(entry);
 
-  Future<int> deleteExpenseCategory(int id) =>
+  Future<int> deleteExpenseCategory(String id) =>
       (delete(expenseCategories)..where((c) => c.id.equals(id))).go();
 
   // ===== Expense Queries =====
@@ -858,13 +889,15 @@ class PosifyDatabase extends _$PosifyDatabase {
     }).toList();
   }
 
-  Future<int> insertExpense(ExpensesCompanion entry) =>
-      into(expenses).insert(entry);
+  Future<String> insertExpense(ExpensesCompanion entry) async {
+    final row = await into(expenses).insertReturning(entry);
+    return row.id;
+  }
 
-  Future<int> deleteExpense(int id) =>
+  Future<int> deleteExpense(String id) =>
       (delete(expenses)..where((e) => e.id.equals(id))).go();
 
-  Future<int> getTotalExpenseByShift(int shiftId) async {
+  Future<int> getTotalExpenseByShift(String shiftId) async {
     final rows = await (select(expenses)
           ..where((e) => e.shiftId.equals(shiftId)))
         .get();
@@ -912,14 +945,15 @@ class PosifyDatabase extends _$PosifyDatabase {
     );
   }
 
-  Future<int> processCheckout({
+  Future<String> processCheckout({
     required TransactionsCompanion transactionEntry,
     required List<TransactionItemsCompanion> itemsParams,
     List<TransactionPaymentsCompanion> paymentEntries = const [],
   }) async {
     return transaction(() async {
       // 1. Insert Transaction
-      final txId = await into(transactions).insert(transactionEntry);
+      final insertedTx = await into(transactions).insertReturning(transactionEntry);
+        final txId = insertedTx.id;
 
       final isPending = transactionEntry.paymentStatus.present && 
                         transactionEntry.paymentStatus.value == 'pending';
@@ -1050,7 +1084,7 @@ class PosifyDatabase extends _$PosifyDatabase {
             ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
           .watch();
 
-  Future<void> deleteTransaction(int id) async {
+  Future<void> deleteTransaction(String id) async {
     await transaction(() async {
       await (delete(transactionPayments)..where((t) => t.transactionId.equals(id))).go();
       await (delete(transactionItems)..where((t) => t.transactionId.equals(id))).go();
@@ -1058,13 +1092,13 @@ class PosifyDatabase extends _$PosifyDatabase {
     });
   }
 
-  Future<List<TransactionPayment>> getTransactionPayments(int transactionId) {
+  Future<List<TransactionPayment>> getTransactionPayments(String transactionId) {
     return (select(transactionPayments)
           ..where((t) => t.transactionId.equals(transactionId)))
         .get();
   }
 
-  Future<List<TransactionItem>> getTransactionItems(int transactionId) {
+  Future<List<TransactionItem>> getTransactionItems(String transactionId) {
     return (select(transactionItems)..where((t) => t.transactionId.equals(transactionId))).get();
   }
 
@@ -1118,7 +1152,7 @@ class PosifyDatabase extends _$PosifyDatabase {
 
   // ===== Detail & Void Transaction =====
   Future<TransactionWithItems?> getTransactionWithItems(
-    int transactionId,
+    String transactionId,
   ) async {
     final transaction = await (select(
       transactions,
@@ -1146,7 +1180,7 @@ class PosifyDatabase extends _$PosifyDatabase {
     );
   }
 
-  Future<bool> voidTransaction(int transactionId, int supervisorId) async {
+  Future<bool> voidTransaction(String transactionId, String supervisorId) async {
     return transaction(() async {
       // 1. Get transaction
       final t = await (select(
@@ -1327,7 +1361,7 @@ class PosifyDatabase extends _$PosifyDatabase {
   /// Returns total payment amount grouped by method for a specific shift.
   /// Used by ShiftReportModal to accurately calculate cash in drawer,
   /// including partial cash amounts from split payment transactions.
-  Future<Map<String, int>> getShiftPaymentTotals(int shiftId) async {
+  Future<Map<String, int>> getShiftPaymentTotals(String shiftId) async {
     final amountExp = transactionPayments.amount.sum();
 
     final query = select(transactionPayments).join([
@@ -1365,7 +1399,7 @@ class PosifyDatabase extends _$PosifyDatabase {
 
     final results = await query.get();
 
-    final Map<int, ProductProfit> profitMap = {};
+    final Map<String, ProductProfit> profitMap = {};
 
     for (var row in results) {
       final item = row.readTable(transactionItems);
@@ -1424,7 +1458,7 @@ class PosifyDatabase extends _$PosifyDatabase {
 
     final results = await query.get();
 
-    final Map<int, CategoryProfit> profitMap = {};
+    final Map<String, CategoryProfit> profitMap = {};
 
     for (var row in results) {
       final item = row.readTable(transactionItems);
@@ -1512,8 +1546,10 @@ class PosifyDatabase extends _$PosifyDatabase {
 
   Stream<List<Ingredient>> watchAllIngredients() => select(ingredients).watch();
 
-  Future<int> insertIngredient(IngredientsCompanion entry) =>
-      into(ingredients).insert(entry);
+  Future<String> insertIngredient(IngredientsCompanion entry) async {
+    final row = await into(ingredients).insertReturning(entry);
+    return row.id;
+  }
 
   Future<bool> updateIngredient(Ingredient entry) =>
       update(ingredients).replace(entry);
@@ -1521,18 +1557,20 @@ class PosifyDatabase extends _$PosifyDatabase {
   Future<int> deleteIngredient(Ingredient entry) =>
       delete(ingredients).delete(entry);
 
-  Future<Ingredient?> getIngredientById(int id) =>
+  Future<Ingredient?> getIngredientById(String id) =>
       (select(ingredients)..where((t) => t.id.equals(id))).getSingleOrNull();
 
   // ===== Product Recipes Queries =====
-  Future<List<ProductRecipe>> getRecipesByProductId(int productId) =>
+  Future<List<ProductRecipe>> getRecipesByProductId(String productId) =>
       (select(productRecipes)..where((t) => t.productId.equals(productId))).get();
 
-  Stream<List<ProductRecipe>> watchRecipesByProductId(int productId) =>
+  Stream<List<ProductRecipe>> watchRecipesByProductId(String productId) =>
       (select(productRecipes)..where((t) => t.productId.equals(productId))).watch();
 
-  Future<int> insertProductRecipe(ProductRecipesCompanion entry) =>
-      into(productRecipes).insert(entry);
+  Future<String> insertProductRecipe(ProductRecipesCompanion entry) async {
+    final row = await into(productRecipes).insertReturning(entry);
+    return row.id;
+  }
 
   Future<bool> updateProductRecipe(ProductRecipe entry) =>
       update(productRecipes).replace(entry);
@@ -1541,7 +1579,7 @@ class PosifyDatabase extends _$PosifyDatabase {
       delete(productRecipes).delete(entry);
 
   Future<void> replaceProductRecipes(
-    int productId,
+    String productId,
     List<ProductRecipesCompanion> newRecipes,
   ) async {
     await transaction(() async {
@@ -1554,28 +1592,30 @@ class PosifyDatabase extends _$PosifyDatabase {
   }
 
   // ===== Ingredient Stock History Queries =====
-  Future<List<IngredientStockHistoryData>> getIngredientHistory(int ingredientId) =>
+  Future<List<IngredientStockHistoryData>> getIngredientHistory(String ingredientId) =>
       (select(ingredientStockHistory)
             ..where((t) => t.ingredientId.equals(ingredientId))
             ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
           .get();
 
-  Stream<List<IngredientStockHistoryData>> watchIngredientHistory(int ingredientId) =>
+  Stream<List<IngredientStockHistoryData>> watchIngredientHistory(String ingredientId) =>
       (select(ingredientStockHistory)
             ..where((t) => t.ingredientId.equals(ingredientId))
             ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
           .watch();
 
-  Future<int> insertIngredientStockHistory(
-          IngredientStockHistoryCompanion entry) =>
-      into(ingredientStockHistory).insert(entry);
+  Future<String> insertIngredientStockHistory(
+      IngredientStockHistoryCompanion entry) async {
+    final row = await into(ingredientStockHistory).insertReturning(entry);
+    return row.id;
+  }
 
   /// Atomically adds stock to an ingredient and records it in history.
   /// [quantityInBaseUnit] must already be converted to the base unit.
   Future<void> addIngredientStock({
-    required int ingredientId,
+    required String ingredientId,
     required double quantityInBaseUnit,
-    int? supplierId,
+    String? supplierId,
     double? newCostPerUnit,
     String? reason,
   }) async {
@@ -1618,7 +1658,7 @@ class PosifyDatabase extends _$PosifyDatabase {
 
   /// Atomically removes stock from an ingredient (e.g. from a sale).
   Future<void> deductIngredientStock({
-    required int ingredientId,
+    required String ingredientId,
     required double quantityInBaseUnit,
     String type = 'SALE',
     String? referenceId,
@@ -1654,21 +1694,25 @@ class PosifyDatabase extends _$PosifyDatabase {
   Future<List<UnitConversion>> getAllUnitConversions() =>
       select(unitConversions).get();
 
-  Future<int> insertUnitConversion(UnitConversionsCompanion entry) =>
-      into(unitConversions).insert(entry);
+  Future<String> insertUnitConversion(UnitConversionsCompanion entry) async {
+    final row = await into(unitConversions).insertReturning(entry);
+    return row.id;
+  }
 
   Future<bool> updateUnitConversion(UnitConversion entry) =>
       update(unitConversions).replace(entry);
 
-  Future<int> deleteUnitConversion(int id) =>
+  Future<int> deleteUnitConversion(String id) =>
       (delete(unitConversions)..where((t) => t.id.equals(id))).go();
 
   Future<List<UnitConversion>> getConversionsForBaseUnit(String baseUnit) =>
       (select(unitConversions)..where((t) => t.toUnit.equals(baseUnit))).get();
 
   // ===== Full-Structured Stock Opname =====
-  Future<int> createDraftOpname(StockOpnameCompanion entry) =>
-      into(stockOpname).insert(entry);
+  Future<String> createDraftOpname(StockOpnameCompanion entry) async {
+    final row = await into(stockOpname).insertReturning(entry);
+    return row.id;
+  }
 
   Future<List<StockOpnameData>> getDraftOpnames() =>
       (select(stockOpname)..where((o) => o.status.equals('DRAFT'))).get();
@@ -1676,25 +1720,27 @@ class PosifyDatabase extends _$PosifyDatabase {
   Stream<List<StockOpnameData>> watchDraftOpnames() =>
       (select(stockOpname)..where((o) => o.status.equals('DRAFT'))).watch();
 
-  Future<StockOpnameData?> getOpnameById(int id) =>
+  Future<StockOpnameData?> getOpnameById(String id) =>
       (select(stockOpname)..where((o) => o.id.equals(id))).getSingleOrNull();
 
-  Future<List<StockOpnameItem>> getOpnameItems(int opnameId) =>
+  Future<List<StockOpnameItem>> getOpnameItems(String opnameId) =>
       (select(stockOpnameItems)..where((i) => i.stockOpnameId.equals(opnameId))).get();
 
-  Stream<List<StockOpnameItem>> watchOpnameItems(int opnameId) =>
+  Stream<List<StockOpnameItem>> watchOpnameItems(String opnameId) =>
       (select(stockOpnameItems)..where((i) => i.stockOpnameId.equals(opnameId))).watch();
 
-  Future<int> addOpnameItem(StockOpnameItemsCompanion entry) =>
-      into(stockOpnameItems).insert(entry);
+  Future<String> addOpnameItem(StockOpnameItemsCompanion entry) async {
+    final row = await into(stockOpnameItems).insertReturning(entry);
+    return row.id;
+  }
 
   Future<bool> updateOpnameItem(StockOpnameItem entry) =>
       update(stockOpnameItems).replace(entry);
 
-  Future<int> removeOpnameItem(int id) =>
+  Future<int> removeOpnameItem(String id) =>
       (delete(stockOpnameItems)..where((i) => i.id.equals(id))).go();
 
-  Future<void> submitOpname(int opnameId) async {
+  Future<void> submitOpname(String opnameId) async {
     await transaction(() async {
       final opname = await getOpnameById(opnameId);
       if (opname == null || opname.status == 'COMPLETED') return;

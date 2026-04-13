@@ -7,7 +7,7 @@ import '../../features/pos/providers/pos_providers.dart';
 class ProductImage extends ConsumerWidget {
   final String? imageUri;
   final String? productName;
-  final int? categoryId;
+  final String? categoryId;
   final double? width;
   final double? height;
   final double borderRadius;

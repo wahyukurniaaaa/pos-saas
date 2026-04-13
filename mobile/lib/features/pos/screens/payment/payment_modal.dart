@@ -1670,7 +1670,7 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
       }
       final shiftId = shiftOpt.id;
 
-      int? assignedCustomerId = _selectedCustomer?.id;
+      String? assignedCustomerId = _selectedCustomer?.id;
       final enteredName = _nameController.text.trim();
       final enteredPhone = _phoneController.text.trim();
 

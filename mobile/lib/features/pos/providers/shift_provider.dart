@@ -41,7 +41,7 @@ class ShiftNotifier extends AsyncNotifier<void> {
     }
   }
 
-  Future<bool> closeShift(int shiftId, int actualEndingCash) async {
+  Future<bool> closeShift(String shiftId, int actualEndingCash) async {
     state = const AsyncLoading();
     try {
       final db = ref.read(databaseProvider);

@@ -8,7 +8,7 @@ import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:drift/drift.dart' as drift;
 
 class IngredientFormScreen extends ConsumerStatefulWidget {
-  final int? ingredientId;
+  final String? ingredientId;
 
   const IngredientFormScreen({super.key, this.ingredientId});
 

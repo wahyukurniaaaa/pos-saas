@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
@@ -9,11 +9,11 @@ class SupervisorAuthDialog extends ConsumerStatefulWidget {
 
   const SupervisorAuthDialog({super.key, required this.actionDescription});
 
-  static Future<int?> show(
+  static Future<String?> show(
     BuildContext context, {
     required String actionDescription,
   }) async {
-    final result = await showDialog<int?>(
+    final result = await showDialog<String?>(
       context: context,
       barrierDismissible: false,
       builder: (context) =>

@@ -9,7 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:posify_app/core/widgets/responsive_layout.dart';
 
 class PaymentSuccessScreen extends ConsumerStatefulWidget {
-  final int transactionId;
+  final String transactionId;
   final double totalAmount;
   final double cashReceived;
   final double changeAmount;

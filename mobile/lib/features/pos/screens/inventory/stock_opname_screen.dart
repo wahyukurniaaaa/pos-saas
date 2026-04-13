@@ -88,7 +88,7 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
           final physicalValue = entry.value;
 
           if (key.startsWith('p_')) {
-            final id = int.parse(key.replaceFirst('p_', ''));
+            final id = key.replaceFirst('p_', '');
             // Use specific getter for efficiency
             final product = await db.getProduct(id);
 
@@ -105,7 +105,7 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
               );
             }
           } else if (key.startsWith('v_')) {
-            final id = int.parse(key.replaceFirst('v_', ''));
+            final id = key.replaceFirst('v_', '');
             // Use specific getter for efficiency
             final variant = await db.getVariant(id);
 
@@ -440,11 +440,10 @@ class _StockAdjusterItemState extends ConsumerState<_StockAdjusterItem> {
     super.dispose();
   }
 
-  @override
   Widget build(BuildContext context) {
     final diff = widget.physicalStock - widget.systemStock;
     final isVariant = widget.itemKey.startsWith('v_');
-    final id = int.parse(widget.itemKey.replaceFirst(isVariant ? 'v_' : 'p_', ''));
+    final id = widget.itemKey.replaceFirst(isVariant ? 'v_' : 'p_', '');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -464,7 +463,7 @@ class _StockAdjusterItemState extends ConsumerState<_StockAdjusterItem> {
             ),
             FutureBuilder<String?>(
               future: ref.read(databaseProvider).getLastAdjustDate(
-                    isVariant ? 0 : id,
+                    isVariant ? '' : id,
                     variantId: isVariant ? id : null,
                   ),
               builder: (context, snapshot) {

@@ -22,10 +22,10 @@ final historyPaymentTotalsProvider =
       DateTime(2000),
       DateTime(2100),
     );
-    return {for (final r in results) r.method: r.totalAmount};
+    return <String, int>{for (final r in results) r.method: r.totalAmount};
   }
   final results = await db.getPaymentMethodBreakdown(range.start, range.end);
-  return {for (final r in results) r.method: r.totalAmount};
+  return <String, int>{for (final r in results) r.method: r.totalAmount};
 });
 
 class CurrentShiftHistoryTab extends ConsumerWidget {

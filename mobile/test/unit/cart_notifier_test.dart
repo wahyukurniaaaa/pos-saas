@@ -15,10 +15,10 @@ void main() {
   });
 
   final productA = Product(
-    id: 1,
+    id: '1',
     name: 'Product A',
     price: 10000,
-    categoryId: 1,
+    categoryId: '1',
     stock: 10,
     sku: 'sku1',
     hasVariants: false,
@@ -29,10 +29,10 @@ void main() {
   );
 
   final productB = Product(
-    id: 2,
+    id: '2',
     name: 'Product B',
     price: 20000,
-    categoryId: 1,
+    categoryId: '1',
     stock: 5,
     sku: 'sku2',
     hasVariants: false,
@@ -53,7 +53,7 @@ void main() {
       final cart = container.read(cartProvider);
       
       expect(cart.length, 1);
-      expect(cart[0].product.id, 1);
+      expect(cart[0].product.id, '1');
       expect(cart[0].quantity, 1);
     });
 
@@ -69,8 +69,8 @@ void main() {
 
     test('addToCart with different variants should create separate entries', () {
       final v1 = ProductVariant(
-        id: 1, 
-        productId: 1, 
+        id: '1', 
+        productId: '1', 
         name: 'V1', 
         optionValue: 'A', 
         price: 10000, 
@@ -78,8 +78,8 @@ void main() {
         createdAt: DateTime.now()
       );
       final v2 = ProductVariant(
-        id: 2, 
-        productId: 1, 
+        id: '2', 
+        productId: '1', 
         name: 'V2', 
         optionValue: 'B', 
         price: 12000, 
@@ -120,12 +120,12 @@ void main() {
       notifier.addToCart(productA);
       notifier.addToCart(productB);
       
-      final keyA = container.read(cartProvider).firstWhere((i) => i.product.id == 1).cartKey;
+      final keyA = container.read(cartProvider).firstWhere((i) => i.product.id == '1').cartKey;
       notifier.removeFromCart(keyA);
       
       final cart = container.read(cartProvider);
       expect(cart.length, 1);
-      expect(cart[0].product.id, 2);
+      expect(cart[0].product.id, '2');
     });
 
     test('clearCart should empty the list', () {

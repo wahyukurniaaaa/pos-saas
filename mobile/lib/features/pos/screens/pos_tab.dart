@@ -35,7 +35,7 @@ class PosTab extends ConsumerStatefulWidget {
 
 class _PosTabState extends ConsumerState<PosTab> {
   final _searchController = TextEditingController();
-  int? _selectedCategoryId;
+  String? _selectedCategoryId;
 
   @override
   void dispose() {
@@ -371,7 +371,7 @@ class _PosTabState extends ConsumerState<PosTab> {
     );
   }
 
-  Widget _buildChip(int? id, String label) {
+  Widget _buildChip(String? id, String label) {
     final isSelected = _selectedCategoryId == id;
     return Padding(
       padding: const EdgeInsets.only(right: 12),

@@ -12,7 +12,7 @@ import 'stock_out_screen.dart';
 final _dateFormat = DateFormat('dd MMM yyyy, HH:mm', 'id_ID');
 
 // Provider to load stock card data
-final stockCardProvider = FutureProvider.family<List<StockTransaction>, ({int productId, int? variantId})>(
+final stockCardProvider = FutureProvider.family<List<StockTransaction>, ({String productId, String? variantId})>(
   (ref, arg) {
     final db = ref.watch(databaseProvider);
     return db.getStockCard(arg.productId, variantId: arg.variantId);

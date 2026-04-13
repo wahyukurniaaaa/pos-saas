@@ -10,7 +10,7 @@ import 'package:posify_app/core/services/backup_service.dart';
 import 'package:flutter/services.dart';
 import 'package:posify_app/core/utils/currency_input_formatter.dart';
 
-final shiftTransactionsProvider = StreamProvider.family<List, int>((
+final shiftTransactionsProvider = StreamProvider.family<List, String>((
   ref,
   shiftId,
 ) {
@@ -21,7 +21,7 @@ final shiftTransactionsProvider = StreamProvider.family<List, int>((
 /// Provides accurate per-method payment totals from transaction_payments table.
 /// Correctly handles split payments by summing partial amounts per method.
 final shiftPaymentTotalsProvider =
-    FutureProvider.family<Map<String, int>, int>((ref, shiftId) {
+    FutureProvider.family<Map<String, int>, String>((ref, shiftId) {
   final db = ref.watch(databaseProvider);
   return db.getShiftPaymentTotals(shiftId);
 });
@@ -491,7 +491,7 @@ class _ShiftReportModalState extends ConsumerState<ShiftReportModal> {
 
   void _showEndShiftConfirmation(
     BuildContext context,
-    int shiftId,
+    String shiftId,
     int actualCash,
     int expectedCash,
   ) {

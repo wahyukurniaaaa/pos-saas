@@ -17,8 +17,8 @@ class PurchaseOrderNotifier extends AsyncNotifier<List<PurchaseOrder>> {
     return ref.read(databaseProvider).getAllPurchaseOrders();
   }
 
-  Future<int> createPO({
-    int? supplierId,
+  Future<String> createPO({
+    String? supplierId,
     String? notes,
     required List<PurchaseOrderItemsCompanion> items,
   }) async {
@@ -44,14 +44,14 @@ class PurchaseOrderNotifier extends AsyncNotifier<List<PurchaseOrder>> {
     return poId;
   }
 
-  Future<void> updateStatus(int poId, String status) async {
+  Future<void> updateStatus(String poId, String status) async {
     await ref.read(databaseProvider).updatePurchaseOrderStatus(poId, status);
     await refresh();
   }
 
   Future<void> receivePO({
-    required int poId,
-    required List<({int itemId, double receivedQty})> receivedItems,
+    required String poId,
+    required List<({String itemId, double receivedQty})> receivedItems,
   }) async {
     await ref.read(databaseProvider).receivePurchaseOrder(
           poId: poId,
@@ -70,6 +70,6 @@ class PurchaseOrderNotifier extends AsyncNotifier<List<PurchaseOrder>> {
 
 // ─── PO Items provider (per-PO) ─────────────────────────────────────────────
 
-final poItemsProvider = FutureProvider.family<List<PurchaseOrderItem>, int>(
+final poItemsProvider = FutureProvider.family<List<PurchaseOrderItem>, String>(
   (ref, poId) => ref.read(databaseProvider).getPurchaseOrderItems(poId),
 );

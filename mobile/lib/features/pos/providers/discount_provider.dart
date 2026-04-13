@@ -87,7 +87,7 @@ class DiscountNotifier extends AsyncNotifier<List<Discount>> {
     await _refresh();
   }
 
-  Future<void> remove(int id) async {
+  Future<void> remove(String id) async {
     await ref.read(databaseProvider).deleteDiscount(id);
     await _refresh();
   }

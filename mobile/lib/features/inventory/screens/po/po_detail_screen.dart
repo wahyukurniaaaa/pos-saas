@@ -7,7 +7,7 @@ import 'package:posify_app/features/inventory/providers/po_provider.dart';
 import 'package:posify_app/core/widgets/responsive_layout.dart';
 
 class PoDetailScreen extends ConsumerStatefulWidget {
-  final int poId;
+  final String poId;
   const PoDetailScreen({super.key, required this.poId});
 
   @override
@@ -18,7 +18,7 @@ class _PoDetailScreenState extends ConsumerState<PoDetailScreen> {
   bool _isProcessing = false;
 
   // Map of itemId → received qty controller
-  final Map<int, TextEditingController> _receiveControllers = {};
+  final Map<String, TextEditingController> _receiveControllers = {};
 
   @override
   void dispose() {

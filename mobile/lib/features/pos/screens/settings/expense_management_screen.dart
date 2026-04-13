@@ -465,7 +465,7 @@ class _ExpenseFormSheetState extends ConsumerState<_ExpenseFormSheet> {
     setState(() => _isSubmitting = true);
     try {
       final session = ref.read(sessionProvider).value;
-      final employeeId = session?.id ?? 1;
+      final employeeId = session?.id ?? '';
       final openShift = ref.read(openShiftProvider).value;
       await ref.read(expenseProvider.notifier).add(
         ExpensesCompanion.insert(
