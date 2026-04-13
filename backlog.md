@@ -128,6 +128,46 @@ Dokumen ini mendefinisikan urutan eksekusi fitur untuk transisi dari **Tier Lite
     - [ ] **Subscription Webhook Listener**: Handler di backend Go untuk menerima notifikasi pembayaran sukses dan melakukan update status `tier` menjadi `pro` di database Supabase.
     - [ ] **Cloud Sync Awakening**: Logika di aplikasi mobile untuk mengaktifkan PowerSync segera setelah terdeteksi perubahan tier menjadi `pro`.
 
+---
+
+## 💎 PHASE 5: Advanced Cloud & Multi-Outlet Analytics
+*Tujuan: Menyempurnakan ekosistem Pro dengan sinkronisasi cerdas dan intelijen bisnis.*
+
+### 33. Smart Conflict Resolution (Last Write Wins & Delta Stock)
+*   **User Story**: "Sebagai Owner, saya ingin data saya tetap konsisten meskipun diupdate dari dua tablet berbeda saat offline, sehingga tidak ada transaksi yang hilang atau stok yang salah hitung."
+*   **Tasks**:
+    - [ ] **Logic**: Implementasi verifikasi `updated_at` di tingkat database sebelum melakukan `INSERT OR REPLACE` dari cloud.
+    - [ ] **Stock Logic**: Refaktor fungsi update stok agar menggunakan sistem increment/decrement (Delta) daripada overwriting nilai total untuk mencegah kehilangan data stok.
+    - [ ] **Testing**: Simulasi edit produk dari 2 device offline; verifikasi hasil akhir di cloud.
+
+### 34. Background Image Sync (Supabase Storage)
+*   **User Story**: "Sebagai Kasir, saya ingin tetap bisa mengambil foto nota belanja meskipun internet mati, dan aplikasi akan otomatis mengunggahnya saat saya mendapatkan koneksi tanpa saya perlu menunggu di layar tersebut."
+*   **Tasks**:
+    - [ ] **Infrastructure**: Konfigurasi Supabase Storage Bucket & RLS Policies.
+    - [ ] **Background Jobs**: Integrasi `work_manager` untuk antrian pengunggahan latar belakang agar hemat baterai & reliable.
+    - [ ] **Retry Logic**: Mekanisme percobaan ulang otomatis jika koneksi terputus saat proses upload.
+
+### 35. Owner Global Dashboard (Multi-Outlet)
+*   **User Story**: "Sebagai Owner, saya ingin melihat total penjualan dari seluruh cabang saya dalam satu layar ringkasan agar saya bisa segera mengambil keputusan bisnis tanpa harus mengecek satu per satu cabang."
+*   **Tasks**:
+    - [ ] **UI/UX**: Desain layar "Global Analytics" khusus untuk profil Owner di aplikasi Mobile.
+    - [ ] **Data Aggregation**: Implementasi kueri agregasi lintas `outlet_id` di Supabase (RPC) atau kueri Drift lokal.
+    - [ ] **Visuals**: Grafik performa outlet (Bar charts/Pie charts) untuk komparasi harian antar cabang.
+
+---
+
+## 🔐 PHASE 6: Auth Consolidation & Tier-Based Logic
+*Tujuan: Memastikan pemisahan fitur yang disiplin antara user Lite dan Pro.*
+
+### 36. Unified Auth & Tier Provider
+*   **User Story**: "Sebagai pengembang, saya ingin memiliki sistem pengecekan 'Pro' yang terpusat agar fitur Cloud Sync tidak berjalan secara tidak sengaja pada akun Lite."
+*   **Tasks**:
+    - [ ] **Backend Mapping**: Modifikasi `SyncService` & `RealtimeService` agar bergantung pada `appTierProvider`.
+    - [ ] **Metadata Logic**: Implementasi logika pengalihan/sinkronisasi `user_metadata['tier']` dari Supabase ke database lokal.
+    - [ ] **Local DB Update**: Penambahan kolom `tier` pada tabel `licenses` lokal (SQLite).
+    - [ ] **UI Gating**: Menyembunyikan indikator sinkronisasi jika user terdeteksi sebagai 'lite' (meskipun sudah punya akun).
+
+
 ### 🧩 Future Advanced Modules & Add-ons
 Tugas lanjutan yang akan diimplementasikan setelah sinkronisasi stabil:
 
