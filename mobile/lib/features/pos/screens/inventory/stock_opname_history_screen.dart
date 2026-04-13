@@ -60,7 +60,7 @@ class StockOpnameHistoryScreen extends ConsumerWidget {
             itemCount: sessions.length,
             itemBuilder: (context, index) {
               final session = sessions[index];
-              final date = DateTime.tryParse(session.createdAt) ?? DateTime.now();
+              final date = session.createdAt;
 
               return Card(
                 margin: const EdgeInsets.only(bottom: 12),

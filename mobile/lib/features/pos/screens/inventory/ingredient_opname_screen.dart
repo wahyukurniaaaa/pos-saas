@@ -81,7 +81,7 @@ class _IngredientOpnameScreenState extends ConsumerState<IngredientOpnameScreen>
             status: 'DRAFT',
             createdBy: employee.id,
             notes: drift.Value(reason),
-            createdAt: DateTime.now().toIso8601String(),
+            createdAt: drift.Value(DateTime.now()),
           ),
         );
 

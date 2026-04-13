@@ -13,6 +13,7 @@ class Ingredients extends Table {
   TextColumn get lastSupplierId => text().nullable().references(Suppliers, #id)();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
-    TextColumn get outletId => text().nullable().references(Outlets, #id)();
+  TextColumn get outletId => text().nullable().references(Outlets, #id)();
+  BoolColumn get isDirty => boolean().withDefault(const Constant(true))();
   DateTimeColumn get deletedAt => dateTime().nullable()();
 }

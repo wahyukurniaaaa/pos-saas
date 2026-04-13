@@ -27,10 +27,29 @@ class CategoryNotifier extends AsyncNotifier<List<Category>> {
   }
 
   List<Category> _getDummyCategories() {
+    final now = DateTime.now();
     return [
-      Category(id: 'cat-1', name: 'Makanan'),
-      Category(id: 'cat-2', name: 'Minuman'),
-      Category(id: 'cat-3', name: 'Camilan'),
+      Category(
+        id: 'cat-1',
+        name: 'Makanan',
+        createdAt: now,
+        updatedAt: now,
+        isDirty: false,
+      ),
+      Category(
+        id: 'cat-2',
+        name: 'Minuman',
+        createdAt: now,
+        updatedAt: now,
+        isDirty: false,
+      ),
+      Category(
+        id: 'cat-3',
+        name: 'Camilan',
+        createdAt: now,
+        updatedAt: now,
+        isDirty: false,
+      ),
     ];
   }
 }
@@ -234,7 +253,7 @@ class CartItem {
 
   /// Unique key: same product with different variants = different cart lines.
   String get cartKey =>
-      variant != null ? '${product.id}_v${variant!.id}' : '${product.id}';
+      variant != null ? '${product.id}_v${variant!.id}' : product.id;
 }
 
 // ===== Cart Provider =====
@@ -245,7 +264,7 @@ class CartNotifier extends Notifier<List<CartItem>> {
 
   void addToCart(Product product, {ProductVariant? variant}) {
     final key =
-        variant != null ? '${product.id}_v${variant.id}' : '${product.id}';
+        variant != null ? '${product.id}_v${variant.id}' : product.id;
     final index = state.indexWhere((item) => item.cartKey == key);
     if (index >= 0) {
       state = [
@@ -770,6 +789,9 @@ class CustomerSearchNotifier extends Notifier<String> {
   @override
   String build() => '';
 
+  @override
+  String get state => super.state;
+  @override
   set state(String val) => super.state = val;
 }
 

@@ -315,10 +315,7 @@ class StockCardScreen extends ConsumerWidget {
         ? '+${log.quantity}'
         : '${log.quantity}';
 
-    DateTime? parsedDate;
-    try {
-      parsedDate = DateTime.parse(log.createdAt);
-    } catch (_) {}
+    final parsedDate = log.createdAt;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),

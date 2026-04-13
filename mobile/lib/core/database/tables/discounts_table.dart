@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'outlets_table.dart';
 import '../../utils/uuid_generator.dart';
 
 // Scope: 'transaction' = applies to total bill; 'item' = applies per product.
@@ -14,8 +15,11 @@ class Discounts extends Table {
   BoolColumn get isAutomatic => boolean().withDefault(const Constant(false))(); // auto-apply if conditions met
   BoolColumn get isStackable => boolean().withDefault(const Constant(true))(); // can combine with other discounts
   BoolColumn get isActive => boolean().withDefault(const Constant(true))();
-  TextColumn get startDate => text().nullable()(); // ISO8601 date string, null = no start restriction
-  TextColumn get endDate => text().nullable()();   // ISO8601 date string, null = no end restriction
+  TextColumn get outletId => text().nullable().references(Outlets, #id)();
+  DateTimeColumn get startDate => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get endDate => dateTime().nullable()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  BoolColumn get isDirty => boolean().withDefault(const Constant(true))();
   DateTimeColumn get deletedAt => dateTime().nullable()();
 }

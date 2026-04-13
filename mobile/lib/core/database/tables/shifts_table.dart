@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import '../../utils/uuid_generator.dart';
 import 'employees_table.dart';
+import 'outlets_table.dart';
 
 class Shifts extends Table {
   TextColumn get id => text().clientDefault(() => UuidGenerator.generate())();
@@ -12,5 +13,9 @@ class Shifts extends Table {
   IntColumn get actualEndingCash => integer().nullable()();
   TextColumn get status =>
       text().withDefault(const Constant('open'))(); // open, closed
+  TextColumn get outletId => text().nullable().references(Outlets, #id)();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  BoolColumn get isDirty => boolean().withDefault(const Constant(true))();
   DateTimeColumn get deletedAt => dateTime().nullable()();
 }

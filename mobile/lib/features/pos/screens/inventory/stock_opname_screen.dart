@@ -79,7 +79,7 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
             status: 'DRAFT',
             createdBy: employee.id,
             notes: drift.Value(reason),
-            createdAt: DateTime.now().toIso8601String(),
+            createdAt: drift.Value(DateTime.now()),
           ),
         );
 
@@ -461,27 +461,23 @@ class _StockAdjusterItemState extends ConsumerState<_StockAdjusterItem> {
                 ),
               ),
             ),
-            FutureBuilder<String?>(
+            FutureBuilder<DateTime?>(
               future: ref.read(databaseProvider).getLastAdjustDate(
                     isVariant ? '' : id,
                     variantId: isVariant ? id : null,
                   ),
               builder: (context, snapshot) {
                 if (snapshot.hasData && snapshot.data != null) {
-                  try {
-                    final date = DateTime.parse(snapshot.data!);
-                    final formatted = DateFormat('dd MMM yyyy').format(date);
-                    return Text(
-                      'Opname Terakhir: $formatted',
-                      style: GoogleFonts.poppins(
-                        fontSize: 10,
-                        color: AppTheme.primaryColor.withValues(alpha: 0.7),
-                        fontStyle: FontStyle.italic,
-                      ),
-                    );
-                  } catch (_) {
-                    return const SizedBox.shrink();
-                  }
+                  final date = snapshot.data!;
+                  final formatted = DateFormat('dd MMM yyyy').format(date);
+                  return Text(
+                    'Opname Terakhir: $formatted',
+                    style: GoogleFonts.poppins(
+                      fontSize: 10,
+                      color: AppTheme.primaryColor.withValues(alpha: 0.7),
+                      fontStyle: FontStyle.italic,
+                    ),
+                  );
                 }
                 return const SizedBox.shrink();
               },

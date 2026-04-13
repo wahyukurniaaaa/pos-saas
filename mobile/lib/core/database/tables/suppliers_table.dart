@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'outlets_table.dart';
 import '../../utils/uuid_generator.dart';
 
 class Suppliers extends Table {
@@ -6,7 +7,9 @@ class Suppliers extends Table {
   TextColumn get name => text()();
   TextColumn get phone => text().nullable()();
   TextColumn get address => text().nullable()();
-  TextColumn get createdAt => text()();
-  TextColumn get updatedAt => text()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  TextColumn get outletId => text().nullable().references(Outlets, #id)();
+  BoolColumn get isDirty => boolean().withDefault(const Constant(true))();
   DateTimeColumn get deletedAt => dateTime().nullable()();
 }

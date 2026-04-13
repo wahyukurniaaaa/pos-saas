@@ -16,6 +16,7 @@ void main() {
       purchasePrice: 0,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
+      isDirty: false,
     );
 
     test('effectivePrice should fallback to product price when variant is null', () {
@@ -32,6 +33,8 @@ void main() {
         price: 15000,
         stock: 5,
         createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        isDirty: false,
       );
       final cartItem = CartItem(product: product, variant: variant, quantity: 1);
       expect(cartItem.effectivePrice, 15000);
@@ -56,6 +59,8 @@ void main() {
         price: 15000,
         stock: 5,
         createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        isDirty: false,
       );
       final cartItem = CartItem(product: product, variant: variant, quantity: 1);
       expect(cartItem.cartKey, '1_v10');

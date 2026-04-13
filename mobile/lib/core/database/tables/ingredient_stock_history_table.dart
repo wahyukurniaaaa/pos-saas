@@ -14,5 +14,7 @@ class IngredientStockHistory extends Table {
   TextColumn get supplierId => text().nullable().references(Suppliers, #id)();
   TextColumn get reason => text().nullable()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  BoolColumn get isDirty => boolean().withDefault(const Constant(true))();
   DateTimeColumn get deletedAt => dateTime().nullable()();
 }

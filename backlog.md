@@ -10,7 +10,7 @@ Dokumen ini mendefinisikan urutan eksekusi fitur untuk transisi dari **Tier Lite
 | :--- | :--- | :--- | :--- |
 | **Phase 0** | **Essential POS UX** | **Save Bill**, **Split Bill/Payment**, **Notes**. | ✅ Partial |
 | **Phase 1** | **Growth & Automation** | Marketplace Webhooks, Auto-License Email, Unified Onboarding. | 🕒 IN PROGRESS |
-| **Phase 2** | **Core Infrastructure** | **UUID Migration (v20)**, Outlet Mapping, Soft-Delete. | 🔜 Ready |
+| **Phase 2** | **Core Infrastructure** | **UUID Migration (v20)**, Outlet Mapping, Soft-Delete. | ✅ SELESAI |
 | **Phase 3** | **Cloud Sync & Pro**| PowerSync & Supabase Integration, Multi-Outlet Visibility. | 🔜 Ready |
 | **Phase 4** | **Scale & Monetization**| In-App Pro Billing, Dashboard, Advanced F&B, KDS, Tables. | 🔜 Ready |
 
@@ -91,10 +91,10 @@ Dokumen ini mendefinisikan urutan eksekusi fitur untuk transisi dari **Tier Lite
 ### 26. Multi-Outlet Infrastructure & Identity (The UUID Migration)
 *   **User Story**: "Sebagai Owner, saya ingin mengelola lebih dari satu cabang bisnis dalam satu akun agar saya bisa melihat performa keseluruhan tanpa harus berganti perangkat (Multi-Outlet Management)."
 *   **Tasks**:
-    - [ ] **Database Migration v20 (UUID Overhaul)**: Mengonversi semua Primary Key (PK) dari `INTEGER AUTOINCREMENT` ke `TEXT (UUID)`. Wajib dilakukan agar tidak terjadi ID bentrok (*Collision*) saat banyak perangkat offline melakukan sinkronisasi ke satu database Cloud yang sama.
-    - [ ] **Outlet Mapping Schema**: Membuat tabel `outlets` dan menambahkan kolom `outlet_id` (FK) pada tabel `transactions`, `stock_transactions`, `products`, `ingredients`, dan `employees`.
-    - [ ] **Soft-Delete Architecture**: Menambahkan kolom `deleted_at` pada semua tabel utama untuk menggantikan penghapusan fisik (`DELETE`), memastikan status penghapusan data tersinkronisasi ke seluruh perangkat terhubung.
-    - [ ] **Global vs Local Scoping**: Implementasi logika filter data agar Kasir hanya melihat data outletnya sendiri, sementara Owner dapat mengakses akses "Super-Set" data (seluruh outlet).
+    - [x] **Database Migration v20 (UUID Overhaul)**: Mengonversi semua Primary Key (PK) dari `INTEGER AUTOINCREMENT` ke `TEXT (UUID)`. Wajib dilakukan agar tidak terjadi ID bentrok (*Collision*) saat banyak perangkat offline melakukan sinkronisasi ke satu database Cloud yang sama.
+    - [x] **Outlet Mapping Schema**: Membuat tabel `outlets` dan menambahkan kolom `outlet_id` (FK) pada tabel `transactions`, `stock_transactions`, `products`, `ingredients`, dan `employees`.
+    - [x] **Soft-Delete Architecture**: Menambahkan kolom `deleted_at` pada semua tabel utama untuk menggantikan penghapusan fisik (`DELETE`), memastikan status penghapusan data tersinkronisasi ke seluruh perangkat terhubung.
+    - [x] **Global vs Local Scoping**: Implementasi logika filter data agar Kasir hanya melihat data outletnya sendiri, sementara Owner dapat mengakses akses "Super-Set" data (seluruh outlet).
 
 ---
 

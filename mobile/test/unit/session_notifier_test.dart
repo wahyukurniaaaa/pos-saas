@@ -52,6 +52,7 @@ void main() {
     failedLoginAttempts: 0,
     createdAt: DateTime.now(),
     updatedAt: DateTime.now(),
+    isDirty: false,
   );
 
   group('SessionNotifier', () {

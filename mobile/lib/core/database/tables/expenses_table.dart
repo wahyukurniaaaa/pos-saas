@@ -10,6 +10,9 @@ class ExpenseCategories extends Table {
   TextColumn get color => text().withDefault(const Constant('#1E3A5F'))(); // hex color
   BoolColumn get isDefault => boolean().withDefault(const Constant(false))();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  BoolColumn get isDirty => boolean().withDefault(const Constant(true))();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
 }
 
 class Expenses extends Table {
@@ -22,5 +25,7 @@ class Expenses extends Table {
   TextColumn get photoUri => text().nullable()(); // local path to receipt photo
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
     TextColumn get outletId => text().nullable().references(Outlets, #id)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  BoolColumn get isDirty => boolean().withDefault(const Constant(true))();
   DateTimeColumn get deletedAt => dateTime().nullable()();
 }

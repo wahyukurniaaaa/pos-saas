@@ -336,7 +336,7 @@ class _CustomerFormState extends ConsumerState<_CustomerForm> {
             address: drift.Value(_addressController.text.trim()),
             isMember: _isMember,
             points: int.tryParse(_pointsController.text) ?? 0,
-            updatedAt: DateTime.now().toIso8601String(),
+            updatedAt: DateTime.now(),
           ),
         );
       } else {
@@ -348,8 +348,8 @@ class _CustomerFormState extends ConsumerState<_CustomerForm> {
             address: drift.Value(_addressController.text.trim()),
             isMember: drift.Value(_isMember),
             points: drift.Value(int.tryParse(_pointsController.text) ?? 0),
-            createdAt: DateTime.now().toIso8601String(),
-            updatedAt: DateTime.now().toIso8601String(),
+            createdAt: drift.Value(DateTime.now()),
+            updatedAt: drift.Value(DateTime.now()),
           ),
         );
       }

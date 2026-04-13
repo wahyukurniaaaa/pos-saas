@@ -222,7 +222,7 @@ class _SupplierFormState extends ConsumerState<_SupplierForm> {
             name: _nameController.text.trim(),
             phone: drift.Value(_phoneController.text.trim()),
             address: drift.Value(_addressController.text.trim()),
-            updatedAt: DateTime.now().toIso8601String(),
+            updatedAt: DateTime.now(),
           ),
         );
       } else {
@@ -231,8 +231,8 @@ class _SupplierFormState extends ConsumerState<_SupplierForm> {
             name: _nameController.text.trim(),
             phone: drift.Value(_phoneController.text.trim()),
             address: drift.Value(_addressController.text.trim()),
-            createdAt: DateTime.now().toIso8601String(),
-            updatedAt: DateTime.now().toIso8601String(),
+            createdAt: drift.Value(DateTime.now()),
+            updatedAt: drift.Value(DateTime.now()),
           ),
         );
       }

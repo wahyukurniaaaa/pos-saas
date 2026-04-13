@@ -31,5 +31,7 @@ class Transactions extends Table {
   // Notes
   TextColumn get notes => text().nullable()();
     TextColumn get outletId => text().nullable().references(Outlets, #id)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  BoolColumn get isDirty => boolean().withDefault(const Constant(true))();
   DateTimeColumn get deletedAt => dateTime().nullable()();
 }

@@ -14,8 +14,11 @@ class PurchaseOrders extends Table {
       text().withDefault(const Constant('draft'))(); // draft/sent/received/cancelled
   IntColumn get totalEstimate => integer().withDefault(const Constant(0))();
   TextColumn get notes => text().nullable()();
-  TextColumn get orderedAt => text()();
-  TextColumn get updatedAt => text()();
+  DateTimeColumn get orderedAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  BoolColumn get isDirty => boolean().withDefault(const Constant(true))();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
 }
 
 class PurchaseOrderItems extends Table {
@@ -33,5 +36,8 @@ class PurchaseOrderItems extends Table {
   IntColumn get purchasePrice => integer().withDefault(const Constant(0))();
   RealColumn get receivedQuantity =>
       real().withDefault(const Constant(0))();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  BoolColumn get isDirty => boolean().withDefault(const Constant(true))();
   DateTimeColumn get deletedAt => dateTime().nullable()();
 }

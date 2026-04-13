@@ -5,6 +5,7 @@ import 'package:posify_app/core/database/database.dart';
 void main() {
   group('Discount Calculation Logic', () {
     test('Percentage discount calculation', () {
+      final now = DateTime.now();
       final discount = Discount(
         id: '1',
         name: 'Test 10%',
@@ -16,7 +17,10 @@ void main() {
         isAutomatic: false,
         isStackable: true,
         isActive: true,
-        createdAt: DateTime.now(),
+        startDate: now,
+        createdAt: now,
+        updatedAt: now,
+        isDirty: false,
       );
       
       expect(calculateDiscountAmount(discount, 60000), 6000);
@@ -24,6 +28,7 @@ void main() {
     });
 
     test('Fixed discount calculation', () {
+      final now = DateTime.now();
       final discount = Discount(
         id: '2',
         name: 'Test Rp 5000',
@@ -35,7 +40,10 @@ void main() {
         isAutomatic: false,
         isStackable: true,
         isActive: true,
-        createdAt: DateTime.now(),
+        startDate: now,
+        createdAt: now,
+        updatedAt: now,
+        isDirty: false,
       );
       
       expect(calculateDiscountAmount(discount, 30000), 5000);

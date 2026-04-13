@@ -61,7 +61,7 @@ class GlobalStockHistoryScreen extends ConsumerWidget {
               final product = item.product;
               final variant = item.variant;
 
-              final date = DateTime.tryParse(log.createdAt) ?? DateTime.now();
+              final date = log.createdAt;
 
               Color typeColor;
               IconData typeIcon;

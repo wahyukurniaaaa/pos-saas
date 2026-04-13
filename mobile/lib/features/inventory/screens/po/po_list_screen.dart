@@ -114,10 +114,8 @@ class _PoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = _statusColor(po.status);
-    final date = DateTime.tryParse(po.orderedAt);
-    final dateStr = date != null
-        ? '${date.day}/${date.month}/${date.year}'
-        : po.orderedAt.substring(0, 10);
+    final date = po.orderedAt;
+    final dateStr = '${date.day}/${date.month}/${date.year}';
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),

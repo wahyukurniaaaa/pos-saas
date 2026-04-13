@@ -9,7 +9,8 @@ class Customers extends Table {
   TextColumn get address => text().nullable()();
   BoolColumn get isMember => boolean().withDefault(const Constant(true))();
   IntColumn get points => integer().withDefault(const Constant(0))();
-  TextColumn get createdAt => text()();
-  TextColumn get updatedAt => text()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  BoolColumn get isDirty => boolean().withDefault(const Constant(true))();
   DateTimeColumn get deletedAt => dateTime().nullable()();
 }

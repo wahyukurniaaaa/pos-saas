@@ -19,5 +19,8 @@ class TransactionItems extends Table {
   // Discount (Item Level)
   TextColumn get discountId => text().nullable().references(Discounts, #id)();
   IntColumn get discountAmount => integer().withDefault(const Constant(0))();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  BoolColumn get isDirty => boolean().withDefault(const Constant(true))();
   DateTimeColumn get deletedAt => dateTime().nullable()();
 }

@@ -1113,8 +1113,8 @@ class _PaymentModalState extends ConsumerState<PaymentModal> {
         CustomersCompanion.insert(
           name: name,
           phone: drift.Value(phone.isNotEmpty ? phone : null),
-          createdAt: DateTime.now().toIso8601String(),
-          updatedAt: DateTime.now().toIso8601String(),
+          createdAt: drift.Value(DateTime.now()),
+          updatedAt: drift.Value(DateTime.now()),
         ),
       );
       

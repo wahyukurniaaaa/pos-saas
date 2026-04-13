@@ -18,5 +18,7 @@ class StoreProfile extends Table {
       integer().withDefault(const Constant(100))();
   BoolColumn get deductStockOnHold =>
       boolean().withDefault(const Constant(false))();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  BoolColumn get isDirty => boolean().withDefault(const Constant(true))();
   DateTimeColumn get deletedAt => dateTime().nullable()();
 }

@@ -433,7 +433,7 @@ class PosifyDatabase extends _$PosifyDatabase {
     return row.id;
   }
 
-  Future<String?> getLastAdjustDate(String productId, {String? variantId}) async {
+  Future<DateTime?> getLastAdjustDate(String productId, {String? variantId}) async {
     final query = select(stockTransactions);
     
     if (productId != '0') {
@@ -441,14 +441,14 @@ class PosifyDatabase extends _$PosifyDatabase {
     }
     
     query.where((t) => t.type.equals('ADJUST'));
-
+ 
     if (variantId != null) {
       query.where((t) => t.variantId.equals(variantId));
     }
-
+ 
     query.orderBy([(t) => OrderingTerm.desc(t.createdAt)]);
     query.limit(1);
-
+ 
     final result = await query.getSingleOrNull();
     return result?.createdAt;
   }
@@ -489,8 +489,9 @@ class PosifyDatabase extends _$PosifyDatabase {
         address: row.readNullable<String>('address'),
         isMember: row.read<bool>('is_member'),
         points: row.read<int>('points'),
-        createdAt: row.read<String>('created_at'),
-        updatedAt: row.read<String>('updated_at'),
+        createdAt: row.read<DateTime>('created_at'),
+        updatedAt: row.read<DateTime>('updated_at'),
+        isDirty: row.read<bool>('is_dirty'),
       );
       return CustomerLoyaltyStat(
         customer: customer,
@@ -520,7 +521,7 @@ class PosifyDatabase extends _$PosifyDatabase {
     String? invoiceRef,
   }) async {
     return transaction(() async {
-      final now = DateTime.now().toIso8601String();
+      final now = DateTime.now();
 
       if (variantId != null) {
         final variant = await (select(productVariants)
@@ -569,7 +570,7 @@ class PosifyDatabase extends _$PosifyDatabase {
           newStock: newStock,
           reason: Value(note),
           reference: Value(invoiceRef),
-          createdAt: now,
+          createdAt: Value(now),
         ));
       } else {
         final product = await (select(products)
@@ -603,7 +604,7 @@ class PosifyDatabase extends _$PosifyDatabase {
           newStock: newStock,
           reason: Value(note),
           reference: Value(invoiceRef),
-          createdAt: now,
+          createdAt: Value(now),
         ));
       }
     });
@@ -617,7 +618,7 @@ class PosifyDatabase extends _$PosifyDatabase {
     String? note,
     String? invoiceRef,
   }) async {
-    final now = DateTime.now().toIso8601String();
+    final now = DateTime.now();
     await transaction(() async {
       if (variantId != null) {
         final variant = await (select(productVariants)
@@ -651,7 +652,7 @@ class PosifyDatabase extends _$PosifyDatabase {
           newStock: newStock,
           reason: Value(note),
           reference: Value(invoiceRef),
-          createdAt: now,
+          createdAt: Value(now),
         ));
       } else {
         final product = await (select(products)
@@ -672,7 +673,7 @@ class PosifyDatabase extends _$PosifyDatabase {
           newStock: newStock,
           reason: Value(note),
           reference: Value(invoiceRef),
-          createdAt: now,
+          createdAt: Value(now),
         ));
       }
     });
@@ -756,7 +757,7 @@ class PosifyDatabase extends _$PosifyDatabase {
       (update(purchaseOrders)..where((po) => po.id.equals(poId))).write(
         PurchaseOrdersCompanion(
           status: Value(status),
-          updatedAt: Value(DateTime.now().toIso8601String()),
+          updatedAt: Value(DateTime.now()),
         ),
       );
 
@@ -767,7 +768,7 @@ class PosifyDatabase extends _$PosifyDatabase {
     required List<({String itemId, double receivedQty})> receivedItems,
   }) async {
     await transaction(() async {
-      final now = DateTime.now().toIso8601String();
+      final now = DateTime.now();
 
       for (final received in receivedItems) {
         // Update received quantity on the PO item
@@ -804,7 +805,7 @@ class PosifyDatabase extends _$PosifyDatabase {
                 newStock: newStock,
                 reason: Value('Penerimaan PO #$poId'),
                 reference: Value('PO-$poId'),
-                createdAt: now,
+                createdAt: Value(now),
               ),
             );
           }
@@ -840,13 +841,14 @@ class PosifyDatabase extends _$PosifyDatabase {
       (delete(discounts)..where((d) => d.id.equals(id))).go();
 
   Future<List<Discount>> getValidDiscounts({required double cartTotal, required String scope}) async {
-    final todayStr = DateTime.now().toIso8601String().substring(0, 10);
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
     final all = await (select(discounts)
           ..where((d) => d.isActive.equals(true) & d.scope.equals(scope)))
         .get();
     return all.where((d) {
-      final afterStart = d.startDate == null || d.startDate!.substring(0, 10).compareTo(todayStr) <= 0;
-      final beforeEnd = d.endDate == null || d.endDate!.substring(0, 10).compareTo(todayStr) >= 0;
+      final afterStart = d.startDate == null || !d.startDate!.isAfter(today);
+      final beforeEnd = d.endDate == null || !d.endDate!.isBefore(today);
       final meetsMin = cartTotal >= d.minSpend;
       return afterStart && beforeEnd && meetsMin;
     }).toList();
@@ -997,7 +999,7 @@ class PosifyDatabase extends _$PosifyDatabase {
               previousStock: variant.stock,
               newStock: newStock,
               reference: Value(refStr),
-              createdAt: DateTime.now().toIso8601String(),
+              createdAt: Value(DateTime.now()),
             ));
           }
         } else {
@@ -1020,7 +1022,7 @@ class PosifyDatabase extends _$PosifyDatabase {
               previousStock: product.stock,
               newStock: newStock,
               reference: Value(refStr),
-              createdAt: DateTime.now().toIso8601String(),
+              createdAt: Value(DateTime.now()),
             ));
           }
         }
@@ -1144,8 +1146,13 @@ class PosifyDatabase extends _$PosifyDatabase {
   }
 
   // ===== Category Management =====
-  Future<bool> updateCategory(Category entry) =>
-      update(categories).replace(entry);
+  Future<bool> updateCategory(Category category) =>
+      (update(categories)..where((t) => t.id.equals(category.id))).write(
+        CategoriesCompanion(
+          isDirty: const Value(true),
+          updatedAt: Value(DateTime.now()),
+        ),
+      ).then((rows) => rows > 0);
 
   Future<int> deleteCategory(Category entry) =>
       delete(categories).delete(entry);
@@ -1223,7 +1230,7 @@ class PosifyDatabase extends _$PosifyDatabase {
               previousStock: variant.stock,
               newStock: newStock,
               reference: Value('VOID-${t.receiptNumber}'),
-              createdAt: DateTime.now().toIso8601String(),
+              createdAt: Value(DateTime.now()),
             ));
           }
         } else {
@@ -1244,7 +1251,7 @@ class PosifyDatabase extends _$PosifyDatabase {
               previousStock: product.stock,
               newStock: newStock,
               reference: Value('VOID-${t.receiptNumber}'),
-              createdAt: DateTime.now().toIso8601String(),
+              createdAt: Value(DateTime.now()),
             ));
           }
         }
@@ -1780,7 +1787,7 @@ class PosifyDatabase extends _$PosifyDatabase {
                    previousStock: item.systemStock.toInt(),
                    newStock: item.physicalStock.toInt(),
                    reason: Value(item.varianceReason ?? 'Opname ${opname.opnameNumber}'),
-                   createdAt: DateTime.now().toIso8601String(),
+                   createdAt: Value(DateTime.now()),
                  ),
                );
              }
@@ -1794,14 +1801,14 @@ class PosifyDatabase extends _$PosifyDatabase {
                  previousStock: item.systemStock.toInt(),
                  newStock: item.physicalStock.toInt(),
                  reason: Value(item.varianceReason ?? 'Opname ${opname.opnameNumber}'),
-                 createdAt: DateTime.now().toIso8601String(),
+                 createdAt: Value(DateTime.now()),
                ),
              );
            }
         }
       }
 
-      await update(stockOpname).replace(opname.copyWith(status: 'COMPLETED'));
+      await update(stockOpname).replace(opname.copyWith(status: 'COMPLETED', updatedAt: DateTime.now()));
     });
   }
 
@@ -1813,9 +1820,6 @@ class PosifyDatabase extends _$PosifyDatabase {
 
   // ===== Stock Loss Report =====
   Future<List<StockLossItem>> getStockLossReport(DateTime start, DateTime end) async {
-    final startStr = start.toIso8601String();
-    final endStr = end.toIso8601String();
-    
     final List<StockLossItem> results = [];
 
     // Products and Variants
@@ -1837,7 +1841,7 @@ class PosifyDatabase extends _$PosifyDatabase {
       WHERE o.status = 'COMPLETED' AND i.variance < 0
         AND o.created_at >= ? AND o.created_at <= ?
       ''',
-      variables: [Variable.withString(startStr), Variable.withString(endStr)],
+      variables: [Variable<DateTime>(start), Variable<DateTime>(end)],
     ).get();
 
     for (final row in productQuery) {
@@ -1865,7 +1869,7 @@ class PosifyDatabase extends _$PosifyDatabase {
       WHERE o.status = 'COMPLETED' AND i.variance < 0
         AND o.created_at >= ? AND o.created_at <= ?
       ''',
-      variables: [Variable.withString(startStr), Variable.withString(endStr)],
+      variables: [Variable<DateTime>(start), Variable<DateTime>(end)],
     ).get();
 
     for (final row in ingredientQuery) {

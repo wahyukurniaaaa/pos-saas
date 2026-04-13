@@ -80,9 +80,7 @@ class DiscountManagementScreen extends ConsumerWidget {
 
   Widget _buildDiscountCard(BuildContext context, WidgetRef ref, Discount d) {
     final isExpired = d.endDate != null &&
-        d.endDate!.substring(0, 10).compareTo(
-                DateTime.now().toIso8601String().substring(0, 10)) <
-            0;
+        d.endDate!.isBefore(DateTime.now());
     final statusColor = !d.isActive
         ? Colors.grey
         : isExpired
@@ -99,7 +97,7 @@ class DiscountManagementScreen extends ConsumerWidget {
         border: Border.all(color: Colors.grey.shade100),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withValues(alpha: 0.03),
               blurRadius: 8,
               offset: const Offset(0, 3))
         ],
@@ -110,7 +108,7 @@ class DiscountManagementScreen extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppTheme.secondaryColor.withOpacity(0.15),
+              color: AppTheme.secondaryColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(
@@ -156,9 +154,10 @@ class DiscountManagementScreen extends ConsumerWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: d.scope == 'item'
-                            ? AppTheme.infoColor.withOpacity(0.15)
-                            : AppTheme.tertiaryColor.withOpacity(0.15),
+                        color: (d.scope == 'item'
+                                ? AppTheme.infoColor
+                                : AppTheme.tertiaryColor)
+                            .withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
@@ -188,7 +187,7 @@ class DiscountManagementScreen extends ConsumerWidget {
                         style: GoogleFonts.poppins(
                             fontSize: 11, color: AppTheme.errorColor)),
                   if (d.endDate != null)
-                    Text('• Sampai ${d.endDate!.substring(0, 10)}',
+                    Text('• Sampai ${DateFormat('dd/MM/yy').format(d.endDate!)}',
                         style: GoogleFonts.poppins(
                             fontSize: 11, color: AppTheme.textSecondary)),
                 ]),
@@ -200,7 +199,7 @@ class DiscountManagementScreen extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.12),
+                  color: statusColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(statusLabel,
@@ -217,7 +216,7 @@ class DiscountManagementScreen extends ConsumerWidget {
                     child: Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                          color: AppTheme.infoColor.withOpacity(0.1),
+                          color: AppTheme.infoColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8)),
                       child: Icon(Icons.edit_rounded,
                           size: 15, color: AppTheme.infoColor),
@@ -229,7 +228,7 @@ class DiscountManagementScreen extends ConsumerWidget {
                     child: Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                          color: AppTheme.errorColor.withOpacity(0.1),
+                          color: AppTheme.errorColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8)),
                       child: Icon(Icons.delete_outline_rounded,
                           size: 15, color: AppTheme.errorColor),
@@ -327,8 +326,8 @@ class _DiscountFormSheetState extends ConsumerState<_DiscountFormSheet> {
       _isAutomatic = d.isAutomatic;
       _isStackable = d.isStackable;
       _isActive = d.isActive;
-      _startDate = d.startDate != null ? DateTime.tryParse(d.startDate!) : null;
-      _endDate = d.endDate != null ? DateTime.tryParse(d.endDate!) : null;
+      _startDate = d.startDate;
+      _endDate = d.endDate;
     }
   }
 
@@ -355,8 +354,8 @@ class _DiscountFormSheetState extends ConsumerState<_DiscountFormSheet> {
       isAutomatic: Value(_isAutomatic),
       isStackable: Value(_isStackable),
       isActive: Value(_isActive),
-      startDate: Value(_startDate?.toIso8601String()),
-      endDate: Value(_endDate?.toIso8601String()),
+      startDate: Value(_startDate ?? DateTime.now()),
+      endDate: Value(_endDate),
     );
     await ref.read(discountProvider.notifier).save(entry);
     if (mounted) Navigator.pop(context);
@@ -377,8 +376,11 @@ class _DiscountFormSheetState extends ConsumerState<_DiscountFormSheet> {
     );
     if (picked != null) {
       setState(() {
-        if (isStart) _startDate = picked;
-        else _endDate = picked;
+        if (isStart) {
+          _startDate = picked;
+        } else {
+          _endDate = picked;
+        }
       });
     }
   }
@@ -529,8 +531,11 @@ class _DiscountFormSheetState extends ConsumerState<_DiscountFormSheet> {
       child: GestureDetector(
         onTap: () {
           setState(() {
-            if (value == 'transaction' || value == 'item') _scope = value;
-            else _type = value;
+            if (value == 'transaction' || value == 'item') {
+              _scope = value;
+            } else {
+              _type = value;
+            }
           });
         },
         child: AnimatedContainer(
@@ -617,7 +622,8 @@ class _DiscountFormSheetState extends ConsumerState<_DiscountFormSheet> {
             Switch(
               value: value,
               onChanged: onChanged,
-              activeColor: AppTheme.primaryColor,
+              activeTrackColor: AppTheme.primaryColor.withValues(alpha: 0.5),
+              activeThumbColor: AppTheme.primaryColor,
             ),
           ],
         ),

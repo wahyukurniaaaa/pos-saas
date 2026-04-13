@@ -175,7 +175,7 @@ class _PoDetailScreenState extends ConsumerState<PoDetailScreen> {
                                     fontSize: 15, fontWeight: FontWeight.w700),
                               ),
                               Text(
-                                po.orderedAt.substring(0, 10),
+                                po.orderedAt.toIso8601String().substring(0, 10),
                                 style: GoogleFonts.poppins(
                                     fontSize: 11, color: AppTheme.textSecondary),
                               ),

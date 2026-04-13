@@ -23,14 +23,14 @@ class PurchaseOrderNotifier extends AsyncNotifier<List<PurchaseOrder>> {
     required List<PurchaseOrderItemsCompanion> items,
   }) async {
     final db = ref.read(databaseProvider);
-    final now = DateTime.now().toIso8601String();
-
+    final now = DateTime.now();
+    
     final poId = await db.createPurchaseOrder(
       PurchaseOrdersCompanion.insert(
         supplierId: supplierId != null ? Value(supplierId) : const Value.absent(),
         notes: notes != null ? Value(notes) : const Value.absent(),
-        orderedAt: now,
-        updatedAt: now,
+        orderedAt: Value(now),
+        updatedAt: Value(now),
       ),
     );
 

@@ -13,7 +13,9 @@ class StockTransactions extends Table {
   IntColumn get newStock => integer()();
   TextColumn get reason => text().nullable()();
   TextColumn get reference => text().nullable()();
-  TextColumn get createdAt => text()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
     TextColumn get outletId => text().nullable().references(Outlets, #id)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  BoolColumn get isDirty => boolean().withDefault(const Constant(true))();
   DateTimeColumn get deletedAt => dateTime().nullable()();
 }

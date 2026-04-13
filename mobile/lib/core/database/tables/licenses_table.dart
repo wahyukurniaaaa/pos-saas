@@ -8,5 +8,7 @@ class Licenses extends Table {
   DateTimeColumn get activationDate => dateTime().nullable()();
   DateTimeColumn get lastVerified => dateTime().nullable()();
   TextColumn get status => text().withDefault(const Constant('active'))();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  BoolColumn get isDirty => boolean().withDefault(const Constant(true))();
   DateTimeColumn get deletedAt => dateTime().nullable()();
 }

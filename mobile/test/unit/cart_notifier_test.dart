@@ -26,6 +26,7 @@ void main() {
     purchasePrice: 0,
     createdAt: DateTime.now(),
     updatedAt: DateTime.now(),
+    isDirty: false,
   );
 
   final productB = Product(
@@ -40,6 +41,7 @@ void main() {
     purchasePrice: 0,
     createdAt: DateTime.now(),
     updatedAt: DateTime.now(),
+    isDirty: false,
   );
 
   group('CartNotifier', () {
@@ -75,7 +77,9 @@ void main() {
         optionValue: 'A', 
         price: 10000, 
         stock: 10, 
-        createdAt: DateTime.now()
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        isDirty: false,
       );
       final v2 = ProductVariant(
         id: '2', 
@@ -84,7 +88,9 @@ void main() {
         optionValue: 'B', 
         price: 12000, 
         stock: 5, 
-        createdAt: DateTime.now()
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        isDirty: false,
       );
       
       final notifier = container.read(cartProvider.notifier);

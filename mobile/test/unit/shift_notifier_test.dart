@@ -29,13 +29,17 @@ void main() {
   });
 
   group('ShiftNotifier', () {
+    final now = DateTime.now();
     final mockShift = Shift(
       id: '1',
       employeeId: '1',
-      startTime: DateTime.now(),
+      startTime: now,
       startingCash: 100000,
       status: 'open',
       expectedEndingCash: 100000,
+      createdAt: now,
+      updatedAt: now,
+      isDirty: false,
     );
 
     final mockTransactions = [
@@ -52,7 +56,9 @@ void main() {
         discountAmount: 0,
         pointsEarned: 0,
         pointsRedeemed: 0,
-        createdAt: DateTime.now(),
+        createdAt: now,
+        updatedAt: now,
+        isDirty: false,
       ),
       Transaction(
         id: '2',
@@ -67,7 +73,9 @@ void main() {
         discountAmount: 0,
         pointsEarned: 0,
         pointsRedeemed: 0,
-        createdAt: DateTime.now(),
+        createdAt: now,
+        updatedAt: now,
+        isDirty: false,
       ),
     ];
 
