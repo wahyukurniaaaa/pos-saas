@@ -86,13 +86,14 @@ class PosifyDatabase extends _$PosifyDatabase {
   PosifyDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 23;
+  int get schemaVersion => 24;
 
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
       onCreate: (m) async {
         await m.createAll();
+        await _createSyncTriggers(m);
       },
       onUpgrade: (m, from, to) async {
         if (from < 2) {
@@ -197,8 +198,39 @@ class PosifyDatabase extends _$PosifyDatabase {
         if (from < 22) {
           await m.addColumn(printerSettings, printerSettings.autoPrint);
         }
+        if (from < 24) {
+          await _createSyncTriggers(m);
+        }
       },
     );
+  }
+
+  Future<void> _createSyncTriggers(Migrator m) async {
+    final tables = [
+      'outlets', 'categories', 'suppliers', 'customers', 'products',
+      'product_variants', 'ingredients', 'discounts', 'employees', 'shifts',
+      'transactions', 'transaction_items', 'transaction_payments', 'expenses',
+      'purchase_orders', 'stock_opname', 'stock_opname_items', 'licenses',
+      'store_profile', 'printer_settings', 'product_recipes', 'unit_conversions'
+    ];
+
+    for (final table in tables) {
+      // Create a trigger that auto-sets is_dirty to 1 when a row is updated,
+      // UNLESS the update itself is already setting is_dirty to 1 (to prevent infinite loops
+      // and allow clean sync mark updates).
+      await m.database.customStatement('''
+        CREATE TRIGGER IF NOT EXISTS trg_${table}_mark_dirty
+        AFTER UPDATE ON $table
+        FOR EACH ROW
+        WHEN NEW.is_dirty = 0 
+             AND OLD.is_dirty = 0
+        BEGIN
+          UPDATE $table 
+          SET is_dirty = 1 
+          WHERE id = NEW.id;
+        END;
+      ''');
+    }
   }
 
   // ===== License Queries =====
@@ -1933,6 +1965,54 @@ class PosifyDatabase extends _$PosifyDatabase {
       'UPDATE $tableName SET is_dirty = 0 WHERE id IN ($placeholders)',
       ids,
     );
+  }
+
+  /// Merges pulled records from Supabase into the local SQLite database.
+  Future<void> importCloudRows(String tableName, List<Map<String, dynamic>> cloudRows) async {
+    if (cloudRows.isEmpty) return;
+    
+    await transaction(() async {
+      for (final row in cloudRows) {
+        final columns = <String>[];
+        final placeholders = <String>[];
+        final values = <dynamic>[];
+
+        row.forEach((key, value) {
+          // Supabase timestamps (ISO8601) to Drift SQLite timestamp (ms epoch or unixepoch based on drift config)
+          // Drift 2.4+ uses epoch seconds for DateTime unless overridden, but our schema checks show it works with direct ints.
+          // In getDirtyRows we used millisecondsSinceEpoch because Drift mapping requires integer precision. Let's match it:
+          if (value is String && key.contains('_at') && DateTime.tryParse(value) != null) {
+            values.add(DateTime.parse(value).millisecondsSinceEpoch); 
+          } else {
+            values.add(value);
+          }
+          columns.add(key);
+          placeholders.add('?');
+        });
+
+        // is_dirty should be 0 because it's fresh from cloud
+        if (!columns.contains('is_dirty')) {
+          columns.add('is_dirty');
+          placeholders.add('?');
+          values.add(0);
+        } else {
+          final index = columns.indexOf('is_dirty');
+          values[index] = 0;
+          if (columns.contains('is_dirty') && values[index] is bool) {
+             values[index] = values[index] == true ? 1 : 0;
+          }
+        }
+
+        final colsStr = columns.join(', ');
+        final valsStr = placeholders.join(', ');
+
+        // INSERT OR REPLACE overwrites entirely
+        await customStatement(
+          'INSERT OR REPLACE INTO $tableName ($colsStr) VALUES ($valsStr)',
+          values,
+        );
+      }
+    });
   }
 }
 

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/features/auth/providers/auth_providers.dart';
 
@@ -79,6 +80,7 @@ class SyncService {
     debugPrint('SyncService: Sync started for ${user.email}');
 
     try {
+      await _pullChanges();
       await _pushAllDirty();
       _ref.read(syncStatusProvider.notifier).setStatus(SyncStatus.idle);
       debugPrint('SyncService: Sync completed');
@@ -113,6 +115,34 @@ class SyncService {
       final ids = dirtyRows.map((r) => r['id'] as String).toList();
       await db.markAsClean(table, ids);
     }
+  }
+
+  Future<void> _pullChanges() async {
+    final db = _ref.read(databaseProvider);
+    final supabase = Supabase.instance.client;
+    const storage = FlutterSecureStorage();
+
+    final lastSyncStr = await storage.read(key: 'last_pull_sync');
+    final lastSync = lastSyncStr != null ? DateTime.parse(lastSyncStr) : null;
+
+    for (final table in _syncableTables) {
+      var query = supabase.from(table).select();
+
+      if (lastSync != null) {
+        query = query.gt('updated_at', lastSync.toUtc().toIso8601String());
+      }
+      // Assuming 'deleted_at' tracks soft deletes: we could filter those out or apply them.
+      // query = query.filter('deleted_at', 'is', 'null'); // Option to ignore remote soft deletes or handle them locally.
+
+      final List<dynamic> records = await query;
+      if (records.isNotEmpty) {
+        debugPrint('SyncService: Pulled ${records.length} rows ← $table');
+        await db.importCloudRows(table, List<Map<String, dynamic>>.from(records));
+      }
+    }
+
+    await storage.write(
+        key: 'last_pull_sync', value: DateTime.now().toUtc().toIso8601String());
   }
 }
 
