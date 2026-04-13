@@ -16,6 +16,7 @@ import 'package:posify_app/features/auth/screens/login_screen.dart';
 import 'package:posify_app/core/constants/app_constants.dart';
 import 'package:posify_app/core/providers/supabase_provider.dart';
 import 'package:posify_app/core/services/sync_service.dart';
+import 'package:posify_app/core/services/realtime_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -91,15 +92,21 @@ class _AppBootstrapState extends ConsumerState<AppBootstrap> {
   void _handleSyncLifecycle() {
     final user = ref.read(authProvider).value;
     final syncService = ref.read(syncServiceProvider);
+    final realtimeService = ref.read(realtimeServiceProvider);
+    
     if (user != null) {
       syncService.start();
+      realtimeService.start();
     }
-    // Watch for auth changes to start/stop sync accordingly
+    
+    // Watch for auth changes to start/stop sync & realtime accordingly
     ref.listen(authProvider, (_, next) {
       if (next.value != null) {
         syncService.start();
+        realtimeService.start();
       } else {
         syncService.stop();
+        realtimeService.stop();
       }
     });
   }
