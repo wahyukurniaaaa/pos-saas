@@ -275,6 +275,9 @@ class PosifyDatabase extends _$PosifyDatabase {
 
   Future<Employee?> getEmployeeByPin(String pin) =>
       (select(employees)..where((e) => e.pin.equals(pin))).getSingleOrNull();
+  
+  Future<Employee?> getEmployeeById(String id) =>
+      (select(employees)..where((e) => e.id.equals(id))).getSingleOrNull();
 
   Future<Employee?> getOwner() => (select(
     employees,

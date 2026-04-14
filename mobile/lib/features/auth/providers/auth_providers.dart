@@ -17,6 +17,7 @@ import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/core/providers/dio_provider.dart';
 import 'package:posify_app/core/providers/license_tier_provider.dart';
+import 'package:posify_app/core/providers/supabase_provider.dart';
 
 // ==========================================
 // LICENSE NOTIFIER (Tetap via Go Backend)
@@ -61,17 +62,21 @@ class LicenseNotifier extends AsyncNotifier<License?> {
 
   @override
   Future<License?> build() async {
+    // IMPORTANT: This build() method has NO dependency on authProvider.
+    // Invalidation is triggered externally by AuthNotifier after sign-in/sign-out.
+    // This breaks the circular dependency chain:
+    // appTierProvider → licenseProvider → authProvider → licenseProvider (CYCLE)
     final db = ref.watch(databaseProvider);
-    final authUser = ref.watch(authProvider).value;
 
     var license = await db.getLocalLicense();
 
     if (license == null) {
-      // 1. Check if we have a Supabase session and a license in the cloud from the watched authUser
+      // If no local license, check if the current Supabase user has one in cloud metadata.
+      // Read current user directly from Supabase SDK (no provider dependency).
+      final authUser = Supabase.instance.client.auth.currentUser;
       final cloudLicenseCode = authUser?.userMetadata?['license_code'] as String?;
 
       if (cloudLicenseCode != null) {
-        // 2. Automagically sync from cloud silently to avoid state update loops
         final syncedLicense = await _activateSilently(cloudLicenseCode);
         if (syncedLicense != null) {
           license = syncedLicense;
@@ -325,15 +330,12 @@ class AuthNotifier extends AsyncNotifier<User?> {
 
   @override
   Future<User?> build() async {
-    // Listen to auth state changes and rebuild when they occur
-    ref.listen(
-      // We'll use a simple approach: just return current user
-      // The AppBootstrap will handle redirecting via supabaseSessionProvider
-      StreamProvider((ref) => _supabase.auth.onAuthStateChange),
-      (_, next) {
-        if (ref.mounted) ref.invalidateSelf();
-      },
-    );
+    // Use the existing supabaseAuthStateProvider (NOT an anonymous StreamProvider).
+    // Creating a new StreamProvider inside build() would create a new listener
+    // on every rebuild, causing both memory leaks and cascading rebuilds.
+    ref.listen(supabaseAuthStateProvider, (_, next) {
+      if (ref.mounted) ref.invalidateSelf();
+    });
     return _supabase.auth.currentUser;
   }
 
@@ -446,6 +448,7 @@ class AuthNotifier extends AsyncNotifier<User?> {
   /// Sign out from Supabase.
   Future<void> signOut() async {
     await _supabase.auth.signOut();
+    ref.invalidate(licenseProvider);
     if (ref.mounted) state = const AsyncValue.data(null);
   }
 

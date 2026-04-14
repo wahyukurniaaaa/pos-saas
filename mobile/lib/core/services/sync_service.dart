@@ -79,9 +79,12 @@ class SyncService {
     }
 
     // Tier Guard: Pro users only
-    final isPro = await _ref.read(isProUserProvider.future);
+    // Use read instead of future if possible, or handle async carefully
+    final license = _ref.read(licenseProvider).value;
+    final isPro = license?.tierLevel?.toLowerCase() == 'pro';
+    
     if (!isPro) {
-      debugPrint('SyncService: Skipping — Lite tier user, Cloud Sync not available.');
+      debugPrint('SyncService: Skipping — Lite tier user...');
       return;
     }
 

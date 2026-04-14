@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
@@ -125,8 +126,23 @@ class SessionNotifier extends AsyncNotifier<Employee?> {
     final db = ref.read(databaseProvider);
 
     try {
-      // 2. Verify PIN matches the specific selected employee
-      if (employee.pin != pin.trim()) {
+      final inputPin = pin.trim();
+      
+      // 2. Fetch the latest employee data directly from DB to ensure source-of-truth PIN
+      // This protects against stale objects passed from UI stream snapshots.
+      final latestEmployee = await db.getEmployeeById(employee.id);
+      if (latestEmployee == null) {
+        state = AsyncValue.error('Akun tidak ditemukan', StackTrace.current);
+        return null;
+      }
+
+      final storedPin = latestEmployee.pin.trim();
+      
+      // 3. Verify PIN matches
+      debugPrint('Auth: Verifying PIN for ${latestEmployee.name} (ID: ${latestEmployee.id})');
+      
+      if (storedPin != inputPin) {
+        debugPrint('Auth: PIN mismatch. Stored length: ${storedPin.length}, Input length: ${inputPin.length}');
         // Increment failure count
         final countStr = await _storage.read(key: _failCountKey) ?? '0';
         int count = int.parse(countStr) + 1;
@@ -144,9 +160,9 @@ class SessionNotifier extends AsyncNotifier<Employee?> {
         return null;
       }
 
-      // 3. Check if locked
-      if (employee.lockedUntil != null &&
-          employee.lockedUntil!.isAfter(DateTime.now())) {
+      // 4. Check if locked
+      if (latestEmployee.lockedUntil != null &&
+          latestEmployee.lockedUntil!.isAfter(DateTime.now())) {
         state = AsyncValue.error(
           'Akun terkunci. Coba lagi nanti.',
           StackTrace.current,
@@ -154,8 +170,8 @@ class SessionNotifier extends AsyncNotifier<Employee?> {
         return null;
       }
 
-      // 4. Check if active
-      if (employee.status != 'active') {
+      // 5. Check if active
+      if (latestEmployee.status != 'active') {
         state = AsyncValue.error(
           'Akun tidak aktif. Hubungi pemilik.',
           StackTrace.current,
@@ -168,7 +184,7 @@ class SessionNotifier extends AsyncNotifier<Employee?> {
       await _storage.delete(key: _lockoutKey);
 
       await db.updateEmployee(
-        employee.copyWith(
+        latestEmployee.copyWith(
           failedLoginAttempts: 0,
           lockedUntil: const Value(null),
         ),
@@ -176,8 +192,8 @@ class SessionNotifier extends AsyncNotifier<Employee?> {
 
       if (!ref.mounted) return null;
 
-      state = AsyncValue.data(employee);
-      return employee;
+      state = AsyncValue.data(latestEmployee);
+      return latestEmployee;
     } catch (e, st) {
       if (!ref.mounted) return null;
       state = AsyncValue.error(e.toString(), st);

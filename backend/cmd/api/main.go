@@ -71,7 +71,14 @@ func main() {
 
 	// Database Connection & Migration
 	db := database.Connect()
-	db.AutoMigrate(&models.License{}, &models.LicenseDevice{}, &models.User{}, &models.MappingSKU{})
+	db.AutoMigrate(
+		&models.License{},
+		&models.LicenseDevice{},
+		&models.User{},
+		&models.MappingSKU{},
+		&models.Employee{},
+		&models.Outlet{},
+	)
 
 	// API Groups
 	api := app.Group("/api/v1")

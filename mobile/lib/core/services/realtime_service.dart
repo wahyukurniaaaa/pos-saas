@@ -39,13 +39,15 @@ class RealtimeService {
     }
 
     // Tier Guard: Pro users only
-    _ref.read(isProUserProvider.future).then((isPro) {
-      if (!isPro) {
-        debugPrint('RealtimeService: Skipping — Lite tier user.');
-        return;
-      }
+    final license = _ref.read(licenseProvider).value;
+    final isPro = license?.tierLevel?.toLowerCase() == 'pro';
 
-      final supabase = Supabase.instance.client;
+    if (!isPro) {
+      debugPrint('RealtimeService: Skipping — Lite tier user.');
+      return;
+    }
+
+    final supabase = Supabase.instance.client;
       
       // 1. Get outlet_id for filtering
       final currentEmployee = _ref.read(sessionProvider).value;
@@ -95,8 +97,7 @@ class RealtimeService {
         } else if (error != null) {
           debugPrint('RealtimeService: Subscription error - $error');
         }
-      });
-    });
+    }); // This is the end of _channel?.subscribe
   }
 
   /// Stops the realtime listeners.
