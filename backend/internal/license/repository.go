@@ -14,6 +14,7 @@ type Repository interface {
 	Create(license *models.License) error
 	UpdateDevice(device *models.LicenseDevice) error
 	ClearDevices(licenseID uint) error
+	DeleteDevice(licenseID uint, fingerprint string) error
 }
 
 type repository struct {
@@ -50,4 +51,12 @@ func (r *repository) UpdateDevice(device *models.LicenseDevice) error {
 
 func (r *repository) ClearDevices(licenseID uint) error {
 	return r.db.Where("license_id = ?", licenseID).Delete(&models.LicenseDevice{}).Error
+}
+
+// DeleteDevice removes a single device record identified by its fingerprint under a specific license.
+func (r *repository) DeleteDevice(licenseID uint, fingerprint string) error {
+	return r.db.
+		Where("license_id = ? AND device_fingerprint = ?", licenseID, fingerprint).
+		Delete(&models.LicenseDevice{}).
+		Error
 }

@@ -260,6 +260,15 @@ Fitur peningkatan efisiensi operasional yang sedang berjalan:
 *   **Tasks**:
     *   [ ] `ReceiptConfigScreen` — Edit Header/Footer & Live Preview.
 
+#### 26. Device Management UI (Manajemen Perangkat)
+*   **User Story**: "Sebagai Owner, jika saya ganti HP atau HP lama rusak, saya ingin bisa melepas perangkat lama dari lisensi saya sendiri tanpa harus menghubungi CS."
+*   **Dependensi**: Backend `/api/v1/license/reset` (selective) ✅ sudah selesai.
+*   **Tasks**:
+    *   [ ] **UI (Settings)**: `DeviceManagementScreen` — tampilkan daftar perangkat aktif (nama + tanggal aktivasi).
+    *   [ ] **UI**: Tombol "Lepas Perangkat Ini" per item, disertai konfirmasi email.
+    *   [ ] **UX**: Saat aktivasi gagal (`ErrLicenseUsed`), arahkan user ke halaman ini dari dalam dialog error.
+    *   [ ] **Mobile API**: Provider `deviceListProvider` yang memanggil `/reset` dengan `device_fingerprint`.
+
 ---
 
 ## 🟢 COMPLETED (Archive)

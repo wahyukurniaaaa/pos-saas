@@ -65,7 +65,53 @@
                             ]
                         }
                     },
-                    "response": []
+                                        "response": [
+                        {
+                            "name": "Activation Success",
+                            "originalRequest": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "X-App-Client-Key",
+                                        "value": "{{app_client_key}}",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"license_code\": \"POS-LITE-12345\",\n    \"device_fingerprint\": \"device-123\",\n    \"device_model\": \"Samsung S24\",\n    \"os_version\": \"Android 14\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/api/v1/license/activate",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "v1",
+                                        "license",
+                                        "activate"
+                                    ]
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "cookie": [],
+                            "body": "{\n    \"status\": \"success\",\n    \"code\": 200,\n    \"message\": \"Lisensi berhasil diaktifkan untuk perangkat ini.\",\n    \"data\": {\n        \"license_code\": \"POS-LITE-12345\",\n        \"activation_date\": \"2026-04-14T12:00:00Z\",\n        \"tier_level\": \"lite\",\n        \"max_devices\": 1,\n        \"max_outlets\": 1\n    }\n}"
+                        }
+                    ]
                 },
                 {
                     "name": "Verify License",
@@ -100,7 +146,152 @@
                             ]
                         }
                     },
-                    "response": []
+                                        "response": [
+                        {
+                            "name": "Verify Success",
+                            "originalRequest": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "X-App-Client-Key",
+                                        "value": "{{app_client_key}}",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"license_code\": \"POS-LITE-12345\",\n    \"device_fingerprint\": \"device-123\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/api/v1/license/verify",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "v1",
+                                        "license",
+                                        "verify"
+                                    ]
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "cookie": [],
+                            "body": "{\n    \"status\": \"success\",\n    \"code\": 200,\n    \"message\": \"Lisensi Aktif.\",\n    \"data\": {\n        \"is_active\": true\n    }\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Reset License — Full (Lepas Semua Perangkat)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "X-App-Client-Key",
+                                "value": "{{app_client_key}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"license_code\": \"VALID-LICENSE-CODE\",\n    \"customer_email\": \"consumer@example.com\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/license/reset",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "license",
+                                "reset"
+                            ]
+                        }
+                    },
+                    "response": [
+                        {
+                            "name": "Full Reset Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [{ "key": "Content-Type", "value": "application/json" }],
+                            "cookie": [],
+                            "body": "{\n    \"status\": \"success\",\n    \"code\": 200,\n    \"message\": \"Perangkat berhasil dilepas.\",\n    \"data\": null\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Reset License — Selective (Lepas 1 Perangkat Tertentu)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "X-App-Client-Key",
+                                "value": "{{app_client_key}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"license_code\": \"VALID-LICENSE-CODE\",\n    \"customer_email\": \"consumer@example.com\",\n    \"device_fingerprint\": \"abc123-fingerprint-hape-lama\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/license/reset",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "license",
+                                "reset"
+                            ]
+                        }
+                    },
+                    "response": [
+                        {
+                            "name": "Selective Reset Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [{ "key": "Content-Type", "value": "application/json" }],
+                            "cookie": [],
+                            "body": "{\n    \"status\": \"success\",\n    \"code\": 200,\n    \"message\": \"Perangkat berhasil dilepas.\",\n    \"data\": null\n}"
+                        },
+                        {
+                            "name": "Device Not Found (404)",
+                            "status": "Not Found",
+                            "code": 404,
+                            "_postman_previewlanguage": "json",
+                            "header": [{ "key": "Content-Type", "value": "application/json" }],
+                            "cookie": [],
+                            "body": "{\n    \"status\": \"error\",\n    \"code\": 404,\n    \"message\": \"Perangkat dengan fingerprint tersebut tidak ditemukan pada lisensi ini.\"\n}"
+                        }
+                    ]
                 }
             ]
         },
@@ -120,7 +311,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"tier_level\": \"Premium\",\n    \"max_devices\": 5,\n    \"customer_email\": \"consumer@example.com\"\n}",
+                            "raw": "{\n    \"tier_level\": \"pro\",\n    \"customer_email\": \"consumer@example.com\",\n    \"order_id\": \"ORDER-123\",\n    \"source\": \"posify-saas\"\n}",
                             "options": {
                                 "raw": {
                                     "language": "json"
@@ -141,7 +332,54 @@
                             ]
                         }
                     },
-                    "response": []
+                    "response": [
+                        {
+                            "name": "Generate Success",
+                            "originalRequest": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "X-Admin-Secret-Key",
+                                        "value": "{{admin_secret_key}}",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"tier_level\": \"pro\",\n    \"customer_email\": \"consumer@example.com\",\n    \"order_id\": \"ORDER-123\",\n    \"source\": \"posify-saas\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/api/v1/admin/license/generate",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "v1",
+                                        "admin",
+                                        "license",
+                                        "generate"
+                                    ]
+                                }
+                            },
+                            "status": "Created",
+                            "code": 201,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "cookie": [],
+                            "body": "{\n    \"status\": \"success\",\n    \"code\": 201,\n    \"message\": \"Lisensi berhasil dibuat.\",\n    \"data\": {\n        \"license_code\": \"X8Y2K9J1P5\",\n        \"tier_level\": \"pro\",\n        \"max_devices\": 10,\n        \"max_outlets\": 3,\n        \"customer_email\": \"consumer@example.com\"\n    }\n}"
+                        }
+                    ]
                 }
             ]
         },

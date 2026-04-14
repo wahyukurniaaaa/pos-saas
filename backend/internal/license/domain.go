@@ -55,6 +55,8 @@ type GenerateResponseData struct {
 }
 
 type DeregisterRequest struct {
-	LicenseCode   string `json:"license_code" validate:"required"`
-	CustomerEmail string `json:"customer_email" validate:"required,email"`
+	LicenseCode       string `json:"license_code" validate:"required"`
+	CustomerEmail     string `json:"customer_email" validate:"required,email"`
+	// Optional: if provided, only this device is unbound. If empty, all devices are reset.
+	DeviceFingerprint string `json:"device_fingerprint"`
 }

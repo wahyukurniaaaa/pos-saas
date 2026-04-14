@@ -11,9 +11,10 @@ import (
 )
 
 var (
-	ErrLicenseNotFound = errors.New("Kode lisensi tidak ditemukan atau format salah.")
-	ErrLicenseUsed     = errors.New("Batas maksimum perangkat untuk lisensi ini telah tercapai. Silakan hubungi CS untuk reset.")
-	ErrLicenseBanned   = errors.New("Lisensi telah diblokir/disuspend.")
+	ErrLicenseNotFound  = errors.New("Kode lisensi tidak ditemukan atau format salah.")
+	ErrLicenseUsed      = errors.New("Batas maksimum perangkat telah tercapai. Silakan lepas perangkat lama melalui menu Pengaturan > Manajemen Perangkat.")
+	ErrLicenseBanned    = errors.New("Lisensi telah diblokir/disuspend.")
+	ErrDeviceNotFound   = errors.New("Perangkat dengan fingerprint tersebut tidak ditemukan pada lisensi ini.")
 )
 
 func generate10DigitCode() (string, error) {
@@ -214,5 +215,22 @@ func (s *service) Deregister(req DeregisterRequest) error {
 		return errors.New("Email tidak cocok dengan lisensi ini.")
 	}
 
+	// Selective reset: only remove the specified device.
+	if req.DeviceFingerprint != "" {
+		// Verify the device actually belongs to this license before attempting deletion.
+		deviceExists := false
+		for _, d := range lic.Devices {
+			if d.DeviceFingerprint == req.DeviceFingerprint {
+				deviceExists = true
+				break
+			}
+		}
+		if !deviceExists {
+			return ErrDeviceNotFound
+		}
+		return s.repo.DeleteDevice(lic.ID, req.DeviceFingerprint)
+	}
+
+	// Full reset: remove all devices (legacy behavior).
 	return s.repo.ClearDevices(lic.ID)
 }

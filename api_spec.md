@@ -55,8 +55,9 @@ Lisensi Ditemukan, Belum Dipakai, dan Berhasil Diikat ke Device.
   "data": {
     "license_code": "POS-L1-A8F9K2-X1Y2Z3",
     "activation_date": "2026-03-05T08:30:15Z",
-    "tier_level": "Tier 1 - Lifetime",
-    "max_devices": 1
+    "tier_level": "lite",
+    "max_devices": 1,
+    "max_outlets": 1
   }
 }
 ```
@@ -118,7 +119,56 @@ Jika `device_fingerprint` yang datang tidak cocok dengan yang sudah direkam sebe
     "is_active": true
   }
 }
+
+---
+
+## 📌 Endpoint: POST `/api/v1/license/reset`
+
+**Deskripsi:**  
+Melepas (unbind) perangkat dari sebuah lisensi. Mendukung dua mode:
+- **Selective Reset** (rekomendasi): jika `device_fingerprint` diisi, hanya perangkat tersebut yang dilepas.
+- **Full Reset** (legacy): jika `device_fingerprint` dikosongkan, **semua** perangkat dilepas.
+
+> ⚠️ Memerlukan `customer_email` yang terdaftar pada lisensi sebagai verifikasi keamanan.
+
+### 📥 Request Body
+
+**Mode 1 — Lepas perangkat tertentu (Ganti HP / Logout dari HP Lama):**
+```json
+{
+  "license_code": "POS-LITE-X8Y2K9",
+  "customer_email": "owner@example.com",
+  "device_fingerprint": "abc123-fingerprint-hape-lama"
+}
 ```
+
+**Mode 2 — Reset semua perangkat:**
+```json
+{
+  "license_code": "POS-LITE-X8Y2K9",
+  "customer_email": "owner@example.com"
+}
+```
+
+### 📤 Response Berhasil (200 OK)
+```json
+{
+  "status": "success",
+  "code": 200,
+  "message": "Perangkat berhasil dilepas.",
+  "data": null
+}
+```
+
+### 📤 Response Error — Fingerprint Tidak Ditemukan (404)
+```json
+{
+  "status": "error",
+  "code": 404,
+  "message": "Perangkat dengan fingerprint tersebut tidak ditemukan pada lisensi ini."
+}
+```
+
 
 ---
 
@@ -152,6 +202,7 @@ Jika `device_fingerprint` yang datang tidak cocok dengan yang sudah direkam sebe
     "license_code": "X8Y2K9J1P5",
     "tier_level": "pro",
     "max_devices": 10,
+    "max_outlets": 3,
     "customer_email": "owner@example.com"
   }
 }
