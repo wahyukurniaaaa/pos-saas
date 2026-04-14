@@ -7,6 +7,7 @@ import (
 	"posify-backend/internal/fulfillment"
 	"posify-backend/internal/license"
 	"posify-backend/internal/middleware"
+	"posify-backend/internal/models"
 	"posify-backend/pkg/database"
 	"posify-backend/pkg/mailer"
 	"posify-backend/pkg/response"
@@ -68,8 +69,9 @@ func main() {
 		},
 	})
 
-	// Database Connection
+	// Database Connection & Migration
 	db := database.Connect()
+	db.AutoMigrate(&models.License{}, &models.LicenseDevice{}, &models.User{}, &models.MappingSKU{})
 
 	// API Groups
 	api := app.Group("/api/v1")
