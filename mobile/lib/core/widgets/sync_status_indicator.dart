@@ -5,20 +5,32 @@ import 'package:posify_app/core/services/sync_service.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:posify_app/features/auth/providers/auth_providers.dart';
 
+import 'package:posify_app/core/providers/license_tier_provider.dart';
+
 /// A compact widget that displays the current cloud sync status.
-/// Only visible for Pro users (authenticated via Supabase).
+/// Only visible for Pro users (authenticated via Supabase + Pro Tier).
 class SyncStatusIndicator extends ConsumerWidget {
   const SyncStatusIndicator({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authProvider).value;
+    final isProAsync = ref.watch(isProUserProvider);
 
-    // Hidden for non-Pro users
-    if (user == null) return const SizedBox.shrink();
+    // Hidden for non-authenticated or non-Pro users
+    return isProAsync.when(
+      data: (isPro) {
+        if (user == null || !isPro) return const SizedBox.shrink();
 
-    final status = ref.watch(syncStatusProvider);
+        final status = ref.watch(syncStatusProvider);
+        return _buildBody(ref, status);
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+    );
+  }
 
+  Widget _buildBody(WidgetRef ref, SyncStatus status) {
     return GestureDetector(
       onTap: () => ref.read(syncServiceProvider).performSync(),
       child: AnimatedContainer(

@@ -16,6 +16,7 @@ import 'package:posify_app/core/constants/app_constants.dart';
 import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/core/providers/dio_provider.dart';
+import 'package:posify_app/core/providers/license_tier_provider.dart';
 
 // ==========================================
 // LICENSE NOTIFIER (Tetap via Go Backend)
@@ -61,12 +62,13 @@ class LicenseNotifier extends AsyncNotifier<License?> {
   @override
   Future<License?> build() async {
     final db = ref.watch(databaseProvider);
+    final authUser = ref.watch(authProvider).value;
+
     var license = await db.getLocalLicense();
 
     if (license == null) {
-      // 1. Check if we have a Supabase session and a license in the cloud
-      final user = Supabase.instance.client.auth.currentUser;
-      final cloudLicenseCode = user?.userMetadata?['license_code'] as String?;
+      // 1. Check if we have a Supabase session and a license in the cloud from the watched authUser
+      final cloudLicenseCode = authUser?.userMetadata?['license_code'] as String?;
 
       if (cloudLicenseCode != null) {
         // 2. Automagically sync from cloud silently to avoid state update loops
@@ -218,7 +220,9 @@ class LicenseNotifier extends AsyncNotifier<License?> {
         }
 
         final newLicense = await db.getLocalLicense();
-        if (ref.mounted) state = AsyncValue.data(newLicense);
+        if (ref.mounted) {
+          state = AsyncValue.data(newLicense);
+        }
         return (true, null);
       }
 

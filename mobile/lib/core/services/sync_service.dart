@@ -6,6 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/features/auth/providers/auth_providers.dart';
 import 'package:posify_app/features/auth/providers/owner_provider.dart';
+import 'package:posify_app/core/providers/license_tier_provider.dart';
 
 /// Enumeration of possible sync states for the UI indicator.
 enum SyncStatus { idle, syncing, error }
@@ -74,6 +75,13 @@ class SyncService {
     final user = _ref.read(authProvider).value;
     if (user == null) {
       debugPrint('SyncService: Skipping — user not authenticated (non-Pro)');
+      return;
+    }
+
+    // Tier Guard: Pro users only
+    final isPro = await _ref.read(isProUserProvider.future);
+    if (!isPro) {
+      debugPrint('SyncService: Skipping — Lite tier user, Cloud Sync not available.');
       return;
     }
 

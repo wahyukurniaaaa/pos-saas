@@ -281,7 +281,7 @@ class _OwnerSetupScreenState extends ConsumerState<OwnerSetupScreen> {
         .setupOwner(
           name: _nameController.text.trim(),
           storeName: _storeNameController.text.trim(),
-          pin: _pinController.text,
+          pin: _pinController.text.trim(),
         );
 
     if (!mounted) return;

@@ -19,6 +19,7 @@ class OwnerNotifier extends AsyncNotifier<Employee?> {
     required String storeName,
     required String pin,
   }) async {
+    final cleanPin = pin.trim();
     state = const AsyncValue.loading();
     final db = ref.read(databaseProvider);
 
@@ -36,7 +37,7 @@ class OwnerNotifier extends AsyncNotifier<Employee?> {
       await db.insertEmployee(
         EmployeesCompanion.insert(
           name: name,
-          pin: pin,
+          pin: cleanPin,
           role: 'owner',
           outletId: Value(outletId),
         ),
@@ -125,7 +126,7 @@ class SessionNotifier extends AsyncNotifier<Employee?> {
 
     try {
       // 2. Verify PIN matches the specific selected employee
-      if (employee.pin != pin) {
+      if (employee.pin != pin.trim()) {
         // Increment failure count
         final countStr = await _storage.read(key: _failCountKey) ?? '0';
         int count = int.parse(countStr) + 1;
@@ -202,7 +203,7 @@ class SessionNotifier extends AsyncNotifier<Employee?> {
     final db = ref.read(databaseProvider);
 
     try {
-      final employee = await db.getEmployeeByPin(pin);
+      final employee = await db.getEmployeeByPin(pin.trim());
       if (!ref.mounted) return null;
 
       if (employee == null) {

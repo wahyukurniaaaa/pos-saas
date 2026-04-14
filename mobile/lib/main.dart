@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/theme/app_theme.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'features/auth/screens/unified_registration_screen.dart';
 import 'package:posify_app/features/auth/screens/license_activation_screen.dart';
 import 'package:posify_app/features/auth/screens/owner_setup_screen.dart';
@@ -81,38 +82,29 @@ class AppBootstrap extends ConsumerStatefulWidget {
 
 class _AppBootstrapState extends ConsumerState<AppBootstrap> {
   @override
-  void initState() {
-    super.initState();
-    // Start sync after the first frame so providers are ready
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _handleSyncLifecycle();
-    });
-  }
-
-  void _handleSyncLifecycle() {
-    final user = ref.read(authProvider).value;
-    final syncService = ref.read(syncServiceProvider);
-    final realtimeService = ref.read(realtimeServiceProvider);
-    
-    if (user != null) {
-      syncService.start();
-      realtimeService.start();
-    }
-    
-    // Watch for auth changes to start/stop sync & realtime accordingly
-    ref.listen(authProvider, (_, next) {
-      if (next.value != null) {
-        syncService.start();
-        realtimeService.start();
+  Widget build(BuildContext context) {
+    // 1. Listen for future auth changes
+    ref.listen(authProvider, (previous, next) {
+      final user = next.value;
+      if (user != null) {
+        ref.read(syncServiceProvider).start();
+        ref.read(realtimeServiceProvider).start();
       } else {
-        syncService.stop();
-        realtimeService.stop();
+        ref.read(syncServiceProvider).stop();
+        ref.read(realtimeServiceProvider).stop();
       }
     });
-  }
 
-  @override
-  Widget build(BuildContext context) {
+    // 2. Initial trigger for cold boot (if user is already logged in)
+    final initialUser = ref.read(authProvider).value;
+    if (initialUser != null) {
+      // Use microtask or post-frame to avoid calling start() during build
+      Future.microtask(() {
+        ref.read(syncServiceProvider).start();
+        ref.read(realtimeServiceProvider).start();
+      });
+    }
+
     final session = ref.watch(supabaseSessionProvider);
     final licenseAsync = ref.watch(licenseProvider);
     final ownerAsync = ref.watch(ownerProvider);
@@ -125,7 +117,10 @@ class _AppBootstrapState extends ConsumerState<AppBootstrap> {
     // Layer 2: License (Device/Subscription)
     return licenseAsync.when(
       loading: () => const _SplashScreen(),
-      error: (error, stackTrace) => const LicenseActivationScreen(),
+      error: (error, stackTrace) => _SplashScreen(
+        errorMessage: 'Gagal memverifikasi lisensi. Periksa koneksi internet.',
+        onRetry: () => ref.invalidate(licenseProvider),
+      ),
       data: (license) {
         if (license == null) {
           return const LicenseActivationScreen();
@@ -134,7 +129,10 @@ class _AppBootstrapState extends ConsumerState<AppBootstrap> {
         // Layer 3: Owner (Store setup)
         return ownerAsync.when(
           loading: () => const _SplashScreen(),
-          error: (error, stackTrace) => const OwnerSetupScreen(),
+          error: (error, stackTrace) => _SplashScreen(
+            errorMessage: 'Gagal memuat profil toko.',
+            onRetry: () => ref.invalidate(ownerProvider),
+          ),
           data: (owner) {
             if (owner == null) {
               return const OwnerSetupScreen();
@@ -150,12 +148,16 @@ class _AppBootstrapState extends ConsumerState<AppBootstrap> {
 }
 
 class _SplashScreen extends StatelessWidget {
-  const _SplashScreen();
+  final String? errorMessage;
+  final VoidCallback? onRetry;
+
+  const _SplashScreen({this.errorMessage, this.onRetry});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
+        width: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -163,8 +165,35 @@ class _SplashScreen extends StatelessWidget {
             colors: [AppTheme.primaryDark, AppTheme.primaryColor],
           ),
         ),
-        child: const Center(
-          child: CircularProgressIndicator(color: Colors.white),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const CircularProgressIndicator(color: Colors.white),
+            if (errorMessage != null) ...[
+              const SizedBox(height: 30),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 40),
+                child: Text(
+                  errorMessage!,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton.icon(
+                onPressed: onRetry,
+                icon: const Icon(Icons.refresh),
+                label: const Text('COBA LAGI'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: AppTheme.primaryColor,
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );

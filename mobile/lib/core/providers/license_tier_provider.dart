@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
+import 'package:posify_app/features/auth/providers/auth_providers.dart';
 
 final outletLimitProvider = FutureProvider<int>((ref) async {
   final db = ref.watch(databaseProvider);
@@ -18,4 +19,17 @@ final canAddOutletProvider = FutureProvider<bool>((ref) async {
   final count = await ref.watch(currentOutletsCountProvider.future);
   
   return count < limit;
+});
+
+/// Central provider for user's license tier (pro, lite, or null).
+/// Reads tier data from local persistent storage (licenseProvider).
+final appTierProvider = FutureProvider<String?>((ref) async {
+  final license = await ref.watch(licenseProvider.future);
+  return license?.tierLevel?.toLowerCase();
+});
+
+/// Convenience provider to check if currently logged in license is Pro.
+final isProUserProvider = FutureProvider<bool>((ref) async {
+  final tier = await ref.watch(appTierProvider.future);
+  return tier == 'pro';
 });
