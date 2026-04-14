@@ -1,7 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
-import 'package:posify_app/features/auth/providers/auth_providers.dart';
-import 'package:posify_app/core/database/database.dart';
 
 final outletLimitProvider = FutureProvider<int>((ref) async {
   final db = ref.watch(databaseProvider);

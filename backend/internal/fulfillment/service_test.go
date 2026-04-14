@@ -52,6 +52,14 @@ func (m *MockLicenseService) Generate(req license.GenerateRequest) (*models.Lice
 	return args.Get(0).(*models.License), args.Error(1)
 }
 
+func (m *MockLicenseService) GetDevices(req license.GetDevicesRequest) ([]models.LicenseDevice, error) {
+	args := m.Called(req)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]models.LicenseDevice), args.Error(1)
+}
+
 // --- TikTok Tests ---
 
 func TestProcessTikTokOrder_Success(t *testing.T) {

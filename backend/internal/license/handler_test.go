@@ -46,6 +46,14 @@ func (m *MockService) Deregister(req license.DeregisterRequest) error {
 	return args.Error(0)
 }
 
+func (m *MockService) GetDevices(req license.GetDevicesRequest) ([]models.LicenseDevice, error) {
+	args := m.Called(req)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]models.LicenseDevice), args.Error(1)
+}
+
 func setupApp(mockSvc license.Service) *fiber.App {
 	app := fiber.New()
 	handler := license.NewHandler(mockSvc)

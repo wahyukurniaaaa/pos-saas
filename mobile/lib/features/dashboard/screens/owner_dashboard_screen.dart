@@ -22,6 +22,7 @@ import 'package:posify_app/features/settings/screens/suppliers/supplier_list_scr
 import 'package:posify_app/features/pos/screens/inventory/global_stock_history_screen.dart';
 import 'package:posify_app/features/pos/screens/settings/discount_management_screen.dart';
 import 'package:posify_app/features/pos/screens/settings/expense_management_screen.dart';
+import 'package:posify_app/features/auth/screens/device_management_screen.dart';
 import 'package:posify_app/features/dashboard/screens/cashflow_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:posify_app/features/dashboard/widgets/low_stock_widget.dart';
@@ -438,9 +439,18 @@ class _OwnerDashboardScreenState extends ConsumerState<OwnerDashboardScreen> {
                           subtitle: 'Backup & restore data',
                           color: Colors.deepOrange,
                           onTap: () => _nav(const DatabaseSettingsScreen()),
+                        ),
+                      if (isOwner)
+                        _MenuTile(
+                          icon: Icons.devices_other_rounded,
+                          label: 'Manajemen Perangkat',
+                          subtitle: 'Kelola & unbind perangkat',
+                          color: AppTheme.tertiaryColor,
+                          onTap: () => _nav(const DeviceManagementScreen()),
                           isLast: true,
                         ),
                     ]),
+
                   ],
                 ),
               ),

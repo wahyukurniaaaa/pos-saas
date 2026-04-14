@@ -44,6 +44,11 @@ func (m *MockRepository) ClearDevices(licenseID uint) error {
 	return args.Error(0)
 }
 
+func (m *MockRepository) DeleteDevice(licenseID uint, fingerprint string) error {
+	args := m.Called(licenseID, fingerprint)
+	return args.Error(0)
+}
+
 func TestActivate_SuccessFirstTime(t *testing.T) {
 	mockRepo := new(MockRepository)
 	svc := license.NewService(mockRepo, nil)

@@ -115,6 +115,7 @@ func main() {
 	api.Post("/license/reset", middleware.RequireAdminSecretKey, licenseHandler.Deregister)
 	api.Post("/license/verify", middleware.RequireAdminSecretKey, licenseHandler.Verify)
 	api.Post("/license/activate", middleware.RequireAdminSecretKey, licenseHandler.Activate)
+	api.Post("/license/devices", middleware.RequireAdminSecretKey, licenseHandler.GetDevices)
 
 	// Health Check / Ping
 	api.Get("/ping", func(c *fiber.Ctx) error {

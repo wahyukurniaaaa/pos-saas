@@ -23,6 +23,7 @@ func (h *Handler) RegisterRoutes(router fiber.Router) {
 	router.Post("/activate", h.Activate)
 	router.Post("/verify", h.Verify)
 	router.Post("/reset", h.Deregister)
+	router.Post("/devices", h.GetDevices)
 }
 
 func (h *Handler) RegisterAdminRoutes(router fiber.Router) {
@@ -139,8 +140,41 @@ func (h *Handler) Deregister(c *fiber.Ctx) error {
 		if err == ErrLicenseNotFound {
 			return response.Error(c, fiber.StatusNotFound, err.Error())
 		}
+		if err == ErrDeviceNotFound {
+			return response.Error(c, fiber.StatusNotFound, err.Error())
+		}
 		return response.Error(c, fiber.StatusBadRequest, err.Error())
 	}
 
-	return response.Success(c, fiber.StatusOK, "Semua perangkat untuk lisensi ini berhasil di-reset.", nil)
+	return response.Success(c, fiber.StatusOK, "Perangkat berhasil dilepas.", nil)
+}
+
+func (h *Handler) GetDevices(c *fiber.Ctx) error {
+	var req GetDevicesRequest
+	if err := c.BodyParser(&req); err != nil {
+		return response.Error(c, fiber.StatusBadRequest, "Format JSON tidak valid.")
+	}
+	if err := validate.Struct(req); err != nil {
+		return response.Error(c, fiber.StatusBadRequest, "Data yang dikirim tidak lengkap.")
+	}
+
+	devices, err := h.service.GetDevices(req)
+	if err != nil {
+		if err == ErrLicenseNotFound {
+			return response.Error(c, fiber.StatusNotFound, err.Error())
+		}
+		return response.Error(c, fiber.StatusBadRequest, err.Error())
+	}
+
+	resData := make([]DeviceResponse, len(devices))
+	for i, d := range devices {
+		resData[i] = DeviceResponse{
+			DeviceFingerprint: d.DeviceFingerprint,
+			DeviceModel:       d.DeviceModel,
+			OsVersion:         d.OsVersion,
+			ActivationDate:    d.ActivationDate.Format("2006-01-02T15:04:05Z"),
+		}
+	}
+
+	return response.Success(c, fiber.StatusOK, "Berhasil mengambil daftar perangkat", resData)
 }

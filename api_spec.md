@@ -172,6 +172,52 @@ Melepas (unbind) perangkat dari sebuah lisensi. Mendukung dua mode:
 
 ---
 
+## 📌 Endpoint: POST `/api/v1/license/devices`
+
+**Deskripsi:**  
+Mengambil daftar perangkat yang saat ini terhubung/aktif pada sebuah lisensi. Endpoint ini memerlukan `customer_email` sebagai bentuk verifikasi keamanan (dianggap sebagai 2FA sederhana) sebelum menampilkan metadata perangkat.
+
+### 📥 Request Body
+```json
+{
+  "license_code": "POS-LITE-X8Y2K9",
+  "customer_email": "owner@example.com"
+}
+```
+
+| Parameter | Type | Keterangan | Validasi |
+| :--- | :--- | :--- | :--- |
+| `license_code` | `string` | Kode lisensi aktif | Wajib |
+| `customer_email` | `string` | Email pembelian lisensi | Wajib, valid email |
+
+### 📤 Response Berhasil (200 OK)
+```json
+{
+  "status": "success",
+  "code": 200,
+  "message": "Berhasil mengambil daftar perangkat",
+  "data": [
+    {
+      "device_fingerprint": "75c61239-0d2a-4467-b5de-8bb6d1a51167",
+      "device_model": "Samsung SM-A505F",
+      "os_version": "Android 11",
+      "activation_date": "2023-11-20T10:00:00Z"
+    }
+  ]
+}
+```
+
+### 📤 Response Error (404/400)
+```json
+{
+  "status": "error",
+  "code": 404,
+  "message": "Kode lisensi tidak ditemukan atau format salah."
+}
+```
+
+---
+
 ## 📌 Endpoint: POST `/api/v1/admin/license/generate`
 
 **Deskripsi:**  

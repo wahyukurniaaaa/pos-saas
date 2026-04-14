@@ -60,3 +60,15 @@ type DeregisterRequest struct {
 	// Optional: if provided, only this device is unbound. If empty, all devices are reset.
 	DeviceFingerprint string `json:"device_fingerprint"`
 }
+
+type GetDevicesRequest struct {
+	LicenseCode   string `json:"license_code" validate:"required"`
+	CustomerEmail string `json:"customer_email" validate:"required,email"`
+}
+
+type DeviceResponse struct {
+	DeviceFingerprint string `json:"device_fingerprint"`
+	DeviceModel       string `json:"device_model"`
+	OsVersion         string `json:"os_version"`
+	ActivationDate    string `json:"activation_date"`
+}

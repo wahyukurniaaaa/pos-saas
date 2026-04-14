@@ -34,6 +34,7 @@ type Service interface {
 	Verify(req VerifyRequest) (bool, error)
 	Generate(req GenerateRequest) (*models.License, error)
 	Deregister(req DeregisterRequest) error
+	GetDevices(req GetDevicesRequest) ([]models.LicenseDevice, error)
 }
 
 type service struct {
@@ -233,4 +234,20 @@ func (s *service) Deregister(req DeregisterRequest) error {
 
 	// Full reset: remove all devices (legacy behavior).
 	return s.repo.ClearDevices(lic.ID)
+}
+
+func (s *service) GetDevices(req GetDevicesRequest) ([]models.LicenseDevice, error) {
+	lic, err := s.repo.FindByCode(req.LicenseCode)
+	if err != nil {
+		return nil, err
+	}
+	if lic == nil {
+		return nil, ErrLicenseNotFound
+	}
+	
+	if lic.CustomerEmail != req.CustomerEmail {
+		return nil, errors.New("Email tidak cocok dengan lisensi ini.")
+	}
+
+	return lic.Devices, nil
 }
