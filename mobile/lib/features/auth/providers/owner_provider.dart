@@ -139,10 +139,11 @@ class SessionNotifier extends AsyncNotifier<Employee?> {
       final storedPin = latestEmployee.pin.trim();
       
       // 3. Verify PIN matches
-      debugPrint('Auth: Verifying PIN for ${latestEmployee.name} (ID: ${latestEmployee.id})');
+      debugPrint('Auth: Stored PIN for ${latestEmployee.name} is "${storedPin.replaceAll(RegExp(r'.'), '*')}" (len: ${storedPin.length})');
+      debugPrint('Auth: Input PIN is "${inputPin.replaceAll(RegExp(r'.'), '*')}" (len: ${inputPin.length})');
       
       if (storedPin != inputPin) {
-        debugPrint('Auth: PIN mismatch. Stored length: ${storedPin.length}, Input length: ${inputPin.length}');
+        debugPrint('Auth: Result -> PIN MISMATCH');
         // Increment failure count
         final countStr = await _storage.read(key: _failCountKey) ?? '0';
         int count = int.parse(countStr) + 1;
@@ -163,6 +164,7 @@ class SessionNotifier extends AsyncNotifier<Employee?> {
       // 4. Check if locked
       if (latestEmployee.lockedUntil != null &&
           latestEmployee.lockedUntil!.isAfter(DateTime.now())) {
+        debugPrint('Auth: Result -> ACCOUNT LOCKED until ${latestEmployee.lockedUntil}');
         state = AsyncValue.error(
           'Akun terkunci. Coba lagi nanti.',
           StackTrace.current,
@@ -172,12 +174,15 @@ class SessionNotifier extends AsyncNotifier<Employee?> {
 
       // 5. Check if active
       if (latestEmployee.status != 'active') {
+        debugPrint('Auth: Result -> ACCOUNT INACTIVE (status: ${latestEmployee.status})');
         state = AsyncValue.error(
           'Akun tidak aktif. Hubungi pemilik.',
           StackTrace.current,
         );
         return null;
       }
+
+      debugPrint('Auth: Result -> SUCCESS');
 
       // Reset failed attempts on success
       await _storage.delete(key: _failCountKey);
@@ -195,6 +200,7 @@ class SessionNotifier extends AsyncNotifier<Employee?> {
       state = AsyncValue.data(latestEmployee);
       return latestEmployee;
     } catch (e, st) {
+      debugPrint('Auth: Result -> EXCEPTION: $e');
       if (!ref.mounted) return null;
       state = AsyncValue.error(e.toString(), st);
       return null;
