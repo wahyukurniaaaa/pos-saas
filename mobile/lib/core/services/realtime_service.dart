@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/features/auth/providers/auth_providers.dart';
+import 'package:posify_app/features/auth/providers/owner_provider.dart';
 
 /// Service to listen for real-time updates from Supabase.
 /// This complements SyncService by providing immediate updates when cloud data changes.
@@ -38,6 +39,14 @@ class RealtimeService {
 
     final supabase = Supabase.instance.client;
     
+    // 1. Get outlet_id for filtering
+    final currentEmployee = _ref.read(sessionProvider).value;
+    final outletId = currentEmployee?.outletId;
+
+    if (outletId == null) {
+      debugPrint('RealtimeService: No outlet_id in session - listening to everything (not recommended)');
+    }
+
     // Subscribe to all syncable tables
     _channel = supabase.channel('public:posify_sync');
 
@@ -46,6 +55,14 @@ class RealtimeService {
         event: PostgresChangeEvent.all,
         schema: 'public',
         table: table,
+        // Apply outlet filter if available (Supabase syntax: column=eq.value)
+        filter: (outletId != null && table != 'outlets') 
+          ? PostgresChangeFilter(
+              type: PostgresChangeFilterType.eq,
+              column: 'outlet_id',
+              value: outletId,
+            ) 
+          : null,
         callback: (payload) async {
           debugPrint('RealtimeService: Received ${payload.eventType} Event for $table');
           

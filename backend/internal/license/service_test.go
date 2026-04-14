@@ -220,3 +220,62 @@ func TestDeregister_FailEmailMismatch(t *testing.T) {
 
 	assert.ErrorContains(t, err, "Email tidak cocok")
 }
+
+func TestGenerate_SuccessLite(t *testing.T) {
+	mockRepo := new(MockRepository)
+	// We pass nil for mailer. It might panic in goroutine, but usually test exits before
+	svc := license.NewService(mockRepo, nil)
+
+	req := license.GenerateRequest{
+		TierLevel:     "lite",
+		CustomerEmail: "test@example.com",
+	}
+
+	// generate10DigitCode calls FindByCode
+	mockRepo.On("FindByCode", mock.AnythingOfType("string")).Return((*models.License)(nil), nil)
+	mockRepo.On("Create", mock.AnythingOfType("*models.License")).Return(nil)
+
+	lic, err := svc.Generate(req)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, lic)
+	assert.Equal(t, 1, lic.MaxDevices)
+	assert.Equal(t, 1, lic.MaxOutlets)
+	assert.Equal(t, "lite", lic.TierLevel)
+}
+
+func TestGenerate_SuccessPro(t *testing.T) {
+	mockRepo := new(MockRepository)
+	svc := license.NewService(mockRepo, nil)
+
+	req := license.GenerateRequest{
+		TierLevel:     "pro",
+		CustomerEmail: "test@example.com",
+	}
+
+	mockRepo.On("FindByCode", mock.AnythingOfType("string")).Return((*models.License)(nil), nil)
+	mockRepo.On("Create", mock.AnythingOfType("*models.License")).Return(nil)
+
+	lic, err := svc.Generate(req)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, lic)
+	assert.Equal(t, 10, lic.MaxDevices)
+	assert.Equal(t, 3, lic.MaxOutlets)
+	assert.Equal(t, "pro", lic.TierLevel)
+}
+
+func TestGenerate_FailInvalidTier(t *testing.T) {
+	mockRepo := new(MockRepository)
+	svc := license.NewService(mockRepo, nil)
+
+	req := license.GenerateRequest{
+		TierLevel:     "enterprise",
+		CustomerEmail: "test@example.com",
+	}
+
+	lic, err := svc.Generate(req)
+
+	assert.ErrorContains(t, err, "TierLevel tidak valid")
+	assert.Nil(t, lic)
+}

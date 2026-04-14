@@ -9,6 +9,7 @@ type License struct {
 	LicenseCode   string          `gorm:"unique;not null" json:"license_code"`
 	TierLevel     string          `gorm:"default:'Tier 1 - Lifetime'" json:"tier_level"`
 	MaxDevices    int             `gorm:"default:1" json:"max_devices"`
+	MaxOutlets    int             `gorm:"default:1" json:"max_outlets"`
 	IsActive      bool            `gorm:"default:true" json:"is_active"`
 	CustomerEmail string          `gorm:"index" json:"customer_email"`
 	OrderID       string          `gorm:"index;default:null" json:"order_id"`

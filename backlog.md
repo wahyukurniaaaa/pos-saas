@@ -16,6 +16,20 @@ Dokumen ini mendefinisikan urutan eksekusi fitur untuk transisi dari **Tier Lite
 
 ---
 
+## 🏗️ PHASE 0.0: Outlet Bootstrapping (Infrastructure)
+*Tujuan: Menyediakan entitas outlet dasar secara otomatis untuk mendukung sinkronisasi data per cabang.*
+
+🤖 **Applying knowledge of `@[project-planner]`...**
+
+### [NEW] 0.0.1. Automatic First-Outlet Creation
+*   **User Story**: "Sebagai Owner baru, saya ingin sistem secara otomatis membuat outlet pertama saya saat pendaftaran agar saya tidak perlu melakukan pengaturan teknis yang rumit sebelum mulai berjualan."
+*   **Tasks**:
+    - [x] **Logic**: Modifikasi `setupOwner` di `OwnerNotifier` agar melakukan inisialisasi record pertama di tabel `outlets`. (DONE)
+    - [x] **Mapping**: Menghubungkan ID karyawan (Owner) dan profil toko ke ID Outlet default yang baru dibuat. (DONE)
+    - [x] **Data Scoping**: Mengatur agar state aplikasi mendeteksi outlet aktif segera setelah setup selesai. (DONE)
+
+---
+
 ## ✨ PHASE 0: Essential POS UX (URGENT)
 *Tujuan: Memperkuat fitur kasir dasar yang sangat dibutuhkan UMKM sebelum masuk ke fase Cloud.*
 
@@ -48,10 +62,10 @@ Dokumen ini mendefinisikan urutan eksekusi fitur untuk transisi dari **Tier Lite
 ### 26. Split Payment (Multi-Metode Pembayaran)
 *   **User Story**: "Sebagai Kasir, saya ingin menerima lebih dari satu metode pembayaran untuk satu transaksi (Split Payment) agar pelanggan dapat membayar sebagian dengan tunai dan sisanya dengan kartu atau QRIS dalam satu struk."
 *   **Tasks**:
-    - [ ] **UI/UX**: Desain alur input multi-pembayaran di `PaymentModal` yang memungkinkan penambahan baris pembayaran baru.
-    - [ ] **Logic**: Kalkulator sisa saldo pembayaran yang otomatis berkurang saat satu metode pembayaran dikonfirmasi (Remaining Balance logic).
-    - [ ] **Database**: Penyesuaian skema untuk menyimpan rincian metode pembayaran ganda per transaksi (Linked payments).
-    - [ ] **Receipts**: Modifikasi struk agar menampilkan rincian dari setiap metode pembayaran yang digunakan.
+    - [x] **UI/UX**: Desain alur input multi-pembayaran di `PaymentModal` yang memungkinkan penambahan baris pembayaran baru.
+    - [x] **Logic**: Kalkulator sisa saldo pembayaran yang otomatis berkurang saat satu metode pembayaran dikonfirmasi (Remaining Balance logic).
+    - [x] **Database**: Penyesuaian skema untuk menyimpan rincian metode pembayaran ganda per transaksi (Linked payments).
+    - [x] **Receipts**: Modifikasi struk agar menampilkan rincian dari setiap metode pembayaran yang digunakan.
 
 ---
 
@@ -101,13 +115,15 @@ Dokumen ini mendefinisikan urutan eksekusi fitur untuk transisi dari **Tier Lite
 ## ☁️ PHASE 3: Cloud Sync & Pro Core (The "Pro" Phase)
 *Tujuan: Mengaktifkan sinkronisasi real-time dan manajemen multi-cabang.*
 
-### 27. Cloud Persistence (PowerSync & Supabase Integration)
-*   **User Story**: "Sebagai Merchant, saya ingin data operasional saya tersambung ke Cloud secara otomatis (Seamless Sync) agar keamanan data terjamin tanpa perlu melakukan backup manual setiap hari."
+### 27. Safe & Smart Cloud Sync (Conflict Resolution & Filtering)
+*   **User Story**: "Sebagai Merchant, saya ingin data saya tersambung ke Cloud secara otomatis, efisien per cabang, dan tetap konsisten meskipun diupdate dari banyak perangkat sekaligus secara offline."
 *   **Tasks**:
-    - [ ] **Supabase Backend Setup**: Konfigurasi PostgreSQL di Supabase sebagai *Side-Car* database Cloud yang akan menampung data dari ribuan perangkat lokal.
-    - [ ] **PowerSync SDK Integration**: Mengintegrasikan PowerSync ke dalam Drift ORM Flutter. PowerSync akan menangani sinkronisasi incremental, penanganan konflik (*Conflict Resolution*), dan persistensi data offline secara otomatis.
-    - [ ] **Sync Buckets & Rules**: Menetapkan "Sync Buckets" di sisi server untuk mengatur efisiensi bandwidth; perangkat hanya akan mengunduh baris data yang memiliki akses atau relevansi dengan `outlet_id` tersebut.
-    - [ ] **Auth Transition (SaaS Model)**: Migrasi dari "Activation Key" Tier Lite ke **Supabase Auth (Email & Password)**. User Tier Pro akan login menggunakan akun tetap yang terikat pada langganan bulanan/tahunan.
+    - [x] **Supabase Backend Setup**: Konfigurasi project Supabase beserta skema database untuk menampung data sinkronisasi Cloud. (DONE)
+    - [x] **Native Sync & Realtime Integration**: Mengintegrasikan sinkronisasi kustom menggunakan `sync_service.dart` dan `realtime_service.dart`. (DONE)
+    - [x] **Outlet-Scoped Sync (Efficiency)**: Optimasi *query filtering* agar tiap *outlet* hanya mengunduh data yang relevan dengan `outlet_id` miliknya untuk menghemat bandwidth. (DONE)
+    - [x] **LWW Conflict Resolution**: Implementasi verifikasi `updated_at` di tingkat database sebelum melakukan import data dari cloud agar data lokal tidak tertimpa secara buta. (DONE)
+    - [x] **Delta Stock Logic**: Refaktor fungsi update stok agar menggunakan sistem increment/decrement (Delta) daripada overwriting nilai total untuk mencegah kehilangan data stok saat sync antar perangkat. (DONE)
+    - [x] **Auth Transition (SaaS Model)**: Migrasi dari "Activation Key" ke Supabase Auth. Sinkronisasi hanya berjalan bagi pengguna Pro.
 
 ### 28. Inter-Outlet Stock Transfer & Visibility
 *   **User Story**: "Sebagai Owner, saya ingin memindahkan stok antar cabang (Stock Transfer) dan melihat ketersediaan barang di cabang lain langsung dari aplikasi kasir untuk kebutuhan stok mendadak."
@@ -133,12 +149,6 @@ Dokumen ini mendefinisikan urutan eksekusi fitur untuk transisi dari **Tier Lite
 ## 💎 PHASE 5: Advanced Cloud & Multi-Outlet Analytics
 *Tujuan: Menyempurnakan ekosistem Pro dengan sinkronisasi cerdas dan intelijen bisnis.*
 
-### 33. Smart Conflict Resolution (Last Write Wins & Delta Stock)
-*   **User Story**: "Sebagai Owner, saya ingin data saya tetap konsisten meskipun diupdate dari dua tablet berbeda saat offline, sehingga tidak ada transaksi yang hilang atau stok yang salah hitung."
-*   **Tasks**:
-    - [ ] **Logic**: Implementasi verifikasi `updated_at` di tingkat database sebelum melakukan `INSERT OR REPLACE` dari cloud.
-    - [ ] **Stock Logic**: Refaktor fungsi update stok agar menggunakan sistem increment/decrement (Delta) daripada overwriting nilai total untuk mencegah kehilangan data stok.
-    - [ ] **Testing**: Simulasi edit produk dari 2 device offline; verifikasi hasil akhir di cloud.
 
 ### 34. Background Image Sync (Supabase Storage)
 *   **User Story**: "Sebagai Kasir, saya ingin tetap bisa mengambil foto nota belanja meskipun internet mati, dan aplikasi akan otomatis mengunggahnya saat saya mendapatkan koneksi tanpa saya perlu menunggu di layar tersebut."

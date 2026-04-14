@@ -194,12 +194,17 @@ class LicenseNotifier extends AsyncNotifier<License?> {
       if (isSuccess) {
         await _storage.write(key: _serverTimeKey, value: DateTime.now().toIso8601String());
         await (db.delete(db.licenses)).go();
+
+        final resData = data['data'] as Map?;
         await db.into(db.licenses).insert(
           LicensesCompanion.insert(
             licenseCode: code,
             deviceFingerprint: Value(deviceId),
             activationDate: Value(DateTime.now()),
             status: const Value('active'),
+            tierLevel: Value(resData?['tier_level'] as String?),
+            maxDevices: Value(resData?['max_devices'] as int? ?? 1),
+            maxOutlets: Value(resData?['max_outlets'] as int? ?? 1),
           ),
         );
 
@@ -273,12 +278,17 @@ class LicenseNotifier extends AsyncNotifier<License?> {
       if (isSuccess) {
         await _storage.write(key: _serverTimeKey, value: DateTime.now().toIso8601String());
         await (db.delete(db.licenses)).go();
+        
+        final resData = data['data'] as Map?;
         await db.into(db.licenses).insert(
           LicensesCompanion.insert(
             licenseCode: code,
             deviceFingerprint: Value(deviceId),
             activationDate: Value(DateTime.now()),
             status: const Value('active'),
+            tierLevel: Value(resData?['tier_level'] as String?),
+            maxDevices: Value(resData?['max_devices'] as int? ?? 1),
+            maxOutlets: Value(resData?['max_outlets'] as int? ?? 1),
           ),
         );
 

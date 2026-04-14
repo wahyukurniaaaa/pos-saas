@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'outlets_table.dart';
 import '../../utils/uuid_generator.dart';
 import 'transactions_table.dart';
 import 'products_table.dart';
@@ -19,6 +20,7 @@ class TransactionItems extends Table {
   // Discount (Item Level)
   TextColumn get discountId => text().nullable().references(Discounts, #id)();
   IntColumn get discountAmount => integer().withDefault(const Constant(0))();
+  TextColumn get outletId => text().nullable().references(Outlets, #id)();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
   BoolColumn get isDirty => boolean().withDefault(const Constant(true))();

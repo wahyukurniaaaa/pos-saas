@@ -6,6 +6,7 @@ import 'package:posify_app/core/providers/database_provider.dart';
 import 'cart_notes_provider.dart';
 import 'selected_customer_provider.dart';
 import 'split_payment_provider.dart';
+import 'package:posify_app/features/auth/providers/owner_provider.dart';
 
 // ===== Category Provider =====
 
@@ -403,10 +404,18 @@ class CartNotifier extends Notifier<List<CartItem>> {
         );
       }).toList();
 
+      final session = ref.read(sessionProvider).value;
+      final outletId = session?.outletId;
+      if (outletId == null) {
+        debugPrint('Checkout error: No outlet assigned to session');
+        return null;
+      }
+
       final id = await db.processCheckout(
         transactionEntry: transactionEntry,
         itemsParams: itemsParams,
         paymentEntries: paymentEntries,
+        outletId: outletId,
       );
 
       ref.invalidate(productProvider);
@@ -460,9 +469,17 @@ class CartNotifier extends Notifier<List<CartItem>> {
         );
       }).toList();
 
+      final session = ref.read(sessionProvider).value;
+      final outletId = session?.outletId;
+      if (outletId == null) {
+        debugPrint('Hold bill error: No outlet assigned to session');
+        return null;
+      }
+
       final id = await db.processCheckout(
         transactionEntry: transactionEntry,
         itemsParams: itemsParams,
+        outletId: outletId,
       );
 
       clearCart();

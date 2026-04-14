@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/features/auth/providers/auth_providers.dart';
+import 'package:posify_app/features/auth/providers/owner_provider.dart';
 
 /// Enumeration of possible sync states for the UI indicator.
 enum SyncStatus { idle, syncing, error }
@@ -36,6 +37,7 @@ class SyncService {
     'purchase_orders',
     'stock_opname',
     'stock_opname_items',
+    'stock_transactions',
   ];
 
   SyncService(this._ref);
@@ -106,6 +108,12 @@ class SyncService {
       final payload = dirtyRows.map((row) {
         final cleaned = Map<String, dynamic>.from(row);
         cleaned.remove('is_dirty'); // Supabase doesn't need this flag
+        
+        // Strip 'stock' component to prevent conflict with Supabase triggers (Delta approach)
+        if (table == 'products' || table == 'product_variants') {
+          cleaned.remove('stock');
+        }
+
         return cleaned;
       }).toList();
 
@@ -122,17 +130,31 @@ class SyncService {
     final supabase = Supabase.instance.client;
     const storage = FlutterSecureStorage();
 
+    // 1. Get current session to filter by outlet
+    final currentEmployee = _ref.read(sessionProvider).value;
+    final outletId = currentEmployee?.outletId;
+
     final lastSyncStr = await storage.read(key: 'last_pull_sync');
     final lastSync = lastSyncStr != null ? DateTime.parse(lastSyncStr) : null;
 
     for (final table in _syncableTables) {
+      if (outletId == null && table != 'outlets') {
+        debugPrint('SyncService: Skipping $table - No outlet assigned to session');
+        continue;
+      }
+
       var query = supabase.from(table).select();
+
+      // Apply Outlet Filter (Efficiency Phase 1)
+      // Note: 'outlets' table might be visible across branches for owners, 
+      // but for now we filter it as well or keep it global if needed.
+      if (table != 'outlets' && outletId != null) {
+        query = query.eq('outlet_id', outletId);
+      }
 
       if (lastSync != null) {
         query = query.gt('updated_at', lastSync.toUtc().toIso8601String());
       }
-      // Assuming 'deleted_at' tracks soft deletes: we could filter those out or apply them.
-      // query = query.filter('deleted_at', 'is', 'null'); // Option to ignore remote soft deletes or handle them locally.
 
       final List<dynamic> records = await query;
       if (records.isNotEmpty) {

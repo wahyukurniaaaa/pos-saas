@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
@@ -86,7 +87,7 @@ class PosifyDatabase extends _$PosifyDatabase {
   PosifyDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 24;
+  int get schemaVersion => 25;
 
   @override
   MigrationStrategy get migration {
@@ -201,6 +202,15 @@ class PosifyDatabase extends _$PosifyDatabase {
         if (from < 24) {
           await _createSyncTriggers(m);
         }
+        if (from < 25) {
+          await m.addColumn(licenses, licenses.tierLevel);
+          await m.addColumn(licenses, licenses.maxDevices);
+          await m.addColumn(licenses, licenses.maxOutlets);
+          // Set default values for existing licenses to prevent null-checks failure
+          await m.database.customStatement(
+            'UPDATE licenses SET max_devices = 1, max_outlets = 1 WHERE max_outlets IS NULL',
+          );
+        }
       },
     );
   }
@@ -297,6 +307,21 @@ class PosifyDatabase extends _$PosifyDatabase {
 
   Future<bool> updateStoreProfile(StoreProfileData entry) =>
       update(storeProfile).replace(entry);
+
+  // ===== Outlet Queries =====
+  Future<List<Outlet>> getAllOutlets() => select(outlets).get();
+
+  Stream<List<Outlet>> watchAllOutlets() => select(outlets).watch();
+
+  Future<Outlet?> getOutlet(String id) =>
+      (select(outlets)..where((o) => o.id.equals(id))).getSingleOrNull();
+
+  Future<String> insertOutlet(OutletsCompanion entry) async {
+    final row = await into(outlets).insertReturning(entry);
+    return row.id;
+  }
+
+  Future<bool> updateOutlet(Outlet entry) => update(outlets).replace(entry);
 
   // ===== Category Queries =====
   Future<List<Category>> getAllCategories() => select(categories).get();
@@ -542,6 +567,37 @@ class PosifyDatabase extends _$PosifyDatabase {
   }
   Future<bool> updateSupplier(Supplier entry) => update(suppliers).replace(entry);
 
+  // ===== Atomic Stock Update Helpers =====
+  Future<void> _atomicProductStock(String productId, int quantityDelta) async {
+    if (quantityDelta == 0) return;
+    final sign = quantityDelta > 0 ? '+' : '-';
+    await customStatement(
+      'UPDATE products SET stock = stock $sign ? WHERE id = ?',
+      [quantityDelta.abs(), productId],
+    );
+    await (update(products)..where((p) => p.id.equals(productId))).write(
+      ProductsCompanion(
+        isDirty: const Value(true),
+        updatedAt: Value(DateTime.now()),
+      )
+    );
+  }
+
+  Future<void> _atomicVariantStock(String variantId, int quantityDelta) async {
+    if (quantityDelta == 0) return;
+    final sign = quantityDelta > 0 ? '+' : '-';
+    await customStatement(
+      'UPDATE product_variants SET stock = stock $sign ? WHERE id = ?',
+      [quantityDelta.abs(), variantId],
+    );
+    await (update(productVariants)..where((v) => v.id.equals(variantId))).write(
+      ProductVariantsCompanion(
+        isDirty: const Value(true),
+        updatedAt: Value(DateTime.now()),
+      )
+    );
+  }
+
   // ===== Stock In (Purchase from Supplier) =====
   Future<void> processStockIn({
     required String productId,
@@ -570,8 +626,7 @@ class PosifyDatabase extends _$PosifyDatabase {
         final newProductStock = product.stock + quantity;
 
         // Update variant stock
-        await (update(productVariants)..where((v) => v.id.equals(variantId)))
-            .write(ProductVariantsCompanion(stock: Value(newStock)));
+        await _atomicVariantStock(variantId, quantity);
             
         // Updates main product aggregate stock
         final oldStock = product.stock;
@@ -586,9 +641,9 @@ class PosifyDatabase extends _$PosifyDatabase {
                : unitCost;
         }
 
+        await _atomicProductStock(productId, quantity);
         await (update(products)..where((p) => p.id.equals(productId)))
             .write(ProductsCompanion(
-              stock: Value(newProductStock),
               purchasePrice: Value(newHpp),
             ));
 
@@ -622,9 +677,9 @@ class PosifyDatabase extends _$PosifyDatabase {
                : unitCost;
         }
 
+        await _atomicProductStock(productId, quantity);
         await (update(products)..where((p) => p.id.equals(productId)))
             .write(ProductsCompanion(
-              stock: Value(newStock),
               purchasePrice: Value(newHpp),
             ));
         await into(stockTransactions).insert(StockTransactionsCompanion.insert(
@@ -664,15 +719,12 @@ class PosifyDatabase extends _$PosifyDatabase {
         if (product == null) throw Exception('Product not found');
 
         final newStock = variant.stock - quantity;
-        final newProductStock = product.stock - quantity;
 
         // Update variant stock
-        await (update(productVariants)..where((v) => v.id.equals(variantId)))
-            .write(ProductVariantsCompanion(stock: Value(newStock)));
+        await _atomicVariantStock(variantId, -quantity);
             
         // Also update main product aggregate stock
-        await (update(products)..where((p) => p.id.equals(productId)))
-            .write(ProductsCompanion(stock: Value(newProductStock)));
+        await _atomicProductStock(productId, -quantity);
 
         await into(stockTransactions).insert(StockTransactionsCompanion.insert(
           productId: productId,
@@ -693,8 +745,7 @@ class PosifyDatabase extends _$PosifyDatabase {
         if (product == null) throw Exception('Product not found');
         
         final newStock = product.stock - quantity;
-        await (update(products)..where((p) => p.id.equals(productId)))
-            .write(ProductsCompanion(stock: Value(newStock)));
+        await _atomicProductStock(productId, -quantity);
 
         await into(stockTransactions).insert(StockTransactionsCompanion.insert(
           productId: productId,
@@ -826,8 +877,7 @@ class PosifyDatabase extends _$PosifyDatabase {
           if (product != null) {
             final qty = received.receivedQty.round();
             final newStock = product.stock + qty;
-            await (update(products)..where((p) => p.id.equals(product.id)))
-                .write(ProductsCompanion(stock: Value(newStock)));
+            await _atomicProductStock(product.id, qty);
             await into(stockTransactions).insert(
               StockTransactionsCompanion.insert(
                 productId: product.id,
@@ -879,7 +929,7 @@ class PosifyDatabase extends _$PosifyDatabase {
           ..where((d) => d.isActive.equals(true) & d.scope.equals(scope)))
         .get();
     return all.where((d) {
-      final afterStart = d.startDate == null || !d.startDate!.isAfter(today);
+      final afterStart = !d.startDate.isAfter(today);
       final beforeEnd = d.endDate == null || !d.endDate!.isBefore(today);
       final meetsMin = cartTotal >= d.minSpend;
       return afterStart && beforeEnd && meetsMin;
@@ -983,18 +1033,23 @@ class PosifyDatabase extends _$PosifyDatabase {
     required TransactionsCompanion transactionEntry,
     required List<TransactionItemsCompanion> itemsParams,
     List<TransactionPaymentsCompanion> paymentEntries = const [],
+    required String outletId,
   }) async {
     return transaction(() async {
-      // 1. Insert Transaction
-      final insertedTx = await into(transactions).insertReturning(transactionEntry);
-        final txId = insertedTx.id;
+      // 1. Insert Transaction with outletId
+      final finalTxEntry = transactionEntry.copyWith(outletId: Value(outletId));
+      final insertedTx = await into(transactions).insertReturning(finalTxEntry);
+      final txId = insertedTx.id;
 
       final isPending = transactionEntry.paymentStatus.present && 
                         transactionEntry.paymentStatus.value == 'pending';
 
       // 2. Insert Items & 3. Update Stocks
       for (final itemParam in itemsParams) {
-        final finalItem = itemParam.copyWith(transactionId: Value(txId));
+        final finalItem = itemParam.copyWith(
+          transactionId: Value(txId),
+          outletId: Value(outletId),
+        );
         await into(transactionItems).insert(finalItem);
 
         // If it's a pending bill (Hold Bill), we DON'T deduct stock yet.
@@ -1014,11 +1069,7 @@ class PosifyDatabase extends _$PosifyDatabase {
               .getSingleOrNull();
           if (variant != null) {
             final newStock = variant.stock - qty;
-            await (update(productVariants)
-                  ..where((v) => v.id.equals(variant.id)))
-                .write(ProductVariantsCompanion(
-                  stock: Value(newStock),
-                ));
+            await _atomicVariantStock(variant.id, -qty);
             final refStr = transactionEntry.receiptNumber.present && transactionEntry.receiptNumber.value != null
                 ? transactionEntry.receiptNumber.value!
                 : 'TX-$txId';
@@ -1032,6 +1083,7 @@ class PosifyDatabase extends _$PosifyDatabase {
               newStock: newStock,
               reference: Value(refStr),
               createdAt: Value(DateTime.now()),
+              outletId: Value(outletId),
             ));
           }
         } else {
@@ -1041,8 +1093,7 @@ class PosifyDatabase extends _$PosifyDatabase {
               .getSingleOrNull();
           if (product != null) {
             final newStock = product.stock - qty;
-            await update(products)
-                .replace(product.copyWith(stock: newStock));
+            await _atomicProductStock(product.id, -qty);
             final refStr = transactionEntry.receiptNumber.present && transactionEntry.receiptNumber.value != null
                 ? transactionEntry.receiptNumber.value!
                 : 'TX-$txId';
@@ -1055,6 +1106,7 @@ class PosifyDatabase extends _$PosifyDatabase {
               newStock: newStock,
               reference: Value(refStr),
               createdAt: Value(DateTime.now()),
+              outletId: Value(outletId),
             ));
           }
         }
@@ -1095,7 +1147,10 @@ class PosifyDatabase extends _$PosifyDatabase {
       // 6. Insert payment breakdown rows (Split Payment support)
       for (final payment in paymentEntries) {
         await into(transactionPayments).insert(
-          payment.copyWith(transactionId: Value(txId)),
+          payment.copyWith(
+            transactionId: Value(txId),
+            outletId: Value(outletId),
+          ),
         );
       }
 
@@ -1249,11 +1304,7 @@ class PosifyDatabase extends _$PosifyDatabase {
               .getSingleOrNull();
           if (variant != null) {
             final newStock = variant.stock + item.quantity;
-            await (update(productVariants)
-                  ..where((v) => v.id.equals(variant.id)))
-                .write(ProductVariantsCompanion(
-                  stock: Value(newStock),
-                ));
+            await _atomicVariantStock(variant.id, item.quantity);
             await into(stockTransactions).insert(StockTransactionsCompanion.insert(
               productId: item.productId,
               variantId: Value(variant.id),
@@ -1272,10 +1323,7 @@ class PosifyDatabase extends _$PosifyDatabase {
           )..where((p) => p.id.equals(item.productId))).getSingleOrNull();
           if (product != null) {
             final newStock = product.stock + item.quantity;
-            await (update(products)..where((p) => p.id.equals(product.id)))
-                .write(
-              ProductsCompanion(stock: Value(newStock)),
-            );
+            await _atomicProductStock(product.id, item.quantity);
             await into(stockTransactions).insert(StockTransactionsCompanion.insert(
               productId: item.productId,
               type: 'VOID',
@@ -1809,7 +1857,7 @@ class PosifyDatabase extends _$PosifyDatabase {
            if (item.variantId != null) {
              final variant = await getVariant(item.variantId!);
              if (variant != null) {
-               await updateVariant(variant.copyWith(stock: item.physicalStock.toInt()));
+               await _atomicVariantStock(variant.id, item.variance.toInt());
                await insertStockTransaction(
                  StockTransactionsCompanion.insert(
                    productId: item.productId!,
@@ -1824,7 +1872,7 @@ class PosifyDatabase extends _$PosifyDatabase {
                );
              }
            } else if (baseProduct != null) {
-             await updateProduct(baseProduct.copyWith(stock: item.physicalStock.toInt()));
+             await _atomicProductStock(baseProduct.id, item.variance.toInt());
              await insertStockTransaction(
                StockTransactionsCompanion.insert(
                  productId: item.productId!,
@@ -1967,20 +2015,45 @@ class PosifyDatabase extends _$PosifyDatabase {
     );
   }
 
-  /// Merges pulled records from Supabase into the local SQLite database.
+  /// Merges pulled records from Supabase into the local SQLite database using Last Write Wins logic.
   Future<void> importCloudRows(String tableName, List<Map<String, dynamic>> cloudRows) async {
     if (cloudRows.isEmpty) return;
     
     await transaction(() async {
       for (final row in cloudRows) {
+        final id = row['id'];
+        if (id == null) continue;
+
+        // 1. Fetch existing local record metadata
+        final localRow = await customSelect(
+          'SELECT updated_at, is_dirty FROM $tableName WHERE id = ?',
+          variables: [Variable<String>(id)],
+          readsFrom: {},
+        ).getSingleOrNull();
+
+        // 2. Conflict Resolution Logic (Phase 1: LWW)
+        if (localRow != null) {
+          final localUpdatedAtMs = localRow.read<int>('updated_at');
+          final localIsDirty = localRow.read<int>('is_dirty') == 1;
+          
+          final cloudUpdatedAtStr = row['updated_at'] as String?;
+          if (cloudUpdatedAtStr == null) continue;
+          final cloudUpdatedAtMs = DateTime.parse(cloudUpdatedAtStr).millisecondsSinceEpoch;
+
+          // If local data is newer OR it's currently flagged as dirty (being edited)
+          // we ignore the cloud update to prevent losing local progress.
+          if (localUpdatedAtMs >= cloudUpdatedAtMs || localIsDirty) {
+            debugPrint('Sync: Collision detected for $tableName:$id - Keeping local version');
+            continue;
+          }
+        }
+
+        // 3. Prepare values for INSERT/UPDATE
         final columns = <String>[];
         final placeholders = <String>[];
         final values = <dynamic>[];
 
         row.forEach((key, value) {
-          // Supabase timestamps (ISO8601) to Drift SQLite timestamp (ms epoch or unixepoch based on drift config)
-          // Drift 2.4+ uses epoch seconds for DateTime unless overridden, but our schema checks show it works with direct ints.
-          // In getDirtyRows we used millisecondsSinceEpoch because Drift mapping requires integer precision. Let's match it:
           if (value is String && key.contains('_at') && DateTime.tryParse(value) != null) {
             values.add(DateTime.parse(value).millisecondsSinceEpoch); 
           } else {
@@ -1990,7 +2063,7 @@ class PosifyDatabase extends _$PosifyDatabase {
           placeholders.add('?');
         });
 
-        // is_dirty should be 0 because it's fresh from cloud
+        // is_dirty MUST be 0 manually to prevent infinite sync loops
         if (!columns.contains('is_dirty')) {
           columns.add('is_dirty');
           placeholders.add('?');
@@ -1998,17 +2071,18 @@ class PosifyDatabase extends _$PosifyDatabase {
         } else {
           final index = columns.indexOf('is_dirty');
           values[index] = 0;
-          if (columns.contains('is_dirty') && values[index] is bool) {
-             values[index] = values[index] == true ? 1 : 0;
-          }
         }
 
         final colsStr = columns.join(', ');
         final valsStr = placeholders.join(', ');
 
-        // INSERT OR REPLACE overwrites entirely
+        // Perform UPSERT (if exists, update; else insert)
+        // Since we already did LWW check above, it's safe to overwrite now.
         await customStatement(
-          'INSERT OR REPLACE INTO $tableName ($colsStr) VALUES ($valsStr)',
+          '''
+          INSERT INTO $tableName ($colsStr) VALUES ($valsStr)
+          ON CONFLICT(id) DO UPDATE SET ${columns.map((c) => '$c=excluded.$c').join(', ')}
+          ''',
           values,
         );
       }

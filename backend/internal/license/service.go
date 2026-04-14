@@ -143,10 +143,30 @@ func (s *service) Verify(req VerifyRequest) (bool, error) {
 
 // Generate creates a new random license code
 func (s *service) Generate(req GenerateRequest) (*models.License, error) {
-	// Generate format 10 digit random alphanumeric
-	code, err := generate10DigitCode()
-	if err != nil {
-		return nil, err
+	// Validate Tier
+	maxDevices, ok := TierDeviceLimit[req.TierLevel]
+	if !ok {
+		return nil, errors.New("TierLevel tidak valid. Harus 'lite' atau 'pro'.")
+	}
+	maxOutlets := TierOutletLimit[req.TierLevel]
+
+	var code string
+	var err error
+	
+	// Retry loop to ensure uniqueness
+	for i := 0; i < 3; i++ {
+		code, err = generate10DigitCode()
+		if err != nil {
+			return nil, err
+		}
+		
+		existing, _ := s.repo.FindByCode(code)
+		if existing == nil {
+			break
+		}
+		if i == 2 {
+			return nil, errors.New("gagal membuat kode unik setelah beberapa percobaan")
+		}
 	}
 
 	source := req.Source
@@ -157,7 +177,8 @@ func (s *service) Generate(req GenerateRequest) (*models.License, error) {
 	license := &models.License{
 		LicenseCode:   code,
 		TierLevel:     req.TierLevel,
-		MaxDevices:    req.MaxDevices,
+		MaxDevices:    maxDevices,
+		MaxOutlets:    maxOutlets,
 		CustomerEmail: req.CustomerEmail,
 		IsActive:      true,
 		OrderID:       req.OrderID,
@@ -169,11 +190,13 @@ func (s *service) Generate(req GenerateRequest) (*models.License, error) {
 	}
 
 	// Send Email Async
-	go func() {
-		if err := s.mailer.SendLicenseEmail(req.CustomerEmail, code, req.TierLevel, req.MaxDevices); err != nil {
-			fmt.Printf("Email error for %s: %v\n", req.CustomerEmail, err)
-		}
-	}()
+	if s.mailer != nil {
+		go func() {
+			if err := s.mailer.SendLicenseEmail(req.CustomerEmail, code, req.TierLevel, maxDevices); err != nil {
+				fmt.Printf("Email error for %s: %v\n", req.CustomerEmail, err)
+			}
+		}()
+	}
 
 	return license, nil
 }

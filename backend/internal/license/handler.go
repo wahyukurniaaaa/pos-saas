@@ -56,6 +56,7 @@ func (h *Handler) Activate(c *fiber.Ctx) error {
 		LicenseCode: lic.LicenseCode,
 		TierLevel:   lic.TierLevel,
 		MaxDevices:  lic.MaxDevices,
+		MaxOutlets:  lic.MaxOutlets,
 	}
 
 	// Find the activation date of the current device from the list
@@ -107,6 +108,9 @@ func (h *Handler) Generate(c *fiber.Ctx) error {
 
 	lic, err := h.service.Generate(req)
 	if err != nil {
+		if err.Error() == "TierLevel tidak valid. Harus 'lite' atau 'pro'." {
+			return response.Error(c, fiber.StatusBadRequest, err.Error())
+		}
 		log.Println("GenerateError:", err)
 		return response.Error(c, fiber.StatusInternalServerError, "Gagal membuat lisensi.")
 	}
@@ -115,6 +119,7 @@ func (h *Handler) Generate(c *fiber.Ctx) error {
 		LicenseCode:   lic.LicenseCode,
 		TierLevel:     lic.TierLevel,
 		MaxDevices:    lic.MaxDevices,
+		MaxOutlets:    lic.MaxOutlets,
 		CustomerEmail: lic.CustomerEmail,
 	}
 

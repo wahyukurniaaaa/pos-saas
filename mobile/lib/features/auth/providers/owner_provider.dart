@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/core/database/database.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:posify_app/core/providers/license_tier_provider.dart';
 
 /// Notifier for owner setup.
 /// Non-autoDispose so owner state persists throughout app lifecycle.
@@ -22,14 +23,28 @@ class OwnerNotifier extends AsyncNotifier<Employee?> {
     final db = ref.read(databaseProvider);
 
     try {
-      // 1. Save Owner to employees table
+      // 0. Create Default Outlet (Bootstrapping Phase 0.0)
+      final outletId = await db.insertOutlet(
+        OutletsCompanion.insert(
+          name: storeName, // Use store name as initial outlet name
+          address: const Value(''),
+          phone: const Value(''),
+        ),
+      );
+
+      // 1. Save Owner to employees table, linked to the new outlet
       await db.insertEmployee(
-        EmployeesCompanion.insert(name: name, pin: pin, role: 'owner'),
+        EmployeesCompanion.insert(
+          name: name,
+          pin: pin,
+          role: 'owner',
+          outletId: Value(outletId),
+        ),
       );
 
       if (!ref.mounted) return false;
 
-      // 2. Save Store Profile
+      // 2. Save Store Profile (Global)
       await db.insertStoreProfile(
         StoreProfileCompanion.insert(name: storeName),
       );
@@ -43,6 +58,33 @@ class OwnerNotifier extends AsyncNotifier<Employee?> {
       if (!ref.mounted) return false;
       state = AsyncValue.error(e.toString(), st);
       return false;
+    }
+  }
+
+  Future<String?> addOutlet({
+    required String name,
+    required String address,
+    required String phone,
+  }) async {
+    final db = ref.read(databaseProvider);
+    
+    // Evaluate Gate
+    final canAdd = await ref.read(canAddOutletProvider.future);
+    if (!canAdd) {
+      return 'Batas maksimum outlet tercapai. Silakan upgrade lisensi Anda.';
+    }
+
+    try {
+      await db.insertOutlet(
+        OutletsCompanion.insert(
+          name: name,
+          address: Value(address),
+          phone: Value(phone),
+        ),
+      );
+      return null; // Success
+    } catch (e) {
+      return e.toString();
     }
   }
 }

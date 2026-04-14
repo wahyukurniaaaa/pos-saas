@@ -130,15 +130,17 @@ Jika `device_fingerprint` yang datang tidak cocok dengan yang sudah direkam sebe
 ### 📥 Request Body
 ```json
 {
-  "tier_level": "Tier 1 - Lifetime",
-  "max_devices": 1
+  "tier_level": "pro",
+  "customer_email": "owner@example.com"
 }
 ```
 
 | Parameter | Type | Keterangan | Validasi |
 | :--- | :--- | :--- | :--- |
-| `tier_level` | `string` | Tipe tier lisensi | Wajib |
-| `max_devices` | `int` | Jumlah maksimal perangkat. | Wajib, min 1 |
+| `tier_level` | `string` | Tipe tier lisensi (`lite` atau `pro`) | Wajib |
+| `customer_email` | `string` | Email pelanggan | Wajib, valid email |
+| `order_id` | `string` | ID Order (opsional) | Opsional |
+| `source` | `string` | Sumber order (misal: "shopee", "manual") | Opsional |
 
 ### 📤 Response (201 Created)
 ```json
@@ -148,8 +150,9 @@ Jika `device_fingerprint` yang datang tidak cocok dengan yang sudah direkam sebe
   "message": "Lisensi berhasil dibuat.",
   "data": {
     "license_code": "X8Y2K9J1P5",
-    "tier_level": "Tier 1 - Lifetime",
-    "max_devices": 1
+    "tier_level": "pro",
+    "max_devices": 10,
+    "customer_email": "owner@example.com"
   }
 }
 ```

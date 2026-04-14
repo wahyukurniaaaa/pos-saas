@@ -64,6 +64,7 @@ erDiagram
         TEXT phone "Opsional"
         TEXT created_at "ISO 8601"
         TEXT updated_at "ISO 8601"
+        BOOLEAN is_dirty "Sync Flag"
         TEXT deleted_at "ISO 8601, Nullable"
     }
 
@@ -77,19 +78,23 @@ erDiagram
 
     licenses {
         TEXT id PK "UUID v7"
-        TEXT user_id FK "Owner Akun"
+        TEXT user_id FK "Owner Akun (Backend)"
         TEXT license_code "Unik (10-Digit Alfanumerik)"
-        INTEGER tier_level "1 (Lite) / 2 (Pro)"
         TEXT device_fingerprint "Unik Perangkat"
         TEXT activation_date "ISO 8601"
         TEXT last_verified "ISO 8601, Nullable"
         TEXT status "active/suspended"
+        TEXT updated_at "ISO 8601"
+        BOOLEAN is_dirty "Sync Flag"
         TEXT deleted_at "ISO 8601, Nullable"
+        TEXT tier_level "lite / pro"
+        INTEGER max_devices "Kuota perangkat"
+        INTEGER max_outlets "Kuota outlet"
     }
 
     employees {
-        TEXT outlet_id FK "Nullable (Super/Global)"
         TEXT id PK "UUID v7"
+        TEXT outlet_id FK "Nullable (Super/Global)"
         TEXT name 
         TEXT pin "6 Digit, UNIQUE"
         TEXT role "owner/supervisor/cashier"
@@ -99,6 +104,7 @@ erDiagram
         TEXT photo_uri "Opsional, Path lokal gambar"
         TEXT created_at "ISO 8601"
         TEXT updated_at "ISO 8601"
+        BOOLEAN is_dirty "Sync Flag"
         TEXT deleted_at "ISO 8601, Nullable"
     }
 
@@ -113,6 +119,9 @@ erDiagram
         INTEGER service_charge_percentage "Persen Service (0-100)"
         INTEGER loyalty_point_conversion "Nilai belanja per 1 poin"
         INTEGER loyalty_point_value "Nilai Rp per 1 poin (redeem)"
+        BOOLEAN deduct_stock_on_hold "Potong stok saat draft?"
+        TEXT updated_at "ISO 8601"
+        BOOLEAN is_dirty "Sync Flag"
         TEXT deleted_at "ISO 8601, Nullable"
     }
 
@@ -126,57 +135,67 @@ erDiagram
         INTEGER points "Poin Member saat ini"
         TEXT created_at "ISO 8601"
         TEXT updated_at "ISO 8601"
+        BOOLEAN is_dirty "Sync Flag"
         TEXT deleted_at "ISO 8601, Nullable"
     }
 
     suppliers {
         TEXT id PK "UUID v7"
+        TEXT outlet_id FK "Nullable"
         TEXT name
         TEXT phone "Opsional"
         TEXT address "Opsional"
         TEXT created_at "ISO 8601"
         TEXT updated_at "ISO 8601"
+        BOOLEAN is_dirty "Sync Flag"
         TEXT deleted_at "ISO 8601, Nullable"
     }
 
     categories {
         TEXT id PK "UUID v7"
+        TEXT outlet_id FK "Nullable"
         TEXT name "Unik"
+        TEXT created_at "ISO 8601"
+        TEXT updated_at "ISO 8601"
+        BOOLEAN is_dirty "Sync Flag"
         TEXT deleted_at "ISO 8601, Nullable"
     }
 
     products {
-        TEXT outlet_id FK "Nullable (Super/Global)"
         TEXT id PK "UUID v7"
+        TEXT outlet_id FK "Nullable"
         TEXT category_id FK 
         TEXT name 
-        TEXT sku "Barang Simple. Unik, Barcode"
-        INTEGER price "Harga Jual (Jika simple)"
-        INTEGER stock "Sisa Fisik (Jika simple)"
-        INTEGER low_stock_threshold "Batas stok menipis, Default 0"
-        INTEGER purchase_price "Harga Beli / HPP Retail (Moving Average)"
+        TEXT sku "Unik, Barcode"
+        INTEGER price "Harga Jual (Base)"
+        INTEGER purchase_price "Harga Beli / HPP Retail"
         BOOLEAN has_variants "Default False"
+        INTEGER stock "Sisa Fisik"
+        INTEGER low_stock_threshold "Default 0"
         TEXT image_uri "Path lokal gambar"
         TEXT created_at "ISO 8601"
         TEXT updated_at "ISO 8601"
+        BOOLEAN is_dirty "Sync Flag"
         TEXT deleted_at "ISO 8601, Nullable"
     }
-
 
     product_variants {
         TEXT id PK "UUID v7"
         TEXT product_id FK
-        TEXT name "Contoh: L, XL, M"
+        TEXT name "Contoh: Ukuran"
+        TEXT option_value "Contoh: L, XL"
         TEXT sku "Opsional, Unik"
-        INTEGER price "Harga Varian"
+        INTEGER price "Harga Varian (Nullable)"
         INTEGER stock "Stok Varian"
         TEXT created_at "ISO 8601"
         TEXT updated_at "ISO 8601"
+        BOOLEAN is_dirty "Sync Flag"
         TEXT deleted_at "ISO 8601, Nullable"
     }
 
     shifts {
         TEXT id PK "UUID v7"
+        TEXT outlet_id FK "Nullable"
         TEXT employee_id FK "Siapa yg buka"
         TEXT start_time "ISO 8601"
         TEXT end_time "ISO 8601, Nullable"
@@ -184,12 +203,15 @@ erDiagram
         INTEGER expected_ending_cash "Estimasi Sistem"
         INTEGER actual_ending_cash "Hitungan Fisik Laci"
         TEXT status "open/closed"
+        TEXT created_at "ISO 8601"
+        TEXT updated_at "ISO 8601"
+        BOOLEAN is_dirty "Sync Flag"
         TEXT deleted_at "ISO 8601, Nullable"
     }
 
     transactions {
-        TEXT outlet_id FK "Nullable (Super/Global)"
         TEXT id PK "UUID v7"
+        TEXT outlet_id FK "Nullable"
         TEXT receipt_number "Unik, Nullable (Draft)"
         TEXT shift_id FK 
         TEXT customer_id FK "Nullable"
@@ -197,91 +219,113 @@ erDiagram
         INTEGER tax_amount "Nominal Pajak"
         INTEGER service_charge_amount "Nominal Biaya Layanan"
         INTEGER total_amount "Total Bayar Akhir"
-        TEXT payment_method "Metode utama / 'mixed' jika split. Nullable (Draft)"
+        TEXT payment_method "cash/qris/debit/credit/bon"
         TEXT payment_status "paid/void/pending"
         TEXT void_by FK "Employee ID, Nullable"
-        TEXT discount_id FK "Discounts ID, Nullable"
+        TEXT discount_id FK "Nullable"
         INTEGER discount_amount "Nominal Diskon (Total)"
-        INTEGER points_earned "Poin yg didapat dari transaksi"
-        INTEGER points_redeemed "Poin yg ditukarkan dari saldo"
-        TEXT notes "Catatan Transaksi (Opsional)"
+        INTEGER points_earned "Poin masuk"
+        INTEGER points_redeemed "Poin keluar"
+        TEXT notes "Catatan (Opsional)"
         TEXT customer_name "Snapshot data member"
         TEXT customer_phone "Snapshot data member"
         TEXT created_at "Waktu Transaksi"
+        TEXT updated_at "ISO 8601"
+        BOOLEAN is_dirty "Sync Flag"
         TEXT deleted_at "ISO 8601, Nullable"
     }
 
     transaction_payments {
         TEXT id PK "UUID v7"
-        TEXT transaction_id FK "Merujuk ke transactions.id"
-        TEXT method "tunai/qris/debit/kredit (bukan kasbon)"
-        INTEGER amount "Nominal yang dibayarkan (Rp)"
-        INTEGER change_given "Kembalian yang diberikan (Default 0)"
+        TEXT outlet_id FK "Nullable"
+        TEXT transaction_id FK
+        TEXT method "tunai/qris/debit/kredit"
+        INTEGER amount "Nominal Bayar"
+        INTEGER change_given "Kembalian"
+        TEXT created_at "ISO 8601"
+        TEXT updated_at "ISO 8601"
+        BOOLEAN is_dirty "Sync Flag"
         TEXT deleted_at "ISO 8601, Nullable"
     }
 
     transaction_items {
         TEXT id PK "UUID v7"
+        TEXT outlet_id FK "Nullable"
         TEXT transaction_id FK 
         TEXT product_id FK 
         TEXT variant_id FK "Nullable"
-        TEXT variant_name "Snapshot nama varian"
-        INTEGER quantity "Jml Beli"
-        INTEGER price_at_transaction "Harga saat dibeli"
-        TEXT discount_id FK "Discounts ID, Nullable"
-        INTEGER discount_amount "Diskon per unit"
-        INTEGER subtotal "Q * Harga - Diskon"
+        TEXT variant_name "Snapshot varian"
+        INTEGER quantity "Jml"
+        INTEGER price_at_transaction "Harga snapshot"
+        INTEGER subtotal "Q * P"
+        TEXT discount_id FK "Nullable"
+        INTEGER discount_amount "Potongan unit"
+        TEXT created_at "ISO 8601"
+        TEXT updated_at "ISO 8601"
+        BOOLEAN is_dirty "Sync Flag"
         TEXT deleted_at "ISO 8601, Nullable"
     }
 
     stock_opname {
         TEXT id PK "UUID v7"
-        TEXT opname_number "Nomor Dokumen"
+        TEXT outlet_id FK "Nullable"
+        TEXT opname_number "No Dok"
         TEXT type "PRODUCT / INGREDIENT"
         TEXT status "DRAFT / COMPLETED"
-        TEXT created_by FK "Employee ID"
-        TEXT notes "Catatan (Opsional)"
+        TEXT created_by "Employee ID"
+        TEXT notes "Catatan"
+        TEXT variance_reason "General reason"
         TEXT created_at "ISO 8601"
+        TEXT updated_at "ISO 8601"
+        BOOLEAN is_dirty "Sync Flag"
         TEXT deleted_at "ISO 8601, Nullable"
     }
 
     stock_opname_items {
         TEXT id PK "UUID v7"
+        TEXT outlet_id FK "Nullable"
         TEXT stock_opname_id FK
         TEXT product_id FK "Nullable"
         TEXT variant_id FK "Nullable"
         TEXT ingredient_id FK "Nullable"
-        REAL system_stock "Stok di sistem saat opname"
-        REAL physical_stock "Stok fisik aktual"
-        REAL variance "Selisih (fisik - sistem)"
-        TEXT variance_reason "Keterangan (Waste/Rusak/Selisih dll)"
+        REAL system_stock "Stok sistem"
+        REAL physical_stock "Stok fisik"
+        REAL variance "Selisih"
+        TEXT variance_reason "Detail per item"
+        TEXT created_at "ISO 8601"
+        TEXT updated_at "ISO 8601"
+        BOOLEAN is_dirty "Sync Flag"
         TEXT deleted_at "ISO 8601, Nullable"
     }
 
     stock_transactions {
-        TEXT outlet_id FK "Nullable (Super/Global)"
         TEXT id PK "UUID v7"
+        TEXT outlet_id FK "Nullable"
         TEXT product_id FK
         TEXT variant_id FK "Nullable"
-        TEXT supplier_id FK "Nullable (utk IN)"
-        TEXT type "IN / OUT / ADJUST / SALE / VOID"
-        INTEGER quantity "Jml perubahan"
-        INTEGER previous_stock "Stok sistem sblmnya"
-        INTEGER new_stock "Stok fisik baru"
-        TEXT reason "Alasan / Note (Opsional)"
-        TEXT reference "No Invoice / No Nota / Bukti (Opsional)"
+        TEXT supplier_id FK "Nullable"
+        TEXT type "IN / OUT / ADJUST / SALE"
+        INTEGER quantity "Perubahan"
+        INTEGER previous_stock "Stok lama"
+        INTEGER new_stock "Stok baru"
+        TEXT reason "Alasan"
+        TEXT reference "No Invoice/Nota"
         TEXT created_at "ISO 8601"
+        TEXT updated_at "ISO 8601"
+        BOOLEAN is_dirty "Sync Flag"
         TEXT deleted_at "ISO 8601, Nullable"
     }
 
     purchase_orders {
         TEXT id PK "UUID v7"
-        TEXT supplier_id FK "Nullable"
+        TEXT supplier_id FK
         TEXT status "draft/sent/received/cancelled"
-        INTEGER total_estimate "Estimasi nilai PO (Rp)"
-        TEXT notes "Catatan (Opsional)"
+        INTEGER total_estimate "Total Rp"
+        TEXT notes "Catatan"
         TEXT ordered_at "ISO 8601"
+        TEXT created_at "ISO 8601"
         TEXT updated_at "ISO 8601"
+        BOOLEAN is_dirty "Sync Flag"
         TEXT deleted_at "ISO 8601, Nullable"
     }
 
@@ -290,107 +334,128 @@ erDiagram
         TEXT purchase_order_id FK
         TEXT product_id FK "Nullable"
         TEXT ingredient_id FK "Nullable"
-        TEXT item_name "Snapshot nama saat PO dibuat"
+        TEXT item_name "Snapshot nama"
         TEXT unit "Snapshot satuan"
-        REAL quantity "Jumlah yang dipesan"
-        INTEGER purchase_price "Harga beli per unit"
-        REAL received_quantity "Jumlah yang telah diterima"
+        REAL quantity "Jml pesan"
+        INTEGER purchase_price "Harga beli unit"
+        REAL received_quantity "Jml diterima"
+        TEXT created_at "ISO 8601"
+        TEXT updated_at "ISO 8601"
+        BOOLEAN is_dirty "Sync Flag"
         TEXT deleted_at "ISO 8601, Nullable"
     }
 
     printer_settings {
         TEXT id PK "UUID v7"
         TEXT device_name "Nama Printer"
-        TEXT mac_address "Identitas Unik"
+        TEXT mac_address "Identitas"
         TEXT status "paired/last_connected"
+        BOOLEAN auto_print "Default False"
+        TEXT updated_at "ISO 8601"
+        BOOLEAN is_dirty "Sync Flag"
         TEXT deleted_at "ISO 8601, Nullable"
     }
 
     ingredients {
-        TEXT outlet_id FK "Nullable (Super/Global)"
         TEXT id PK "UUID v7"
-        TEXT name "Nama Bahan Baku"
-        TEXT unit "Satuan Dasar (gr/ml/pcs)"
-        REAL stock_quantity "Stok saat ini"
-        REAL min_stock_threshold "Batas peringatan"
-        REAL average_cost "HPP Rata-rata per satuan"
-        TEXT last_supplier_id FK "Supplier terakhir"
+        TEXT outlet_id FK "Nullable"
+        TEXT name 
+        TEXT unit "gr/ml/pcs"
+        REAL stock_quantity "Stok skrg"
+        REAL min_stock_threshold "Peringatan"
+        REAL average_cost "HPP Rata-rata"
+        TEXT last_supplier_id FK 
         TEXT created_at "ISO 8601"
         TEXT updated_at "ISO 8601"
+        BOOLEAN is_dirty "Sync Flag"
         TEXT deleted_at "ISO 8601, Nullable"
     }
 
     product_recipes {
         TEXT id PK "UUID v7"
+        TEXT outlet_id FK "Nullable"
         TEXT product_id FK
         TEXT ingredient_id FK
-        REAL quantity_needed "Jumlah yang dibutuhkan per porsi"
+        REAL quantity_needed "Jml per porsi"
         TEXT created_at "ISO 8601"
+        TEXT updated_at "ISO 8601"
+        BOOLEAN is_dirty "Sync Flag"
         TEXT deleted_at "ISO 8601, Nullable"
     }
-
 
     ingredient_stock_history {
         TEXT id PK "UUID v7"
         TEXT ingredient_id FK
-        TEXT supplier_id FK "Nullable, utk PURCHASE"
+        TEXT supplier_id FK "Nullable"
         TEXT type "SALE/PURCHASE/ADJUST/WASTE"
-        REAL quantity_change "Perubahan stok (+/-)"
-        REAL previous_balance "Stok sebelum"
-        REAL new_balance "Stok sesudah"
-        TEXT reference_id "No Nota / No Batch"
-        TEXT reason "Keterangan (Waste/Adjust)"
+        REAL quantity_change "+/-"
+        REAL previous_balance "Lama"
+        REAL new_balance "Baru"
+        TEXT reference_id "No Nota/Batch"
+        TEXT reason "Keterangan"
         TEXT created_at "ISO 8601"
+        TEXT updated_at "ISO 8601"
+        BOOLEAN is_dirty "Sync Flag"
         TEXT deleted_at "ISO 8601, Nullable"
     }
 
     unit_conversions {
         TEXT id PK "UUID v7"
+        TEXT outlet_id FK "Nullable"
         TEXT from_unit "e.g., kg"
         TEXT to_unit "e.g., gr"
         REAL multiplier "misal 1000"
-        TEXT notes "Catatan manual, nullable"
+        TEXT notes "Catatan"
         TEXT created_at "ISO 8601"
+        TEXT updated_at "ISO 8601"
+        BOOLEAN is_dirty "Sync Flag"
         TEXT deleted_at "ISO 8601, Nullable"
     }
 
     discounts {
         TEXT id PK "UUID v7"
-        TEXT name "Voucher Makan / Promo Item"
+        TEXT outlet_id FK "Nullable"
+        TEXT name "Nama Promo"
         TEXT scope "transaction / item"
         TEXT type "fixed / percentage"
-        REAL value "Nominal atau persen"
-        INTEGER min_spend "Minimal belanja (Rp)"
-        INTEGER min_qty "Minimal jumlah (Item)"
-        BOOLEAN is_automatic "Auto-apply"
-        BOOLEAN is_stackable "Bisa digabung diskon lain"
-        BOOLEAN is_active "Status aktif"
-        TEXT start_date "ISO 8601, Nullable"
-        TEXT end_date "ISO 8601, Nullable"
+        REAL value "Nominal/Persen"
+        INTEGER min_spend "Limit Rp"
+        INTEGER min_qty "Limit Qty"
+        BOOLEAN is_automatic "Auto"
+        BOOLEAN is_stackable "Gabung"
+        BOOLEAN is_active "Status"
+        TEXT start_date "ISO 8601"
+        TEXT end_date "ISO 8601 Nullable"
         TEXT created_at "ISO 8601"
+        TEXT updated_at "ISO 8601"
+        BOOLEAN is_dirty "Sync Flag"
         TEXT deleted_at "ISO 8601, Nullable"
     }
 
     expense_categories {
         TEXT id PK "UUID v7"
         TEXT name "Unik"
-        TEXT icon "Material icon name"
+        TEXT icon "Icon name"
         TEXT color "Hex color"
-        BOOLEAN is_default "Default True/False"
+        BOOLEAN is_default "Default Flag"
         TEXT created_at "ISO 8601"
+        TEXT updated_at "ISO 8601"
+        BOOLEAN is_dirty "Sync Flag"
         TEXT deleted_at "ISO 8601, Nullable"
     }
 
     expenses {
-        TEXT outlet_id FK "Nullable (Super/Global)"
         TEXT id PK "UUID v7"
-        TEXT category_id FK "expense_categories"
+        TEXT outlet_id FK "Nullable"
+        TEXT category_id FK
         TEXT shift_id FK "Nullable"
-        TEXT recorded_by FK "employees"
-        INTEGER amount "Nominal pengeluaran (Rp)"
-        TEXT note "Catatan (Opsional)"
-        TEXT photo_uri "Path lokal foto kuitansi (Opsional)"
+        TEXT recorded_by FK
+        INTEGER amount "Nominal Rp"
+        TEXT note "Catatan"
+        TEXT photo_uri "Kuitansi"
         TEXT created_at "ISO 8601"
+        TEXT updated_at "ISO 8601"
+        BOOLEAN is_dirty "Sync Flag"
         TEXT deleted_at "ISO 8601, Nullable"
     }
 
@@ -404,63 +469,75 @@ Di dalam SQLite (yang diatur via Drift ORM), tipe data utama yang dipakai adalah
 
 ### a) `users` & `licenses` (SaaS Account & Otorisasi)
 - **`users` (Backend)**: Master data akun SaaS di sisi PostgreSQL. Owner mendaftarkan email & password untuk manajemen lisensi serta profil usaha secara terpusat.
-- **`licenses` (SQLite)**: Satu perangkat hanya memiliki satu lisensi aktif. Tabel ini menyimpan `license_code` 10-digit unik yang mengaktifkan fitur aplikasi sesuai tier yang dibeli. Jika perangkat terganti, *device fingerprint* tidak akan cocok dan aplikasi akan terkunci otomatis.
+- **`licenses` (SQLite)**: Menyimpan detail lisensi aktif.
+    - `tier_level`: `lite` atau `pro` (TEXT).
+    - `max_devices`: Batas jumlah perangkat per lisensi.
+    - `max_outlets`: Batas jumlah outlet per lisensi.
+    - `is_dirty`: Flag untuk sinkronisasi cloud.
+- **`outlets` (SQLite)**: Entitas fisik tempat usaha.
+    - `is_dirty`: Flag sinkronisasi.
 
 ### b) `employees` (Pengguna & Hak Akses)
-Keamanan L1/L2/L3 dari PRD diimplementasikan lewat tabel ini (SQLite Lokal). Kolom `pin` sifatnya *UNIQUE* sehingga query login sangat cepat dan bebas ambigu. PIN login berbeda dengan Password Akun SaaS (User). Apabila salah login 5x, kolom `locked_until` akan terisi jam berapa akun bisa dipakai lagi.
+Keamanan L1/L2/L3 diimplementasikan lewat tabel ini. Kolom `pin` sifatnya *UNIQUE*.
+- `is_dirty`: Flag sinkronisasi.
+- `outlet_id`: Referensi ke outlet tempat pegawai bertugas (FK).
 
-### c) `categories` & `products` (Katalog)
-`sku` wajib *UNIQUE* untuk memastikan operasional barcode scanner berjalan dengan semestinya. Gambar produk disimpan di variabel `image_uri` yang berisi path absolut ke internal storage HP, agar aplikasi tidak berat menampung BLOB dalam SQLite. 
+### c) `store_profile` (Profil Usaha)
+Hanya berisi 1 baris.
+- `deduct_stock_on_hold`: Boolean flag apakah stok langsung dipotong saat transaksi masih berstatus *pending* (Save Bill).
+- `is_dirty`: Flag sinkronisasi.
 
-Jika produk memiliki `product_variants`, maka `price` dan `stock` di master `products` akan di-override oleh nilai masing-masing varian dari tabel `product_variants`.
+### d) `categories` & `products` (Katalog)
+`sku` wajib *UNIQUE*. Gambar produk disimpan di `image_uri` (local path). 
+- `has_variants`: Jika TRUE, stok & harga diambil dari tabel `product_variants`.
+- `outlet_id`: Filter katalog per outlet.
+- `is_dirty`: Flag sinkronisasi.
 
-### d) `shifts` (Riwayat Sesi)
-Sebuah transaksi (*receipt*) tidak bisa terjadi jika di device tersebut tidak ada `shifts` yang berstatus `open`. Shift diikat per individu (satu kasir satu laci).
+### e) `shifts` (Sesi Kasir)
+Transaksi hanya bisa dilakukan saat shift `open`. 
+- `outlet_id`: Shift terikat pada satu outlet.
+- `is_dirty`: Flag sinkronisasi.
 
-### e) `transactions`, `transaction_items` & `transaction_payments` (Nota)
-- Data historis (`price_at_transaction`) disimpan secara terpisah di tabel detail. Mengapa? Supaya kalau besok harga produk naik, nota lama yang sudah terjadi tidak ikut membengkak harganya.
-- Nilai Pajak (`tax_amount`) dan Service (`service_charge_amount`) di-record per nota secara mutlak (angka rupiahnya) pada saat transaksi final. Ini memastikan rekap harian tidak bocor ketika Owner merubah persentase pajaknya di kemudian hari.
-- Fitur **Save Bill (Hold Transaction)** didukung dengan membolehkan `receipt_number` dan `payment_method` bernilai `NULL` sementara transaksi berstatus `pending`.
-- Kolom `notes` memungkinkan kasir menambahkan instruksi khusus (misal: "Tanpa sambal", "Meja 5") yang akan dicetak di struk.
-- Jika transaksi di-*Refund* (batal), maka `payment_status` akan berubah jadi `void`, dan `void_by` mencatat `employee_id` sang *Supervisor* (L2) atau *Owner* (L1) yang memberi ACC pembatalan tersebut.
-- **Fitur Split Payment**: Jika transaksi menggunakan lebih dari satu metode bayar, kolom `payment_method` di `transactions` akan berisi nilai `mixed`. Rincian tiap metode (maksimal 4) disimpan di tabel `transaction_payments` (relasi 1-to-Many). Kasbon/Bon **tidak diizinkan** sebagai bagian dari Split Payment. Struk termal menampilkan rincian tiap baris pembayaran secara terpisah.
+### f) `transactions`, `transaction_items` & `transaction_payments` (Nota)
+- `price_at_transaction`: Snapshot harga saat kejadian.
+- `payment_method`: `cash`, `qris`, `debit`, `credit`, atau `bon`. `mixed` untuk pembayaran terbagi.
+- `is_dirty`: Flag sinkronisasi.
+- `outlet_id`: Nota terikat pada satu outlet.
 
-### f) `stock_transactions` (Kartu Stok / Audit Trail)
-Setiap mutasi stok (Pembelian ke supplier, Penyesuaian/Opname, Barang Rusak, atau Penjualan kasir) akan dicatat di sini. Ini memberikan fitur "Kartu Stok" yang komprehensif. Kolom `previous_stock` dan `new_stock` memudahkan pelacakan jika ada inkonsistensi.
+### g) `stock_transactions` & `stock_opname` (Audit Stok)
+Kartu stok (`stock_transactions`) mencatat setiap mutasi.
+- `stock_opname`: Penyesuaian stok fisik vs sistem.
+- `variance_reason`: Alasan selisih (rusak, hilang, dll).
+- `is_dirty`: Flag sinkronisasi.
 
-### g) `store_profile` (Informasi Usaha & Konfigurasi Biaya)
-Hanya akan berisi 1 baris (single record). Data `name`, `address`, dan `phone` ini akan dipanggil otomatis oleh *Bluetooth Printer* untuk mencetak Header Nota kertas. 
-Di tabel ini pula letak variabel Global untuk menghitung **Pajak (PB1/PPN)** dan **Service Charge**. Owner secara bebas mengatur apakah model pajaknya `inclusive` (sudah termasuk harga menu) atau `exclusive` (ditambahkan saat bayar).
-
-### h) `printer_settings` (Koneksi Hardware)
-Menyimpan data printer terakhir yang digunakan agar aplikasi bisa otomatis *re-connect* saat kasir dibuka tanpa perlu mengulang proses scanning setiap hari.
+### h) `printer_settings` (Hardware)
+- `auto_print`: Cetak nota otomatis setelah transaksi selesai.
+- `is_dirty`: Flag sinkronisasi.
 
 ### i) `customers` & `suppliers` (CRM & Logistik)
-- **`customers`**: Menyimpan data pelanggan untuk fitur membership dan riwayat transaksi.
-- **`suppliers`**: Master data pemasok untuk melacak asal `ingredient_stock_history` (PURCHASE).
+- `customers`: Data pelanggan & loyalty points.
+- `suppliers`: Data pemasok bahan baku/produk.
+- `outlet_id`: (Untuk suppliers) Pemasok lokal per outlet.
+- `is_dirty`: Flag sinkronisasi.
 
-### j) `ingredients`, `product_recipes`, & `ingredient_stock_history` (Manajemen Stok Bahan)
-- **`ingredients`**: Unit dasar stok disimpan dalam satuan terkecil. `average_cost` memakai Weighted Average.
-- **`product_recipes`**: Pemetaan 1 Produk → *n* Bahan Baku dengan kuantitas tertentu.
-- **`ingredient_stock_history`**: Audit trail stok bahan baku (IN/OUT/ADJUST/SALE).
+### j) `ingredients`, `product_recipes`, & `ingredient_stock_history` (Bahan Baku)
+Mendukung produk dengan resep (COGS/HPP dinamis).
+- `average_cost`: Rata-rata harga beli bahan (Weighted Average).
+- `is_dirty`: Flag sinkronisasi.
 
-### k) `unit_conversions` (Konversi Satuan / UoM)
-- **`unit_conversions`**: Tabel master untuk menyimpan aturan matematika antar satuan (misal: 1000 gr = 1 kg).
-- **Proses**: Saat stok masuk (purchasing) user bisa input "Karung", sistem mencari `from_unit='karung'` ke `to_unit='gr'` untuk menghitung nominal stok yang harus diinput ke database.
-- Tabel ini berdiri sendiri dan dikonfigurasi oleh **Owner**.
+### k) `unit_conversions` (Konversi Satuan)
+Aturan konversi (misal Karung -> kg).
+- `multiplier`: 1 from_unit = n to_unit.
 
 ### l) `discounts` (Voucher & Promo)
-- Tabel ini menyimpan semua konfigurasi promosi, baik yang bersifat diskon otomatis (seperti Happy Hour) maupun voucher manual yang dipilih kasir.
-- `scope`: Menentukan apakah diskon memotong total nota (`transaction`) atau potongan per baris produk (`item`).
-- `is_stackable`: Jika `false`, maka diskon ini tidak bisa digabung dengan promo lainnya dalam satu transaksi.
-- History penggunaan diskon tercatat secara permanen di kolom `discount_id` dan `discount_amount` pada tabel `transactions` dan `transaction_items` untuk keperluan audit dan laporan performa promo.
+- `scope`: `transaction` (total nota) atau `item` (per produk).
+- `is_stackable`: Apakah bisa digabung dengan promo lain.
 
-### m) `expenses` & `expense_categories` (Kas Keluar / Operasional)
-- **`expense_categories`**: Tabel referensi kategori untuk mengelompokkan jenis pengeluaran operasional (seperti Listrik, Bensin, Belanja Sayur). Mendukung properti kustom (warna Hex & Icon nama string dari MaterialIcons).
-- **`expenses`**: Riwayat pencatatan uang keluar.
-- Relasi `shift_id` bernilai Nullable, ini disengaja agar *Owner* dapat mencatat pengeluaran di belakang layar (*backoffice*) tanpa harus ada sesi kasir/shift yang sedang berjalan saat itu.
-- Kolom `recorded_by` tetap merekam secara mutlak identitas pegawai (`employee_id`) yang memasukkan data pengeluaran tersebut sebagai mitigasi audit kas.
-- Bukti struk/kuitansi dapat diabadikan dengan kamera, di mana path absolut sistem operasinya disimpan di parameter `photo_uri`.
+### m) `expenses` & `expense_categories` (Operasional)
+Pencatatan uang keluar.
+- `photo_uri`: Foto bukti kuitansi.
+- `outlet_id`: Biaya operasional per outlet.
+- `is_dirty`: Flag sinkronisasi.o_uri`.
 
 ---
 ## 3. Catatan Logic & Perhitungan Bisnis

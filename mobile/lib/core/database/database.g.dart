@@ -113,6 +113,41 @@ class $LicensesTable extends Licenses with TableInfo<$LicensesTable, License> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _tierLevelMeta = const VerificationMeta(
+    'tierLevel',
+  );
+  @override
+  late final GeneratedColumn<String> tierLevel = GeneratedColumn<String>(
+    'tier_level',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _maxDevicesMeta = const VerificationMeta(
+    'maxDevices',
+  );
+  @override
+  late final GeneratedColumn<int> maxDevices = GeneratedColumn<int>(
+    'max_devices',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _maxOutletsMeta = const VerificationMeta(
+    'maxOutlets',
+  );
+  @override
+  late final GeneratedColumn<int> maxOutlets = GeneratedColumn<int>(
+    'max_outlets',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -124,6 +159,9 @@ class $LicensesTable extends Licenses with TableInfo<$LicensesTable, License> {
     updatedAt,
     isDirty,
     deletedAt,
+    tierLevel,
+    maxDevices,
+    maxOutlets,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -202,6 +240,24 @@ class $LicensesTable extends Licenses with TableInfo<$LicensesTable, License> {
         deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
       );
     }
+    if (data.containsKey('tier_level')) {
+      context.handle(
+        _tierLevelMeta,
+        tierLevel.isAcceptableOrUnknown(data['tier_level']!, _tierLevelMeta),
+      );
+    }
+    if (data.containsKey('max_devices')) {
+      context.handle(
+        _maxDevicesMeta,
+        maxDevices.isAcceptableOrUnknown(data['max_devices']!, _maxDevicesMeta),
+      );
+    }
+    if (data.containsKey('max_outlets')) {
+      context.handle(
+        _maxOutletsMeta,
+        maxOutlets.isAcceptableOrUnknown(data['max_outlets']!, _maxOutletsMeta),
+      );
+    }
     return context;
   }
 
@@ -247,6 +303,18 @@ class $LicensesTable extends Licenses with TableInfo<$LicensesTable, License> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}deleted_at'],
       ),
+      tierLevel: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tier_level'],
+      ),
+      maxDevices: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}max_devices'],
+      )!,
+      maxOutlets: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}max_outlets'],
+      )!,
     );
   }
 
@@ -266,6 +334,9 @@ class License extends DataClass implements Insertable<License> {
   final DateTime updatedAt;
   final bool isDirty;
   final DateTime? deletedAt;
+  final String? tierLevel;
+  final int maxDevices;
+  final int maxOutlets;
   const License({
     required this.id,
     required this.licenseCode,
@@ -276,6 +347,9 @@ class License extends DataClass implements Insertable<License> {
     required this.updatedAt,
     required this.isDirty,
     this.deletedAt,
+    this.tierLevel,
+    required this.maxDevices,
+    required this.maxOutlets,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -297,6 +371,11 @@ class License extends DataClass implements Insertable<License> {
     if (!nullToAbsent || deletedAt != null) {
       map['deleted_at'] = Variable<DateTime>(deletedAt);
     }
+    if (!nullToAbsent || tierLevel != null) {
+      map['tier_level'] = Variable<String>(tierLevel);
+    }
+    map['max_devices'] = Variable<int>(maxDevices);
+    map['max_outlets'] = Variable<int>(maxOutlets);
     return map;
   }
 
@@ -319,6 +398,11 @@ class License extends DataClass implements Insertable<License> {
       deletedAt: deletedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(deletedAt),
+      tierLevel: tierLevel == null && nullToAbsent
+          ? const Value.absent()
+          : Value(tierLevel),
+      maxDevices: Value(maxDevices),
+      maxOutlets: Value(maxOutlets),
     );
   }
 
@@ -339,6 +423,9 @@ class License extends DataClass implements Insertable<License> {
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       isDirty: serializer.fromJson<bool>(json['isDirty']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      tierLevel: serializer.fromJson<String?>(json['tierLevel']),
+      maxDevices: serializer.fromJson<int>(json['maxDevices']),
+      maxOutlets: serializer.fromJson<int>(json['maxOutlets']),
     );
   }
   @override
@@ -354,6 +441,9 @@ class License extends DataClass implements Insertable<License> {
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'isDirty': serializer.toJson<bool>(isDirty),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'tierLevel': serializer.toJson<String?>(tierLevel),
+      'maxDevices': serializer.toJson<int>(maxDevices),
+      'maxOutlets': serializer.toJson<int>(maxOutlets),
     };
   }
 
@@ -367,6 +457,9 @@ class License extends DataClass implements Insertable<License> {
     DateTime? updatedAt,
     bool? isDirty,
     Value<DateTime?> deletedAt = const Value.absent(),
+    Value<String?> tierLevel = const Value.absent(),
+    int? maxDevices,
+    int? maxOutlets,
   }) => License(
     id: id ?? this.id,
     licenseCode: licenseCode ?? this.licenseCode,
@@ -381,6 +474,9 @@ class License extends DataClass implements Insertable<License> {
     updatedAt: updatedAt ?? this.updatedAt,
     isDirty: isDirty ?? this.isDirty,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    tierLevel: tierLevel.present ? tierLevel.value : this.tierLevel,
+    maxDevices: maxDevices ?? this.maxDevices,
+    maxOutlets: maxOutlets ?? this.maxOutlets,
   );
   License copyWithCompanion(LicensesCompanion data) {
     return License(
@@ -401,6 +497,13 @@ class License extends DataClass implements Insertable<License> {
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       isDirty: data.isDirty.present ? data.isDirty.value : this.isDirty,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      tierLevel: data.tierLevel.present ? data.tierLevel.value : this.tierLevel,
+      maxDevices: data.maxDevices.present
+          ? data.maxDevices.value
+          : this.maxDevices,
+      maxOutlets: data.maxOutlets.present
+          ? data.maxOutlets.value
+          : this.maxOutlets,
     );
   }
 
@@ -415,7 +518,10 @@ class License extends DataClass implements Insertable<License> {
           ..write('status: $status, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('isDirty: $isDirty, ')
-          ..write('deletedAt: $deletedAt')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('tierLevel: $tierLevel, ')
+          ..write('maxDevices: $maxDevices, ')
+          ..write('maxOutlets: $maxOutlets')
           ..write(')'))
         .toString();
   }
@@ -431,6 +537,9 @@ class License extends DataClass implements Insertable<License> {
     updatedAt,
     isDirty,
     deletedAt,
+    tierLevel,
+    maxDevices,
+    maxOutlets,
   );
   @override
   bool operator ==(Object other) =>
@@ -444,7 +553,10 @@ class License extends DataClass implements Insertable<License> {
           other.status == this.status &&
           other.updatedAt == this.updatedAt &&
           other.isDirty == this.isDirty &&
-          other.deletedAt == this.deletedAt);
+          other.deletedAt == this.deletedAt &&
+          other.tierLevel == this.tierLevel &&
+          other.maxDevices == this.maxDevices &&
+          other.maxOutlets == this.maxOutlets);
 }
 
 class LicensesCompanion extends UpdateCompanion<License> {
@@ -457,6 +569,9 @@ class LicensesCompanion extends UpdateCompanion<License> {
   final Value<DateTime> updatedAt;
   final Value<bool> isDirty;
   final Value<DateTime?> deletedAt;
+  final Value<String?> tierLevel;
+  final Value<int> maxDevices;
+  final Value<int> maxOutlets;
   final Value<int> rowid;
   const LicensesCompanion({
     this.id = const Value.absent(),
@@ -468,6 +583,9 @@ class LicensesCompanion extends UpdateCompanion<License> {
     this.updatedAt = const Value.absent(),
     this.isDirty = const Value.absent(),
     this.deletedAt = const Value.absent(),
+    this.tierLevel = const Value.absent(),
+    this.maxDevices = const Value.absent(),
+    this.maxOutlets = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   LicensesCompanion.insert({
@@ -480,6 +598,9 @@ class LicensesCompanion extends UpdateCompanion<License> {
     this.updatedAt = const Value.absent(),
     this.isDirty = const Value.absent(),
     this.deletedAt = const Value.absent(),
+    this.tierLevel = const Value.absent(),
+    this.maxDevices = const Value.absent(),
+    this.maxOutlets = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : licenseCode = Value(licenseCode);
   static Insertable<License> custom({
@@ -492,6 +613,9 @@ class LicensesCompanion extends UpdateCompanion<License> {
     Expression<DateTime>? updatedAt,
     Expression<bool>? isDirty,
     Expression<DateTime>? deletedAt,
+    Expression<String>? tierLevel,
+    Expression<int>? maxDevices,
+    Expression<int>? maxOutlets,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -504,6 +628,9 @@ class LicensesCompanion extends UpdateCompanion<License> {
       if (updatedAt != null) 'updated_at': updatedAt,
       if (isDirty != null) 'is_dirty': isDirty,
       if (deletedAt != null) 'deleted_at': deletedAt,
+      if (tierLevel != null) 'tier_level': tierLevel,
+      if (maxDevices != null) 'max_devices': maxDevices,
+      if (maxOutlets != null) 'max_outlets': maxOutlets,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -518,6 +645,9 @@ class LicensesCompanion extends UpdateCompanion<License> {
     Value<DateTime>? updatedAt,
     Value<bool>? isDirty,
     Value<DateTime?>? deletedAt,
+    Value<String?>? tierLevel,
+    Value<int>? maxDevices,
+    Value<int>? maxOutlets,
     Value<int>? rowid,
   }) {
     return LicensesCompanion(
@@ -530,6 +660,9 @@ class LicensesCompanion extends UpdateCompanion<License> {
       updatedAt: updatedAt ?? this.updatedAt,
       isDirty: isDirty ?? this.isDirty,
       deletedAt: deletedAt ?? this.deletedAt,
+      tierLevel: tierLevel ?? this.tierLevel,
+      maxDevices: maxDevices ?? this.maxDevices,
+      maxOutlets: maxOutlets ?? this.maxOutlets,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -564,6 +697,15 @@ class LicensesCompanion extends UpdateCompanion<License> {
     if (deletedAt.present) {
       map['deleted_at'] = Variable<DateTime>(deletedAt.value);
     }
+    if (tierLevel.present) {
+      map['tier_level'] = Variable<String>(tierLevel.value);
+    }
+    if (maxDevices.present) {
+      map['max_devices'] = Variable<int>(maxDevices.value);
+    }
+    if (maxOutlets.present) {
+      map['max_outlets'] = Variable<int>(maxOutlets.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -582,6 +724,9 @@ class LicensesCompanion extends UpdateCompanion<License> {
           ..write('updatedAt: $updatedAt, ')
           ..write('isDirty: $isDirty, ')
           ..write('deletedAt: $deletedAt, ')
+          ..write('tierLevel: $tierLevel, ')
+          ..write('maxDevices: $maxDevices, ')
+          ..write('maxOutlets: $maxOutlets, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -7808,6 +7953,20 @@ class $TransactionItemsTable extends TransactionItems
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _outletIdMeta = const VerificationMeta(
+    'outletId',
+  );
+  @override
+  late final GeneratedColumn<String> outletId = GeneratedColumn<String>(
+    'outlet_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES outlets (id)',
+    ),
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -7870,6 +8029,7 @@ class $TransactionItemsTable extends TransactionItems
     subtotal,
     discountId,
     discountAmount,
+    outletId,
     createdAt,
     updatedAt,
     isDirty,
@@ -7966,6 +8126,12 @@ class $TransactionItemsTable extends TransactionItems
         ),
       );
     }
+    if (data.containsKey('outlet_id')) {
+      context.handle(
+        _outletIdMeta,
+        outletId.isAcceptableOrUnknown(data['outlet_id']!, _outletIdMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -8039,6 +8205,10 @@ class $TransactionItemsTable extends TransactionItems
         DriftSqlType.int,
         data['${effectivePrefix}discount_amount'],
       )!,
+      outletId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}outlet_id'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -8075,6 +8245,7 @@ class TransactionItem extends DataClass implements Insertable<TransactionItem> {
   final int subtotal;
   final String? discountId;
   final int discountAmount;
+  final String? outletId;
   final DateTime createdAt;
   final DateTime updatedAt;
   final bool isDirty;
@@ -8090,6 +8261,7 @@ class TransactionItem extends DataClass implements Insertable<TransactionItem> {
     required this.subtotal,
     this.discountId,
     required this.discountAmount,
+    this.outletId,
     required this.createdAt,
     required this.updatedAt,
     required this.isDirty,
@@ -8114,6 +8286,9 @@ class TransactionItem extends DataClass implements Insertable<TransactionItem> {
       map['discount_id'] = Variable<String>(discountId);
     }
     map['discount_amount'] = Variable<int>(discountAmount);
+    if (!nullToAbsent || outletId != null) {
+      map['outlet_id'] = Variable<String>(outletId);
+    }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     map['is_dirty'] = Variable<bool>(isDirty);
@@ -8141,6 +8316,9 @@ class TransactionItem extends DataClass implements Insertable<TransactionItem> {
           ? const Value.absent()
           : Value(discountId),
       discountAmount: Value(discountAmount),
+      outletId: outletId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(outletId),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
       isDirty: Value(isDirty),
@@ -8166,6 +8344,7 @@ class TransactionItem extends DataClass implements Insertable<TransactionItem> {
       subtotal: serializer.fromJson<int>(json['subtotal']),
       discountId: serializer.fromJson<String?>(json['discountId']),
       discountAmount: serializer.fromJson<int>(json['discountAmount']),
+      outletId: serializer.fromJson<String?>(json['outletId']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       isDirty: serializer.fromJson<bool>(json['isDirty']),
@@ -8186,6 +8365,7 @@ class TransactionItem extends DataClass implements Insertable<TransactionItem> {
       'subtotal': serializer.toJson<int>(subtotal),
       'discountId': serializer.toJson<String?>(discountId),
       'discountAmount': serializer.toJson<int>(discountAmount),
+      'outletId': serializer.toJson<String?>(outletId),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'isDirty': serializer.toJson<bool>(isDirty),
@@ -8204,6 +8384,7 @@ class TransactionItem extends DataClass implements Insertable<TransactionItem> {
     int? subtotal,
     Value<String?> discountId = const Value.absent(),
     int? discountAmount,
+    Value<String?> outletId = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
     bool? isDirty,
@@ -8219,6 +8400,7 @@ class TransactionItem extends DataClass implements Insertable<TransactionItem> {
     subtotal: subtotal ?? this.subtotal,
     discountId: discountId.present ? discountId.value : this.discountId,
     discountAmount: discountAmount ?? this.discountAmount,
+    outletId: outletId.present ? outletId.value : this.outletId,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     isDirty: isDirty ?? this.isDirty,
@@ -8246,6 +8428,7 @@ class TransactionItem extends DataClass implements Insertable<TransactionItem> {
       discountAmount: data.discountAmount.present
           ? data.discountAmount.value
           : this.discountAmount,
+      outletId: data.outletId.present ? data.outletId.value : this.outletId,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       isDirty: data.isDirty.present ? data.isDirty.value : this.isDirty,
@@ -8266,6 +8449,7 @@ class TransactionItem extends DataClass implements Insertable<TransactionItem> {
           ..write('subtotal: $subtotal, ')
           ..write('discountId: $discountId, ')
           ..write('discountAmount: $discountAmount, ')
+          ..write('outletId: $outletId, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('isDirty: $isDirty, ')
@@ -8286,6 +8470,7 @@ class TransactionItem extends DataClass implements Insertable<TransactionItem> {
     subtotal,
     discountId,
     discountAmount,
+    outletId,
     createdAt,
     updatedAt,
     isDirty,
@@ -8305,6 +8490,7 @@ class TransactionItem extends DataClass implements Insertable<TransactionItem> {
           other.subtotal == this.subtotal &&
           other.discountId == this.discountId &&
           other.discountAmount == this.discountAmount &&
+          other.outletId == this.outletId &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.isDirty == this.isDirty &&
@@ -8322,6 +8508,7 @@ class TransactionItemsCompanion extends UpdateCompanion<TransactionItem> {
   final Value<int> subtotal;
   final Value<String?> discountId;
   final Value<int> discountAmount;
+  final Value<String?> outletId;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<bool> isDirty;
@@ -8338,6 +8525,7 @@ class TransactionItemsCompanion extends UpdateCompanion<TransactionItem> {
     this.subtotal = const Value.absent(),
     this.discountId = const Value.absent(),
     this.discountAmount = const Value.absent(),
+    this.outletId = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.isDirty = const Value.absent(),
@@ -8355,6 +8543,7 @@ class TransactionItemsCompanion extends UpdateCompanion<TransactionItem> {
     required int subtotal,
     this.discountId = const Value.absent(),
     this.discountAmount = const Value.absent(),
+    this.outletId = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.isDirty = const Value.absent(),
@@ -8376,6 +8565,7 @@ class TransactionItemsCompanion extends UpdateCompanion<TransactionItem> {
     Expression<int>? subtotal,
     Expression<String>? discountId,
     Expression<int>? discountAmount,
+    Expression<String>? outletId,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<bool>? isDirty,
@@ -8394,6 +8584,7 @@ class TransactionItemsCompanion extends UpdateCompanion<TransactionItem> {
       if (subtotal != null) 'subtotal': subtotal,
       if (discountId != null) 'discount_id': discountId,
       if (discountAmount != null) 'discount_amount': discountAmount,
+      if (outletId != null) 'outlet_id': outletId,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (isDirty != null) 'is_dirty': isDirty,
@@ -8413,6 +8604,7 @@ class TransactionItemsCompanion extends UpdateCompanion<TransactionItem> {
     Value<int>? subtotal,
     Value<String?>? discountId,
     Value<int>? discountAmount,
+    Value<String?>? outletId,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<bool>? isDirty,
@@ -8430,6 +8622,7 @@ class TransactionItemsCompanion extends UpdateCompanion<TransactionItem> {
       subtotal: subtotal ?? this.subtotal,
       discountId: discountId ?? this.discountId,
       discountAmount: discountAmount ?? this.discountAmount,
+      outletId: outletId ?? this.outletId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       isDirty: isDirty ?? this.isDirty,
@@ -8471,6 +8664,9 @@ class TransactionItemsCompanion extends UpdateCompanion<TransactionItem> {
     if (discountAmount.present) {
       map['discount_amount'] = Variable<int>(discountAmount.value);
     }
+    if (outletId.present) {
+      map['outlet_id'] = Variable<String>(outletId.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -8502,6 +8698,7 @@ class TransactionItemsCompanion extends UpdateCompanion<TransactionItem> {
           ..write('subtotal: $subtotal, ')
           ..write('discountId: $discountId, ')
           ..write('discountAmount: $discountAmount, ')
+          ..write('outletId: $outletId, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('isDirty: $isDirty, ')
@@ -18760,6 +18957,9 @@ typedef $$LicensesTableCreateCompanionBuilder =
       Value<DateTime> updatedAt,
       Value<bool> isDirty,
       Value<DateTime?> deletedAt,
+      Value<String?> tierLevel,
+      Value<int> maxDevices,
+      Value<int> maxOutlets,
       Value<int> rowid,
     });
 typedef $$LicensesTableUpdateCompanionBuilder =
@@ -18773,6 +18973,9 @@ typedef $$LicensesTableUpdateCompanionBuilder =
       Value<DateTime> updatedAt,
       Value<bool> isDirty,
       Value<DateTime?> deletedAt,
+      Value<String?> tierLevel,
+      Value<int> maxDevices,
+      Value<int> maxOutlets,
       Value<int> rowid,
     });
 
@@ -18827,6 +19030,21 @@ class $$LicensesTableFilterComposer
 
   ColumnFilters<DateTime> get deletedAt => $composableBuilder(
     column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get tierLevel => $composableBuilder(
+    column: $table.tierLevel,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get maxDevices => $composableBuilder(
+    column: $table.maxDevices,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get maxOutlets => $composableBuilder(
+    column: $table.maxOutlets,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -18884,6 +19102,21 @@ class $$LicensesTableOrderingComposer
     column: $table.deletedAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get tierLevel => $composableBuilder(
+    column: $table.tierLevel,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get maxDevices => $composableBuilder(
+    column: $table.maxDevices,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get maxOutlets => $composableBuilder(
+    column: $table.maxOutlets,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$LicensesTableAnnotationComposer
@@ -18929,6 +19162,19 @@ class $$LicensesTableAnnotationComposer
 
   GeneratedColumn<DateTime> get deletedAt =>
       $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get tierLevel =>
+      $composableBuilder(column: $table.tierLevel, builder: (column) => column);
+
+  GeneratedColumn<int> get maxDevices => $composableBuilder(
+    column: $table.maxDevices,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get maxOutlets => $composableBuilder(
+    column: $table.maxOutlets,
+    builder: (column) => column,
+  );
 }
 
 class $$LicensesTableTableManager
@@ -18968,6 +19214,9 @@ class $$LicensesTableTableManager
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<bool> isDirty = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
+                Value<String?> tierLevel = const Value.absent(),
+                Value<int> maxDevices = const Value.absent(),
+                Value<int> maxOutlets = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LicensesCompanion(
                 id: id,
@@ -18979,6 +19228,9 @@ class $$LicensesTableTableManager
                 updatedAt: updatedAt,
                 isDirty: isDirty,
                 deletedAt: deletedAt,
+                tierLevel: tierLevel,
+                maxDevices: maxDevices,
+                maxOutlets: maxOutlets,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -18992,6 +19244,9 @@ class $$LicensesTableTableManager
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<bool> isDirty = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
+                Value<String?> tierLevel = const Value.absent(),
+                Value<int> maxDevices = const Value.absent(),
+                Value<int> maxOutlets = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LicensesCompanion.insert(
                 id: id,
@@ -19003,6 +19258,9 @@ class $$LicensesTableTableManager
                 updatedAt: updatedAt,
                 isDirty: isDirty,
                 deletedAt: deletedAt,
+                tierLevel: tierLevel,
+                maxDevices: maxDevices,
+                maxOutlets: maxOutlets,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -19161,6 +19419,30 @@ final class $$OutletsTableReferences
     ).filter((f) => f.outletId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_transactionsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$TransactionItemsTable, List<TransactionItem>>
+  _transactionItemsRefsTable(_$PosifyDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.transactionItems,
+        aliasName: $_aliasNameGenerator(
+          db.outlets.id,
+          db.transactionItems.outletId,
+        ),
+      );
+
+  $$TransactionItemsTableProcessedTableManager get transactionItemsRefs {
+    final manager = $$TransactionItemsTableTableManager(
+      $_db,
+      $_db.transactionItems,
+    ).filter((f) => f.outletId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _transactionItemsRefsTable($_db),
+    );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -19575,6 +19857,31 @@ class $$OutletsTableFilterComposer
           }) => $$TransactionsTableFilterComposer(
             $db: $db,
             $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> transactionItemsRefs(
+    Expression<bool> Function($$TransactionItemsTableFilterComposer f) f,
+  ) {
+    final $$TransactionItemsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.transactionItems,
+      getReferencedColumn: (t) => t.outletId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionItemsTableFilterComposer(
+            $db: $db,
+            $table: $db.transactionItems,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -20068,6 +20375,31 @@ class $$OutletsTableAnnotationComposer
     return f(composer);
   }
 
+  Expression<T> transactionItemsRefs<T extends Object>(
+    Expression<T> Function($$TransactionItemsTableAnnotationComposer a) f,
+  ) {
+    final $$TransactionItemsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.transactionItems,
+      getReferencedColumn: (t) => t.outletId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionItemsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.transactionItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
   Expression<T> stockTransactionsRefs<T extends Object>(
     Expression<T> Function($$StockTransactionsTableAnnotationComposer a) f,
   ) {
@@ -20341,6 +20673,7 @@ class $$OutletsTableTableManager
             bool shiftsRefs,
             bool discountsRefs,
             bool transactionsRefs,
+            bool transactionItemsRefs,
             bool stockTransactionsRefs,
             bool suppliersRefs,
             bool printerSettingsRefs,
@@ -20424,6 +20757,7 @@ class $$OutletsTableTableManager
                 shiftsRefs = false,
                 discountsRefs = false,
                 transactionsRefs = false,
+                transactionItemsRefs = false,
                 stockTransactionsRefs = false,
                 suppliersRefs = false,
                 printerSettingsRefs = false,
@@ -20444,6 +20778,7 @@ class $$OutletsTableTableManager
                     if (shiftsRefs) db.shifts,
                     if (discountsRefs) db.discounts,
                     if (transactionsRefs) db.transactions,
+                    if (transactionItemsRefs) db.transactionItems,
                     if (stockTransactionsRefs) db.stockTransactions,
                     if (suppliersRefs) db.suppliers,
                     if (printerSettingsRefs) db.printerSettings,
@@ -20574,6 +20909,27 @@ class $$OutletsTableTableManager
                                 table,
                                 p0,
                               ).transactionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.outletId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (transactionItemsRefs)
+                        await $_getPrefetchedData<
+                          Outlet,
+                          $OutletsTable,
+                          TransactionItem
+                        >(
+                          currentTable: table,
+                          referencedTable: $$OutletsTableReferences
+                              ._transactionItemsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$OutletsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).transactionItemsRefs,
                           referencedItemsForCurrentItem:
                               (item, referencedItems) => referencedItems.where(
                                 (e) => e.outletId == item.id,
@@ -20817,6 +21173,7 @@ typedef $$OutletsTableProcessedTableManager =
         bool shiftsRefs,
         bool discountsRefs,
         bool transactionsRefs,
+        bool transactionItemsRefs,
         bool stockTransactionsRefs,
         bool suppliersRefs,
         bool printerSettingsRefs,
@@ -26578,6 +26935,7 @@ typedef $$TransactionItemsTableCreateCompanionBuilder =
       required int subtotal,
       Value<String?> discountId,
       Value<int> discountAmount,
+      Value<String?> outletId,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<bool> isDirty,
@@ -26596,6 +26954,7 @@ typedef $$TransactionItemsTableUpdateCompanionBuilder =
       Value<int> subtotal,
       Value<String?> discountId,
       Value<int> discountAmount,
+      Value<String?> outletId,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<bool> isDirty,
@@ -26692,6 +27051,25 @@ final class $$TransactionItemsTableReferences
       $_db.discounts,
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_discountIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $OutletsTable _outletIdTable(_$PosifyDatabase db) =>
+      db.outlets.createAlias(
+        $_aliasNameGenerator(db.transactionItems.outletId, db.outlets.id),
+      );
+
+  $$OutletsTableProcessedTableManager? get outletId {
+    final $_column = $_itemColumn<String>('outlet_id');
+    if ($_column == null) return null;
+    final manager = $$OutletsTableTableManager(
+      $_db,
+      $_db.outlets,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_outletIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
@@ -26841,6 +27219,29 @@ class $$TransactionItemsTableFilterComposer
           }) => $$DiscountsTableFilterComposer(
             $db: $db,
             $table: $db.discounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$OutletsTableFilterComposer get outletId {
+    final $$OutletsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.outletId,
+      referencedTable: $db.outlets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OutletsTableFilterComposer(
+            $db: $db,
+            $table: $db.outlets,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -27001,6 +27402,29 @@ class $$TransactionItemsTableOrderingComposer
     );
     return composer;
   }
+
+  $$OutletsTableOrderingComposer get outletId {
+    final $$OutletsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.outletId,
+      referencedTable: $db.outlets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OutletsTableOrderingComposer(
+            $db: $db,
+            $table: $db.outlets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$TransactionItemsTableAnnotationComposer
@@ -27139,6 +27563,29 @@ class $$TransactionItemsTableAnnotationComposer
     );
     return composer;
   }
+
+  $$OutletsTableAnnotationComposer get outletId {
+    final $$OutletsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.outletId,
+      referencedTable: $db.outlets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OutletsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.outlets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$TransactionItemsTableTableManager
@@ -27159,6 +27606,7 @@ class $$TransactionItemsTableTableManager
             bool productId,
             bool variantId,
             bool discountId,
+            bool outletId,
           })
         > {
   $$TransactionItemsTableTableManager(
@@ -27186,6 +27634,7 @@ class $$TransactionItemsTableTableManager
                 Value<int> subtotal = const Value.absent(),
                 Value<String?> discountId = const Value.absent(),
                 Value<int> discountAmount = const Value.absent(),
+                Value<String?> outletId = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<bool> isDirty = const Value.absent(),
@@ -27202,6 +27651,7 @@ class $$TransactionItemsTableTableManager
                 subtotal: subtotal,
                 discountId: discountId,
                 discountAmount: discountAmount,
+                outletId: outletId,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 isDirty: isDirty,
@@ -27220,6 +27670,7 @@ class $$TransactionItemsTableTableManager
                 required int subtotal,
                 Value<String?> discountId = const Value.absent(),
                 Value<int> discountAmount = const Value.absent(),
+                Value<String?> outletId = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<bool> isDirty = const Value.absent(),
@@ -27236,6 +27687,7 @@ class $$TransactionItemsTableTableManager
                 subtotal: subtotal,
                 discountId: discountId,
                 discountAmount: discountAmount,
+                outletId: outletId,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 isDirty: isDirty,
@@ -27256,6 +27708,7 @@ class $$TransactionItemsTableTableManager
                 productId = false,
                 variantId = false,
                 discountId = false,
+                outletId = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -27336,6 +27789,21 @@ class $$TransactionItemsTableTableManager
                                   )
                                   as T;
                         }
+                        if (outletId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.outletId,
+                                    referencedTable:
+                                        $$TransactionItemsTableReferences
+                                            ._outletIdTable(db),
+                                    referencedColumn:
+                                        $$TransactionItemsTableReferences
+                                            ._outletIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
 
                         return state;
                       },
@@ -27365,6 +27833,7 @@ typedef $$TransactionItemsTableProcessedTableManager =
         bool productId,
         bool variantId,
         bool discountId,
+        bool outletId,
       })
     >;
 typedef $$StockTransactionsTableCreateCompanionBuilder =

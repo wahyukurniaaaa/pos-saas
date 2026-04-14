@@ -84,7 +84,6 @@ func (s *service) fulfillOrder(orderID, source, sku, customerEmail string) error
 
 	req := license.GenerateRequest{
 		TierLevel:     mapping.TierLevel,
-		MaxDevices:    mapping.MaxDevices,
 		CustomerEmail: customerEmail,
 		OrderID:       orderID,
 		Source:        source,

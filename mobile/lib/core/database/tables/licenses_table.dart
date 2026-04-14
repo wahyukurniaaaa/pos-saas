@@ -11,4 +11,7 @@ class Licenses extends Table {
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
   BoolColumn get isDirty => boolean().withDefault(const Constant(true))();
   DateTimeColumn get deletedAt => dateTime().nullable()();
+  TextColumn get tierLevel => text().nullable()();
+  IntColumn get maxDevices => integer().withDefault(const Constant(1))();
+  IntColumn get maxOutlets => integer().withDefault(const Constant(1))();
 }
