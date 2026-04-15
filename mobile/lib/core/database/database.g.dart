@@ -262,7 +262,7 @@ class $LicensesTable extends Licenses with TableInfo<$LicensesTable, License> {
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const {};
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   License map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -901,7 +901,7 @@ class $OutletsTable extends Outlets with TableInfo<$OutletsTable, Outlet> {
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const {};
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Outlet map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -1516,7 +1516,7 @@ class $EmployeesTable extends Employees
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const {};
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Employee map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -2304,7 +2304,7 @@ class $StoreProfileTable extends StoreProfile
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const {};
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   StoreProfileData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -2995,7 +2995,7 @@ class $CategoriesTable extends Categories
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const {};
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Category map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -3621,7 +3621,7 @@ class $ProductsTable extends Products with TableInfo<$ProductsTable, Product> {
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const {};
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Product map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -4244,6 +4244,20 @@ class $ProductVariantsTable extends ProductVariants
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _outletIdMeta = const VerificationMeta(
+    'outletId',
+  );
+  @override
+  late final GeneratedColumn<String> outletId = GeneratedColumn<String>(
+    'outlet_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES outlets (id)',
+    ),
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -4303,6 +4317,7 @@ class $ProductVariantsTable extends ProductVariants
     price,
     stock,
     sku,
+    outletId,
     createdAt,
     updatedAt,
     isDirty,
@@ -4368,6 +4383,12 @@ class $ProductVariantsTable extends ProductVariants
         sku.isAcceptableOrUnknown(data['sku']!, _skuMeta),
       );
     }
+    if (data.containsKey('outlet_id')) {
+      context.handle(
+        _outletIdMeta,
+        outletId.isAcceptableOrUnknown(data['outlet_id']!, _outletIdMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -4396,7 +4417,7 @@ class $ProductVariantsTable extends ProductVariants
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const {};
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   ProductVariant map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -4428,6 +4449,10 @@ class $ProductVariantsTable extends ProductVariants
       sku: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}sku'],
+      ),
+      outletId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}outlet_id'],
       ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
@@ -4462,6 +4487,7 @@ class ProductVariant extends DataClass implements Insertable<ProductVariant> {
   final int? price;
   final int stock;
   final String? sku;
+  final String? outletId;
   final DateTime createdAt;
   final DateTime updatedAt;
   final bool isDirty;
@@ -4474,6 +4500,7 @@ class ProductVariant extends DataClass implements Insertable<ProductVariant> {
     this.price,
     required this.stock,
     this.sku,
+    this.outletId,
     required this.createdAt,
     required this.updatedAt,
     required this.isDirty,
@@ -4492,6 +4519,9 @@ class ProductVariant extends DataClass implements Insertable<ProductVariant> {
     map['stock'] = Variable<int>(stock);
     if (!nullToAbsent || sku != null) {
       map['sku'] = Variable<String>(sku);
+    }
+    if (!nullToAbsent || outletId != null) {
+      map['outlet_id'] = Variable<String>(outletId);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -4513,6 +4543,9 @@ class ProductVariant extends DataClass implements Insertable<ProductVariant> {
           : Value(price),
       stock: Value(stock),
       sku: sku == null && nullToAbsent ? const Value.absent() : Value(sku),
+      outletId: outletId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(outletId),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
       isDirty: Value(isDirty),
@@ -4535,6 +4568,7 @@ class ProductVariant extends DataClass implements Insertable<ProductVariant> {
       price: serializer.fromJson<int?>(json['price']),
       stock: serializer.fromJson<int>(json['stock']),
       sku: serializer.fromJson<String?>(json['sku']),
+      outletId: serializer.fromJson<String?>(json['outletId']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       isDirty: serializer.fromJson<bool>(json['isDirty']),
@@ -4552,6 +4586,7 @@ class ProductVariant extends DataClass implements Insertable<ProductVariant> {
       'price': serializer.toJson<int?>(price),
       'stock': serializer.toJson<int>(stock),
       'sku': serializer.toJson<String?>(sku),
+      'outletId': serializer.toJson<String?>(outletId),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'isDirty': serializer.toJson<bool>(isDirty),
@@ -4567,6 +4602,7 @@ class ProductVariant extends DataClass implements Insertable<ProductVariant> {
     Value<int?> price = const Value.absent(),
     int? stock,
     Value<String?> sku = const Value.absent(),
+    Value<String?> outletId = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
     bool? isDirty,
@@ -4579,6 +4615,7 @@ class ProductVariant extends DataClass implements Insertable<ProductVariant> {
     price: price.present ? price.value : this.price,
     stock: stock ?? this.stock,
     sku: sku.present ? sku.value : this.sku,
+    outletId: outletId.present ? outletId.value : this.outletId,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     isDirty: isDirty ?? this.isDirty,
@@ -4595,6 +4632,7 @@ class ProductVariant extends DataClass implements Insertable<ProductVariant> {
       price: data.price.present ? data.price.value : this.price,
       stock: data.stock.present ? data.stock.value : this.stock,
       sku: data.sku.present ? data.sku.value : this.sku,
+      outletId: data.outletId.present ? data.outletId.value : this.outletId,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       isDirty: data.isDirty.present ? data.isDirty.value : this.isDirty,
@@ -4612,6 +4650,7 @@ class ProductVariant extends DataClass implements Insertable<ProductVariant> {
           ..write('price: $price, ')
           ..write('stock: $stock, ')
           ..write('sku: $sku, ')
+          ..write('outletId: $outletId, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('isDirty: $isDirty, ')
@@ -4629,6 +4668,7 @@ class ProductVariant extends DataClass implements Insertable<ProductVariant> {
     price,
     stock,
     sku,
+    outletId,
     createdAt,
     updatedAt,
     isDirty,
@@ -4645,6 +4685,7 @@ class ProductVariant extends DataClass implements Insertable<ProductVariant> {
           other.price == this.price &&
           other.stock == this.stock &&
           other.sku == this.sku &&
+          other.outletId == this.outletId &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.isDirty == this.isDirty &&
@@ -4659,6 +4700,7 @@ class ProductVariantsCompanion extends UpdateCompanion<ProductVariant> {
   final Value<int?> price;
   final Value<int> stock;
   final Value<String?> sku;
+  final Value<String?> outletId;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<bool> isDirty;
@@ -4672,6 +4714,7 @@ class ProductVariantsCompanion extends UpdateCompanion<ProductVariant> {
     this.price = const Value.absent(),
     this.stock = const Value.absent(),
     this.sku = const Value.absent(),
+    this.outletId = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.isDirty = const Value.absent(),
@@ -4686,6 +4729,7 @@ class ProductVariantsCompanion extends UpdateCompanion<ProductVariant> {
     this.price = const Value.absent(),
     this.stock = const Value.absent(),
     this.sku = const Value.absent(),
+    this.outletId = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.isDirty = const Value.absent(),
@@ -4702,6 +4746,7 @@ class ProductVariantsCompanion extends UpdateCompanion<ProductVariant> {
     Expression<int>? price,
     Expression<int>? stock,
     Expression<String>? sku,
+    Expression<String>? outletId,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<bool>? isDirty,
@@ -4716,6 +4761,7 @@ class ProductVariantsCompanion extends UpdateCompanion<ProductVariant> {
       if (price != null) 'price': price,
       if (stock != null) 'stock': stock,
       if (sku != null) 'sku': sku,
+      if (outletId != null) 'outlet_id': outletId,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (isDirty != null) 'is_dirty': isDirty,
@@ -4732,6 +4778,7 @@ class ProductVariantsCompanion extends UpdateCompanion<ProductVariant> {
     Value<int?>? price,
     Value<int>? stock,
     Value<String?>? sku,
+    Value<String?>? outletId,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<bool>? isDirty,
@@ -4746,6 +4793,7 @@ class ProductVariantsCompanion extends UpdateCompanion<ProductVariant> {
       price: price ?? this.price,
       stock: stock ?? this.stock,
       sku: sku ?? this.sku,
+      outletId: outletId ?? this.outletId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       isDirty: isDirty ?? this.isDirty,
@@ -4778,6 +4826,9 @@ class ProductVariantsCompanion extends UpdateCompanion<ProductVariant> {
     if (sku.present) {
       map['sku'] = Variable<String>(sku.value);
     }
+    if (outletId.present) {
+      map['outlet_id'] = Variable<String>(outletId.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -4806,6 +4857,7 @@ class ProductVariantsCompanion extends UpdateCompanion<ProductVariant> {
           ..write('price: $price, ')
           ..write('stock: $stock, ')
           ..write('sku: $sku, ')
+          ..write('outletId: $outletId, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('isDirty: $isDirty, ')
@@ -5094,7 +5146,7 @@ class $ShiftsTable extends Shifts with TableInfo<$ShiftsTable, Shift> {
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const {};
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Shift map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -5945,7 +5997,7 @@ class $DiscountsTable extends Discounts
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const {};
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Discount map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -7021,7 +7073,7 @@ class $TransactionsTable extends Transactions
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const {};
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Transaction map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -8160,7 +8212,7 @@ class $TransactionItemsTable extends TransactionItems
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const {};
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   TransactionItem map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -9789,7 +9841,7 @@ class $CustomersTable extends Customers
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const {};
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Customer map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -10401,7 +10453,7 @@ class $SuppliersTable extends Suppliers
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const {};
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Supplier map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -11644,7 +11696,7 @@ class $IngredientsTable extends Ingredients
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const {};
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Ingredient map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -14321,7 +14373,7 @@ class $StockOpnameTable extends StockOpname
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const {};
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   StockOpnameData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -15084,7 +15136,7 @@ class $StockOpnameItemsTable extends StockOpnameItems
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const {};
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   StockOpnameItem map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -15671,6 +15723,20 @@ class $PurchaseOrdersTable extends PurchaseOrders
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _outletIdMeta = const VerificationMeta(
+    'outletId',
+  );
+  @override
+  late final GeneratedColumn<String> outletId = GeneratedColumn<String>(
+    'outlet_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES outlets (id)',
+    ),
+  );
   static const VerificationMeta _orderedAtMeta = const VerificationMeta(
     'orderedAt',
   );
@@ -15740,6 +15806,7 @@ class $PurchaseOrdersTable extends PurchaseOrders
     status,
     totalEstimate,
     notes,
+    outletId,
     orderedAt,
     createdAt,
     updatedAt,
@@ -15788,6 +15855,12 @@ class $PurchaseOrdersTable extends PurchaseOrders
         notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
       );
     }
+    if (data.containsKey('outlet_id')) {
+      context.handle(
+        _outletIdMeta,
+        outletId.isAcceptableOrUnknown(data['outlet_id']!, _outletIdMeta),
+      );
+    }
     if (data.containsKey('ordered_at')) {
       context.handle(
         _orderedAtMeta,
@@ -15822,7 +15895,7 @@ class $PurchaseOrdersTable extends PurchaseOrders
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const {};
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   PurchaseOrder map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -15846,6 +15919,10 @@ class $PurchaseOrdersTable extends PurchaseOrders
       notes: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
+      ),
+      outletId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}outlet_id'],
       ),
       orderedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
@@ -15882,6 +15959,7 @@ class PurchaseOrder extends DataClass implements Insertable<PurchaseOrder> {
   final String status;
   final int totalEstimate;
   final String? notes;
+  final String? outletId;
   final DateTime orderedAt;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -15893,6 +15971,7 @@ class PurchaseOrder extends DataClass implements Insertable<PurchaseOrder> {
     required this.status,
     required this.totalEstimate,
     this.notes,
+    this.outletId,
     required this.orderedAt,
     required this.createdAt,
     required this.updatedAt,
@@ -15910,6 +15989,9 @@ class PurchaseOrder extends DataClass implements Insertable<PurchaseOrder> {
     map['total_estimate'] = Variable<int>(totalEstimate);
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
+    }
+    if (!nullToAbsent || outletId != null) {
+      map['outlet_id'] = Variable<String>(outletId);
     }
     map['ordered_at'] = Variable<DateTime>(orderedAt);
     map['created_at'] = Variable<DateTime>(createdAt);
@@ -15932,6 +16014,9 @@ class PurchaseOrder extends DataClass implements Insertable<PurchaseOrder> {
       notes: notes == null && nullToAbsent
           ? const Value.absent()
           : Value(notes),
+      outletId: outletId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(outletId),
       orderedAt: Value(orderedAt),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
@@ -15953,6 +16038,7 @@ class PurchaseOrder extends DataClass implements Insertable<PurchaseOrder> {
       status: serializer.fromJson<String>(json['status']),
       totalEstimate: serializer.fromJson<int>(json['totalEstimate']),
       notes: serializer.fromJson<String?>(json['notes']),
+      outletId: serializer.fromJson<String?>(json['outletId']),
       orderedAt: serializer.fromJson<DateTime>(json['orderedAt']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
@@ -15969,6 +16055,7 @@ class PurchaseOrder extends DataClass implements Insertable<PurchaseOrder> {
       'status': serializer.toJson<String>(status),
       'totalEstimate': serializer.toJson<int>(totalEstimate),
       'notes': serializer.toJson<String?>(notes),
+      'outletId': serializer.toJson<String?>(outletId),
       'orderedAt': serializer.toJson<DateTime>(orderedAt),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
@@ -15983,6 +16070,7 @@ class PurchaseOrder extends DataClass implements Insertable<PurchaseOrder> {
     String? status,
     int? totalEstimate,
     Value<String?> notes = const Value.absent(),
+    Value<String?> outletId = const Value.absent(),
     DateTime? orderedAt,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -15994,6 +16082,7 @@ class PurchaseOrder extends DataClass implements Insertable<PurchaseOrder> {
     status: status ?? this.status,
     totalEstimate: totalEstimate ?? this.totalEstimate,
     notes: notes.present ? notes.value : this.notes,
+    outletId: outletId.present ? outletId.value : this.outletId,
     orderedAt: orderedAt ?? this.orderedAt,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -16011,6 +16100,7 @@ class PurchaseOrder extends DataClass implements Insertable<PurchaseOrder> {
           ? data.totalEstimate.value
           : this.totalEstimate,
       notes: data.notes.present ? data.notes.value : this.notes,
+      outletId: data.outletId.present ? data.outletId.value : this.outletId,
       orderedAt: data.orderedAt.present ? data.orderedAt.value : this.orderedAt,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
@@ -16027,6 +16117,7 @@ class PurchaseOrder extends DataClass implements Insertable<PurchaseOrder> {
           ..write('status: $status, ')
           ..write('totalEstimate: $totalEstimate, ')
           ..write('notes: $notes, ')
+          ..write('outletId: $outletId, ')
           ..write('orderedAt: $orderedAt, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -16043,6 +16134,7 @@ class PurchaseOrder extends DataClass implements Insertable<PurchaseOrder> {
     status,
     totalEstimate,
     notes,
+    outletId,
     orderedAt,
     createdAt,
     updatedAt,
@@ -16058,6 +16150,7 @@ class PurchaseOrder extends DataClass implements Insertable<PurchaseOrder> {
           other.status == this.status &&
           other.totalEstimate == this.totalEstimate &&
           other.notes == this.notes &&
+          other.outletId == this.outletId &&
           other.orderedAt == this.orderedAt &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
@@ -16071,6 +16164,7 @@ class PurchaseOrdersCompanion extends UpdateCompanion<PurchaseOrder> {
   final Value<String> status;
   final Value<int> totalEstimate;
   final Value<String?> notes;
+  final Value<String?> outletId;
   final Value<DateTime> orderedAt;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
@@ -16083,6 +16177,7 @@ class PurchaseOrdersCompanion extends UpdateCompanion<PurchaseOrder> {
     this.status = const Value.absent(),
     this.totalEstimate = const Value.absent(),
     this.notes = const Value.absent(),
+    this.outletId = const Value.absent(),
     this.orderedAt = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -16096,6 +16191,7 @@ class PurchaseOrdersCompanion extends UpdateCompanion<PurchaseOrder> {
     this.status = const Value.absent(),
     this.totalEstimate = const Value.absent(),
     this.notes = const Value.absent(),
+    this.outletId = const Value.absent(),
     this.orderedAt = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -16109,6 +16205,7 @@ class PurchaseOrdersCompanion extends UpdateCompanion<PurchaseOrder> {
     Expression<String>? status,
     Expression<int>? totalEstimate,
     Expression<String>? notes,
+    Expression<String>? outletId,
     Expression<DateTime>? orderedAt,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
@@ -16122,6 +16219,7 @@ class PurchaseOrdersCompanion extends UpdateCompanion<PurchaseOrder> {
       if (status != null) 'status': status,
       if (totalEstimate != null) 'total_estimate': totalEstimate,
       if (notes != null) 'notes': notes,
+      if (outletId != null) 'outlet_id': outletId,
       if (orderedAt != null) 'ordered_at': orderedAt,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -16137,6 +16235,7 @@ class PurchaseOrdersCompanion extends UpdateCompanion<PurchaseOrder> {
     Value<String>? status,
     Value<int>? totalEstimate,
     Value<String?>? notes,
+    Value<String?>? outletId,
     Value<DateTime>? orderedAt,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
@@ -16150,6 +16249,7 @@ class PurchaseOrdersCompanion extends UpdateCompanion<PurchaseOrder> {
       status: status ?? this.status,
       totalEstimate: totalEstimate ?? this.totalEstimate,
       notes: notes ?? this.notes,
+      outletId: outletId ?? this.outletId,
       orderedAt: orderedAt ?? this.orderedAt,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -16176,6 +16276,9 @@ class PurchaseOrdersCompanion extends UpdateCompanion<PurchaseOrder> {
     }
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
+    }
+    if (outletId.present) {
+      map['outlet_id'] = Variable<String>(outletId.value);
     }
     if (orderedAt.present) {
       map['ordered_at'] = Variable<DateTime>(orderedAt.value);
@@ -16206,6 +16309,7 @@ class PurchaseOrdersCompanion extends UpdateCompanion<PurchaseOrder> {
           ..write('status: $status, ')
           ..write('totalEstimate: $totalEstimate, ')
           ..write('notes: $notes, ')
+          ..write('outletId: $outletId, ')
           ..write('orderedAt: $orderedAt, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -16330,6 +16434,20 @@ class $PurchaseOrderItemsTable extends PurchaseOrderItems
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _outletIdMeta = const VerificationMeta(
+    'outletId',
+  );
+  @override
+  late final GeneratedColumn<String> outletId = GeneratedColumn<String>(
+    'outlet_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES outlets (id)',
+    ),
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -16391,6 +16509,7 @@ class $PurchaseOrderItemsTable extends PurchaseOrderItems
     quantity,
     purchasePrice,
     receivedQuantity,
+    outletId,
     createdAt,
     updatedAt,
     isDirty,
@@ -16479,6 +16598,12 @@ class $PurchaseOrderItemsTable extends PurchaseOrderItems
         ),
       );
     }
+    if (data.containsKey('outlet_id')) {
+      context.handle(
+        _outletIdMeta,
+        outletId.isAcceptableOrUnknown(data['outlet_id']!, _outletIdMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -16507,7 +16632,7 @@ class $PurchaseOrderItemsTable extends PurchaseOrderItems
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const {};
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   PurchaseOrderItem map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -16548,6 +16673,10 @@ class $PurchaseOrderItemsTable extends PurchaseOrderItems
         DriftSqlType.double,
         data['${effectivePrefix}received_quantity'],
       )!,
+      outletId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}outlet_id'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -16584,6 +16713,7 @@ class PurchaseOrderItem extends DataClass
   final double quantity;
   final int purchasePrice;
   final double receivedQuantity;
+  final String? outletId;
   final DateTime createdAt;
   final DateTime updatedAt;
   final bool isDirty;
@@ -16598,6 +16728,7 @@ class PurchaseOrderItem extends DataClass
     required this.quantity,
     required this.purchasePrice,
     required this.receivedQuantity,
+    this.outletId,
     required this.createdAt,
     required this.updatedAt,
     required this.isDirty,
@@ -16619,6 +16750,9 @@ class PurchaseOrderItem extends DataClass
     map['quantity'] = Variable<double>(quantity);
     map['purchase_price'] = Variable<int>(purchasePrice);
     map['received_quantity'] = Variable<double>(receivedQuantity);
+    if (!nullToAbsent || outletId != null) {
+      map['outlet_id'] = Variable<String>(outletId);
+    }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     map['is_dirty'] = Variable<bool>(isDirty);
@@ -16643,6 +16777,9 @@ class PurchaseOrderItem extends DataClass
       quantity: Value(quantity),
       purchasePrice: Value(purchasePrice),
       receivedQuantity: Value(receivedQuantity),
+      outletId: outletId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(outletId),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
       isDirty: Value(isDirty),
@@ -16667,6 +16804,7 @@ class PurchaseOrderItem extends DataClass
       quantity: serializer.fromJson<double>(json['quantity']),
       purchasePrice: serializer.fromJson<int>(json['purchasePrice']),
       receivedQuantity: serializer.fromJson<double>(json['receivedQuantity']),
+      outletId: serializer.fromJson<String?>(json['outletId']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       isDirty: serializer.fromJson<bool>(json['isDirty']),
@@ -16686,6 +16824,7 @@ class PurchaseOrderItem extends DataClass
       'quantity': serializer.toJson<double>(quantity),
       'purchasePrice': serializer.toJson<int>(purchasePrice),
       'receivedQuantity': serializer.toJson<double>(receivedQuantity),
+      'outletId': serializer.toJson<String?>(outletId),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'isDirty': serializer.toJson<bool>(isDirty),
@@ -16703,6 +16842,7 @@ class PurchaseOrderItem extends DataClass
     double? quantity,
     int? purchasePrice,
     double? receivedQuantity,
+    Value<String?> outletId = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
     bool? isDirty,
@@ -16717,6 +16857,7 @@ class PurchaseOrderItem extends DataClass
     quantity: quantity ?? this.quantity,
     purchasePrice: purchasePrice ?? this.purchasePrice,
     receivedQuantity: receivedQuantity ?? this.receivedQuantity,
+    outletId: outletId.present ? outletId.value : this.outletId,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     isDirty: isDirty ?? this.isDirty,
@@ -16741,6 +16882,7 @@ class PurchaseOrderItem extends DataClass
       receivedQuantity: data.receivedQuantity.present
           ? data.receivedQuantity.value
           : this.receivedQuantity,
+      outletId: data.outletId.present ? data.outletId.value : this.outletId,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       isDirty: data.isDirty.present ? data.isDirty.value : this.isDirty,
@@ -16760,6 +16902,7 @@ class PurchaseOrderItem extends DataClass
           ..write('quantity: $quantity, ')
           ..write('purchasePrice: $purchasePrice, ')
           ..write('receivedQuantity: $receivedQuantity, ')
+          ..write('outletId: $outletId, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('isDirty: $isDirty, ')
@@ -16779,6 +16922,7 @@ class PurchaseOrderItem extends DataClass
     quantity,
     purchasePrice,
     receivedQuantity,
+    outletId,
     createdAt,
     updatedAt,
     isDirty,
@@ -16797,6 +16941,7 @@ class PurchaseOrderItem extends DataClass
           other.quantity == this.quantity &&
           other.purchasePrice == this.purchasePrice &&
           other.receivedQuantity == this.receivedQuantity &&
+          other.outletId == this.outletId &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.isDirty == this.isDirty &&
@@ -16813,6 +16958,7 @@ class PurchaseOrderItemsCompanion extends UpdateCompanion<PurchaseOrderItem> {
   final Value<double> quantity;
   final Value<int> purchasePrice;
   final Value<double> receivedQuantity;
+  final Value<String?> outletId;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<bool> isDirty;
@@ -16828,6 +16974,7 @@ class PurchaseOrderItemsCompanion extends UpdateCompanion<PurchaseOrderItem> {
     this.quantity = const Value.absent(),
     this.purchasePrice = const Value.absent(),
     this.receivedQuantity = const Value.absent(),
+    this.outletId = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.isDirty = const Value.absent(),
@@ -16844,6 +16991,7 @@ class PurchaseOrderItemsCompanion extends UpdateCompanion<PurchaseOrderItem> {
     required double quantity,
     this.purchasePrice = const Value.absent(),
     this.receivedQuantity = const Value.absent(),
+    this.outletId = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.isDirty = const Value.absent(),
@@ -16863,6 +17011,7 @@ class PurchaseOrderItemsCompanion extends UpdateCompanion<PurchaseOrderItem> {
     Expression<double>? quantity,
     Expression<int>? purchasePrice,
     Expression<double>? receivedQuantity,
+    Expression<String>? outletId,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<bool>? isDirty,
@@ -16879,6 +17028,7 @@ class PurchaseOrderItemsCompanion extends UpdateCompanion<PurchaseOrderItem> {
       if (quantity != null) 'quantity': quantity,
       if (purchasePrice != null) 'purchase_price': purchasePrice,
       if (receivedQuantity != null) 'received_quantity': receivedQuantity,
+      if (outletId != null) 'outlet_id': outletId,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (isDirty != null) 'is_dirty': isDirty,
@@ -16897,6 +17047,7 @@ class PurchaseOrderItemsCompanion extends UpdateCompanion<PurchaseOrderItem> {
     Value<double>? quantity,
     Value<int>? purchasePrice,
     Value<double>? receivedQuantity,
+    Value<String?>? outletId,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<bool>? isDirty,
@@ -16913,6 +17064,7 @@ class PurchaseOrderItemsCompanion extends UpdateCompanion<PurchaseOrderItem> {
       quantity: quantity ?? this.quantity,
       purchasePrice: purchasePrice ?? this.purchasePrice,
       receivedQuantity: receivedQuantity ?? this.receivedQuantity,
+      outletId: outletId ?? this.outletId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       isDirty: isDirty ?? this.isDirty,
@@ -16951,6 +17103,9 @@ class PurchaseOrderItemsCompanion extends UpdateCompanion<PurchaseOrderItem> {
     if (receivedQuantity.present) {
       map['received_quantity'] = Variable<double>(receivedQuantity.value);
     }
+    if (outletId.present) {
+      map['outlet_id'] = Variable<String>(outletId.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -16981,6 +17136,7 @@ class PurchaseOrderItemsCompanion extends UpdateCompanion<PurchaseOrderItem> {
           ..write('quantity: $quantity, ')
           ..write('purchasePrice: $purchasePrice, ')
           ..write('receivedQuantity: $receivedQuantity, ')
+          ..write('outletId: $outletId, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('isDirty: $isDirty, ')
@@ -17186,7 +17342,7 @@ class $ExpenseCategoriesTable extends ExpenseCategories
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const {};
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   ExpenseCategory map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -17795,7 +17951,7 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const {};
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Expense map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -18474,7 +18630,7 @@ class $TransactionPaymentsTable extends TransactionPayments
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const {};
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   TransactionPayment map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -19369,6 +19525,30 @@ final class $$OutletsTableReferences
     );
   }
 
+  static MultiTypedResultKey<$ProductVariantsTable, List<ProductVariant>>
+  _productVariantsRefsTable(_$PosifyDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.productVariants,
+        aliasName: $_aliasNameGenerator(
+          db.outlets.id,
+          db.productVariants.outletId,
+        ),
+      );
+
+  $$ProductVariantsTableProcessedTableManager get productVariantsRefs {
+    final manager = $$ProductVariantsTableTableManager(
+      $_db,
+      $_db.productVariants,
+    ).filter((f) => f.outletId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _productVariantsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
   static MultiTypedResultKey<$ShiftsTable, List<Shift>> _shiftsRefsTable(
     _$PosifyDatabase db,
   ) => MultiTypedResultKey.fromTable(
@@ -19620,6 +19800,52 @@ final class $$OutletsTableReferences
     );
   }
 
+  static MultiTypedResultKey<$PurchaseOrdersTable, List<PurchaseOrder>>
+  _purchaseOrdersRefsTable(_$PosifyDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.purchaseOrders,
+        aliasName: $_aliasNameGenerator(
+          db.outlets.id,
+          db.purchaseOrders.outletId,
+        ),
+      );
+
+  $$PurchaseOrdersTableProcessedTableManager get purchaseOrdersRefs {
+    final manager = $$PurchaseOrdersTableTableManager(
+      $_db,
+      $_db.purchaseOrders,
+    ).filter((f) => f.outletId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_purchaseOrdersRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$PurchaseOrderItemsTable, List<PurchaseOrderItem>>
+  _purchaseOrderItemsRefsTable(_$PosifyDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.purchaseOrderItems,
+        aliasName: $_aliasNameGenerator(
+          db.outlets.id,
+          db.purchaseOrderItems.outletId,
+        ),
+      );
+
+  $$PurchaseOrderItemsTableProcessedTableManager get purchaseOrderItemsRefs {
+    final manager = $$PurchaseOrderItemsTableTableManager(
+      $_db,
+      $_db.purchaseOrderItems,
+    ).filter((f) => f.outletId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _purchaseOrderItemsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
   static MultiTypedResultKey<$ExpensesTable, List<Expense>> _expensesRefsTable(
     _$PosifyDatabase db,
   ) => MultiTypedResultKey.fromTable(
@@ -19782,6 +20008,31 @@ class $$OutletsTableFilterComposer
           }) => $$ProductsTableFilterComposer(
             $db: $db,
             $table: $db.products,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> productVariantsRefs(
+    Expression<bool> Function($$ProductVariantsTableFilterComposer f) f,
+  ) {
+    final $$ProductVariantsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.productVariants,
+      getReferencedColumn: (t) => t.outletId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProductVariantsTableFilterComposer(
+            $db: $db,
+            $table: $db.productVariants,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -20091,6 +20342,56 @@ class $$OutletsTableFilterComposer
     return f(composer);
   }
 
+  Expression<bool> purchaseOrdersRefs(
+    Expression<bool> Function($$PurchaseOrdersTableFilterComposer f) f,
+  ) {
+    final $$PurchaseOrdersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.purchaseOrders,
+      getReferencedColumn: (t) => t.outletId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PurchaseOrdersTableFilterComposer(
+            $db: $db,
+            $table: $db.purchaseOrders,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> purchaseOrderItemsRefs(
+    Expression<bool> Function($$PurchaseOrderItemsTableFilterComposer f) f,
+  ) {
+    final $$PurchaseOrderItemsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.purchaseOrderItems,
+      getReferencedColumn: (t) => t.outletId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PurchaseOrderItemsTableFilterComposer(
+            $db: $db,
+            $table: $db.purchaseOrderItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
   Expression<bool> expensesRefs(
     Expression<bool> Function($$ExpensesTableFilterComposer f) f,
   ) {
@@ -20291,6 +20592,31 @@ class $$OutletsTableAnnotationComposer
           }) => $$ProductsTableAnnotationComposer(
             $db: $db,
             $table: $db.products,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> productVariantsRefs<T extends Object>(
+    Expression<T> Function($$ProductVariantsTableAnnotationComposer a) f,
+  ) {
+    final $$ProductVariantsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.productVariants,
+      getReferencedColumn: (t) => t.outletId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProductVariantsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.productVariants,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -20601,6 +20927,57 @@ class $$OutletsTableAnnotationComposer
     return f(composer);
   }
 
+  Expression<T> purchaseOrdersRefs<T extends Object>(
+    Expression<T> Function($$PurchaseOrdersTableAnnotationComposer a) f,
+  ) {
+    final $$PurchaseOrdersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.purchaseOrders,
+      getReferencedColumn: (t) => t.outletId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PurchaseOrdersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.purchaseOrders,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> purchaseOrderItemsRefs<T extends Object>(
+    Expression<T> Function($$PurchaseOrderItemsTableAnnotationComposer a) f,
+  ) {
+    final $$PurchaseOrderItemsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.purchaseOrderItems,
+          getReferencedColumn: (t) => t.outletId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$PurchaseOrderItemsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.purchaseOrderItems,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
   Expression<T> expensesRefs<T extends Object>(
     Expression<T> Function($$ExpensesTableAnnotationComposer a) f,
   ) {
@@ -20670,6 +21047,7 @@ class $$OutletsTableTableManager
             bool employeesRefs,
             bool categoriesRefs,
             bool productsRefs,
+            bool productVariantsRefs,
             bool shiftsRefs,
             bool discountsRefs,
             bool transactionsRefs,
@@ -20682,6 +21060,8 @@ class $$OutletsTableTableManager
             bool unitConversionsRefs,
             bool stockOpnameRefs,
             bool stockOpnameItemsRefs,
+            bool purchaseOrdersRefs,
+            bool purchaseOrderItemsRefs,
             bool expensesRefs,
             bool transactionPaymentsRefs,
           })
@@ -20754,6 +21134,7 @@ class $$OutletsTableTableManager
                 employeesRefs = false,
                 categoriesRefs = false,
                 productsRefs = false,
+                productVariantsRefs = false,
                 shiftsRefs = false,
                 discountsRefs = false,
                 transactionsRefs = false,
@@ -20766,6 +21147,8 @@ class $$OutletsTableTableManager
                 unitConversionsRefs = false,
                 stockOpnameRefs = false,
                 stockOpnameItemsRefs = false,
+                purchaseOrdersRefs = false,
+                purchaseOrderItemsRefs = false,
                 expensesRefs = false,
                 transactionPaymentsRefs = false,
               }) {
@@ -20775,6 +21158,7 @@ class $$OutletsTableTableManager
                     if (employeesRefs) db.employees,
                     if (categoriesRefs) db.categories,
                     if (productsRefs) db.products,
+                    if (productVariantsRefs) db.productVariants,
                     if (shiftsRefs) db.shifts,
                     if (discountsRefs) db.discounts,
                     if (transactionsRefs) db.transactions,
@@ -20787,6 +21171,8 @@ class $$OutletsTableTableManager
                     if (unitConversionsRefs) db.unitConversions,
                     if (stockOpnameRefs) db.stockOpname,
                     if (stockOpnameItemsRefs) db.stockOpnameItems,
+                    if (purchaseOrdersRefs) db.purchaseOrders,
+                    if (purchaseOrderItemsRefs) db.purchaseOrderItems,
                     if (expensesRefs) db.expenses,
                     if (transactionPaymentsRefs) db.transactionPayments,
                   ],
@@ -20850,6 +21236,27 @@ class $$OutletsTableTableManager
                                 table,
                                 p0,
                               ).productsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.outletId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (productVariantsRefs)
+                        await $_getPrefetchedData<
+                          Outlet,
+                          $OutletsTable,
+                          ProductVariant
+                        >(
+                          currentTable: table,
+                          referencedTable: $$OutletsTableReferences
+                              ._productVariantsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$OutletsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).productVariantsRefs,
                           referencedItemsForCurrentItem:
                               (item, referencedItems) => referencedItems.where(
                                 (e) => e.outletId == item.id,
@@ -21104,6 +21511,48 @@ class $$OutletsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (purchaseOrdersRefs)
+                        await $_getPrefetchedData<
+                          Outlet,
+                          $OutletsTable,
+                          PurchaseOrder
+                        >(
+                          currentTable: table,
+                          referencedTable: $$OutletsTableReferences
+                              ._purchaseOrdersRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$OutletsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).purchaseOrdersRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.outletId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (purchaseOrderItemsRefs)
+                        await $_getPrefetchedData<
+                          Outlet,
+                          $OutletsTable,
+                          PurchaseOrderItem
+                        >(
+                          currentTable: table,
+                          referencedTable: $$OutletsTableReferences
+                              ._purchaseOrderItemsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$OutletsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).purchaseOrderItemsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.outletId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                       if (expensesRefs)
                         await $_getPrefetchedData<
                           Outlet,
@@ -21170,6 +21619,7 @@ typedef $$OutletsTableProcessedTableManager =
         bool employeesRefs,
         bool categoriesRefs,
         bool productsRefs,
+        bool productVariantsRefs,
         bool shiftsRefs,
         bool discountsRefs,
         bool transactionsRefs,
@@ -21182,6 +21632,8 @@ typedef $$OutletsTableProcessedTableManager =
         bool unitConversionsRefs,
         bool stockOpnameRefs,
         bool stockOpnameItemsRefs,
+        bool purchaseOrdersRefs,
+        bool purchaseOrderItemsRefs,
         bool expensesRefs,
         bool transactionPaymentsRefs,
       })
@@ -23795,6 +24247,7 @@ typedef $$ProductVariantsTableCreateCompanionBuilder =
       Value<int?> price,
       Value<int> stock,
       Value<String?> sku,
+      Value<String?> outletId,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<bool> isDirty,
@@ -23810,6 +24263,7 @@ typedef $$ProductVariantsTableUpdateCompanionBuilder =
       Value<int?> price,
       Value<int> stock,
       Value<String?> sku,
+      Value<String?> outletId,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<bool> isDirty,
@@ -23843,6 +24297,25 @@ final class $$ProductVariantsTableReferences
       $_db.products,
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_productIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $OutletsTable _outletIdTable(_$PosifyDatabase db) =>
+      db.outlets.createAlias(
+        $_aliasNameGenerator(db.productVariants.outletId, db.outlets.id),
+      );
+
+  $$OutletsTableProcessedTableManager? get outletId {
+    final $_column = $_itemColumn<String>('outlet_id');
+    if ($_column == null) return null;
+    final manager = $$OutletsTableTableManager(
+      $_db,
+      $_db.outlets,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_outletIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
@@ -23947,6 +24420,29 @@ class $$ProductVariantsTableFilterComposer
           }) => $$ProductsTableFilterComposer(
             $db: $db,
             $table: $db.products,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$OutletsTableFilterComposer get outletId {
+    final $$OutletsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.outletId,
+      referencedTable: $db.outlets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OutletsTableFilterComposer(
+            $db: $db,
+            $table: $db.outlets,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -24063,6 +24559,29 @@ class $$ProductVariantsTableOrderingComposer
     );
     return composer;
   }
+
+  $$OutletsTableOrderingComposer get outletId {
+    final $$OutletsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.outletId,
+      referencedTable: $db.outlets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OutletsTableOrderingComposer(
+            $db: $db,
+            $table: $db.outlets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$ProductVariantsTableAnnotationComposer
@@ -24129,6 +24648,29 @@ class $$ProductVariantsTableAnnotationComposer
     return composer;
   }
 
+  $$OutletsTableAnnotationComposer get outletId {
+    final $$OutletsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.outletId,
+      referencedTable: $db.outlets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OutletsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.outlets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
   Expression<T> transactionItemsRefs<T extends Object>(
     Expression<T> Function($$TransactionItemsTableAnnotationComposer a) f,
   ) {
@@ -24168,7 +24710,11 @@ class $$ProductVariantsTableTableManager
           $$ProductVariantsTableUpdateCompanionBuilder,
           (ProductVariant, $$ProductVariantsTableReferences),
           ProductVariant,
-          PrefetchHooks Function({bool productId, bool transactionItemsRefs})
+          PrefetchHooks Function({
+            bool productId,
+            bool outletId,
+            bool transactionItemsRefs,
+          })
         > {
   $$ProductVariantsTableTableManager(
     _$PosifyDatabase db,
@@ -24192,6 +24738,7 @@ class $$ProductVariantsTableTableManager
                 Value<int?> price = const Value.absent(),
                 Value<int> stock = const Value.absent(),
                 Value<String?> sku = const Value.absent(),
+                Value<String?> outletId = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<bool> isDirty = const Value.absent(),
@@ -24205,6 +24752,7 @@ class $$ProductVariantsTableTableManager
                 price: price,
                 stock: stock,
                 sku: sku,
+                outletId: outletId,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 isDirty: isDirty,
@@ -24220,6 +24768,7 @@ class $$ProductVariantsTableTableManager
                 Value<int?> price = const Value.absent(),
                 Value<int> stock = const Value.absent(),
                 Value<String?> sku = const Value.absent(),
+                Value<String?> outletId = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<bool> isDirty = const Value.absent(),
@@ -24233,6 +24782,7 @@ class $$ProductVariantsTableTableManager
                 price: price,
                 stock: stock,
                 sku: sku,
+                outletId: outletId,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 isDirty: isDirty,
@@ -24248,7 +24798,11 @@ class $$ProductVariantsTableTableManager
               )
               .toList(),
           prefetchHooksCallback:
-              ({productId = false, transactionItemsRefs = false}) {
+              ({
+                productId = false,
+                outletId = false,
+                transactionItemsRefs = false,
+              }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
@@ -24281,6 +24835,21 @@ class $$ProductVariantsTableTableManager
                                     referencedColumn:
                                         $$ProductVariantsTableReferences
                                             ._productIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (outletId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.outletId,
+                                    referencedTable:
+                                        $$ProductVariantsTableReferences
+                                            ._outletIdTable(db),
+                                    referencedColumn:
+                                        $$ProductVariantsTableReferences
+                                            ._outletIdTable(db)
                                             .id,
                                   )
                                   as T;
@@ -24331,7 +24900,11 @@ typedef $$ProductVariantsTableProcessedTableManager =
       $$ProductVariantsTableUpdateCompanionBuilder,
       (ProductVariant, $$ProductVariantsTableReferences),
       ProductVariant,
-      PrefetchHooks Function({bool productId, bool transactionItemsRefs})
+      PrefetchHooks Function({
+        bool productId,
+        bool outletId,
+        bool transactionItemsRefs,
+      })
     >;
 typedef $$ShiftsTableCreateCompanionBuilder =
     ShiftsCompanion Function({
@@ -33265,6 +33838,7 @@ typedef $$PurchaseOrdersTableCreateCompanionBuilder =
       Value<String> status,
       Value<int> totalEstimate,
       Value<String?> notes,
+      Value<String?> outletId,
       Value<DateTime> orderedAt,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
@@ -33279,6 +33853,7 @@ typedef $$PurchaseOrdersTableUpdateCompanionBuilder =
       Value<String> status,
       Value<int> totalEstimate,
       Value<String?> notes,
+      Value<String?> outletId,
       Value<DateTime> orderedAt,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
@@ -33309,6 +33884,25 @@ final class $$PurchaseOrdersTableReferences
       $_db.suppliers,
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_supplierIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $OutletsTable _outletIdTable(_$PosifyDatabase db) =>
+      db.outlets.createAlias(
+        $_aliasNameGenerator(db.purchaseOrders.outletId, db.outlets.id),
+      );
+
+  $$OutletsTableProcessedTableManager? get outletId {
+    final $_column = $_itemColumn<String>('outlet_id');
+    if ($_column == null) return null;
+    final manager = $$OutletsTableTableManager(
+      $_db,
+      $_db.outlets,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_outletIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
@@ -33420,6 +34014,29 @@ class $$PurchaseOrdersTableFilterComposer
     return composer;
   }
 
+  $$OutletsTableFilterComposer get outletId {
+    final $$OutletsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.outletId,
+      referencedTable: $db.outlets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OutletsTableFilterComposer(
+            $db: $db,
+            $table: $db.outlets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
   Expression<bool> purchaseOrderItemsRefs(
     Expression<bool> Function($$PurchaseOrderItemsTableFilterComposer f) f,
   ) {
@@ -33522,6 +34139,29 @@ class $$PurchaseOrdersTableOrderingComposer
     );
     return composer;
   }
+
+  $$OutletsTableOrderingComposer get outletId {
+    final $$OutletsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.outletId,
+      referencedTable: $db.outlets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OutletsTableOrderingComposer(
+            $db: $db,
+            $table: $db.outlets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$PurchaseOrdersTableAnnotationComposer
@@ -33585,6 +34225,29 @@ class $$PurchaseOrdersTableAnnotationComposer
     return composer;
   }
 
+  $$OutletsTableAnnotationComposer get outletId {
+    final $$OutletsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.outletId,
+      referencedTable: $db.outlets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OutletsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.outlets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
   Expression<T> purchaseOrderItemsRefs<T extends Object>(
     Expression<T> Function($$PurchaseOrderItemsTableAnnotationComposer a) f,
   ) {
@@ -33625,7 +34288,11 @@ class $$PurchaseOrdersTableTableManager
           $$PurchaseOrdersTableUpdateCompanionBuilder,
           (PurchaseOrder, $$PurchaseOrdersTableReferences),
           PurchaseOrder,
-          PrefetchHooks Function({bool supplierId, bool purchaseOrderItemsRefs})
+          PrefetchHooks Function({
+            bool supplierId,
+            bool outletId,
+            bool purchaseOrderItemsRefs,
+          })
         > {
   $$PurchaseOrdersTableTableManager(
     _$PosifyDatabase db,
@@ -33647,6 +34314,7 @@ class $$PurchaseOrdersTableTableManager
                 Value<String> status = const Value.absent(),
                 Value<int> totalEstimate = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
+                Value<String?> outletId = const Value.absent(),
                 Value<DateTime> orderedAt = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
@@ -33659,6 +34327,7 @@ class $$PurchaseOrdersTableTableManager
                 status: status,
                 totalEstimate: totalEstimate,
                 notes: notes,
+                outletId: outletId,
                 orderedAt: orderedAt,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -33673,6 +34342,7 @@ class $$PurchaseOrdersTableTableManager
                 Value<String> status = const Value.absent(),
                 Value<int> totalEstimate = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
+                Value<String?> outletId = const Value.absent(),
                 Value<DateTime> orderedAt = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
@@ -33685,6 +34355,7 @@ class $$PurchaseOrdersTableTableManager
                 status: status,
                 totalEstimate: totalEstimate,
                 notes: notes,
+                outletId: outletId,
                 orderedAt: orderedAt,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -33701,7 +34372,11 @@ class $$PurchaseOrdersTableTableManager
               )
               .toList(),
           prefetchHooksCallback:
-              ({supplierId = false, purchaseOrderItemsRefs = false}) {
+              ({
+                supplierId = false,
+                outletId = false,
+                purchaseOrderItemsRefs = false,
+              }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
@@ -33734,6 +34409,21 @@ class $$PurchaseOrdersTableTableManager
                                     referencedColumn:
                                         $$PurchaseOrdersTableReferences
                                             ._supplierIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (outletId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.outletId,
+                                    referencedTable:
+                                        $$PurchaseOrdersTableReferences
+                                            ._outletIdTable(db),
+                                    referencedColumn:
+                                        $$PurchaseOrdersTableReferences
+                                            ._outletIdTable(db)
                                             .id,
                                   )
                                   as T;
@@ -33784,7 +34474,11 @@ typedef $$PurchaseOrdersTableProcessedTableManager =
       $$PurchaseOrdersTableUpdateCompanionBuilder,
       (PurchaseOrder, $$PurchaseOrdersTableReferences),
       PurchaseOrder,
-      PrefetchHooks Function({bool supplierId, bool purchaseOrderItemsRefs})
+      PrefetchHooks Function({
+        bool supplierId,
+        bool outletId,
+        bool purchaseOrderItemsRefs,
+      })
     >;
 typedef $$PurchaseOrderItemsTableCreateCompanionBuilder =
     PurchaseOrderItemsCompanion Function({
@@ -33797,6 +34491,7 @@ typedef $$PurchaseOrderItemsTableCreateCompanionBuilder =
       required double quantity,
       Value<int> purchasePrice,
       Value<double> receivedQuantity,
+      Value<String?> outletId,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<bool> isDirty,
@@ -33814,6 +34509,7 @@ typedef $$PurchaseOrderItemsTableUpdateCompanionBuilder =
       Value<double> quantity,
       Value<int> purchasePrice,
       Value<double> receivedQuantity,
+      Value<String?> outletId,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<bool> isDirty,
@@ -33891,6 +34587,25 @@ final class $$PurchaseOrderItemsTableReferences
       $_db.ingredients,
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_ingredientIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $OutletsTable _outletIdTable(_$PosifyDatabase db) =>
+      db.outlets.createAlias(
+        $_aliasNameGenerator(db.purchaseOrderItems.outletId, db.outlets.id),
+      );
+
+  $$OutletsTableProcessedTableManager? get outletId {
+    final $_column = $_itemColumn<String>('outlet_id');
+    if ($_column == null) return null;
+    final manager = $$OutletsTableTableManager(
+      $_db,
+      $_db.outlets,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_outletIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
@@ -34017,6 +34732,29 @@ class $$PurchaseOrderItemsTableFilterComposer
           }) => $$IngredientsTableFilterComposer(
             $db: $db,
             $table: $db.ingredients,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$OutletsTableFilterComposer get outletId {
+    final $$OutletsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.outletId,
+      referencedTable: $db.outlets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OutletsTableFilterComposer(
+            $db: $db,
+            $table: $db.outlets,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -34154,6 +34892,29 @@ class $$PurchaseOrderItemsTableOrderingComposer
     );
     return composer;
   }
+
+  $$OutletsTableOrderingComposer get outletId {
+    final $$OutletsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.outletId,
+      referencedTable: $db.outlets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OutletsTableOrderingComposer(
+            $db: $db,
+            $table: $db.outlets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$PurchaseOrderItemsTableAnnotationComposer
@@ -34267,6 +35028,29 @@ class $$PurchaseOrderItemsTableAnnotationComposer
     );
     return composer;
   }
+
+  $$OutletsTableAnnotationComposer get outletId {
+    final $$OutletsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.outletId,
+      referencedTable: $db.outlets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OutletsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.outlets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$PurchaseOrderItemsTableTableManager
@@ -34286,6 +35070,7 @@ class $$PurchaseOrderItemsTableTableManager
             bool purchaseOrderId,
             bool productId,
             bool ingredientId,
+            bool outletId,
           })
         > {
   $$PurchaseOrderItemsTableTableManager(
@@ -34315,6 +35100,7 @@ class $$PurchaseOrderItemsTableTableManager
                 Value<double> quantity = const Value.absent(),
                 Value<int> purchasePrice = const Value.absent(),
                 Value<double> receivedQuantity = const Value.absent(),
+                Value<String?> outletId = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<bool> isDirty = const Value.absent(),
@@ -34330,6 +35116,7 @@ class $$PurchaseOrderItemsTableTableManager
                 quantity: quantity,
                 purchasePrice: purchasePrice,
                 receivedQuantity: receivedQuantity,
+                outletId: outletId,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 isDirty: isDirty,
@@ -34347,6 +35134,7 @@ class $$PurchaseOrderItemsTableTableManager
                 required double quantity,
                 Value<int> purchasePrice = const Value.absent(),
                 Value<double> receivedQuantity = const Value.absent(),
+                Value<String?> outletId = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<bool> isDirty = const Value.absent(),
@@ -34362,6 +35150,7 @@ class $$PurchaseOrderItemsTableTableManager
                 quantity: quantity,
                 purchasePrice: purchasePrice,
                 receivedQuantity: receivedQuantity,
+                outletId: outletId,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 isDirty: isDirty,
@@ -34381,6 +35170,7 @@ class $$PurchaseOrderItemsTableTableManager
                 purchaseOrderId = false,
                 productId = false,
                 ingredientId = false,
+                outletId = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -34446,6 +35236,21 @@ class $$PurchaseOrderItemsTableTableManager
                                   )
                                   as T;
                         }
+                        if (outletId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.outletId,
+                                    referencedTable:
+                                        $$PurchaseOrderItemsTableReferences
+                                            ._outletIdTable(db),
+                                    referencedColumn:
+                                        $$PurchaseOrderItemsTableReferences
+                                            ._outletIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
 
                         return state;
                       },
@@ -34474,6 +35279,7 @@ typedef $$PurchaseOrderItemsTableProcessedTableManager =
         bool purchaseOrderId,
         bool productId,
         bool ingredientId,
+        bool outletId,
       })
     >;
 typedef $$ExpenseCategoriesTableCreateCompanionBuilder =

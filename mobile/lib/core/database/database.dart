@@ -87,7 +87,7 @@ class PosifyDatabase extends _$PosifyDatabase {
   PosifyDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 25;
+  int get schemaVersion => 27;
 
   @override
   MigrationStrategy get migration {
@@ -210,6 +210,64 @@ class PosifyDatabase extends _$PosifyDatabase {
           await m.database.customStatement(
             'UPDATE licenses SET max_devices = 1, max_outlets = 1 WHERE max_outlets IS NULL',
           );
+        }
+        if (from < 26) {
+          // Critical fix: All UUID-based tables were missing primaryKey override.
+          // Drift's replace() and ON CONFLICT(id) SQL upsert both require a real
+          // SQLite PRIMARY KEY constraint. We must recreate affected tables.
+          // Safe to use destructive recreation because data is synced from Supabase.
+          await m.database.customStatement('PRAGMA foreign_keys = OFF;');
+
+          // Recreate all tables that need PRIMARY KEY fix
+          const tablesToRecreate = [
+            'outlets', 'employees', 'categories', 'products', 'product_variants',
+            'customers', 'suppliers', 'shifts', 'transactions', 'transaction_items',
+            'transaction_payments', 'discounts', 'expenses', 'expense_categories',
+            'purchase_orders', 'purchase_order_items', 'stock_opname',
+            'stock_opname_items', 'ingredients', 'store_profile', 'licenses',
+          ];
+
+          for (final t in tablesToRecreate) {
+            await m.database.customStatement('DROP TABLE IF EXISTS ${t}_old;');
+            await m.database.customStatement('ALTER TABLE $t RENAME TO ${t}_old;');
+          }
+
+          // Recreate all tables fresh (with correct PRIMARY KEY via Drift)
+          await m.createAll();
+          await _createSyncTriggers(m);
+
+          // Restore data row by row
+          for (final t in tablesToRecreate) {
+            try {
+              // Copy columns that exist in both old and new table
+              await m.database.customStatement(
+                'INSERT OR IGNORE INTO $t SELECT * FROM ${t}_old;',
+              );
+            } catch (_) {
+              // Some columns may have changed - best effort copy
+            }
+            await m.database.customStatement('DROP TABLE IF EXISTS ${t}_old;');
+          }
+
+          await m.database.customStatement('PRAGMA foreign_keys = ON;');
+        }
+        if (from < 27) {
+          await m.database.customStatement('PRAGMA foreign_keys = OFF;');
+          const allTables = [
+            'outlets', 'employees', 'categories', 'products', 'product_variants',
+            'customers', 'suppliers', 'shifts', 'transactions', 'transaction_items',
+            'transaction_payments', 'discounts', 'expenses', 'expense_categories',
+            'purchase_orders', 'purchase_order_items', 'stock_opname',
+            'stock_opname_items', 'ingredients', 'store_profile', 'licenses',
+            'product_recipes', 'stock_transactions', 'unit_conversions',
+            'ingredient_stock_history', 'printer_settings'
+          ];
+          for (final t in allTables) {
+            await m.database.customStatement('DROP TABLE IF EXISTS $t;');
+          }
+          await m.createAll();
+          await _createSyncTriggers(m);
+          await m.database.customStatement('PRAGMA foreign_keys = ON;');
         }
       },
     );

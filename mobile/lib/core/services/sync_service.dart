@@ -82,7 +82,7 @@ class SyncService {
     // Use read instead of future if possible, or handle async carefully
     final license = _ref.read(licenseProvider).value;
     final isPro = license?.tierLevel?.toLowerCase() == 'pro';
-    
+
     if (!isPro) {
       debugPrint('SyncService: Skipping — Lite tier user...');
       return;
@@ -119,10 +119,17 @@ class SyncService {
       final payload = dirtyRows.map((row) {
         final cleaned = Map<String, dynamic>.from(row);
         cleaned.remove('is_dirty'); // Supabase doesn't need this flag
-        
+
         // Strip 'stock' component to prevent conflict with Supabase triggers (Delta approach)
         if (table == 'products' || table == 'product_variants') {
           cleaned.remove('stock');
+        }
+
+        // Strip local-only security columns from employees table
+        if (table == 'employees') {
+          cleaned.remove('failed_login_attempts');
+          cleaned.remove('locked_until');
+          cleaned.remove('photo_uri'); // Local file path, not syncable
         }
 
         return cleaned;
@@ -150,14 +157,16 @@ class SyncService {
 
     for (final table in _syncableTables) {
       if (outletId == null && table != 'outlets') {
-        debugPrint('SyncService: Skipping $table - No outlet assigned to session');
+        debugPrint(
+          'SyncService: Skipping $table - No outlet assigned to session',
+        );
         continue;
       }
 
       var query = supabase.from(table).select();
 
       // Apply Outlet Filter (Efficiency Phase 1)
-      // Note: 'outlets' table might be visible across branches for owners, 
+      // Note: 'outlets' table might be visible across branches for owners,
       // but for now we filter it as well or keep it global if needed.
       if (table != 'outlets' && outletId != null) {
         query = query.eq('outlet_id', outletId);
@@ -170,12 +179,17 @@ class SyncService {
       final List<dynamic> records = await query;
       if (records.isNotEmpty) {
         debugPrint('SyncService: Pulled ${records.length} rows ← $table');
-        await db.importCloudRows(table, List<Map<String, dynamic>>.from(records));
+        await db.importCloudRows(
+          table,
+          List<Map<String, dynamic>>.from(records),
+        );
       }
     }
 
     await storage.write(
-        key: 'last_pull_sync', value: DateTime.now().toUtc().toIso8601String());
+      key: 'last_pull_sync',
+      value: DateTime.now().toUtc().toIso8601String(),
+    );
   }
 }
 
@@ -193,4 +207,6 @@ class SyncStatusNotifier extends Notifier<SyncStatus> {
 }
 
 /// Provider for the current Sync Status (for UI)
-final syncStatusProvider = NotifierProvider<SyncStatusNotifier, SyncStatus>(SyncStatusNotifier.new);
+final syncStatusProvider = NotifierProvider<SyncStatusNotifier, SyncStatus>(
+  SyncStatusNotifier.new,
+);

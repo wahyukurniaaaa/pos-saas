@@ -14,4 +14,7 @@ class Licenses extends Table {
   TextColumn get tierLevel => text().nullable()();
   IntColumn get maxDevices => integer().withDefault(const Constant(1))();
   IntColumn get maxOutlets => integer().withDefault(const Constant(1))();
+
+  @override
+  Set<Column> get primaryKey => {id};
 }

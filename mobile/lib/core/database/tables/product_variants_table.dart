@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import '../../utils/uuid_generator.dart';
 import 'products_table.dart';
+import 'outlets_table.dart';
 
 class ProductVariants extends Table {
   TextColumn get id => text().clientDefault(() => UuidGenerator.generate())();
@@ -11,8 +12,12 @@ class ProductVariants extends Table {
       integer().nullable()(); // null = use product base price
   IntColumn get stock => integer().withDefault(const Constant(0))();
   TextColumn get sku => text().nullable()(); // Optional, for barcode-per-variant
+  TextColumn get outletId => text().nullable().references(Outlets, #id)();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
   BoolColumn get isDirty => boolean().withDefault(const Constant(true))();
   DateTimeColumn get deletedAt => dateTime().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
 }

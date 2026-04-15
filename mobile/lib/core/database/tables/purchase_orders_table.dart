@@ -4,6 +4,7 @@ import '../../utils/uuid_generator.dart';
 import 'suppliers_table.dart';
 import 'ingredients_table.dart';
 import 'products_table.dart';
+import 'outlets_table.dart';
 
 // Status: draft → sent → received | cancelled
 class PurchaseOrders extends Table {
@@ -14,11 +15,15 @@ class PurchaseOrders extends Table {
       text().withDefault(const Constant('draft'))(); // draft/sent/received/cancelled
   IntColumn get totalEstimate => integer().withDefault(const Constant(0))();
   TextColumn get notes => text().nullable()();
+  TextColumn get outletId => text().nullable().references(Outlets, #id)();
   DateTimeColumn get orderedAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
   BoolColumn get isDirty => boolean().withDefault(const Constant(true))();
   DateTimeColumn get deletedAt => dateTime().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
 }
 
 class PurchaseOrderItems extends Table {
@@ -36,8 +41,12 @@ class PurchaseOrderItems extends Table {
   IntColumn get purchasePrice => integer().withDefault(const Constant(0))();
   RealColumn get receivedQuantity =>
       real().withDefault(const Constant(0))();
+  TextColumn get outletId => text().nullable().references(Outlets, #id)();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
   BoolColumn get isDirty => boolean().withDefault(const Constant(true))();
   DateTimeColumn get deletedAt => dateTime().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
 }

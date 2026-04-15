@@ -16,4 +16,7 @@ class Ingredients extends Table {
   TextColumn get outletId => text().nullable().references(Outlets, #id)();
   BoolColumn get isDirty => boolean().withDefault(const Constant(true))();
   DateTimeColumn get deletedAt => dateTime().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
 }
