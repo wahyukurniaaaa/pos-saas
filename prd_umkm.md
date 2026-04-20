@@ -2,9 +2,13 @@
 
 **Produk:** Aplikasi Sistem Kasir (POS) SaaS Offline-First
 
-**Versi:** 3.0 (Split Payment)
+**Versi:** 3.1 (Auto-Stock Deduction)
 
-**Status:** Implementasi Progresif (Phase 0, Phase 1-3, Phase 7-13 Selesai)
+**Status:** Implementasi Progresif (Phase 0-3, Phase 4 (Partial Sync), Phase 7-13 Selesai)
+
+## **Update Log (v3.1):**
+*   **Auto-Stock Deduction (Phase 13)**: Pemotongan stok bahan baku secara sistematis dan otomatis saat transaksi diselesaikan di kasir (Checkout).
+*   **Recipe-Based Logic**: Pengurangan stok bahan baku bersifat dinamis sesuai dengan "Resep" yang dikonfigurasi pada saat input data produk. Jika produk memiliki resep, sistem akan menghitung iterasi pemotongan setiap bahan secara holistik.
 
 ## **Update Log (v3.0):**
 *   **Split Payment (Phase 0)**: Implementasi pembayaran multi-metode dalam satu transaksi (contoh: Tunai + QRIS). Didukung hingga **4 metode** sesuai standar POS kompetitor (Moka, iReap, Kasir Pintar). Kasbon tidak dapat digabung dalam split.
@@ -66,7 +70,7 @@ Aplikasi POSify adalah sistem Point of Sale (POS) yang dirancang khusus untuk UM
 | **Batas Karyawan** | **Tidak Terbatas (Lokal)** | Tidak Terbatas |
 | **Akses Peran** | Hierarki Kumulatif (L1, L2, L3) | Hierarki Kumulatif (L1, L2, L3) |
 | **Manajemen Stok** | Stok In/Out & Opname (Lokal) | Multi-Gudang & Sync Cloud |
-| **Penyimpanan** | Full Offline (SQLite via Drift ORM) | Hybrid (SQLite + Supabase via PowerSync) |
+| **Penyimpanan** | Full Offline (SQLite via Drift ORM) | Hybrid (SQLite + Direct Supabase Sync) |
 | **Backup Data** | **Manual/Auto Encrypted (AES-256)** | **Otomatis (Cloud Sync)** |
 | **Aktivasi** | Online License Key & Heartbeat 24j | Login Akun SaaS |
 
@@ -106,7 +110,7 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
     * **Ingredient Maintenance**: Mengelola stok mentah (biji kopi, susu, gula) dengan satuan dasar (gr, ml, pcs).
     * **Stock Out & Waste Management**: Fitur "Stok Keluar" manual dengan pencatatan alasan (Misal: Kedaluwarsa, Rusak, Tumpah) untuk transparansi pengurangan inventaris.
     * **Recipe Builder**: Menentukan komposisi bahan baku per produk. Contoh: 1 cup "Copi Susu" memotong 15gr biji kopi dan 150ml susu.
-    * **Auto-Stock Deduction**: Pemotongan stok bahan baku secara otomatis dan *real-time* saat transaksi pembayaran selesai (Checkout).
+    * **Auto-Stock Deduction [AKTIF]**: Pemotongan stok bahan baku secara otomatis dan *real-time* berdasarkan komposisi **Recipe Builder** saat transaksi pembayaran selesai (Checkout). Jika resep telah diinput pada saat pendaftaran produk, sistem akan otomatis mengurangi saldo bahan baku terkait.
     * **Kalkulasi HPP (Weighted Moving Average)**: Sistem menghitung modal rata-rata secara otomatis setiap kali ada stok baru masuk (pembelian), memberikan akurasi laba kotor yang presisi bagi Owner.
     * **Unit Conversion**: Fleksibilitas input stok dalam satuan besar (Kg/Liter) yang otomatis dikonversi ke satuan penyimpan dasar (Gram/Ml) di database.
 * **Modul Promosi & Diskon (Advanced) [BARU]:**
@@ -133,7 +137,7 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
 
 *   **Database Engine:** Menggunakan **Drift ORM** di atas SQLite untuk memberikan lapisan keamanan pengetikan data (*Type-Safety*) penuh dan kehandalan struktur.
 *   **Reactive UI:** Setiap perubahan data stok, status transaksi, atau operasional shift dari SQLite divisualisasikan secara *Real-Time* menggunakan *Stream* Drift ke antarmuka aplikasi Kasir (Flutter) tanpa membebani perangkat secara aktif.
-*   **Tier 2 Readiness:** Struktur tabel dirancang agar sepenuhnya kompatibel dengan integrasi PowerSync (Server Sync) yang akan dihidupkan di iterasi bisnis mendatang dengan *coding overhaul* 0%.
+*   **Cloud Sync Integration:** Implementasi **Tier 2 (Pro)** telah diaktifkan penuh menggunakan arsitektur **Direct Supabase Sync & Realtime Channel**, memungkinkan sinkronisasi *multi-device* berjalan mulus berdampingan dengan kapabilitas SQLite *Offline-First*.
 
 ## **5\. Aturan Validasi Data (Data Integrity)**
 
@@ -192,7 +196,7 @@ Sistem menggunakan PIN 6-digit untuk beralih antar peran dengan tingkat akses:
 * **Fase 1 (Bulan 1):** Development Backend License Generator (Go), Setup Supabase, & Integrasi Email Lisensi.  
 * **Fase 2 (Bulan 2):** Development App Kasir (Flutter), SQLite, Modul Import Excel, & Manajemen Stok Lokal.  
 * **Fase 3 (Bulan 3):** Implementasi Modul Aktivasi Offline, Google Drive Backup, & Peluncuran Resmi APK Tier 1\.  
-* **Fase 4 (Bulan 4+):** Pengembangan Tier 2 (Pro) mencakup integrasi PowerSync (Cloud Sync), Multi-outlet, & Dashboard Web.
+* **Fase 4 (Bulan 4+):** Pengembangan Tier 2 (Pro) mencakup integrasi Direct Supabase (Cloud Sync), Multi-outlet, & Dashboard Web.
 
 ## **8\. User Stories Detail**
 
