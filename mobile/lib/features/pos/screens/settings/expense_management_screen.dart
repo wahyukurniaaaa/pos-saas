@@ -476,6 +476,7 @@ class _ExpenseFormSheetState extends ConsumerState<_ExpenseFormSheet> {
           note: Value(_noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim()),
           createdAt: Value(DateTime(widget.selectedDate.year, widget.selectedDate.month, widget.selectedDate.day,
               DateTime.now().hour, DateTime.now().minute)),
+          outletId: Value(session?.outletId),
         ),
       );
       if (mounted) Navigator.pop(context);

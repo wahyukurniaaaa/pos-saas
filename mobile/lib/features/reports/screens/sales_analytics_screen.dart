@@ -6,6 +6,7 @@ import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:posify_app/features/auth/providers/owner_provider.dart';
 import 'package:posify_app/core/widgets/responsive_layout.dart';
 
 class SalesAnalyticsScreen extends ConsumerStatefulWidget {
@@ -90,25 +91,29 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
     final range = _getDateRange();
     final prevRange = _getPreviousDateRange(range);
 
-    final revenue = await db.getTotalRevenue(range.start, range.end);
-    final count = await db.getTotalTransactions(range.start, range.end);
-    final totalProfit = await db.getTotalGrossProfit(range.start, range.end);
-    final topProducts = await db.getTopProducts(range.start, range.end);
-    final productProfits = await db.getProductProfitReport(range.start, range.end);
-    final categoryProfits = await db.getCategoryProfitReport(range.start, range.end);
-    final paymentMethods = await db.getPaymentMethodBreakdown(range.start, range.end);
+    final session = ref.read(sessionProvider).value;
+    if (session == null || session.outletId == null) return;
+    final outletId = session.outletId!;
+
+    final revenue = await db.getTotalRevenue(range.start, range.end, outletId);
+    final count = await db.getTotalTransactions(range.start, range.end, outletId);
+    final totalProfit = await db.getTotalGrossProfit(range.start, range.end, outletId);
+    final topProducts = await db.getTopProducts(range.start, range.end, outletId);
+    final productProfits = await db.getProductProfitReport(range.start, range.end, outletId);
+    final categoryProfits = await db.getCategoryProfitReport(range.start, range.end, outletId);
+    final paymentMethods = await db.getPaymentMethodBreakdown(range.start, range.end, outletId);
     
     // Previous data for comparison
-    final prevRevenue = await db.getTotalRevenue(prevRange.start, prevRange.end);
-    final prevCount = await db.getTotalTransactions(prevRange.start, prevRange.end);
-    final prevProfit = await db.getTotalGrossProfit(prevRange.start, prevRange.end);
+    final prevRevenue = await db.getTotalRevenue(prevRange.start, prevRange.end, outletId);
+    final prevCount = await db.getTotalTransactions(prevRange.start, prevRange.end, outletId);
+    final prevProfit = await db.getTotalGrossProfit(prevRange.start, prevRange.end, outletId);
 
     // Dynamic sales trend
     List<DailySales> sales;
     if (_selectedRange == 'Hari Ini') {
-      sales = await db.getHourlySales(range.start, range.end);
+      sales = await db.getHourlySales(range.start, range.end, outletId);
     } else {
-      sales = await db.getDailySales(range.start, range.end);
+      sales = await db.getDailySales(range.start, range.end, outletId);
     }
 
     // --- DUMMY DATA INJECTION (FOR TESTING) ---

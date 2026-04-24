@@ -82,6 +82,7 @@ class _IngredientOpnameScreenState extends ConsumerState<IngredientOpnameScreen>
             createdBy: employee.id,
             notes: drift.Value(reason),
             createdAt: drift.Value(DateTime.now()),
+            outletId: employee.outletId != null ? drift.Value(employee.outletId!) : const drift.Value.absent(),
           ),
         );
 
@@ -104,6 +105,7 @@ class _IngredientOpnameScreenState extends ConsumerState<IngredientOpnameScreen>
               physicalStock: physical,
               variance: diff,
               varianceReason: drift.Value(reason),
+              outletId: employee.outletId != null ? drift.Value(employee.outletId!) : const drift.Value.absent(),
             ),
           );
         }

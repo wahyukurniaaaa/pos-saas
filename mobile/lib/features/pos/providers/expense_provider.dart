@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
+import 'package:posify_app/features/auth/providers/owner_provider.dart';
 
 // ─── CRUD Providers ──────────────────────────────────────────────────────────
 
@@ -12,7 +13,9 @@ class ExpenseCategoryNotifier extends AsyncNotifier<List<ExpenseCategory>> {
   @override
   Future<List<ExpenseCategory>> build() async {
     final db = ref.watch(databaseProvider);
-    return db.getAllExpenseCategories();
+    final session = ref.watch(sessionProvider).value;
+    if (session == null || session.outletId == null) return [];
+    return db.getAllExpenseCategories(session.outletId!);
   }
 
   Future<void> upsert(ExpenseCategoriesCompanion entry) async {
@@ -40,8 +43,11 @@ class ExpenseNotifier extends AsyncNotifier<List<ExpenseWithCategory>> {
   @override
   Future<List<ExpenseWithCategory>> build() async {
     final db = ref.watch(databaseProvider);
+    final session = ref.watch(sessionProvider).value;
+    if (session == null || session.outletId == null) return [];
+    
     _filterDate ??= DateTime.now();
-    return db.getExpensesWithCategory(date: _filterDate!);
+    return db.getExpensesWithCategory(date: _filterDate!, outletId: session.outletId!);
   }
 
   void setDate(DateTime date) {
@@ -72,9 +78,14 @@ class CashFlowNotifier extends AsyncNotifier<CashFlowData> {
   @override
   Future<CashFlowData> build() async {
     final db = ref.watch(databaseProvider);
+    final session = ref.watch(sessionProvider).value;
+    if (session == null || session.outletId == null) {
+      return const CashFlowData(totalRevenue: 0, totalExpense: 0, daily: []); 
+    }
+    
     final now = DateTime.now();
     final from = DateTime(now.year, now.month, now.day - 6);
-    return db.getCashFlowData(from: from, to: now);
+    return db.getCashFlowData(from: from, to: now, outletId: session.outletId!);
   }
 }
 

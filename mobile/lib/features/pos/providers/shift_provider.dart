@@ -6,7 +6,9 @@ import 'package:posify_app/features/auth/providers/owner_provider.dart';
 
 final openShiftProvider = StreamProvider<Shift?>((ref) {
   final db = ref.watch(databaseProvider);
-  return db.watchOpenShift();
+  final session = ref.watch(sessionProvider).value;
+  if (session == null || session.outletId == null) return Stream.value(null);
+  return db.watchOpenShift(session.outletId!);
 });
 
 class ShiftNotifier extends AsyncNotifier<void> {
@@ -31,6 +33,7 @@ class ShiftNotifier extends AsyncNotifier<void> {
           startingCash: drift.Value(startingCash),
           status: const drift.Value('open'),
           expectedEndingCash: drift.Value(startingCash),
+          outletId: drift.Value(employee.outletId),
         ),
       );
       state = const AsyncData(null);
@@ -45,7 +48,12 @@ class ShiftNotifier extends AsyncNotifier<void> {
     state = const AsyncLoading();
     try {
       final db = ref.read(databaseProvider);
-      final currentShift = await db.getOpenShift();
+      final employee = await ref.read(sessionProvider.future);
+      if (employee == null || employee.outletId == null) {
+        state = AsyncError('No valid session', StackTrace.current);
+        return false;
+      }
+      final currentShift = await db.getOpenShift(employee.outletId!);
 
       if (currentShift == null || currentShift.id != shiftId) {
         state = AsyncError(

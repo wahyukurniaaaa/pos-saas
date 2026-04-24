@@ -80,6 +80,7 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
             createdBy: employee.id,
             notes: drift.Value(reason),
             createdAt: drift.Value(DateTime.now()),
+            outletId: employee.outletId != null ? drift.Value(employee.outletId!) : const drift.Value.absent(),
           ),
         );
 
@@ -101,6 +102,7 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
                   physicalStock: physicalValue.toDouble(),
                   variance: (physicalValue - product.stock).toDouble(),
                   varianceReason: drift.Value(reason),
+                  outletId: employee.outletId != null ? drift.Value(employee.outletId!) : const drift.Value.absent(),
                 ),
               );
             }
@@ -119,6 +121,7 @@ class _StockOpnameScreenState extends ConsumerState<StockOpnameScreen> {
                   physicalStock: physicalValue.toDouble(),
                   variance: (physicalValue - variant.stock).toDouble(),
                   varianceReason: drift.Value(reason),
+                  outletId: employee.outletId != null ? drift.Value(employee.outletId!) : const drift.Value.absent(),
                 ),
               );
             }

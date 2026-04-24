@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
+import 'package:posify_app/features/auth/providers/owner_provider.dart';
 
 // ─── Providers ──────────────────────────────────────────────────────────────
 
@@ -14,7 +15,9 @@ final purchaseOrdersProvider =
 class PurchaseOrderNotifier extends AsyncNotifier<List<PurchaseOrder>> {
   @override
   Future<List<PurchaseOrder>> build() {
-    return ref.read(databaseProvider).getAllPurchaseOrders();
+    final session = ref.watch(sessionProvider).value;
+    if (session == null || session.outletId == null) return Future.value([]);
+    return ref.read(databaseProvider).getAllPurchaseOrders(session.outletId!);
   }
 
   Future<String> createPO({
@@ -23,6 +26,8 @@ class PurchaseOrderNotifier extends AsyncNotifier<List<PurchaseOrder>> {
     required List<PurchaseOrderItemsCompanion> items,
   }) async {
     final db = ref.read(databaseProvider);
+    final session = ref.read(sessionProvider).value;
+    final String? outletId = session?.outletId;
     final now = DateTime.now();
     
     final poId = await db.createPurchaseOrder(
@@ -31,10 +36,14 @@ class PurchaseOrderNotifier extends AsyncNotifier<List<PurchaseOrder>> {
         notes: notes != null ? Value(notes) : const Value.absent(),
         orderedAt: Value(now),
         updatedAt: Value(now),
+        outletId: outletId != null ? Value(outletId) : const Value.absent(),
       ),
     );
 
-    for (final item in items) {
+    for (var item in items) {
+      if (outletId != null) {
+        item = item.copyWith(outletId: Value(outletId));
+      }
       await db.addPurchaseOrderItem(
         item.copyWith(purchaseOrderId: Value(poId)),
       );
@@ -62,8 +71,11 @@ class PurchaseOrderNotifier extends AsyncNotifier<List<PurchaseOrder>> {
 
   Future<void> refresh() async {
     state = const AsyncLoading();
+    final session = ref.read(sessionProvider).value;
+    if (session == null || session.outletId == null) return;
+    
     state = await AsyncValue.guard(
-      () => ref.read(databaseProvider).getAllPurchaseOrders(),
+      () => ref.read(databaseProvider).getAllPurchaseOrders(session.outletId!),
     );
   }
 }

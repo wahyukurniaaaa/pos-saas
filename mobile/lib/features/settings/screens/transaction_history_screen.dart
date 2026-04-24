@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'receipt_detail_screen.dart';
 import 'package:posify_app/core/widgets/responsive_layout.dart';
 import 'package:posify_app/features/pos/providers/pos_providers.dart';
+import 'package:posify_app/features/auth/providers/owner_provider.dart';
 
 class TransactionHistoryScreen extends ConsumerWidget {
   const TransactionHistoryScreen({super.key});
@@ -16,6 +17,8 @@ class TransactionHistoryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final db = ref.watch(databaseProvider);
     final currentFilter = ref.watch(historyFilterProvider);
+    final session = ref.watch(sessionProvider).value;
+    final outletId = session?.outletId ?? '';
     
     final currency = NumberFormat.currency(
       locale: 'id_ID',
@@ -41,12 +44,12 @@ class TransactionHistoryScreen extends ConsumerWidget {
           Expanded(
             child: ResponsiveCenter(
               child: StreamBuilder<Shift?>(
-                stream: db.watchOpenShift(),
+                stream: db.watchOpenShift(outletId),
                 builder: (context, shiftSnapshot) {
                   final openShift = shiftSnapshot.data;
                   
                   return StreamBuilder<List<Transaction>>(
-                    stream: _getTransactionStream(db, currentFilter, openShift),
+                    stream: _getTransactionStream(db, currentFilter, openShift, outletId),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());
@@ -193,7 +196,8 @@ class TransactionHistoryScreen extends ConsumerWidget {
   Stream<List<Transaction>> _getTransactionStream(
     PosifyDatabase db, 
     HistoryFilter filter, 
-    Shift? openShift
+    Shift? openShift,
+    String outletId,
   ) {
     if (filter.type == HistoryFilterType.currentShift) {
       if (openShift == null) return Stream.value([]);
@@ -201,9 +205,9 @@ class TransactionHistoryScreen extends ConsumerWidget {
     }
 
     final range = _getDateRange(filter);
-    if (range == null) return db.watchAllTransactions();
+    if (range == null) return db.watchAllTransactions(outletId);
     
-    return db.watchTransactionsByRange(range.start, range.end);
+    return db.watchTransactionsByRange(range.start, range.end, outletId);
   }
 
   DateTimeRange? _getDateRange(HistoryFilter filter) {

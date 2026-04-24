@@ -114,6 +114,16 @@ class _AppBootstrapState extends ConsumerState<AppBootstrap> {
       return const LoginScreen();
     }
 
+    // Tunggu sync pertama selesai JIKA database lokal benar-benar kosong (Perangkat Baru / Reinstall)
+    // Kita hanya mengkonfirmasi data kosong jika state sudah TIDAK loading dan nilainya murni null
+    final isLocalLicenseEmpty = !licenseAsync.isLoading && licenseAsync.value == null;
+    final isLocalOwnerEmpty = !ownerAsync.isLoading && ownerAsync.value == null;
+    final isInitialSyncDone = ref.watch(initialSyncProvider);
+
+    if (isLocalLicenseEmpty && isLocalOwnerEmpty && !isInitialSyncDone) {
+      return const _SplashScreen(errorMessage: 'Menyinkronkan data profil dari cloud...');
+    }
+
     // Layer 2: License (Device/Subscription)
     return licenseAsync.when(
       loading: () => const _SplashScreen(),

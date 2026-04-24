@@ -6,6 +6,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:posify_app/core/widgets/responsive_layout.dart';
+import 'package:posify_app/features/auth/providers/owner_provider.dart';
 import 'package:posify_app/features/pos/providers/discount_provider.dart';
 
 final _currency =
@@ -343,6 +344,9 @@ class _DiscountFormSheetState extends ConsumerState<_DiscountFormSheet> {
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isSaving = true);
+    final session = ref.read(sessionProvider).value;
+    final outletId = session?.outletId;
+
     final entry = DiscountsCompanion(
       id: widget.existing != null ? Value(widget.existing!.id) : const Value.absent(),
       name: Value(_nameCtrl.text.trim()),
@@ -356,6 +360,7 @@ class _DiscountFormSheetState extends ConsumerState<_DiscountFormSheet> {
       isActive: Value(_isActive),
       startDate: Value(_startDate ?? DateTime.now()),
       endDate: Value(_endDate),
+      outletId: outletId != null ? Value(outletId) : const Value.absent(),
     );
     await ref.read(discountProvider.notifier).save(entry);
     if (mounted) Navigator.pop(context);

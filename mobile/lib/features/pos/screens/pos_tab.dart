@@ -136,7 +136,7 @@ class _PosTabState extends ConsumerState<PosTab> {
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -173,7 +173,7 @@ class _PosTabState extends ConsumerState<PosTab> {
                           size: 20,
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 8),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -207,7 +207,7 @@ class _PosTabState extends ConsumerState<PosTab> {
                   Row(
                     children: [
                       _HeldBillsBadge(),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 8),
                       hasOpenShift
                           ? Material(
                               color: Colors.transparent,
@@ -246,8 +246,8 @@ class _PosTabState extends ConsumerState<PosTab> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppTheme.secondaryColor,
                                 foregroundColor: AppTheme.primaryColor,
-                                minimumSize: const Size(0, 36),
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                minimumSize: const Size(0, 32),
+                                padding: const EdgeInsets.symmetric(horizontal: 10),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),

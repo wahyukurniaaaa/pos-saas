@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
+import 'package:posify_app/features/auth/providers/owner_provider.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:drift/drift.dart' as drift;
 
@@ -222,11 +223,15 @@ class _UnitConversionFormState extends ConsumerState<_UnitConversionForm> {
           notes: drift.Value(_notesController.text.trim().isNotEmpty ? _notesController.text.trim() : null),
         ));
       } else {
+        final session = ref.read(sessionProvider).value;
+        final outletId = session?.outletId;
+        
         await db.insertUnitConversion(UnitConversionsCompanion.insert(
           fromUnit: _fromUnitController.text.trim().toLowerCase(),
           toUnit: _toUnitController.text.trim().toLowerCase(),
           multiplier: multiplier,
           notes: drift.Value(_notesController.text.trim().isNotEmpty ? _notesController.text.trim() : null),
+          outletId: outletId != null ? drift.Value(outletId) : const drift.Value.absent(),
         ));
       }
       ref.invalidate(unitConversionProvider);

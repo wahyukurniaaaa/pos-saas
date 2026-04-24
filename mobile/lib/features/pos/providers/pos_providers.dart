@@ -14,8 +14,11 @@ class CategoryNotifier extends AsyncNotifier<List<Category>> {
   @override
   Future<List<Category>> build() async {
     final db = ref.watch(databaseProvider);
+    final session = ref.watch(sessionProvider).value;
+    if (session == null || session.outletId == null) return _getDummyCategories();
+    final outletId = session.outletId!;
     
-    final subscription = db.watchAllCategories().listen((categories) {
+    final subscription = db.watchAllCategories(outletId).listen((categories) {
       if (ref.mounted) {
         state = AsyncValue.data(categories.isEmpty ? _getDummyCategories() : categories);
       }
@@ -23,7 +26,7 @@ class CategoryNotifier extends AsyncNotifier<List<Category>> {
 
     ref.onDispose(() => subscription.cancel());
 
-    final all = await db.getAllCategories();
+    final all = await db.getAllCategories(outletId);
     return all.isEmpty ? _getDummyCategories() : all;
   }
 
@@ -31,21 +34,21 @@ class CategoryNotifier extends AsyncNotifier<List<Category>> {
     final now = DateTime.now();
     return [
       Category(
-        id: 'cat-1',
+        id: '88265004-8975-4c07-b3f9-7f3e803d3511',
         name: 'Makanan',
         createdAt: now,
         updatedAt: now,
         isDirty: false,
       ),
       Category(
-        id: 'cat-2',
+        id: '77465004-8975-4c07-b3f9-7f3e803d3522',
         name: 'Minuman',
         createdAt: now,
         updatedAt: now,
         isDirty: false,
       ),
       Category(
-        id: 'cat-3',
+        id: '66365004-8975-4c07-b3f9-7f3e803d3533',
         name: 'Camilan',
         createdAt: now,
         updatedAt: now,
@@ -70,9 +73,12 @@ class ProductNotifier extends AsyncNotifier<List<Product>> {
   @override
   Future<List<Product>> build() async {
     final db = ref.watch(databaseProvider);
+    final session = ref.watch(sessionProvider).value;
+    if (session == null || session.outletId == null) return [];
+    final outletId = session.outletId!;
 
     // Stream for realtime updates
-    final subscription = db.watchAllProducts().listen((products) {
+    final subscription = db.watchAllProducts(outletId).listen((products) {
       if (ref.mounted) {
         _allProducts = products;
         state = AsyncValue.data(_filter(products));
@@ -81,7 +87,7 @@ class ProductNotifier extends AsyncNotifier<List<Product>> {
 
     ref.onDispose(() => subscription.cancel());
 
-    _allProducts = await db.getAllProducts();
+    _allProducts = await db.getAllProducts(outletId);
     return _filter(_allProducts);
   }
 
@@ -125,9 +131,12 @@ class ProductWithVariantsNotifier extends AsyncNotifier<List<ProductWithVariants
   @override
   Future<List<ProductWithVariants>> build() async {
     final db = ref.watch(databaseProvider);
+    final session = ref.watch(sessionProvider).value;
+    if (session == null || session.outletId == null) return [];
+    final outletId = session.outletId!;
     
     // Start watching the stream for updates
-    final subscription = db.watchAllProductsWithVariants().listen((data) {
+    final subscription = db.watchAllProductsWithVariants(outletId).listen((data) {
       if (ref.mounted) {
         state = AsyncValue.data(_filter(data));
       }
@@ -136,7 +145,7 @@ class ProductWithVariantsNotifier extends AsyncNotifier<List<ProductWithVariants
     ref.onDispose(() => subscription.cancel());
 
     // Pull initial data directly for the build phase
-    final initialData = await db.getAllProductsWithVariants();
+    final initialData = await db.getAllProductsWithVariants(outletId);
     return _filter(initialData);
   }
 
@@ -180,8 +189,11 @@ class IngredientNotifier extends AsyncNotifier<List<Ingredient>> {
   @override
   Future<List<Ingredient>> build() async {
     final db = ref.watch(databaseProvider);
+    final session = ref.watch(sessionProvider).value;
+    if (session == null || session.outletId == null) return [];
+    final outletId = session.outletId!;
     
-    final subscription = db.watchAllIngredients().listen((data) {
+    final subscription = db.watchAllIngredients(outletId).listen((data) {
       if (ref.mounted) {
         state = AsyncValue.data(_filter(data));
       }
@@ -189,7 +201,7 @@ class IngredientNotifier extends AsyncNotifier<List<Ingredient>> {
 
     ref.onDispose(() => subscription.cancel());
 
-    final initialData = await db.getAllIngredients();
+    final initialData = await db.getAllIngredients(outletId);
     return _filter(initialData);
   }
 
@@ -493,6 +505,9 @@ class CartNotifier extends Notifier<List<CartItem>> {
   Future<void> resumeBill(Transaction transaction, List<TransactionItem> items) async {
     try {
       final db = ref.read(databaseProvider);
+      final session = ref.read(sessionProvider).value;
+      if (session == null || session.outletId == null) return;
+      final outletId = session.outletId!;
       
       // Clear current cart before resuming
       clearCart();
@@ -511,7 +526,7 @@ class CartNotifier extends Notifier<List<CartItem>> {
         // Handle discount if any
         Discount? discount;
         if (item.discountId != null) {
-          final allDiscounts = await db.getAllDiscounts();
+          final allDiscounts = await db.getAllDiscounts(outletId);
           discount = allDiscounts.where((d) => d.id == item.discountId).firstOrNull;
         }
         
@@ -530,7 +545,7 @@ class CartNotifier extends Notifier<List<CartItem>> {
 
       // === NEW: RESTORE CUSTOMER INFO ===
       if (transaction.customerId != null) {
-        final customers = await db.getAllCustomers();
+        final customers = await db.getAllCustomers(outletId);
         final selected = customers.where((c) => c.id == transaction.customerId).firstOrNull;
         if (selected != null) {
           ref.read(selectedCustomerProvider.notifier).state = selected;
@@ -630,13 +645,19 @@ class HistoryDataNotifier extends AsyncNotifier<HistoryData> {
   Future<HistoryData> build() async {
     final db = ref.watch(databaseProvider);
     final filter = ref.watch(historyFilterProvider);
+    final session = ref.watch(sessionProvider).value;
+    
+    if (session == null || session.outletId == null) {
+      return HistoryData(profile: null, openShift: null, transactions: []);
+    }
+    final outletId = session.outletId!;
 
     final profile = await db.getStoreProfile();
 
     // Watch open shift for realtime updates
-    final shiftSub = db.watchOpenShift().listen((shift) async {
+    final shiftSub = db.watchOpenShift(outletId).listen((shift) async {
       if (!ref.mounted) return;
-      final txns = await _getTransactions(db, filter, shift);
+      final txns = await _getTransactions(db, filter, shift, outletId);
       state = AsyncValue.data(HistoryData(
         profile: profile,
         openShift: shift,
@@ -648,11 +669,11 @@ class HistoryDataNotifier extends AsyncNotifier<HistoryData> {
     // Get initial shift
     Shift? openShift;
     try {
-      openShift = await db.getOpenShift();
+      openShift = await db.getOpenShift(outletId);
     } catch (_) {}
 
     // Watch transactions for realtime updates
-    final txnStream = _getTransactionStream(db, filter, openShift);
+    final txnStream = _getTransactionStream(db, filter, openShift, outletId);
     final txnSub = txnStream.listen((txns) {
       if (!ref.mounted) return;
       state = AsyncValue.data(HistoryData(
@@ -663,7 +684,7 @@ class HistoryDataNotifier extends AsyncNotifier<HistoryData> {
     });
     ref.onDispose(() => txnSub.cancel());
 
-    final txns = await _getTransactions(db, filter, openShift);
+    final txns = await _getTransactions(db, filter, openShift, outletId);
     return HistoryData(
       profile: profile,
       openShift: openShift,
@@ -672,21 +693,21 @@ class HistoryDataNotifier extends AsyncNotifier<HistoryData> {
   }
 
   Stream<List<Transaction>> _getTransactionStream(
-    PosifyDatabase db, HistoryFilter filter, Shift? openShift,
+    PosifyDatabase db, HistoryFilter filter, Shift? openShift, String outletId,
   ) {
     if (filter.type == HistoryFilterType.currentShift) {
       if (openShift == null) return Stream.value([]);
       return db.watchTransactionsByShift(openShift.id);
     }
     final range = _getDateRange(filter);
-    if (range == null) return db.watchAllTransactions();
-    return db.watchTransactionsByRange(range.start, range.end);
+    if (range == null) return db.watchAllTransactions(outletId);
+    return db.watchTransactionsByRange(range.start, range.end, outletId);
   }
 
   Future<List<Transaction>> _getTransactions(
-    PosifyDatabase db, HistoryFilter filter, Shift? openShift,
+    PosifyDatabase db, HistoryFilter filter, Shift? openShift, String outletId,
   ) {
-    return _getTransactionStream(db, filter, openShift).first;
+    return _getTransactionStream(db, filter, openShift, outletId).first;
   }
 
   DateTimeRange? _getDateRange(HistoryFilter filter) {
@@ -720,13 +741,16 @@ class CustomerNotifier extends AsyncNotifier<List<Customer>> {
   @override
   Future<List<Customer>> build() async {
     final db = ref.watch(databaseProvider);
+    final session = ref.watch(sessionProvider).value;
+    if (session == null || session.outletId == null) return [];
+    final outletId = session.outletId!;
 
-    final subscription = db.watchAllCustomers().listen((data) {
+    final subscription = db.watchAllCustomers(outletId).listen((data) {
       if (ref.mounted) state = AsyncValue.data(data);
     });
     ref.onDispose(() => subscription.cancel());
 
-    return db.getAllCustomers();
+    return db.getAllCustomers(outletId);
   }
 }
 
@@ -740,13 +764,16 @@ class SupplierNotifier extends AsyncNotifier<List<Supplier>> {
   @override
   Future<List<Supplier>> build() async {
     final db = ref.watch(databaseProvider);
+    final session = ref.watch(sessionProvider).value;
+    if (session == null || session.outletId == null) return [];
+    final outletId = session.outletId!;
 
-    final subscription = db.watchAllSuppliers().listen((data) {
+    final subscription = db.watchAllSuppliers(outletId).listen((data) {
       if (ref.mounted) state = AsyncValue.data(data);
     });
     ref.onDispose(() => subscription.cancel());
 
-    return db.getAllSuppliers();
+    return db.getAllSuppliers(outletId);
   }
 }
 
@@ -792,7 +819,9 @@ final stockHistoryProvider = AsyncNotifierProvider<StockHistoryNotifier, List<St
 
 final pendingTransactionsProvider = StreamProvider<List<Transaction>>((ref) {
   final db = ref.watch(databaseProvider);
-  return db.watchPendingTransactions();
+  final session = ref.watch(sessionProvider).value;
+  if (session == null || session.outletId == null) return Stream.value([]);
+  return db.watchPendingTransactions(session.outletId!);
 });
 
 // ===== Ingredient History Provider =====

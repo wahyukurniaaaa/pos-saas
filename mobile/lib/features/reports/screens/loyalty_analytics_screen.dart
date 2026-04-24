@@ -5,13 +5,16 @@ import 'package:intl/intl.dart';
 import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
+import 'package:posify_app/features/auth/providers/owner_provider.dart';
 import 'package:posify_app/core/widgets/responsive_layout.dart';
 
 // Provider that fetches customer loyalty leaderboard
 final loyaltyLeaderboardProvider =
     FutureProvider<List<CustomerLoyaltyStat>>((ref) async {
   final db = ref.watch(databaseProvider);
-  return db.getLoyaltyLeaderboard();
+  final session = ref.watch(sessionProvider).value;
+  if (session == null || session.outletId == null) return [];
+  return db.getLoyaltyLeaderboard(session.outletId!);
 });
 
 class LoyaltyAnalyticsScreen extends ConsumerStatefulWidget {

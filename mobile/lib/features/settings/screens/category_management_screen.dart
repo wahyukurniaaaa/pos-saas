@@ -1,9 +1,11 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:drift/drift.dart' as drift;
 import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
+import 'package:posify_app/features/auth/providers/owner_provider.dart';
 import 'package:posify_app/core/widgets/responsive_layout.dart';
 
 class CategoryManagementScreen extends ConsumerStatefulWidget {
@@ -69,11 +71,16 @@ class _CategoryManagementScreenState
               final name = _nameController.text.trim();
               if (name.isEmpty) return;
               final db = ref.read(databaseProvider);
+              final session = ref.read(sessionProvider).value;
+              final outletId = session?.outletId;
 
               if (existing != null) {
                 await db.updateCategory(existing.copyWith(name: name));
               } else {
-                await db.insertCategory(CategoriesCompanion.insert(name: name));
+                await db.insertCategory(CategoriesCompanion.insert(
+                  name: name,
+                  outletId: outletId != null ? drift.Value(outletId) : const drift.Value.absent(),
+                ));
               }
 
               if (ctx.mounted) Navigator.pop(ctx);
@@ -154,7 +161,7 @@ class _CategoryManagementScreenState
         elevation: 0,
       ),
       body: ResponsiveCenter(child: StreamBuilder<List<Category>>(
-        stream: db.watchAllCategories(),
+        stream: db.watchAllCategories(ref.watch(sessionProvider).value?.outletId ?? ''),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());

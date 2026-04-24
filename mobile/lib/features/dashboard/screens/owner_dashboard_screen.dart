@@ -112,11 +112,14 @@ class _OwnerDashboardScreenState extends ConsumerState<OwnerDashboardScreen> {
     _loadStats();
     
     // Auto-refresh KPI without pull-to-refresh
-    _txnSubscription = ref.read(databaseProvider).watchAllTransactions().listen((_) {
-      if (mounted && !_isLoading) {
-        _loadStats();
-      }
-    });
+    final session = ref.read(sessionProvider).value;
+    if (session?.outletId != null) {
+      _txnSubscription = ref.read(databaseProvider).watchAllTransactions(session!.outletId!).listen((_) {
+        if (mounted && !_isLoading) {
+          _loadStats();
+        }
+      });
+    }
   }
 
   @override
@@ -126,6 +129,10 @@ class _OwnerDashboardScreenState extends ConsumerState<OwnerDashboardScreen> {
   }
 
   Future<void> _loadStats() async {
+    final session = ref.read(sessionProvider).value;
+    if (session == null || session.outletId == null) return;
+    final outletId = session.outletId!;
+
     setState(() => _isLoading = true);
     final db = ref.read(databaseProvider);
     final now = DateTime.now();
@@ -138,14 +145,14 @@ class _OwnerDashboardScreenState extends ConsumerState<OwnerDashboardScreen> {
     );
 
     final results = await Future.wait([
-      db.getTotalRevenue(todayStart, todayEnd),
-      db.getTotalRevenue(yestStart, yestEnd),
-      db.getTotalTransactions(todayStart, todayEnd),
-      db.getTotalTransactions(yestStart, yestEnd),
-      db.getTopProducts(todayStart, todayEnd),
-      db.getHourlySales(todayStart, todayEnd),
-      db.getLowStockProductsFiltered(),
-      db.getLowStockIngredients(),
+      db.getTotalRevenue(todayStart, todayEnd, outletId),
+      db.getTotalRevenue(yestStart, yestEnd, outletId),
+      db.getTotalTransactions(todayStart, todayEnd, outletId),
+      db.getTotalTransactions(yestStart, yestEnd, outletId),
+      db.getTopProducts(todayStart, todayEnd, outletId),
+      db.getHourlySales(todayStart, todayEnd, outletId),
+      db.getLowStockProductsFiltered(outletId: outletId),
+      db.getLowStockIngredients(outletId: outletId),
     ]);
 
     final todayRev = results[0] as int;

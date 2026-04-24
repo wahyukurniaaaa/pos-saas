@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import '../../utils/uuid_generator.dart';
 import 'ingredients_table.dart';
 import 'suppliers_table.dart';
+import 'outlets_table.dart';
 
 class IngredientStockHistory extends Table {
   TextColumn get id => text().clientDefault(() => UuidGenerator.generate())();
@@ -13,6 +14,7 @@ class IngredientStockHistory extends Table {
   TextColumn get referenceId => text().nullable()(); // Transaction ID or Batch ID
   TextColumn get supplierId => text().nullable().references(Suppliers, #id)();
   TextColumn get reason => text().nullable()();
+  TextColumn get outletId => text().nullable().references(Outlets, #id)();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
   BoolColumn get isDirty => boolean().withDefault(const Constant(true))();

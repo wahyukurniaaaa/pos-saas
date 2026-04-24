@@ -16,15 +16,20 @@ import 'package:posify_app/features/pos/screens/shift/shift_report_modal.dart';
 final historyPaymentTotalsProvider =
     FutureProvider.family<Map<String, int>, DateTimeRange?>((ref, range) async {
   final db = ref.watch(databaseProvider);
+  final session = ref.watch(sessionProvider).value;
+  if (session == null || session.outletId == null) return <String, int>{};
+  final outletId = session.outletId!;
+
   if (range == null) {
     // All-time: use a very wide range
     final results = await db.getPaymentMethodBreakdown(
       DateTime(2000),
       DateTime(2100),
+      outletId,
     );
     return <String, int>{for (final r in results) r.method: r.totalAmount};
   }
-  final results = await db.getPaymentMethodBreakdown(range.start, range.end);
+  final results = await db.getPaymentMethodBreakdown(range.start, range.end, outletId);
   return <String, int>{for (final r in results) r.method: r.totalAmount};
 });
 

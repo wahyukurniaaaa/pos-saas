@@ -694,8 +694,10 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
                 setStateDialog(() => isSaving = true);
                 final db = ref.read(databaseProvider);
                 try {
+                  final currentOutletId = ref.read(sessionProvider).value?.outletId;
                   final id = await db.insertCategory(CategoriesCompanion.insert(
                     name: ctrl.text.trim(),
+                    outletId: Value(currentOutletId),
                   ));
                   ref.invalidate(categoryProvider);
                   setState(() => _selectedCategoryId = id);
@@ -1484,6 +1486,8 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
 
     final minStockVal = int.tryParse(_minStockController.text) ?? 0;
 
+    final currentOutletId = ref.read(sessionProvider).value?.outletId;
+
     if (widget.product == null) {
       productId = await db.insertProduct(
         ProductsCompanion.insert(
@@ -1496,6 +1500,7 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
           stock: Value(_hasVariants ? 0 : stockVal),
           lowStockThreshold: Value(minStockVal),
           imageUri: Value(_imagePath),
+          outletId: Value(currentOutletId),
         ),
       );
     } else {

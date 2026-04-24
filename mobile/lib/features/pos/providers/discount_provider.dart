@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
+import 'package:posify_app/features/auth/providers/owner_provider.dart';
 
 // ─── Providers ───────────────────────────────────────────────────────────────
 
@@ -11,17 +12,21 @@ final discountProvider =
 /// Provider that returns valid *transaction-scope* discounts for a given cart total.
 final validTransactionDiscountsProvider =
     FutureProvider.family<List<Discount>, double>((ref, cartTotal) {
+  final session = ref.watch(sessionProvider).value;
+  if (session == null || session.outletId == null) return [];
   return ref
       .read(databaseProvider)
-      .getValidDiscounts(cartTotal: cartTotal, scope: 'transaction');
+      .getValidDiscounts(cartTotal: cartTotal, scope: 'transaction', outletId: session.outletId!);
 });
 
 /// Provider that returns valid *item-scope* discounts.
 final validItemDiscountsProvider =
     FutureProvider.family<List<Discount>, double>((ref, cartTotal) {
+  final session = ref.watch(sessionProvider).value;
+  if (session == null || session.outletId == null) return [];
   return ref
       .read(databaseProvider)
-      .getValidDiscounts(cartTotal: cartTotal, scope: 'item');
+      .getValidDiscounts(cartTotal: cartTotal, scope: 'item', outletId: session.outletId!);
 });
 
 // ─── Currently selected bill-level discount ──────────────────────────────────
@@ -76,10 +81,13 @@ class DiscountNotifier extends AsyncNotifier<List<Discount>> {
   @override
   Future<List<Discount>> build() {
     final db = ref.read(databaseProvider);
-    db.watchAllDiscounts().listen((data) {
+    final session = ref.watch(sessionProvider).value;
+    if (session == null || session.outletId == null) return Future.value([]);
+    
+    db.watchAllDiscounts(session.outletId!).listen((data) {
       if (ref.mounted) state = AsyncValue.data(data);
     });
-    return ref.read(databaseProvider).getAllDiscounts();
+    return ref.read(databaseProvider).getAllDiscounts(session.outletId!);
   }
 
   Future<void> save(DiscountsCompanion entry) async {
@@ -94,8 +102,11 @@ class DiscountNotifier extends AsyncNotifier<List<Discount>> {
 
   Future<void> _refresh() async {
     state = const AsyncLoading();
+    final session = ref.read(sessionProvider).value;
+    if (session == null || session.outletId == null) return;
+    
     state = await AsyncValue.guard(
-      () => ref.read(databaseProvider).getAllDiscounts(),
+      () => ref.read(databaseProvider).getAllDiscounts(session.outletId!),
     );
   }
 }

@@ -9720,6 +9720,20 @@ class $CustomersTable extends Customers
     requiredDuringInsert: false,
     defaultValue: currentDateAndTime,
   );
+  static const VerificationMeta _outletIdMeta = const VerificationMeta(
+    'outletId',
+  );
+  @override
+  late final GeneratedColumn<String> outletId = GeneratedColumn<String>(
+    'outlet_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES outlets (id)',
+    ),
+  );
   static const VerificationMeta _isDirtyMeta = const VerificationMeta(
     'isDirty',
   );
@@ -9757,6 +9771,7 @@ class $CustomersTable extends Customers
     points,
     createdAt,
     updatedAt,
+    outletId,
     isDirty,
     deletedAt,
   ];
@@ -9825,6 +9840,12 @@ class $CustomersTable extends Customers
         updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
       );
     }
+    if (data.containsKey('outlet_id')) {
+      context.handle(
+        _outletIdMeta,
+        outletId.isAcceptableOrUnknown(data['outlet_id']!, _outletIdMeta),
+      );
+    }
     if (data.containsKey('is_dirty')) {
       context.handle(
         _isDirtyMeta,
@@ -9882,6 +9903,10 @@ class $CustomersTable extends Customers
         DriftSqlType.dateTime,
         data['${effectivePrefix}updated_at'],
       )!,
+      outletId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}outlet_id'],
+      ),
       isDirty: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}is_dirty'],
@@ -9909,6 +9934,7 @@ class Customer extends DataClass implements Insertable<Customer> {
   final int points;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String? outletId;
   final bool isDirty;
   final DateTime? deletedAt;
   const Customer({
@@ -9921,6 +9947,7 @@ class Customer extends DataClass implements Insertable<Customer> {
     required this.points,
     required this.createdAt,
     required this.updatedAt,
+    this.outletId,
     required this.isDirty,
     this.deletedAt,
   });
@@ -9942,6 +9969,9 @@ class Customer extends DataClass implements Insertable<Customer> {
     map['points'] = Variable<int>(points);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || outletId != null) {
+      map['outlet_id'] = Variable<String>(outletId);
+    }
     map['is_dirty'] = Variable<bool>(isDirty);
     if (!nullToAbsent || deletedAt != null) {
       map['deleted_at'] = Variable<DateTime>(deletedAt);
@@ -9966,6 +9996,9 @@ class Customer extends DataClass implements Insertable<Customer> {
       points: Value(points),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
+      outletId: outletId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(outletId),
       isDirty: Value(isDirty),
       deletedAt: deletedAt == null && nullToAbsent
           ? const Value.absent()
@@ -9988,6 +10021,7 @@ class Customer extends DataClass implements Insertable<Customer> {
       points: serializer.fromJson<int>(json['points']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      outletId: serializer.fromJson<String?>(json['outletId']),
       isDirty: serializer.fromJson<bool>(json['isDirty']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
     );
@@ -10005,6 +10039,7 @@ class Customer extends DataClass implements Insertable<Customer> {
       'points': serializer.toJson<int>(points),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'outletId': serializer.toJson<String?>(outletId),
       'isDirty': serializer.toJson<bool>(isDirty),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
     };
@@ -10020,6 +10055,7 @@ class Customer extends DataClass implements Insertable<Customer> {
     int? points,
     DateTime? createdAt,
     DateTime? updatedAt,
+    Value<String?> outletId = const Value.absent(),
     bool? isDirty,
     Value<DateTime?> deletedAt = const Value.absent(),
   }) => Customer(
@@ -10032,6 +10068,7 @@ class Customer extends DataClass implements Insertable<Customer> {
     points: points ?? this.points,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
+    outletId: outletId.present ? outletId.value : this.outletId,
     isDirty: isDirty ?? this.isDirty,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
   );
@@ -10046,6 +10083,7 @@ class Customer extends DataClass implements Insertable<Customer> {
       points: data.points.present ? data.points.value : this.points,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      outletId: data.outletId.present ? data.outletId.value : this.outletId,
       isDirty: data.isDirty.present ? data.isDirty.value : this.isDirty,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
     );
@@ -10063,6 +10101,7 @@ class Customer extends DataClass implements Insertable<Customer> {
           ..write('points: $points, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
+          ..write('outletId: $outletId, ')
           ..write('isDirty: $isDirty, ')
           ..write('deletedAt: $deletedAt')
           ..write(')'))
@@ -10080,6 +10119,7 @@ class Customer extends DataClass implements Insertable<Customer> {
     points,
     createdAt,
     updatedAt,
+    outletId,
     isDirty,
     deletedAt,
   );
@@ -10096,6 +10136,7 @@ class Customer extends DataClass implements Insertable<Customer> {
           other.points == this.points &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
+          other.outletId == this.outletId &&
           other.isDirty == this.isDirty &&
           other.deletedAt == this.deletedAt);
 }
@@ -10110,6 +10151,7 @@ class CustomersCompanion extends UpdateCompanion<Customer> {
   final Value<int> points;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
+  final Value<String?> outletId;
   final Value<bool> isDirty;
   final Value<DateTime?> deletedAt;
   final Value<int> rowid;
@@ -10123,6 +10165,7 @@ class CustomersCompanion extends UpdateCompanion<Customer> {
     this.points = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.outletId = const Value.absent(),
     this.isDirty = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -10137,6 +10180,7 @@ class CustomersCompanion extends UpdateCompanion<Customer> {
     this.points = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.outletId = const Value.absent(),
     this.isDirty = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -10151,6 +10195,7 @@ class CustomersCompanion extends UpdateCompanion<Customer> {
     Expression<int>? points,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
+    Expression<String>? outletId,
     Expression<bool>? isDirty,
     Expression<DateTime>? deletedAt,
     Expression<int>? rowid,
@@ -10165,6 +10210,7 @@ class CustomersCompanion extends UpdateCompanion<Customer> {
       if (points != null) 'points': points,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
+      if (outletId != null) 'outlet_id': outletId,
       if (isDirty != null) 'is_dirty': isDirty,
       if (deletedAt != null) 'deleted_at': deletedAt,
       if (rowid != null) 'rowid': rowid,
@@ -10181,6 +10227,7 @@ class CustomersCompanion extends UpdateCompanion<Customer> {
     Value<int>? points,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
+    Value<String?>? outletId,
     Value<bool>? isDirty,
     Value<DateTime?>? deletedAt,
     Value<int>? rowid,
@@ -10195,6 +10242,7 @@ class CustomersCompanion extends UpdateCompanion<Customer> {
       points: points ?? this.points,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      outletId: outletId ?? this.outletId,
       isDirty: isDirty ?? this.isDirty,
       deletedAt: deletedAt ?? this.deletedAt,
       rowid: rowid ?? this.rowid,
@@ -10231,6 +10279,9 @@ class CustomersCompanion extends UpdateCompanion<Customer> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
+    if (outletId.present) {
+      map['outlet_id'] = Variable<String>(outletId.value);
+    }
     if (isDirty.present) {
       map['is_dirty'] = Variable<bool>(isDirty.value);
     }
@@ -10255,6 +10306,7 @@ class CustomersCompanion extends UpdateCompanion<Customer> {
           ..write('points: $points, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
+          ..write('outletId: $outletId, ')
           ..write('isDirty: $isDirty, ')
           ..write('deletedAt: $deletedAt, ')
           ..write('rowid: $rowid')
@@ -12834,6 +12886,20 @@ class $IngredientStockHistoryTable extends IngredientStockHistory
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _outletIdMeta = const VerificationMeta(
+    'outletId',
+  );
+  @override
+  late final GeneratedColumn<String> outletId = GeneratedColumn<String>(
+    'outlet_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES outlets (id)',
+    ),
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -12895,6 +12961,7 @@ class $IngredientStockHistoryTable extends IngredientStockHistory
     referenceId,
     supplierId,
     reason,
+    outletId,
     createdAt,
     updatedAt,
     isDirty,
@@ -12985,6 +13052,12 @@ class $IngredientStockHistoryTable extends IngredientStockHistory
         reason.isAcceptableOrUnknown(data['reason']!, _reasonMeta),
       );
     }
+    if (data.containsKey('outlet_id')) {
+      context.handle(
+        _outletIdMeta,
+        outletId.isAcceptableOrUnknown(data['outlet_id']!, _outletIdMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -13057,6 +13130,10 @@ class $IngredientStockHistoryTable extends IngredientStockHistory
         DriftSqlType.string,
         data['${effectivePrefix}reason'],
       ),
+      outletId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}outlet_id'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -13093,6 +13170,7 @@ class IngredientStockHistoryData extends DataClass
   final String? referenceId;
   final String? supplierId;
   final String? reason;
+  final String? outletId;
   final DateTime createdAt;
   final DateTime updatedAt;
   final bool isDirty;
@@ -13107,6 +13185,7 @@ class IngredientStockHistoryData extends DataClass
     this.referenceId,
     this.supplierId,
     this.reason,
+    this.outletId,
     required this.createdAt,
     required this.updatedAt,
     required this.isDirty,
@@ -13129,6 +13208,9 @@ class IngredientStockHistoryData extends DataClass
     }
     if (!nullToAbsent || reason != null) {
       map['reason'] = Variable<String>(reason);
+    }
+    if (!nullToAbsent || outletId != null) {
+      map['outlet_id'] = Variable<String>(outletId);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -13156,6 +13238,9 @@ class IngredientStockHistoryData extends DataClass
       reason: reason == null && nullToAbsent
           ? const Value.absent()
           : Value(reason),
+      outletId: outletId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(outletId),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
       isDirty: Value(isDirty),
@@ -13180,6 +13265,7 @@ class IngredientStockHistoryData extends DataClass
       referenceId: serializer.fromJson<String?>(json['referenceId']),
       supplierId: serializer.fromJson<String?>(json['supplierId']),
       reason: serializer.fromJson<String?>(json['reason']),
+      outletId: serializer.fromJson<String?>(json['outletId']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       isDirty: serializer.fromJson<bool>(json['isDirty']),
@@ -13199,6 +13285,7 @@ class IngredientStockHistoryData extends DataClass
       'referenceId': serializer.toJson<String?>(referenceId),
       'supplierId': serializer.toJson<String?>(supplierId),
       'reason': serializer.toJson<String?>(reason),
+      'outletId': serializer.toJson<String?>(outletId),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'isDirty': serializer.toJson<bool>(isDirty),
@@ -13216,6 +13303,7 @@ class IngredientStockHistoryData extends DataClass
     Value<String?> referenceId = const Value.absent(),
     Value<String?> supplierId = const Value.absent(),
     Value<String?> reason = const Value.absent(),
+    Value<String?> outletId = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
     bool? isDirty,
@@ -13230,6 +13318,7 @@ class IngredientStockHistoryData extends DataClass
     referenceId: referenceId.present ? referenceId.value : this.referenceId,
     supplierId: supplierId.present ? supplierId.value : this.supplierId,
     reason: reason.present ? reason.value : this.reason,
+    outletId: outletId.present ? outletId.value : this.outletId,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     isDirty: isDirty ?? this.isDirty,
@@ -13260,6 +13349,7 @@ class IngredientStockHistoryData extends DataClass
           ? data.supplierId.value
           : this.supplierId,
       reason: data.reason.present ? data.reason.value : this.reason,
+      outletId: data.outletId.present ? data.outletId.value : this.outletId,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       isDirty: data.isDirty.present ? data.isDirty.value : this.isDirty,
@@ -13279,6 +13369,7 @@ class IngredientStockHistoryData extends DataClass
           ..write('referenceId: $referenceId, ')
           ..write('supplierId: $supplierId, ')
           ..write('reason: $reason, ')
+          ..write('outletId: $outletId, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('isDirty: $isDirty, ')
@@ -13298,6 +13389,7 @@ class IngredientStockHistoryData extends DataClass
     referenceId,
     supplierId,
     reason,
+    outletId,
     createdAt,
     updatedAt,
     isDirty,
@@ -13316,6 +13408,7 @@ class IngredientStockHistoryData extends DataClass
           other.referenceId == this.referenceId &&
           other.supplierId == this.supplierId &&
           other.reason == this.reason &&
+          other.outletId == this.outletId &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.isDirty == this.isDirty &&
@@ -13333,6 +13426,7 @@ class IngredientStockHistoryCompanion
   final Value<String?> referenceId;
   final Value<String?> supplierId;
   final Value<String?> reason;
+  final Value<String?> outletId;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<bool> isDirty;
@@ -13348,6 +13442,7 @@ class IngredientStockHistoryCompanion
     this.referenceId = const Value.absent(),
     this.supplierId = const Value.absent(),
     this.reason = const Value.absent(),
+    this.outletId = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.isDirty = const Value.absent(),
@@ -13364,6 +13459,7 @@ class IngredientStockHistoryCompanion
     this.referenceId = const Value.absent(),
     this.supplierId = const Value.absent(),
     this.reason = const Value.absent(),
+    this.outletId = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.isDirty = const Value.absent(),
@@ -13384,6 +13480,7 @@ class IngredientStockHistoryCompanion
     Expression<String>? referenceId,
     Expression<String>? supplierId,
     Expression<String>? reason,
+    Expression<String>? outletId,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<bool>? isDirty,
@@ -13400,6 +13497,7 @@ class IngredientStockHistoryCompanion
       if (referenceId != null) 'reference_id': referenceId,
       if (supplierId != null) 'supplier_id': supplierId,
       if (reason != null) 'reason': reason,
+      if (outletId != null) 'outlet_id': outletId,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (isDirty != null) 'is_dirty': isDirty,
@@ -13418,6 +13516,7 @@ class IngredientStockHistoryCompanion
     Value<String?>? referenceId,
     Value<String?>? supplierId,
     Value<String?>? reason,
+    Value<String?>? outletId,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<bool>? isDirty,
@@ -13434,6 +13533,7 @@ class IngredientStockHistoryCompanion
       referenceId: referenceId ?? this.referenceId,
       supplierId: supplierId ?? this.supplierId,
       reason: reason ?? this.reason,
+      outletId: outletId ?? this.outletId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       isDirty: isDirty ?? this.isDirty,
@@ -13472,6 +13572,9 @@ class IngredientStockHistoryCompanion
     if (reason.present) {
       map['reason'] = Variable<String>(reason.value);
     }
+    if (outletId.present) {
+      map['outlet_id'] = Variable<String>(outletId.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -13502,6 +13605,7 @@ class IngredientStockHistoryCompanion
           ..write('referenceId: $referenceId, ')
           ..write('supplierId: $supplierId, ')
           ..write('reason: $reason, ')
+          ..write('outletId: $outletId, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('isDirty: $isDirty, ')
@@ -17235,6 +17339,20 @@ class $ExpenseCategoriesTable extends ExpenseCategories
     requiredDuringInsert: false,
     defaultValue: currentDateAndTime,
   );
+  static const VerificationMeta _outletIdMeta = const VerificationMeta(
+    'outletId',
+  );
+  @override
+  late final GeneratedColumn<String> outletId = GeneratedColumn<String>(
+    'outlet_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES outlets (id)',
+    ),
+  );
   static const VerificationMeta _isDirtyMeta = const VerificationMeta(
     'isDirty',
   );
@@ -17270,6 +17388,7 @@ class $ExpenseCategoriesTable extends ExpenseCategories
     isDefault,
     createdAt,
     updatedAt,
+    outletId,
     isDirty,
     deletedAt,
   ];
@@ -17326,6 +17445,12 @@ class $ExpenseCategoriesTable extends ExpenseCategories
         updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
       );
     }
+    if (data.containsKey('outlet_id')) {
+      context.handle(
+        _outletIdMeta,
+        outletId.isAcceptableOrUnknown(data['outlet_id']!, _outletIdMeta),
+      );
+    }
     if (data.containsKey('is_dirty')) {
       context.handle(
         _isDirtyMeta,
@@ -17375,6 +17500,10 @@ class $ExpenseCategoriesTable extends ExpenseCategories
         DriftSqlType.dateTime,
         data['${effectivePrefix}updated_at'],
       )!,
+      outletId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}outlet_id'],
+      ),
       isDirty: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}is_dirty'],
@@ -17400,6 +17529,7 @@ class ExpenseCategory extends DataClass implements Insertable<ExpenseCategory> {
   final bool isDefault;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String? outletId;
   final bool isDirty;
   final DateTime? deletedAt;
   const ExpenseCategory({
@@ -17410,6 +17540,7 @@ class ExpenseCategory extends DataClass implements Insertable<ExpenseCategory> {
     required this.isDefault,
     required this.createdAt,
     required this.updatedAt,
+    this.outletId,
     required this.isDirty,
     this.deletedAt,
   });
@@ -17423,6 +17554,9 @@ class ExpenseCategory extends DataClass implements Insertable<ExpenseCategory> {
     map['is_default'] = Variable<bool>(isDefault);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || outletId != null) {
+      map['outlet_id'] = Variable<String>(outletId);
+    }
     map['is_dirty'] = Variable<bool>(isDirty);
     if (!nullToAbsent || deletedAt != null) {
       map['deleted_at'] = Variable<DateTime>(deletedAt);
@@ -17439,6 +17573,9 @@ class ExpenseCategory extends DataClass implements Insertable<ExpenseCategory> {
       isDefault: Value(isDefault),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
+      outletId: outletId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(outletId),
       isDirty: Value(isDirty),
       deletedAt: deletedAt == null && nullToAbsent
           ? const Value.absent()
@@ -17459,6 +17596,7 @@ class ExpenseCategory extends DataClass implements Insertable<ExpenseCategory> {
       isDefault: serializer.fromJson<bool>(json['isDefault']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      outletId: serializer.fromJson<String?>(json['outletId']),
       isDirty: serializer.fromJson<bool>(json['isDirty']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
     );
@@ -17474,6 +17612,7 @@ class ExpenseCategory extends DataClass implements Insertable<ExpenseCategory> {
       'isDefault': serializer.toJson<bool>(isDefault),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'outletId': serializer.toJson<String?>(outletId),
       'isDirty': serializer.toJson<bool>(isDirty),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
     };
@@ -17487,6 +17626,7 @@ class ExpenseCategory extends DataClass implements Insertable<ExpenseCategory> {
     bool? isDefault,
     DateTime? createdAt,
     DateTime? updatedAt,
+    Value<String?> outletId = const Value.absent(),
     bool? isDirty,
     Value<DateTime?> deletedAt = const Value.absent(),
   }) => ExpenseCategory(
@@ -17497,6 +17637,7 @@ class ExpenseCategory extends DataClass implements Insertable<ExpenseCategory> {
     isDefault: isDefault ?? this.isDefault,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
+    outletId: outletId.present ? outletId.value : this.outletId,
     isDirty: isDirty ?? this.isDirty,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
   );
@@ -17509,6 +17650,7 @@ class ExpenseCategory extends DataClass implements Insertable<ExpenseCategory> {
       isDefault: data.isDefault.present ? data.isDefault.value : this.isDefault,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      outletId: data.outletId.present ? data.outletId.value : this.outletId,
       isDirty: data.isDirty.present ? data.isDirty.value : this.isDirty,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
     );
@@ -17524,6 +17666,7 @@ class ExpenseCategory extends DataClass implements Insertable<ExpenseCategory> {
           ..write('isDefault: $isDefault, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
+          ..write('outletId: $outletId, ')
           ..write('isDirty: $isDirty, ')
           ..write('deletedAt: $deletedAt')
           ..write(')'))
@@ -17539,6 +17682,7 @@ class ExpenseCategory extends DataClass implements Insertable<ExpenseCategory> {
     isDefault,
     createdAt,
     updatedAt,
+    outletId,
     isDirty,
     deletedAt,
   );
@@ -17553,6 +17697,7 @@ class ExpenseCategory extends DataClass implements Insertable<ExpenseCategory> {
           other.isDefault == this.isDefault &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
+          other.outletId == this.outletId &&
           other.isDirty == this.isDirty &&
           other.deletedAt == this.deletedAt);
 }
@@ -17565,6 +17710,7 @@ class ExpenseCategoriesCompanion extends UpdateCompanion<ExpenseCategory> {
   final Value<bool> isDefault;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
+  final Value<String?> outletId;
   final Value<bool> isDirty;
   final Value<DateTime?> deletedAt;
   final Value<int> rowid;
@@ -17576,6 +17722,7 @@ class ExpenseCategoriesCompanion extends UpdateCompanion<ExpenseCategory> {
     this.isDefault = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.outletId = const Value.absent(),
     this.isDirty = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -17588,6 +17735,7 @@ class ExpenseCategoriesCompanion extends UpdateCompanion<ExpenseCategory> {
     this.isDefault = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.outletId = const Value.absent(),
     this.isDirty = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -17600,6 +17748,7 @@ class ExpenseCategoriesCompanion extends UpdateCompanion<ExpenseCategory> {
     Expression<bool>? isDefault,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
+    Expression<String>? outletId,
     Expression<bool>? isDirty,
     Expression<DateTime>? deletedAt,
     Expression<int>? rowid,
@@ -17612,6 +17761,7 @@ class ExpenseCategoriesCompanion extends UpdateCompanion<ExpenseCategory> {
       if (isDefault != null) 'is_default': isDefault,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
+      if (outletId != null) 'outlet_id': outletId,
       if (isDirty != null) 'is_dirty': isDirty,
       if (deletedAt != null) 'deleted_at': deletedAt,
       if (rowid != null) 'rowid': rowid,
@@ -17626,6 +17776,7 @@ class ExpenseCategoriesCompanion extends UpdateCompanion<ExpenseCategory> {
     Value<bool>? isDefault,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
+    Value<String?>? outletId,
     Value<bool>? isDirty,
     Value<DateTime?>? deletedAt,
     Value<int>? rowid,
@@ -17638,6 +17789,7 @@ class ExpenseCategoriesCompanion extends UpdateCompanion<ExpenseCategory> {
       isDefault: isDefault ?? this.isDefault,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      outletId: outletId ?? this.outletId,
       isDirty: isDirty ?? this.isDirty,
       deletedAt: deletedAt ?? this.deletedAt,
       rowid: rowid ?? this.rowid,
@@ -17668,6 +17820,9 @@ class ExpenseCategoriesCompanion extends UpdateCompanion<ExpenseCategory> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
+    if (outletId.present) {
+      map['outlet_id'] = Variable<String>(outletId.value);
+    }
     if (isDirty.present) {
       map['is_dirty'] = Variable<bool>(isDirty.value);
     }
@@ -17690,6 +17845,7 @@ class ExpenseCategoriesCompanion extends UpdateCompanion<ExpenseCategory> {
           ..write('isDefault: $isDefault, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
+          ..write('outletId: $outletId, ')
           ..write('isDirty: $isDirty, ')
           ..write('deletedAt: $deletedAt, ')
           ..write('rowid: $rowid')
@@ -19652,6 +19808,24 @@ final class $$OutletsTableReferences
     );
   }
 
+  static MultiTypedResultKey<$CustomersTable, List<Customer>>
+  _customersRefsTable(_$PosifyDatabase db) => MultiTypedResultKey.fromTable(
+    db.customers,
+    aliasName: $_aliasNameGenerator(db.outlets.id, db.customers.outletId),
+  );
+
+  $$CustomersTableProcessedTableManager get customersRefs {
+    final manager = $$CustomersTableTableManager(
+      $_db,
+      $_db.customers,
+    ).filter((f) => f.outletId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_customersRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
   static MultiTypedResultKey<$SuppliersTable, List<Supplier>>
   _suppliersRefsTable(_$PosifyDatabase db) => MultiTypedResultKey.fromTable(
     db.suppliers,
@@ -19729,6 +19903,34 @@ final class $$OutletsTableReferences
     ).filter((f) => f.outletId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_productRecipesRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $IngredientStockHistoryTable,
+    List<IngredientStockHistoryData>
+  >
+  _ingredientStockHistoryRefsTable(_$PosifyDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.ingredientStockHistory,
+        aliasName: $_aliasNameGenerator(
+          db.outlets.id,
+          db.ingredientStockHistory.outletId,
+        ),
+      );
+
+  $$IngredientStockHistoryTableProcessedTableManager
+  get ingredientStockHistoryRefs {
+    final manager = $$IngredientStockHistoryTableTableManager(
+      $_db,
+      $_db.ingredientStockHistory,
+    ).filter((f) => f.outletId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _ingredientStockHistoryRefsTable($_db),
+    );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -19840,6 +20042,30 @@ final class $$OutletsTableReferences
 
     final cache = $_typedResult.readTableOrNull(
       _purchaseOrderItemsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$ExpenseCategoriesTable, List<ExpenseCategory>>
+  _expenseCategoriesRefsTable(_$PosifyDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.expenseCategories,
+        aliasName: $_aliasNameGenerator(
+          db.outlets.id,
+          db.expenseCategories.outletId,
+        ),
+      );
+
+  $$ExpenseCategoriesTableProcessedTableManager get expenseCategoriesRefs {
+    final manager = $$ExpenseCategoriesTableTableManager(
+      $_db,
+      $_db.expenseCategories,
+    ).filter((f) => f.outletId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _expenseCategoriesRefsTable($_db),
     );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
@@ -20167,6 +20393,31 @@ class $$OutletsTableFilterComposer
     return f(composer);
   }
 
+  Expression<bool> customersRefs(
+    Expression<bool> Function($$CustomersTableFilterComposer f) f,
+  ) {
+    final $$CustomersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.customers,
+      getReferencedColumn: (t) => t.outletId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CustomersTableFilterComposer(
+            $db: $db,
+            $table: $db.customers,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
   Expression<bool> suppliersRefs(
     Expression<bool> Function($$SuppliersTableFilterComposer f) f,
   ) {
@@ -20264,6 +20515,32 @@ class $$OutletsTableFilterComposer
                 $removeJoinBuilderFromRootComposer,
           ),
     );
+    return f(composer);
+  }
+
+  Expression<bool> ingredientStockHistoryRefs(
+    Expression<bool> Function($$IngredientStockHistoryTableFilterComposer f) f,
+  ) {
+    final $$IngredientStockHistoryTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.ingredientStockHistory,
+          getReferencedColumn: (t) => t.outletId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$IngredientStockHistoryTableFilterComposer(
+                $db: $db,
+                $table: $db.ingredientStockHistory,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
     return f(composer);
   }
 
@@ -20383,6 +20660,31 @@ class $$OutletsTableFilterComposer
           }) => $$PurchaseOrderItemsTableFilterComposer(
             $db: $db,
             $table: $db.purchaseOrderItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> expenseCategoriesRefs(
+    Expression<bool> Function($$ExpenseCategoriesTableFilterComposer f) f,
+  ) {
+    final $$ExpenseCategoriesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.expenseCategories,
+      getReferencedColumn: (t) => t.outletId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ExpenseCategoriesTableFilterComposer(
+            $db: $db,
+            $table: $db.expenseCategories,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -20752,6 +21054,31 @@ class $$OutletsTableAnnotationComposer
     return f(composer);
   }
 
+  Expression<T> customersRefs<T extends Object>(
+    Expression<T> Function($$CustomersTableAnnotationComposer a) f,
+  ) {
+    final $$CustomersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.customers,
+      getReferencedColumn: (t) => t.outletId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CustomersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.customers,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
   Expression<T> suppliersRefs<T extends Object>(
     Expression<T> Function($$SuppliersTableAnnotationComposer a) f,
   ) {
@@ -20849,6 +21176,32 @@ class $$OutletsTableAnnotationComposer
                 $removeJoinBuilderFromRootComposer,
           ),
     );
+    return f(composer);
+  }
+
+  Expression<T> ingredientStockHistoryRefs<T extends Object>(
+    Expression<T> Function($$IngredientStockHistoryTableAnnotationComposer a) f,
+  ) {
+    final $$IngredientStockHistoryTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.ingredientStockHistory,
+          getReferencedColumn: (t) => t.outletId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$IngredientStockHistoryTableAnnotationComposer(
+                $db: $db,
+                $table: $db.ingredientStockHistory,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
     return f(composer);
   }
 
@@ -20978,6 +21331,32 @@ class $$OutletsTableAnnotationComposer
     return f(composer);
   }
 
+  Expression<T> expenseCategoriesRefs<T extends Object>(
+    Expression<T> Function($$ExpenseCategoriesTableAnnotationComposer a) f,
+  ) {
+    final $$ExpenseCategoriesTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.expenseCategories,
+          getReferencedColumn: (t) => t.outletId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ExpenseCategoriesTableAnnotationComposer(
+                $db: $db,
+                $table: $db.expenseCategories,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
   Expression<T> expensesRefs<T extends Object>(
     Expression<T> Function($$ExpensesTableAnnotationComposer a) f,
   ) {
@@ -21053,15 +21432,18 @@ class $$OutletsTableTableManager
             bool transactionsRefs,
             bool transactionItemsRefs,
             bool stockTransactionsRefs,
+            bool customersRefs,
             bool suppliersRefs,
             bool printerSettingsRefs,
             bool ingredientsRefs,
             bool productRecipesRefs,
+            bool ingredientStockHistoryRefs,
             bool unitConversionsRefs,
             bool stockOpnameRefs,
             bool stockOpnameItemsRefs,
             bool purchaseOrdersRefs,
             bool purchaseOrderItemsRefs,
+            bool expenseCategoriesRefs,
             bool expensesRefs,
             bool transactionPaymentsRefs,
           })
@@ -21140,15 +21522,18 @@ class $$OutletsTableTableManager
                 transactionsRefs = false,
                 transactionItemsRefs = false,
                 stockTransactionsRefs = false,
+                customersRefs = false,
                 suppliersRefs = false,
                 printerSettingsRefs = false,
                 ingredientsRefs = false,
                 productRecipesRefs = false,
+                ingredientStockHistoryRefs = false,
                 unitConversionsRefs = false,
                 stockOpnameRefs = false,
                 stockOpnameItemsRefs = false,
                 purchaseOrdersRefs = false,
                 purchaseOrderItemsRefs = false,
+                expenseCategoriesRefs = false,
                 expensesRefs = false,
                 transactionPaymentsRefs = false,
               }) {
@@ -21164,15 +21549,18 @@ class $$OutletsTableTableManager
                     if (transactionsRefs) db.transactions,
                     if (transactionItemsRefs) db.transactionItems,
                     if (stockTransactionsRefs) db.stockTransactions,
+                    if (customersRefs) db.customers,
                     if (suppliersRefs) db.suppliers,
                     if (printerSettingsRefs) db.printerSettings,
                     if (ingredientsRefs) db.ingredients,
                     if (productRecipesRefs) db.productRecipes,
+                    if (ingredientStockHistoryRefs) db.ingredientStockHistory,
                     if (unitConversionsRefs) db.unitConversions,
                     if (stockOpnameRefs) db.stockOpname,
                     if (stockOpnameItemsRefs) db.stockOpnameItems,
                     if (purchaseOrdersRefs) db.purchaseOrders,
                     if (purchaseOrderItemsRefs) db.purchaseOrderItems,
+                    if (expenseCategoriesRefs) db.expenseCategories,
                     if (expensesRefs) db.expenses,
                     if (transactionPaymentsRefs) db.transactionPayments,
                   ],
@@ -21364,6 +21752,27 @@ class $$OutletsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (customersRefs)
+                        await $_getPrefetchedData<
+                          Outlet,
+                          $OutletsTable,
+                          Customer
+                        >(
+                          currentTable: table,
+                          referencedTable: $$OutletsTableReferences
+                              ._customersRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$OutletsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).customersRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.outletId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                       if (suppliersRefs)
                         await $_getPrefetchedData<
                           Outlet,
@@ -21442,6 +21851,27 @@ class $$OutletsTableTableManager
                                 table,
                                 p0,
                               ).productRecipesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.outletId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (ingredientStockHistoryRefs)
+                        await $_getPrefetchedData<
+                          Outlet,
+                          $OutletsTable,
+                          IngredientStockHistoryData
+                        >(
+                          currentTable: table,
+                          referencedTable: $$OutletsTableReferences
+                              ._ingredientStockHistoryRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$OutletsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).ingredientStockHistoryRefs,
                           referencedItemsForCurrentItem:
                               (item, referencedItems) => referencedItems.where(
                                 (e) => e.outletId == item.id,
@@ -21553,6 +21983,27 @@ class $$OutletsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (expenseCategoriesRefs)
+                        await $_getPrefetchedData<
+                          Outlet,
+                          $OutletsTable,
+                          ExpenseCategory
+                        >(
+                          currentTable: table,
+                          referencedTable: $$OutletsTableReferences
+                              ._expenseCategoriesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$OutletsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).expenseCategoriesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.outletId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                       if (expensesRefs)
                         await $_getPrefetchedData<
                           Outlet,
@@ -21625,15 +22076,18 @@ typedef $$OutletsTableProcessedTableManager =
         bool transactionsRefs,
         bool transactionItemsRefs,
         bool stockTransactionsRefs,
+        bool customersRefs,
         bool suppliersRefs,
         bool printerSettingsRefs,
         bool ingredientsRefs,
         bool productRecipesRefs,
+        bool ingredientStockHistoryRefs,
         bool unitConversionsRefs,
         bool stockOpnameRefs,
         bool stockOpnameItemsRefs,
         bool purchaseOrdersRefs,
         bool purchaseOrderItemsRefs,
+        bool expenseCategoriesRefs,
         bool expensesRefs,
         bool transactionPaymentsRefs,
       })
@@ -28949,6 +29403,7 @@ typedef $$CustomersTableCreateCompanionBuilder =
       Value<int> points,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
+      Value<String?> outletId,
       Value<bool> isDirty,
       Value<DateTime?> deletedAt,
       Value<int> rowid,
@@ -28964,10 +29419,33 @@ typedef $$CustomersTableUpdateCompanionBuilder =
       Value<int> points,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
+      Value<String?> outletId,
       Value<bool> isDirty,
       Value<DateTime?> deletedAt,
       Value<int> rowid,
     });
+
+final class $$CustomersTableReferences
+    extends BaseReferences<_$PosifyDatabase, $CustomersTable, Customer> {
+  $$CustomersTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $OutletsTable _outletIdTable(_$PosifyDatabase db) => db.outlets
+      .createAlias($_aliasNameGenerator(db.customers.outletId, db.outlets.id));
+
+  $$OutletsTableProcessedTableManager? get outletId {
+    final $_column = $_itemColumn<String>('outlet_id');
+    if ($_column == null) return null;
+    final manager = $$OutletsTableTableManager(
+      $_db,
+      $_db.outlets,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_outletIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
 
 class $$CustomersTableFilterComposer
     extends Composer<_$PosifyDatabase, $CustomersTable> {
@@ -29032,6 +29510,29 @@ class $$CustomersTableFilterComposer
     column: $table.deletedAt,
     builder: (column) => ColumnFilters(column),
   );
+
+  $$OutletsTableFilterComposer get outletId {
+    final $$OutletsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.outletId,
+      referencedTable: $db.outlets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OutletsTableFilterComposer(
+            $db: $db,
+            $table: $db.outlets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$CustomersTableOrderingComposer
@@ -29097,6 +29598,29 @@ class $$CustomersTableOrderingComposer
     column: $table.deletedAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  $$OutletsTableOrderingComposer get outletId {
+    final $$OutletsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.outletId,
+      referencedTable: $db.outlets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OutletsTableOrderingComposer(
+            $db: $db,
+            $table: $db.outlets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$CustomersTableAnnotationComposer
@@ -29140,6 +29664,29 @@ class $$CustomersTableAnnotationComposer
 
   GeneratedColumn<DateTime> get deletedAt =>
       $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  $$OutletsTableAnnotationComposer get outletId {
+    final $$OutletsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.outletId,
+      referencedTable: $db.outlets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OutletsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.outlets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$CustomersTableTableManager
@@ -29153,12 +29700,9 @@ class $$CustomersTableTableManager
           $$CustomersTableAnnotationComposer,
           $$CustomersTableCreateCompanionBuilder,
           $$CustomersTableUpdateCompanionBuilder,
-          (
-            Customer,
-            BaseReferences<_$PosifyDatabase, $CustomersTable, Customer>,
-          ),
+          (Customer, $$CustomersTableReferences),
           Customer,
-          PrefetchHooks Function()
+          PrefetchHooks Function({bool outletId})
         > {
   $$CustomersTableTableManager(_$PosifyDatabase db, $CustomersTable table)
     : super(
@@ -29182,6 +29726,7 @@ class $$CustomersTableTableManager
                 Value<int> points = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
+                Value<String?> outletId = const Value.absent(),
                 Value<bool> isDirty = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -29195,6 +29740,7 @@ class $$CustomersTableTableManager
                 points: points,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
+                outletId: outletId,
                 isDirty: isDirty,
                 deletedAt: deletedAt,
                 rowid: rowid,
@@ -29210,6 +29756,7 @@ class $$CustomersTableTableManager
                 Value<int> points = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
+                Value<String?> outletId = const Value.absent(),
                 Value<bool> isDirty = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -29223,14 +29770,60 @@ class $$CustomersTableTableManager
                 points: points,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
+                outletId: outletId,
                 isDirty: isDirty,
                 deletedAt: deletedAt,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$CustomersTableReferences(db, table, e),
+                ),
+              )
               .toList(),
-          prefetchHooksCallback: null,
+          prefetchHooksCallback: ({outletId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (outletId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.outletId,
+                                referencedTable: $$CustomersTableReferences
+                                    ._outletIdTable(db),
+                                referencedColumn: $$CustomersTableReferences
+                                    ._outletIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
         ),
       );
 }
@@ -29245,9 +29838,9 @@ typedef $$CustomersTableProcessedTableManager =
       $$CustomersTableAnnotationComposer,
       $$CustomersTableCreateCompanionBuilder,
       $$CustomersTableUpdateCompanionBuilder,
-      (Customer, BaseReferences<_$PosifyDatabase, $CustomersTable, Customer>),
+      (Customer, $$CustomersTableReferences),
       Customer,
-      PrefetchHooks Function()
+      PrefetchHooks Function({bool outletId})
     >;
 typedef $$SuppliersTableCreateCompanionBuilder =
     SuppliersCompanion Function({
@@ -31846,6 +32439,7 @@ typedef $$IngredientStockHistoryTableCreateCompanionBuilder =
       Value<String?> referenceId,
       Value<String?> supplierId,
       Value<String?> reason,
+      Value<String?> outletId,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<bool> isDirty,
@@ -31863,6 +32457,7 @@ typedef $$IngredientStockHistoryTableUpdateCompanionBuilder =
       Value<String?> referenceId,
       Value<String?> supplierId,
       Value<String?> reason,
+      Value<String?> outletId,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<bool> isDirty,
@@ -31921,6 +32516,25 @@ final class $$IngredientStockHistoryTableReferences
       $_db.suppliers,
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_supplierIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $OutletsTable _outletIdTable(_$PosifyDatabase db) =>
+      db.outlets.createAlias(
+        $_aliasNameGenerator(db.ingredientStockHistory.outletId, db.outlets.id),
+      );
+
+  $$OutletsTableProcessedTableManager? get outletId {
+    final $_column = $_itemColumn<String>('outlet_id');
+    if ($_column == null) return null;
+    final manager = $$OutletsTableTableManager(
+      $_db,
+      $_db.outlets,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_outletIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
@@ -32029,6 +32643,29 @@ class $$IngredientStockHistoryTableFilterComposer
           }) => $$SuppliersTableFilterComposer(
             $db: $db,
             $table: $db.suppliers,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$OutletsTableFilterComposer get outletId {
+    final $$OutletsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.outletId,
+      referencedTable: $db.outlets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OutletsTableFilterComposer(
+            $db: $db,
+            $table: $db.outlets,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -32148,6 +32785,29 @@ class $$IngredientStockHistoryTableOrderingComposer
     );
     return composer;
   }
+
+  $$OutletsTableOrderingComposer get outletId {
+    final $$OutletsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.outletId,
+      referencedTable: $db.outlets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OutletsTableOrderingComposer(
+            $db: $db,
+            $table: $db.outlets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$IngredientStockHistoryTableAnnotationComposer
@@ -32245,6 +32905,29 @@ class $$IngredientStockHistoryTableAnnotationComposer
     );
     return composer;
   }
+
+  $$OutletsTableAnnotationComposer get outletId {
+    final $$OutletsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.outletId,
+      referencedTable: $db.outlets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OutletsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.outlets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$IngredientStockHistoryTableTableManager
@@ -32260,7 +32943,11 @@ class $$IngredientStockHistoryTableTableManager
           $$IngredientStockHistoryTableUpdateCompanionBuilder,
           (IngredientStockHistoryData, $$IngredientStockHistoryTableReferences),
           IngredientStockHistoryData,
-          PrefetchHooks Function({bool ingredientId, bool supplierId})
+          PrefetchHooks Function({
+            bool ingredientId,
+            bool supplierId,
+            bool outletId,
+          })
         > {
   $$IngredientStockHistoryTableTableManager(
     _$PosifyDatabase db,
@@ -32295,6 +32982,7 @@ class $$IngredientStockHistoryTableTableManager
                 Value<String?> referenceId = const Value.absent(),
                 Value<String?> supplierId = const Value.absent(),
                 Value<String?> reason = const Value.absent(),
+                Value<String?> outletId = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<bool> isDirty = const Value.absent(),
@@ -32310,6 +32998,7 @@ class $$IngredientStockHistoryTableTableManager
                 referenceId: referenceId,
                 supplierId: supplierId,
                 reason: reason,
+                outletId: outletId,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 isDirty: isDirty,
@@ -32327,6 +33016,7 @@ class $$IngredientStockHistoryTableTableManager
                 Value<String?> referenceId = const Value.absent(),
                 Value<String?> supplierId = const Value.absent(),
                 Value<String?> reason = const Value.absent(),
+                Value<String?> outletId = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<bool> isDirty = const Value.absent(),
@@ -32342,6 +33032,7 @@ class $$IngredientStockHistoryTableTableManager
                 referenceId: referenceId,
                 supplierId: supplierId,
                 reason: reason,
+                outletId: outletId,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 isDirty: isDirty,
@@ -32356,64 +33047,80 @@ class $$IngredientStockHistoryTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({ingredientId = false, supplierId = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [],
-              addJoins:
-                  <
-                    T extends TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic
-                    >
-                  >(state) {
-                    if (ingredientId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.ingredientId,
-                                referencedTable:
-                                    $$IngredientStockHistoryTableReferences
-                                        ._ingredientIdTable(db),
-                                referencedColumn:
-                                    $$IngredientStockHistoryTableReferences
-                                        ._ingredientIdTable(db)
-                                        .id,
-                              )
-                              as T;
-                    }
-                    if (supplierId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.supplierId,
-                                referencedTable:
-                                    $$IngredientStockHistoryTableReferences
-                                        ._supplierIdTable(db),
-                                referencedColumn:
-                                    $$IngredientStockHistoryTableReferences
-                                        ._supplierIdTable(db)
-                                        .id,
-                              )
-                              as T;
-                    }
+          prefetchHooksCallback:
+              ({ingredientId = false, supplierId = false, outletId = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (ingredientId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.ingredientId,
+                                    referencedTable:
+                                        $$IngredientStockHistoryTableReferences
+                                            ._ingredientIdTable(db),
+                                    referencedColumn:
+                                        $$IngredientStockHistoryTableReferences
+                                            ._ingredientIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (supplierId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.supplierId,
+                                    referencedTable:
+                                        $$IngredientStockHistoryTableReferences
+                                            ._supplierIdTable(db),
+                                    referencedColumn:
+                                        $$IngredientStockHistoryTableReferences
+                                            ._supplierIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (outletId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.outletId,
+                                    referencedTable:
+                                        $$IngredientStockHistoryTableReferences
+                                            ._outletIdTable(db),
+                                    referencedColumn:
+                                        $$IngredientStockHistoryTableReferences
+                                            ._outletIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
 
-                    return state;
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [];
                   },
-              getPrefetchedDataCallback: (items) async {
-                return [];
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -32430,7 +33137,11 @@ typedef $$IngredientStockHistoryTableProcessedTableManager =
       $$IngredientStockHistoryTableUpdateCompanionBuilder,
       (IngredientStockHistoryData, $$IngredientStockHistoryTableReferences),
       IngredientStockHistoryData,
-      PrefetchHooks Function({bool ingredientId, bool supplierId})
+      PrefetchHooks Function({
+        bool ingredientId,
+        bool supplierId,
+        bool outletId,
+      })
     >;
 typedef $$UnitConversionsTableCreateCompanionBuilder =
     UnitConversionsCompanion Function({
@@ -35291,6 +36002,7 @@ typedef $$ExpenseCategoriesTableCreateCompanionBuilder =
       Value<bool> isDefault,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
+      Value<String?> outletId,
       Value<bool> isDirty,
       Value<DateTime?> deletedAt,
       Value<int> rowid,
@@ -35304,6 +36016,7 @@ typedef $$ExpenseCategoriesTableUpdateCompanionBuilder =
       Value<bool> isDefault,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
+      Value<String?> outletId,
       Value<bool> isDirty,
       Value<DateTime?> deletedAt,
       Value<int> rowid,
@@ -35321,6 +36034,25 @@ final class $$ExpenseCategoriesTableReferences
     super.$_table,
     super.$_typedResult,
   );
+
+  static $OutletsTable _outletIdTable(_$PosifyDatabase db) =>
+      db.outlets.createAlias(
+        $_aliasNameGenerator(db.expenseCategories.outletId, db.outlets.id),
+      );
+
+  $$OutletsTableProcessedTableManager? get outletId {
+    final $_column = $_itemColumn<String>('outlet_id');
+    if ($_column == null) return null;
+    final manager = $$OutletsTableTableManager(
+      $_db,
+      $_db.outlets,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_outletIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
 
   static MultiTypedResultKey<$ExpensesTable, List<Expense>> _expensesRefsTable(
     _$PosifyDatabase db,
@@ -35398,6 +36130,29 @@ class $$ExpenseCategoriesTableFilterComposer
     column: $table.deletedAt,
     builder: (column) => ColumnFilters(column),
   );
+
+  $$OutletsTableFilterComposer get outletId {
+    final $$OutletsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.outletId,
+      referencedTable: $db.outlets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OutletsTableFilterComposer(
+            $db: $db,
+            $table: $db.outlets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 
   Expression<bool> expensesRefs(
     Expression<bool> Function($$ExpensesTableFilterComposer f) f,
@@ -35478,6 +36233,29 @@ class $$ExpenseCategoriesTableOrderingComposer
     column: $table.deletedAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  $$OutletsTableOrderingComposer get outletId {
+    final $$OutletsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.outletId,
+      referencedTable: $db.outlets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OutletsTableOrderingComposer(
+            $db: $db,
+            $table: $db.outlets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$ExpenseCategoriesTableAnnotationComposer
@@ -35515,6 +36293,29 @@ class $$ExpenseCategoriesTableAnnotationComposer
 
   GeneratedColumn<DateTime> get deletedAt =>
       $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  $$OutletsTableAnnotationComposer get outletId {
+    final $$OutletsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.outletId,
+      referencedTable: $db.outlets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OutletsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.outlets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 
   Expression<T> expensesRefs<T extends Object>(
     Expression<T> Function($$ExpensesTableAnnotationComposer a) f,
@@ -35555,7 +36356,7 @@ class $$ExpenseCategoriesTableTableManager
           $$ExpenseCategoriesTableUpdateCompanionBuilder,
           (ExpenseCategory, $$ExpenseCategoriesTableReferences),
           ExpenseCategory,
-          PrefetchHooks Function({bool expensesRefs})
+          PrefetchHooks Function({bool outletId, bool expensesRefs})
         > {
   $$ExpenseCategoriesTableTableManager(
     _$PosifyDatabase db,
@@ -35582,6 +36383,7 @@ class $$ExpenseCategoriesTableTableManager
                 Value<bool> isDefault = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
+                Value<String?> outletId = const Value.absent(),
                 Value<bool> isDirty = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -35593,6 +36395,7 @@ class $$ExpenseCategoriesTableTableManager
                 isDefault: isDefault,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
+                outletId: outletId,
                 isDirty: isDirty,
                 deletedAt: deletedAt,
                 rowid: rowid,
@@ -35606,6 +36409,7 @@ class $$ExpenseCategoriesTableTableManager
                 Value<bool> isDefault = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
+                Value<String?> outletId = const Value.absent(),
                 Value<bool> isDirty = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -35617,6 +36421,7 @@ class $$ExpenseCategoriesTableTableManager
                 isDefault: isDefault,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
+                outletId: outletId,
                 isDirty: isDirty,
                 deletedAt: deletedAt,
                 rowid: rowid,
@@ -35629,11 +36434,44 @@ class $$ExpenseCategoriesTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({expensesRefs = false}) {
+          prefetchHooksCallback: ({outletId = false, expensesRefs = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [if (expensesRefs) db.expenses],
-              addJoins: null,
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (outletId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.outletId,
+                                referencedTable:
+                                    $$ExpenseCategoriesTableReferences
+                                        ._outletIdTable(db),
+                                referencedColumn:
+                                    $$ExpenseCategoriesTableReferences
+                                        ._outletIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (expensesRefs)
@@ -35675,7 +36513,7 @@ typedef $$ExpenseCategoriesTableProcessedTableManager =
       $$ExpenseCategoriesTableUpdateCompanionBuilder,
       (ExpenseCategory, $$ExpenseCategoriesTableReferences),
       ExpenseCategory,
-      PrefetchHooks Function({bool expensesRefs})
+      PrefetchHooks Function({bool outletId, bool expensesRefs})
     >;
 typedef $$ExpensesTableCreateCompanionBuilder =
     ExpensesCompanion Function({

@@ -7,6 +7,7 @@ import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:posify_app/features/pos/providers/pos_providers.dart';
+import 'package:posify_app/features/auth/providers/owner_provider.dart';
 import 'ingredient_form_screen.dart';
 import 'ingredient_history_screen.dart';
 import 'ingredient_opname_screen.dart';
@@ -598,7 +599,7 @@ class _AddStockModalState extends ConsumerState<_AddStockModal> {
                   Expanded(
                     flex: 2,
                     child: DropdownButtonFormField<String>(
-                      value: _selectedInputUnit,
+                      initialValue: _selectedInputUnit,
                       decoration: _inputStyle('Satuan'),
                       items: _availableUnits.map((u) => DropdownMenuItem(value: u, child: Text(u.toUpperCase()))).toList(),
                       onChanged: (val) => setState(() => _selectedInputUnit = val!),
@@ -616,7 +617,7 @@ class _AddStockModalState extends ConsumerState<_AddStockModal> {
                     onChanged: (v) => _selectedSupplierId = v,
                   ),
                   loading: () => const LinearProgressIndicator(),
-                  error: (_, __) => const SizedBox.shrink(),
+                  error: (_, ___) => const SizedBox.shrink(),
                 );
               }),
               const SizedBox(height: 16),
@@ -667,14 +668,17 @@ class _AddStockModalState extends ConsumerState<_AddStockModal> {
     setState(() => _isLoading = true);
     try {
       final qty = double.parse(_quantityController.text.replaceAll(',', '.'));
+      final outletId = ref.read(sessionProvider).value?.outletId;
       await ref.read(databaseProvider).addIngredientStock(
         ingredientId: widget.ingredient.id,
         quantityInBaseUnit: qty * _conversionMultiplier,
         supplierId: _selectedSupplierId,
         newCostPerUnit: double.tryParse(_costController.text),
         reason: _reasonController.text.trim(),
+        outletId: outletId,
       );
-      if (mounted) Navigator.pop(context);
+      if (!mounted) return;
+      Navigator.pop(context);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -713,7 +717,7 @@ class _RemoveStockBottomSheetState extends ConsumerState<_RemoveStockBottomSheet
               Text('Stok Keluar (Waste)', style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 18)),
               const SizedBox(height: 20),
               DropdownButtonFormField<String>(
-                value: _selectedReason,
+                initialValue: _selectedReason,
                 decoration: InputDecoration(labelText: 'Alasan', filled: true, fillColor: Colors.grey.shade50, border: OutlineInputBorder(borderRadius: BorderRadius.circular(14))),
                 items: [
                   const DropdownMenuItem(value: 'WASTE', child: Text('Rusak / Basi')),
@@ -740,13 +744,16 @@ class _RemoveStockBottomSheetState extends ConsumerState<_RemoveStockBottomSheet
                     if (!_formKey.currentState!.validate()) return;
                     setState(() => _isLoading = true);
                     final qty = double.parse(_qtyController.text.replaceAll(',', '.'));
+                    final outletId = ref.read(sessionProvider).value?.outletId;
                     await ref.read(databaseProvider).deductIngredientStock(
                       ingredientId: widget.ingredient.id,
                       quantityInBaseUnit: qty,
                       type: _selectedReason,
                       reason: _reasonController.text.trim(),
+                      outletId: outletId,
                     );
-                    if (mounted) Navigator.pop(context);
+                    if (!mounted) return;
+                    Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.orange.shade800, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
                   child: _isLoading ? const CircularProgressIndicator(color: Colors.white) : const Text('Simpan Pengeluaran Stok'),

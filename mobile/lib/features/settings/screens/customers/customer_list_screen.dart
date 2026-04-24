@@ -6,6 +6,7 @@ import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/features/pos/providers/pos_providers.dart';
+import 'package:posify_app/features/auth/providers/owner_provider.dart';
 import 'package:posify_app/core/widgets/responsive_layout.dart';
 
 class CustomerListScreen extends ConsumerWidget {
@@ -340,6 +341,7 @@ class _CustomerFormState extends ConsumerState<_CustomerForm> {
           ),
         );
       } else {
+        final currentOutletId = ref.read(sessionProvider).value?.outletId;
         await db.insertCustomer(
           CustomersCompanion.insert(
             name: _nameController.text.trim(),
@@ -350,6 +352,7 @@ class _CustomerFormState extends ConsumerState<_CustomerForm> {
             points: drift.Value(int.tryParse(_pointsController.text) ?? 0),
             createdAt: drift.Value(DateTime.now()),
             updatedAt: drift.Value(DateTime.now()),
+            outletId: drift.Value(currentOutletId),
           ),
         );
       }

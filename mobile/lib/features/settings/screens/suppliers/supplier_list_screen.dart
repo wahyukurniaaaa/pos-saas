@@ -6,6 +6,7 @@ import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/features/pos/providers/pos_providers.dart';
+import 'package:posify_app/features/auth/providers/owner_provider.dart';
 import 'package:posify_app/core/widgets/responsive_layout.dart';
 
 class SupplierListScreen extends ConsumerWidget {
@@ -226,6 +227,7 @@ class _SupplierFormState extends ConsumerState<_SupplierForm> {
           ),
         );
       } else {
+        final currentOutletId = ref.read(sessionProvider).value?.outletId;
         await db.insertSupplier(
           SuppliersCompanion.insert(
             name: _nameController.text.trim(),
@@ -233,6 +235,7 @@ class _SupplierFormState extends ConsumerState<_SupplierForm> {
             address: drift.Value(_addressController.text.trim()),
             createdAt: drift.Value(DateTime.now()),
             updatedAt: drift.Value(DateTime.now()),
+            outletId: drift.Value(currentOutletId),
           ),
         );
       }

@@ -80,7 +80,7 @@ void main() {
     ];
 
     test('closeShift should calculate expectedEndingCash correctly (startingCash + totalTunaiSales)', () async {
-      when(() => mockDb.getOpenShift()).thenAnswer((_) async => mockShift);
+      when(() => mockDb.getOpenShift(any())).thenAnswer((_) async => mockShift);
       when(() => mockDb.watchTransactionsByShift('1'))
           .thenAnswer((_) => Stream.value(mockTransactions));
       
@@ -100,7 +100,7 @@ void main() {
     });
 
     test('closeShift should fail if shift is missing or mismatch', () async {
-      when(() => mockDb.getOpenShift()).thenAnswer((_) async => null);
+      when(() => mockDb.getOpenShift(any())).thenAnswer((_) async => null);
 
       final notifier = container.read(shiftControllerProvider.notifier);
       final result = await notifier.closeShift('99', 100000);

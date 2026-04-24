@@ -5,6 +5,7 @@ import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:intl/intl.dart';
+import 'package:posify_app/features/auth/providers/owner_provider.dart';
 import 'package:posify_app/core/widgets/responsive_layout.dart';
 
 class StockLossReportScreen extends ConsumerStatefulWidget {
@@ -63,10 +64,14 @@ class _StockLossReportScreenState extends ConsumerState<StockLossReportScreen> {
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
     final db = ref.read(databaseProvider);
+    final session = ref.read(sessionProvider).value;
+    if (session == null || session.outletId == null) return;
+    final outletId = session.outletId!;
+    
     final range = _getDateRange();
 
     try {
-      final items = await db.getStockLossReport(range.start, range.end);
+      final items = await db.getStockLossReport(range.start, range.end, outletId);
       
       int totalValue = 0;
       for (var i in items) {

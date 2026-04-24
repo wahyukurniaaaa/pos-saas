@@ -75,6 +75,9 @@ class SyncService {
     final user = _ref.read(authProvider).value;
     if (user == null) {
       debugPrint('SyncService: Skipping — user not authenticated (non-Pro)');
+      if (!_ref.read(initialSyncProvider)) {
+        _ref.read(initialSyncProvider.notifier).markCompleted();
+      }
       return;
     }
 
@@ -85,6 +88,9 @@ class SyncService {
 
     if (!isPro) {
       debugPrint('SyncService: Skipping — Lite tier user...');
+      if (!_ref.read(initialSyncProvider)) {
+        _ref.read(initialSyncProvider.notifier).markCompleted();
+      }
       return;
     }
 
@@ -95,9 +101,16 @@ class SyncService {
     try {
       await _pullChanges();
       await _pushAllDirty();
+      if (!_ref.read(initialSyncProvider)) {
+        _ref.invalidate(ownerProvider);
+        _ref.read(initialSyncProvider.notifier).markCompleted();
+      }
       _ref.read(syncStatusProvider.notifier).setStatus(SyncStatus.idle);
       debugPrint('SyncService: Sync completed');
     } catch (e) {
+      if (!_ref.read(initialSyncProvider)) {
+        _ref.read(initialSyncProvider.notifier).markCompleted();
+      }
       _ref.read(syncStatusProvider.notifier).setStatus(SyncStatus.error);
       debugPrint('SyncService: Sync failed — $e');
     } finally {
@@ -209,4 +222,18 @@ class SyncStatusNotifier extends Notifier<SyncStatus> {
 /// Provider for the current Sync Status (for UI)
 final syncStatusProvider = NotifierProvider<SyncStatusNotifier, SyncStatus>(
   SyncStatusNotifier.new,
+);
+
+class InitialSyncNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void markCompleted() {
+    state = true;
+  }
+}
+
+/// Provider to track if the initial sync has completed on boot.
+final initialSyncProvider = NotifierProvider<InitialSyncNotifier, bool>(
+  InitialSyncNotifier.new,
 );

@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'outlets_table.dart';
 import '../../utils/uuid_generator.dart';
 
 class Customers extends Table {
@@ -11,6 +12,7 @@ class Customers extends Table {
   IntColumn get points => integer().withDefault(const Constant(0))();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  TextColumn get outletId => text().nullable().references(Outlets, #id)();
   BoolColumn get isDirty => boolean().withDefault(const Constant(true))();
   DateTimeColumn get deletedAt => dateTime().nullable()();
 

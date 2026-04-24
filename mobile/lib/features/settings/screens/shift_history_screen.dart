@@ -72,7 +72,7 @@ class ShiftHistoryScreen extends ConsumerWidget {
         },
       ),
       body: ResponsiveCenter(child: StreamBuilder<List<ShiftWithEmployee>>(
-        stream: db.watchAllShifts(),
+        stream: db.watchAllShifts(ref.watch(sessionProvider).value?.outletId ?? ''),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());

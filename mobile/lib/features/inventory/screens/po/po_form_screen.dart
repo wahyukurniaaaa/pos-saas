@@ -7,6 +7,7 @@ import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
 import 'package:posify_app/features/inventory/providers/po_provider.dart';
 import 'package:posify_app/core/widgets/responsive_layout.dart';
+import 'package:posify_app/features/auth/providers/owner_provider.dart';
 
 class PoFormScreen extends ConsumerStatefulWidget {
   const PoFormScreen({super.key});
@@ -76,8 +77,12 @@ class _PoFormScreenState extends ConsumerState<PoFormScreen> {
 
   Future<void> _addItem() async {
     final db = ref.read(databaseProvider);
-    final products = await db.getAllProducts();
-    final ingredients = await db.getAllIngredients();
+    final session = ref.read(sessionProvider).value;
+    if (session == null || session.outletId == null) return;
+    final outletId = session.outletId!;
+
+    final products = await db.getAllProducts(outletId);
+    final ingredients = await db.getAllIngredients(outletId);
 
     if (!mounted) return;
 
@@ -95,8 +100,14 @@ class _PoFormScreenState extends ConsumerState<PoFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final session = ref.watch(sessionProvider).value;
+    final outletId = session?.outletId;
+    
     final suppliersAsync =
-        ref.watch(FutureProvider((r) => r.read(databaseProvider).getAllSuppliers()).future);
+        ref.watch(FutureProvider((r) {
+          if (outletId == null) return Future.value(<Supplier>[]);
+          return r.read(databaseProvider).getAllSuppliers(outletId);
+        }).future);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
