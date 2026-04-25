@@ -19,38 +19,99 @@ class _PosDashboardScreenState extends ConsumerState<PosDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = MediaQuery.sizeOf(context).width >= 768;
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: IndexedStack(
-        index: _currentTabIndex,
-        children: const [
-          PosTab(),
-          CurrentShiftHistoryTab(),
-          InventoryTab(),
-          SettingsTab()
+      body: Row(
+        children: [
+          if (isDesktop) _buildNavigationRail(),
+          Expanded(
+            child: IndexedStack(
+              index: _currentTabIndex,
+              children: const [
+                PosTab(),
+                CurrentShiftHistoryTab(),
+                InventoryTab(),
+                SettingsTab()
+              ],
+            ),
+          ),
         ],
       ),
-      bottomNavigationBar: Container(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
-        decoration: BoxDecoration(
-          color: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 20,
-              offset: const Offset(0, -10),
-            ),
-          ],
+      bottomNavigationBar: isDesktop ? null : _buildBottomNavBar(),
+    );
+  }
+
+  Widget _buildNavigationRail() {
+    return NavigationRail(
+      selectedIndex: _currentTabIndex,
+      onDestinationSelected: (index) {
+        HapticFeedback.selectionClick();
+        setState(() => _currentTabIndex = index);
+      },
+      backgroundColor: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
+      indicatorColor: AppTheme.secondaryColor.withValues(alpha: 0.2),
+      labelType: NavigationRailLabelType.all,
+      extended: MediaQuery.sizeOf(context).width >= 1100,
+      minExtendedWidth: 200,
+      useIndicator: true,
+      selectedLabelTextStyle: TextStyle(
+        color: Theme.of(context).colorScheme.primary,
+        fontWeight: FontWeight.bold,
+        fontSize: 13,
+      ),
+      unselectedLabelTextStyle: TextStyle(
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+        fontWeight: FontWeight.w600,
+        fontSize: 12,
+      ),
+      destinations: const [
+        NavigationRailDestination(
+          icon: Icon(Icons.home_rounded),
+          selectedIcon: Icon(Icons.home_rounded, color: AppTheme.primaryColor),
+          label: Text('Kasir'),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildNavItem(0, Icons.home_rounded, 'Kasir'),
-            _buildNavItem(1, Icons.history_rounded, 'Riwayat'),
-            _buildNavItem(2, Icons.inventory_2_rounded, 'Produk'),
-            _buildNavItem(3, Icons.settings_rounded, 'Setting'),
-          ],
+        NavigationRailDestination(
+          icon: Icon(Icons.history_rounded),
+          selectedIcon: Icon(Icons.history_rounded, color: AppTheme.primaryColor),
+          label: Text('Riwayat'),
         ),
+        NavigationRailDestination(
+          icon: Icon(Icons.inventory_2_rounded),
+          selectedIcon: Icon(Icons.inventory_2_rounded, color: AppTheme.primaryColor),
+          label: Text('Produk'),
+        ),
+        NavigationRailDestination(
+          icon: Icon(Icons.settings_rounded),
+          selectedIcon: Icon(Icons.settings_rounded, color: AppTheme.primaryColor),
+          label: Text('Setting'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBottomNavBar() {
+    return Container(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
+      decoration: BoxDecoration(
+        color: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 20,
+            offset: const Offset(0, -10),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _buildNavItem(0, Icons.home_rounded, 'Kasir'),
+          _buildNavItem(1, Icons.history_rounded, 'Riwayat'),
+          _buildNavItem(2, Icons.inventory_2_rounded, 'Produk'),
+          _buildNavItem(3, Icons.settings_rounded, 'Setting'),
+        ],
       ),
     );
   }

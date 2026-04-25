@@ -17,6 +17,11 @@ class ReceiptService {
     List<TransactionPayment> payments = const [],
     Customer? customer,
   }) async {
+    if (!Platform.isAndroid) {
+      // Printer feature is currently hidden/disabled for non-Android platforms
+      return;
+    }
+
     final bool? isConnected = await bluetooth.isConnected;
     if (isConnected != true) {
       throw Exception('Printer tidak terhubung');

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -257,27 +258,29 @@ class _PaymentSuccessScreenState extends ConsumerState<PaymentSuccessScreen> {
                 const Spacer(),
 
                 // Print Receipt Button
-                OutlinedButton.icon(
-                  onPressed: () => _doPrintReceipt(),
-                  icon: const Icon(Icons.print_rounded),
-                  label: const Text('CETAK ULANG STRUK'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    side: const BorderSide(
-                      color: AppTheme.primaryColor,
-                      width: 2,
-                    ),
-                    foregroundColor: AppTheme.primaryColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    textStyle: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
+                if (Platform.isAndroid) ...[
+                  OutlinedButton.icon(
+                    onPressed: () => _doPrintReceipt(),
+                    icon: const Icon(Icons.print_rounded),
+                    label: const Text('CETAK ULANG STRUK'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      side: const BorderSide(
+                        color: AppTheme.primaryColor,
+                        width: 2,
+                      ),
+                      foregroundColor: AppTheme.primaryColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      textStyle: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
+                  const SizedBox(height: 16),
+                ],
 
                 // Share to WhatsApp Button
                 ElevatedButton.icon(

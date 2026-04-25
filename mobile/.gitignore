@@ -33,6 +33,30 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# iOS related
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Runner/GeneratedPluginRegistrant.*
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/DerivedData/
+**/ios/xcuserdata/
+*.mode1v3
+*.mode2v3
+*.moved-aside
+*.pbxuser
+*.perspectivev3
+
+# Certificates & Keys
+*.p12
+*.mobileprovision
+*.jks
+*.keystore
+*.cer
+
 # Symbolication related
 app.*.symbols
 
@@ -44,11 +68,12 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Environment variables
+# Environment variables & Databases
 .env
 *.sqlite
+*.db
 
-# Firebase config
-google-services.json
-GoogleService-Info.plist
-firebase_app_id_file.json
+# Firebase config (Sensitive)
+**/google-services.json
+**/GoogleService-Info.plist
+**/firebase_app_id_file.json

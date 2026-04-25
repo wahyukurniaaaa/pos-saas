@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -88,13 +89,14 @@ class SettingsTab extends ConsumerWidget {
                   context: context,
                   title: 'Konfigurasi Sistem',
                   items: [
-                    _SettingsItem(
-                      icon: Icons.print_rounded,
-                      title: 'Pengaturan Printer',
-                      subtitle: 'Bluetooth thermal printer',
-                      onTap: () => _navigate(context, const PrinterSettingsScreen()),
-                      isLast: !isOwner,
-                    ),
+                    if (Platform.isAndroid)
+                      _SettingsItem(
+                        icon: Icons.print_rounded,
+                        title: 'Pengaturan Printer',
+                        subtitle: 'Bluetooth thermal printer',
+                        onTap: () => _navigate(context, const PrinterSettingsScreen()),
+                        isLast: !isOwner,
+                      ),
                     if (isOwner)
                       _SettingsItem(
                         icon: Icons.storage_rounded,
