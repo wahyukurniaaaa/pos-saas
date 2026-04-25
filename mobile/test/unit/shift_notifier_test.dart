@@ -4,16 +4,45 @@ import 'package:mocktail/mocktail.dart';
 import 'package:posify_app/core/database/database.dart';
 import 'package:posify_app/core/providers/database_provider.dart';
 import 'package:posify_app/features/pos/providers/shift_provider.dart';
+import 'package:posify_app/features/auth/providers/owner_provider.dart';
+import 'package:flutter/services.dart';
 
 class MockDatabase extends Mock implements PosifyDatabase {}
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   setUpAll(() {
     registerFallbackValue(FakeShift());
+    registerFallbackValue(FakeEmployee());
   });
 
   late ProviderContainer container;
   late MockDatabase mockDb;
+  final now = DateTime.now();
+
+  // Mock employee with outletId for closeShift
+  final mockEmployee = Employee(
+    id: '1',
+    name: 'Test Employee',
+    pin: '123456',
+    role: 'owner',
+    status: 'active',
+    failedLoginAttempts: 0,
+    createdAt: now,
+    updatedAt: now,
+    isDirty: false,
+    outletId: 'outlet-1', // Required for closeShift
+  );
+
+  const channel = MethodChannel('plugins.it_nomads.com/flutter_secure_storage');
+
+  setUpAll(() {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+      return null;
+    });
+  });
 
   setUp(() {
     mockDb = MockDatabase();
@@ -29,7 +58,6 @@ void main() {
   });
 
   group('ShiftNotifier', () {
-    final now = DateTime.now();
     final mockShift = Shift(
       id: '1',
       employeeId: '1',
@@ -80,26 +108,32 @@ void main() {
     ];
 
     test('closeShift should calculate expectedEndingCash correctly (startingCash + totalTunaiSales)', () async {
+      // Pre-set the session state
+      container.read(sessionProvider.notifier).state = AsyncData(mockEmployee);
+
       when(() => mockDb.getOpenShift(any())).thenAnswer((_) async => mockShift);
       when(() => mockDb.watchTransactionsByShift('1'))
           .thenAnswer((_) => Stream.value(mockTransactions));
-      
+
       when(() => mockDb.updateShift(any())).thenAnswer((_) async => true);
 
       final notifier = container.read(shiftControllerProvider.notifier);
       final result = await notifier.closeShift('1', 150000);
 
       expect(result, isTrue);
-      
+
       final verification = verify(() => mockDb.updateShift(captureAny()));
       final capturedShift = verification.captured.first as Shift;
-      
+
       expect(capturedShift.expectedEndingCash, 150000);
       expect(capturedShift.actualEndingCash, 150000);
       expect(capturedShift.status, 'closed');
     });
 
     test('closeShift should fail if shift is missing or mismatch', () async {
+      // Pre-set the session state
+      container.read(sessionProvider.notifier).state = AsyncData(mockEmployee);
+
       when(() => mockDb.getOpenShift(any())).thenAnswer((_) async => null);
 
       final notifier = container.read(shiftControllerProvider.notifier);
@@ -111,3 +145,4 @@ void main() {
 }
 
 class FakeShift extends Fake implements Shift {}
+class FakeEmployee extends Fake implements Employee {}

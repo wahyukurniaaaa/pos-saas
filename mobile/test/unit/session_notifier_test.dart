@@ -68,7 +68,7 @@ void main() {
       final result = await notifier.loginWithPin('123456');
 
       expect(result, isNotNull);
-      expect(result?.id, 1);
+      expect(result?.id, '1');
       expect(container.read(sessionProvider).value, mockEmployee);
     });
 
