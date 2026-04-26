@@ -71,7 +71,7 @@ const itemVariants = {
     y: 0,
     scale: 1,
     transition: {
-      type: 'spring',
+      type: 'spring' as const,
       stiffness: 100,
       damping: 12,
     },
@@ -122,7 +122,7 @@ export function AnimatedFeatures() {
               whileHover={{
                 y: -8,
                 scale: 1.02,
-                transition: { type: 'spring', stiffness: 300 },
+                transition: { type: 'spring' as const, stiffness: 300 },
               }}
               className="group relative bg-white rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100"
             >
@@ -182,7 +182,7 @@ export function AnimatedFeatures() {
               initial={{ opacity: 0, scale: 0.5 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              transition={{ delay: 0.1 * index, type: 'spring' }}
+              transition={{ delay: 0.1 * index, type: 'spring' as const }}
               className="text-center"
             >
               <div className="text-3xl sm:text-4xl font-bold text-indigo-600">

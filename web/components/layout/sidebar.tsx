@@ -42,7 +42,7 @@ export function Sidebar() {
               className={cn('w-full justify-start')}
             >
               <Link href={item.href}>
-                <Icon className="mr-2 h-4 w-4" />
+                <Icon className="mr-2 h-4 w-4" aria-hidden="true" />
                 {item.name}
               </Link>
             </Button>

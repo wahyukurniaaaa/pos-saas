@@ -1,13 +1,13 @@
-import { EnhancedHero } from '@/components/marketing/enhanced-hero'
-import { AnimatedFeatures } from '@/components/marketing/animated-features'
-import { AnimatedPricing } from '@/components/marketing/animated-pricing'
+import { SimpleAnimatedHero } from '@/components/marketing/simple-animated-hero'
+import { SimpleFeatures } from '@/components/marketing/simple-features'
+import { SimplePricing } from '@/components/marketing/simple-pricing'
 
 export default function Home() {
   return (
     <main>
-      <EnhancedHero />
-      <AnimatedFeatures />
-      <AnimatedPricing />
+      <SimpleAnimatedHero />
+      <SimpleFeatures />
+      <SimplePricing />
     </main>
   )
 }

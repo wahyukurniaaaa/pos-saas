@@ -22,7 +22,7 @@ const itemVariants = {
     opacity: 1,
     y: 0,
     transition: {
-      type: 'spring',
+      type: 'spring' as const,
       stiffness: 100,
       damping: 12,
     },
@@ -34,7 +34,7 @@ const floatAnimation = {
   transition: {
     duration: 6,
     repeat: Infinity,
-    ease: 'easeInOut',
+    ease: 'easeInOut' as const,
   },
 }
 
@@ -43,7 +43,7 @@ const pulseAnimation = {
   transition: {
     duration: 2,
     repeat: Infinity,
-    ease: 'easeInOut',
+    ease: 'easeInOut' as const,
   },
 }
 
@@ -225,7 +225,7 @@ export function AnimatedHero() {
                 className="absolute -left-8 top-20 bg-white rounded-xl shadow-lg p-3 flex items-center space-x-2"
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 1.5, type: 'spring' }}
+                transition={{ delay: 1.5, type: 'spring' as const }}
                 whileHover={{ scale: 1.1 }}
               >
                 <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
@@ -241,7 +241,7 @@ export function AnimatedHero() {
                 className="absolute -right-4 bottom-32 bg-white rounded-xl shadow-lg p-3 flex items-center space-x-2"
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 1.8, type: 'spring' }}
+                transition={{ delay: 1.8, type: 'spring' as const }}
                 whileHover={{ scale: 1.1 }}
               >
                 <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">

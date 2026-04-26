@@ -60,7 +60,7 @@ const itemVariants = {
     opacity: 1,
     y: 0,
     transition: {
-      type: 'spring',
+      type: 'spring' as const,
       stiffness: 100,
       damping: 12,
     },
@@ -107,7 +107,7 @@ export function AnimatedPricing() {
               variants={itemVariants}
               whileHover={{
                 y: -12,
-                transition: { type: 'spring', stiffness: 300 },
+                transition: { type: 'spring' as const, stiffness: 300 },
               }}
               className={`relative rounded-3xl p-8 ${
                 tier.popular
@@ -120,7 +120,7 @@ export function AnimatedPricing() {
                 <motion.div
                   initial={{ opacity: 0, scale: 0 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.5, type: 'spring' }}
+                  transition={{ delay: 0.5, type: 'spring' as const }}
                   className="absolute -top-4 left-1/2 transform -translate-x-1/2"
                 >
                   <div className="bg-white text-indigo-600 px-4 py-1 rounded-full text-sm font-semibold shadow-lg flex items-center">

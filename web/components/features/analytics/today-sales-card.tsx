@@ -20,7 +20,7 @@ export function TodaySalesCard({
   return (
     <motion.div
       whileHover={{ y: -2 }}
-      transition={{ type: 'spring', stiffness: 300 }}
+      transition={{ type: 'spring' as const, stiffness: 300 }}
     >
       <Card className="border-0 shadow-sm bg-gradient-to-br from-white to-gray-50/50">
         <CardContent className="p-6">

@@ -31,7 +31,7 @@ const itemVariants = {
     opacity: 1,
     y: 0,
     transition: {
-      type: 'spring',
+      type: 'spring' as const,
       stiffness: 100,
       damping: 12,
     },
@@ -326,13 +326,13 @@ export function EnhancedHero() {
                   key={stat.label}
                   className="text-center p-4 bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-100"
                   whileHover={{ y: -5, boxShadow: '0 10px 40px -10px rgba(0,0,0,0.1)' }}
-                  transition={{ type: 'spring', stiffness: 300 }}
+                  transition={{ type: 'spring' as const, stiffness: 300 }}
                 >
                   <motion.div
                     className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent"
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    transition={{ delay: 0.5 + index * 0.1, type: 'spring' }}
+                    transition={{ delay: 0.5 + index * 0.1, type: 'spring' as const }}
                   >
                     {stat.value}
                   </motion.div>
