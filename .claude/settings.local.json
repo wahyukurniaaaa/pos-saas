@@ -27,7 +27,9 @@
       "Bash(npx shadcn@2.1.0 init -d --yes --template next --base-color slate)",
       "Bash(npx *)",
       "Bash(npm run *)",
-      "Bash(pkill -f \"next dev\")"
+      "Bash(pkill -f \"next dev\")",
+      "Bash(curl -s http://localhost:3000/dashboard)",
+      "Bash(pkill -9 -f \"next\")"
     ]
   }
 }
