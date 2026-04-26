@@ -3,8 +3,8 @@ import fs from 'fs'
 import path from 'path'
 
 describe('Project Structure', () => {
-  // Navigate to web directory (tests run from root)
-  const rootDir = path.join(process.cwd(), 'web')
+  // Correct path (tests run from web directory)
+  const rootDir = process.cwd()
 
   it('should have Next.js config', () => {
     const hasTsConfig = fs.existsSync(path.join(rootDir, 'next.config.ts'))
