@@ -26,7 +26,8 @@
       "Bash(npx shadcn *)",
       "Bash(npx shadcn@2.1.0 init -d --yes --template next --base-color slate)",
       "Bash(npx *)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(pkill -f \"next dev\")"
     ]
   }
 }
