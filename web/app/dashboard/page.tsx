@@ -1,15 +1,9 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   TrendingUp,
   TrendingDown,
@@ -19,35 +13,11 @@ import {
   Package,
   Calendar,
   Download,
-  MoreHorizontal,
   ArrowUpRight,
   ArrowDownRight,
 } from 'lucide-react'
 import { SalesChart } from '@/components/charts/sales-chart'
 import { RecentTransactions } from '@/components/features/analytics/recent-transactions'
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-}
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      type: 'spring',
-      stiffness: 100,
-      damping: 12,
-    },
-  },
-}
 
 const stats = [
   {
@@ -90,15 +60,12 @@ const stats = [
 
 export default function DashboardPage() {
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="min-h-screen bg-gray-50/50 p-4 sm:p-6 lg:p-8"
-    >
+    <div className="min-h-screen bg-gray-50/50 p-4 sm:p-6 lg:p-8">
       {/* Header Section */}
       <motion.div
-        variants={itemVariants}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
         className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
       >
         <div>
@@ -123,15 +90,18 @@ export default function DashboardPage() {
 
       {/* Stats Grid */}
       <motion.div
-        variants={itemVariants}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
       >
         {stats.map((stat, index) => (
           <motion.div
             key={stat.title}
-            variants={itemVariants}
-            whileHover={{ y: -4, boxShadow: '0 10px 40px -10px rgba(0,0,0,0.1)' }}
-            transition={{ type: 'spring', stiffness: 300 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 + index * 0.1 }}
+            whileHover={{ y: -4 }}
           >
             <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
               <CardContent className="p-6">
@@ -172,7 +142,12 @@ export default function DashboardPage() {
       {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Charts */}
-        <motion.div variants={itemVariants} className="lg:col-span-2 space-y-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="lg:col-span-2 space-y-6"
+        >
           <Card className="border-0 shadow-sm">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
@@ -184,13 +159,6 @@ export default function DashboardPage() {
                     7 hari terakhir
                   </p>
                 </div>
-                <Tabs defaultValue="7days" className="w-auto">
-                  <TabsList className="bg-gray-100">
-                    <TabsTrigger value="24h">24h</TabsTrigger>
-                    <TabsTrigger value="7days">7d</TabsTrigger>
-                    <TabsTrigger value="30days">30d</TabsTrigger>
-                  </TabsList>
-                </Tabs>
               </div>
             </CardHeader>
             <CardContent>
@@ -225,22 +193,13 @@ export default function DashboardPage() {
         </motion.div>
 
         {/* Right Column - Recent Activity */}
-        <motion.div variants={itemVariants} className="space-y-6">
-          <Card className="border-0 shadow-sm">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg font-semibold">
-                  Aktivitas Terbaru
-                </CardTitle>
-                <Button variant="ghost" size="sm">
-                  <MoreHorizontal className="w-4 h-4" />
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <RecentTransactions />
-            </CardContent>
-          </Card>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="space-y-6"
+        >
+          <RecentTransactions />
 
           {/* Top Products */}
           <Card className="border-0 shadow-sm">
@@ -275,6 +234,6 @@ export default function DashboardPage() {
           </Card>
         </motion.div>
       </div>
-    </motion.div>
+    </div>
   )
 }

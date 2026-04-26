@@ -89,7 +89,7 @@ const getStatusBadge = (status: string) => {
   }
 }
 
-export function RecentTransactions()
+export function RecentTransactions() {
   return (
     <Card className="border-0 shadow-sm">
       <CardHeader className="pb-3">
