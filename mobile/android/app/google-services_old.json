@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "453115899609",
+    "project_id": "pos-saas-f5a7c",
+    "storage_bucket": "pos-saas-f5a7c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:453115899609:android:4263d1299985b799dd18c8",
+        "android_client_info": {
+          "package_name": "com.posify.posify_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDa7ktNJ3FSzYh-3Uow3vdkKBByRhMzvFE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
