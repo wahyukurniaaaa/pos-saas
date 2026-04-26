@@ -24,7 +24,7 @@ export class SupabaseAnalyticsRepository
     if (error) throw error
 
     const transactions = data || []
-    const totalAmount = transactions.reduce((sum, t) => sum + (t.total_amount || 0), 0)
+    const totalAmount = transactions.reduce((sum: number, t: { total_amount?: number }) => sum + (t.total_amount || 0), 0)
 
     return {
       totalAmount,
