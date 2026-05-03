@@ -145,6 +145,7 @@ erDiagram
         TEXT name
         TEXT phone "Opsional"
         TEXT address "Opsional"
+        BOOLEAN apply_to_all "Apply ke semua outlet (Global)"
         TEXT created_at "ISO 8601"
         TEXT updated_at "ISO 8601"
         BOOLEAN is_dirty "Sync Flag"
@@ -155,6 +156,7 @@ erDiagram
         TEXT id PK "UUID v7"
         TEXT outlet_id FK "Nullable"
         TEXT name "Unik"
+        BOOLEAN apply_to_all "Apply ke semua outlet (Global)"
         TEXT created_at "ISO 8601"
         TEXT updated_at "ISO 8601"
         BOOLEAN is_dirty "Sync Flag"
@@ -164,8 +166,8 @@ erDiagram
     products {
         TEXT id PK "UUID v7"
         TEXT outlet_id FK "Nullable"
-        TEXT category_id FK 
-        TEXT name 
+        TEXT category_id FK
+        TEXT name
         TEXT sku "Unik, Barcode"
         INTEGER price "Harga Jual (Base)"
         INTEGER purchase_price "Harga Beli / HPP Retail"
@@ -173,6 +175,7 @@ erDiagram
         INTEGER stock "Sisa Fisik"
         INTEGER low_stock_threshold "Default 0"
         TEXT image_uri "Path lokal gambar"
+        BOOLEAN apply_to_all "Apply ke semua outlet (Global)"
         TEXT created_at "ISO 8601"
         TEXT updated_at "ISO 8601"
         BOOLEAN is_dirty "Sync Flag"

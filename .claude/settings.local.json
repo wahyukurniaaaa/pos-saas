@@ -30,7 +30,10 @@
       "Bash(pkill -f \"next dev\")",
       "Bash(curl -s http://localhost:3000/dashboard)",
       "Bash(pkill -9 -f \"next\")",
-      "Bash(curl -s http://localhost:3000)"
+      "Bash(curl -s http://localhost:3000)",
+      "Bash(xargs -I {} sed -i \"s/type: 'spring',/type: 'spring' as const,/g\" {})",
+      "Bash(\\\\ngit commit *)",
+      "Bash(\\\\ngit push *)"
     ]
   }
 }
