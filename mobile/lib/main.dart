@@ -32,16 +32,16 @@ void main() async {
     anonKey: AppConstants.supabaseAnonKey,
   );
 
-  runApp(const ProviderScope(child: PosifyApp()));
+  runApp(const ProviderScope(child: LumioApp()));
 }
 
-class PosifyApp extends StatelessWidget {
-  const PosifyApp({super.key});
+class LumioApp extends StatelessWidget {
+  const LumioApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'POSify',
+      title: 'Lumio',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,

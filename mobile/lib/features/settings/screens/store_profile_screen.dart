@@ -413,7 +413,7 @@ class _StoreProfileScreenState extends ConsumerState<StoreProfileScreen> {
                         style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
                         decoration: _inputDecoration(
                           'Nama Toko *',
-                          'Misal: Warung Kopi Posify',
+                          'Misal: Warung Kopi Lumio',
                           Icons.store_mall_directory_rounded,
                         ),
                         validator: (value) {
@@ -441,7 +441,7 @@ class _StoreProfileScreenState extends ConsumerState<StoreProfileScreen> {
                         style: GoogleFonts.poppins(fontWeight: FontWeight.w500, fontSize: 14),
                         decoration: _inputDecoration(
                           'Alamat Toko (Opsional)',
-                          'Misal: Jl. Raya Posify No. 1, Jakarta',
+                          'Misal: Jl. Raya Lumio No. 1, Jakarta',
                           Icons.location_on_rounded,
                         ),
                       ),

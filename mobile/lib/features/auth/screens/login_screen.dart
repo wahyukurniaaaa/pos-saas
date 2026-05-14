@@ -122,14 +122,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.storefront, size: 64, color: AppTheme.primaryColor),
-                      const SizedBox(height: 16),
-                      Text(
-                        'POSify UMKM',
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.primaryColor,
-                            ),
+                      // Lumio Logo
+                      Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Image.asset(
+                          'assets/branding/lumio_logo_wordmark.png',
+                          height: 60,
+                          fit: BoxFit.contain,
+                        ),
                       ),
                       const SizedBox(height: 24),
                       TabBar(

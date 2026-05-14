@@ -76,24 +76,17 @@ class _LicenseActivationScreenState
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       // Logo Icon
-                      Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Icon(
-                          Icons.point_of_sale_rounded,
-                          size: 44,
-                          color: Colors.white,
-                        ),
+                      // Lumio Logo
+                      Image.asset(
+                        'assets/branding/lumio_logo_wordmark_white.png',
+                        height: 60,
+                        fit: BoxFit.contain,
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 24),
 
                       // Title
                       Text(
-                        'POSify',
+                        'Lumio',
                         style: GoogleFonts.poppins(
                           fontSize: 32,
                           fontWeight: FontWeight.w800,

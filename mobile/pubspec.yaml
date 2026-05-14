@@ -1,5 +1,5 @@
 name: posify_app
-description: "A new Flutter project."
+description: "Lumio — AI-powered POS untuk UMKM. Kelola bisnis lebih cerdas, mudah, dan efisien."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
@@ -90,6 +90,7 @@ flutter:
   assets:
     - .env
     - assets/icon/
+    - assets/branding/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -118,12 +119,13 @@ flutter:
   # see https://flutter.dev/to/font-from-package
 
 
-# App Icon Configuration
+# App Icon Configuration — Lumio
 flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/icon/app_icon.png"
   min_sdk_android: 21
-  adaptive_icon_background: "#0F766E"
-  adaptive_icon_foreground: "assets/icon/app_icon.png"
+  adaptive_icon_background: "#0F2F62"
+  adaptive_icon_foreground: "assets/icon/lumio_adaptive_foreground.png"
+  remove_alpha_ios: true
 

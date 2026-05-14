@@ -567,7 +567,7 @@ class _DatabaseSettingsScreenState
                 if (val == 'share') {
                   Share.shareXFiles([
                     XFile(file.path),
-                  ], text: 'Backup Database Posify');
+                  ], text: 'Backup Database Lumio');
                 }
                 if (val == 'delete') {
                   file.deleteSync();

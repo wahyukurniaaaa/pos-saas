@@ -125,23 +125,16 @@ class _UnifiedRegistrationScreenState extends ConsumerState<UnifiedRegistrationS
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       // Logo Icon
-                      Container(
-                        width: 70,
-                        height: 70,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Icon(
-                          Icons.storefront_rounded,
-                          size: 38,
-                          color: Colors.white,
-                        ),
+                      // Lumio Logo
+                      Image.asset(
+                        'assets/branding/lumio_logo_wordmark_white.png',
+                        height: 50,
+                        fit: BoxFit.contain,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 24),
 
                       Text(
-                        'Buat Akun POSify',
+                        'Buat Akun Lumio',
                         style: GoogleFonts.poppins(
                           fontSize: 28,
                           fontWeight: FontWeight.w800,
