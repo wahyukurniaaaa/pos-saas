@@ -2,9 +2,12 @@
 
 **Produk:** Aplikasi Sistem Kasir (POS) SaaS Offline-First
 
-**Versi:** 3.1 (Auto-Stock Deduction)
+**Versi:** 3.2 (Next Features Roadmap)
 
 **Status:** Implementasi Progresif (Phase 0-3, Phase 4 (Partial Sync), Phase 7-13 Selesai)
+
+## **Update Log (v3.2):**
+*   **Next Features Roadmap**: Penambahan dokumentasi formal untuk fitur-fitur lanjutan yang sebelumnya hanya terdapat di backlog. Mencakup: Inter-Outlet Stock Transfer, Background Image Sync, Unified Tier Provider, Piutang/Bon Management, Receipt Customization, Batch & Expiry Tracking, FCM Push Notifications, Table Management (F&B), KDS, Employee Commissions, Split Bill (per-item), dan Dynamic QRIS.
 
 ## **Update Log (v3.1):**
 *   **Auto-Stock Deduction (Phase 13)**: Pemotongan stok bahan baku secara sistematis dan otomatis saat transaksi diselesaikan di kasir (Checkout).
@@ -317,3 +320,164 @@ Bagian ini merangkum kapabilitas utama berdasarkan *Use Case* operasional POS.
 
 ### **15.7. Pengaturan Sistem Global**
 *   **UC-SET:** Konfigurasi Profil Toko/Kustomisasi Struk, Manajemen Tingkat Akses Karyawan, Buku Alamat Pelanggan, Manajemen Konversi Satuan (UoM), Pajak/Servis Otomatis, Manajemen Promo, Setel Printer Bluetooth, dan Ekspor/Backup Database Keamanan Terenkripsi.
+
+---
+
+## **16\. Rencana Fitur Lanjutan (Next Features Roadmap)**
+
+Bagian ini mendokumentasikan fitur-fitur yang telah direncanakan di product backlog namun belum memiliki spesifikasi formal di PRD. Semua fitur di bagian ini **belum diimplementasi** dan menjadi target pengembangan fase berikutnya.
+
+---
+
+### **16.1. Inter-Outlet Stock Transfer & Visibility (Phase 3)**
+*   **Deskripsi:** Memindahkan stok antar cabang secara terstruktur dan melihat ketersediaan barang di cabang lain langsung dari aplikasi kasir.
+*   **Fitur:**
+    *   **Stock Transfer Module**: Entitas `stock_transfers` yang mencatat perpindahan stok: `from_outlet_id` → `to_outlet_id` dengan status tracking (`SENT` / `IN_TRANSIT` / `RECEIVED`).
+    *   **Cross-Outlet Stock Checker**: Tombol "Cek Cabang Lain" pada Product Grid untuk melihat stok outlet lain secara real-time (membutuhkan koneksi internet aktif).
+    *   **Transfer History**: Riwayat lengkap perpindahan stok per outlet untuk audit trail.
+*   **Dependensi:** Phase 3 Cloud Sync, UUID Migration (Phase 2) ✅, Outlet Infrastructure ✅.
+*   **Tier:** Pro only.
+
+---
+
+### **16.2. Background Image Sync (Phase 5)**
+*   **Deskripsi:** Pengunggahan foto nota belanja dan gambar produk secara asinkron ke Supabase Storage, bahkan saat internet tidak tersedia saat pengambilan gambar.
+*   **Fitur:**
+    *   **Upload Queue**: Antrian pengunggahan latar belakang menggunakan `work_manager` agar hemat baterai dan reliabel.
+    *   **Retry Logic**: Mekanisme percobaan ulang otomatis jika koneksi terputus di tengah proses upload.
+    *   **Offline Capture**: Kasir tetap bisa mengambil foto nota/kuitansi meskipun sedang offline; upload otomatis berjalan saat koneksi tersedia.
+    *   **Supabase Storage Bucket**: Konfigurasi bucket dengan RLS Policies berbasis `outlet_id`.
+*   **Tier:** Pro only.
+
+---
+
+### **16.3. Unified Auth & Tier-Based Logic (Phase 6)**
+*   **Deskripsi:** Sistem pengecekan tier terpusat yang memastikan fitur Cloud Sync hanya aktif untuk akun Pro dan tidak berjalan secara tidak sengaja pada akun Lite.
+*   **Fitur:**
+    *   **Tier Provider**: `appTierProvider` terpusat sebagai single source of truth untuk status tier pengguna (`lite` / `pro`).
+    *   **Sync Gating**: `SyncService` & `RealtimeService` hanya aktif jika tier terdeteksi sebagai Pro.
+    *   **Metadata Sync**: Sinkronisasi `user_metadata['tier']` dari Supabase Auth ke database lokal SQLite.
+    *   **UI Gating**: Menyembunyikan indikator sinkronisasi dan fitur multi-outlet jika user adalah Lite.
+    *   **Upgrade Trigger**: Logika otomatis mengaktifkan Cloud Sync segera setelah perubahan tier terdeteksi.
+
+---
+
+### **16.4. In-App Pro Subscription Upgrade (Phase 4)**
+*   **Deskripsi:** Alur upgrade ke Tier Pro langsung dari dalam aplikasi tanpa harus keluar ke browser atau menghubungi CS.
+*   **Fitur:**
+    *   **Payment Gateway (Backend Go)**: Integrasi Midtrans/Xendit untuk pembuatan invoice subscription (Snap/Redirect).
+    *   **Billing Webview (Mobile)**: Layar pembayaran di dalam aplikasi menggunakan `WebView` untuk menyelesaikan transaksi tanpa keluar dari app.
+    *   **Subscription Webhook Listener (Backend)**: Handler untuk menerima notifikasi pembayaran sukses dan mengupdate status `tier` menjadi `pro` di Supabase.
+    *   **Upgrade Success Flow**: Animasi konfirmasi dan aktivasi fitur Pro segera setelah pembayaran berhasil.
+*   **Dependensi:** Unified Tier Provider (§16.3).
+
+---
+
+### **16.5. Piutang / Bon Management**
+*   **Deskripsi:** Pencatatan transaksi yang belum lunas (Bon/Kasbon) dengan kemampuan cicilan dan pengingat otomatis.
+*   **Fitur:**
+    *   **Debt Ledger**: Halaman khusus di menu Pelanggan yang menampilkan daftar tagihan terbuka per pelanggan beserta riwayat cicilannya.
+    *   **Partial Payment**: Dukungan pembayaran cicilan (`debt_payments`) yang mengurangi saldo piutang secara bertahap.
+    *   **WhatsApp Reminder**: Fitur "Kirim Pengingat" yang mengirimkan notifikasi tagihan ke nomor WA pelanggan.
+    *   **Kasbon di POS**: Metode pembayaran `Kasbon` tersedia sebagai opsi tunggal di kasir (tidak dapat dikombinasikan dalam Split Payment).
+*   **Catatan:** Kasbon/Piutang sudah terdaftar di Enum status transaksi (PRD §5), namun modul manajemennya belum ada.
+
+---
+
+### **16.6. Receipt Customization (Kustomisasi Struk)**
+*   **Deskripsi:** Kemampuan Owner untuk mengonfigurasi informasi yang tercetak pada struk termal dan struk digital.
+*   **Fitur:**
+    *   **`ReceiptConfigScreen`**: Layar edit Header (nama toko, logo, alamat) dan Footer (ucapan terima kasih, akun media sosial, WiFi password) dengan live preview sebelum menyimpan.
+    *   **Social Media Fields**: Input field untuk handle Instagram, Facebook, atau TikTok yang tercetak di footer struk.
+    *   **Promo Footer**: Opsi menampilkan promo berjalan di bagian bawah struk sebagai marketing tool.
+    *   **Font Size Control**: Pengaturan ukuran teks untuk printer thermal dengan lebar kertas berbeda (57mm / 80mm).
+
+---
+
+### **16.7. Batch & Expiry Date Tracking**
+*   **Deskripsi:** Pelacakan tanggal kadaluwarsa dan nomor batch produk untuk mencegah penjualan barang basi dan manajemen FIFO.
+*   **Fitur:**
+    *   **Expiry Date pada Mutasi**: Kolom `expiry_date` dan `batch_number` pada tabel stock mutations (`stock_transactions` / `ingredient_stock_history`).
+    *   **Expiry Alert**: Filter dan peringatan otomatis untuk produk yang kadaluwarsa dalam 7 dan 30 hari ke depan.
+    *   **FIFO Recommendation**: Sistem merekomendasikan produk dengan batch terlama untuk dijual terlebih dahulu.
+    *   **Waste Report**: Laporan produk yang di-write-off karena kadaluwarsa (terintegrasi dengan Stock Out).
+
+---
+
+### **16.8. Push Notifications — Low Stock & Proactive Alerts**
+*   **Deskripsi:** Notifikasi push proaktif untuk kejadian penting yang membutuhkan perhatian Owner/Supervisor tanpa harus membuka aplikasi.
+*   **Fitur:**
+    *   **FCM Integration**: Integrasi Firebase Cloud Messaging (FCM) untuk pengiriman notifikasi ke perangkat Android.
+    *   **Low Stock Alert**: Notifikasi otomatis saat stok produk atau bahan baku menyentuh batas `low_stock_threshold`.
+    *   **Expiry Warning**: Notifikasi H-7 dan H-1 sebelum tanggal kadaluwarsa batch produk.
+    *   **Daily Sales Summary**: Ringkasan penjualan harian yang dikirim setiap akhir hari (dapat dikonfigurasi).
+    *   **Notification Preferences**: Owner dapat mengatur jenis notifikasi apa saja yang ingin diterima di Settings.
+
+---
+
+### **16.9. Split Bill (Pecah Tagihan per Item)**
+*   **Deskripsi:** Memisahkan satu transaksi menjadi beberapa tagihan individual berdasarkan item yang dipilih — berbeda dengan Split Payment yang memecah metode bayar dalam satu tagihan.
+*   **Fitur:**
+    *   **Item Selection UI**: Kasir memilih item mana yang akan dimasukkan ke tagihan pertama, sisanya otomatis menjadi tagihan kedua.
+    *   **Sub-Cart Management**: Setelah item dipilih, sistem membuat sub-keranjang baru (`draft_order`) untuk sisa item yang belum dibayar.
+    *   **Parent Transaction Tracking**: Kolom `parent_transaction_id` untuk menghubungkan transaksi-transaksi yang dipecah dalam laporan rekonsiliasi.
+    *   **Partial Receipt**: Struk terpisah per pecahan tagihan dengan label "Tagihan 1/2", "Tagihan 2/2", dsb.
+*   **Catatan:** Berbeda fundamental dengan Split Payment (PRD §4.3 & §5) yang sudah diimplementasi.
+
+---
+
+### **16.10. Dynamic QRIS API Integration**
+*   **Deskripsi:** Menampilkan QRIS dinamis yang di-generate secara real-time oleh payment gateway, sehingga nilai transaksi sudah terisi otomatis dan kasir tidak perlu memasukkan nominal di aplikasi dompet digital pelanggan.
+*   **Fitur:**
+    *   **QRIS Display di PaymentModal**: QR Code ditampilkan langsung di layar kasir saat metode QRIS dipilih, dengan nilai yang sudah terkunci sesuai total tagihan.
+    *   **Payment Gateway Integration (Backend)**: Integrasi API Xendit/Midtrans untuk generate QRIS dinamis dan menerima callback konfirmasi pembayaran.
+    *   **Auto-Confirmation**: Kasir tidak perlu konfirmasi manual — sistem otomatis mendeteksi pembayaran berhasil via webhook dan menutup transaksi.
+    *   **Timeout Handling**: QRIS memiliki waktu kedaluwarsa (misalnya 5 menit) dengan opsi generate ulang.
+*   **Catatan:** Berbeda dengan pencatatan QRIS statis yang sudah ada (recording only, PRD §10).
+
+---
+
+### **16.11. F&B Table Management (Manajemen Meja)**
+*   **Deskripsi:** Sistem manajemen tata letak meja restoran secara visual untuk bisnis F&B dengan layanan dine-in.
+*   **Fitur:**
+    *   **Visual Floor Maker**: Antarmuka drag-and-drop untuk menyusun dan mengonfigurasi denah meja per zona/area.
+    *   **Table Status Tracking**: Indikator visual real-time per meja — Hijau (Kosong), Merah (Terisi/Sedang Makan), Kuning (Menunggu Pembayaran).
+    *   **Table Session**: Tabel `table_sessions` yang menghubungkan setiap transaksi ke meja fisik.
+    *   **Pindah Meja**: Fitur memindahkan seluruh pesanan dari satu meja ke meja lain.
+    *   **Gabung Tagihan (Merge Bill)**: Menggabungkan dua tagihan meja berbeda menjadi satu transaksi.
+    *   **Integrasi Save Bill**: Bill yang tersimpan otomatis terikat ke meja tertentu.
+*   **Tier:** Pro only (multi-outlet F&B).
+
+---
+
+### **16.12. Kitchen Display System (KDS)**
+*   **Deskripsi:** Layar tampilan pesanan dapur (*paperless kitchen*) yang menerima order secara real-time dari kasir.
+*   **Fitur:**
+    *   **Order Grid**: Tampilan grid pesanan yang masuk, diurutkan berdasarkan waktu (FIFO) dengan status visual (Baru / Sedang Disiapkan / Selesai).
+    *   **Local Network Sync**: Komunikasi real-time antara perangkat kasir dan perangkat KDS menggunakan WebSocket lokal (tidak memerlukan internet).
+    *   **Item-Level Status**: Staff dapur dapat menandai setiap item pesanan sebagai selesai secara individual.
+    *   **Alert Suara**: Bunyi notifikasi saat pesanan baru masuk ke layar KDS.
+*   **Dependensi:** Table Management (§16.11) untuk informasi nomor meja.
+*   **Tier:** Pro only.
+
+---
+
+### **16.13. Employee Commissions & Performance Tracking**
+*   **Deskripsi:** Sistem komisi berbasis transaksi untuk memotivasi karyawan dan memantau performa penjualan individual.
+*   **Fitur:**
+    *   **Commission Rules**: Owner dapat menetapkan komisi per item produk (nominal Rp atau persentase %) yang terkait ke karyawan penjual.
+    *   **Auto-Calculation**: Komisi dihitung dan dicatat otomatis setiap kali transaksi diselesaikan, berdasarkan karyawan yang sedang aktif shift.
+    *   **Staff Performance Dashboard**: Laporan performa per karyawan: total transaksi, total nilai penjualan, dan total komisi dalam periode tertentu.
+    *   **Commission Payout Log**: Riwayat pembayaran komisi yang dapat digunakan sebagai dasar penggajian.
+
+---
+
+### **16.14. Owner Global Dashboard Multi-Outlet (Phase 5)**
+*   **Deskripsi:** Dashboard analitik agregasi lintas seluruh outlet untuk Owner dalam satu tampilan ringkasan.
+*   **Fitur:**
+    *   **Revenue Aggregation**: Total penjualan dari seluruh outlet dalam satu hari/minggu/bulan.
+    *   **Outlet Comparison Charts**: Grafik batang/pie untuk komparasi performa antar outlet secara visual.
+    *   **Top Products Cross-Outlet**: Produk terlaris secara keseluruhan vs per outlet.
+    *   **Real-Time Sync**: Data diambil via Supabase RPC untuk agregasi yang efisien tanpa membebani client.
+*   **Dependensi:** Cloud Sync (Phase 3) ✅, Inter-Outlet Infrastructure.
+*   **Tier:** Pro only.

@@ -2092,6 +2092,8 @@ class PosifyDatabase extends _$PosifyDatabase {
       'product_variants', 'ingredients', 'discounts', 'employees', 'shifts',
       'transactions', 'transaction_items', 'transaction_payments', 'expenses',
       'purchase_orders', 'stock_opname', 'stock_opname_items', 'licenses',
+      'store_profile', 'unit_conversions', 'printer_settings', 'product_recipes',
+      'ingredient_stock_history',
     };
 
     if (!allowedTables.contains(tableName)) return [];
