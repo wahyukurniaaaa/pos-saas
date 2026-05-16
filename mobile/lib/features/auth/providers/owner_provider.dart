@@ -6,13 +6,20 @@ import 'package:lumio/core/database/database.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lumio/core/providers/license_tier_provider.dart';
 
+/// Reactive stream of the owner employee record.
+/// Emits a new value whenever the employees table changes.
+final ownerStreamProvider = StreamProvider<Employee?>((ref) {
+  final db = ref.watch(databaseProvider);
+  return db.watchOwner();
+});
+
 /// Notifier for owner setup.
 /// Non-autoDispose so owner state persists throughout app lifecycle.
 class OwnerNotifier extends AsyncNotifier<Employee?> {
   @override
   Future<Employee?> build() async {
-    final db = ref.watch(databaseProvider);
-    return db.getOwner();
+    // Watch the stream reactively — UI auto-updates when sync pulls owner data.
+    return ref.watch(ownerStreamProvider.future);
   }
 
   Future<bool> setupOwner({
@@ -83,7 +90,7 @@ class OwnerNotifier extends AsyncNotifier<Employee?> {
     required String phone,
   }) async {
     final db = ref.read(databaseProvider);
-    
+
     // Evaluate Gate
     final canAdd = await ref.read(canAddOutletProvider.future);
     if (!canAdd) {
