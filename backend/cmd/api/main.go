@@ -129,7 +129,7 @@ func main() {
 
 	// Health Check / Ping
 	api.Get("/ping", func(c *fiber.Ctx) error {
-		return response.Success(c, fiber.StatusOK, "POSify License API is running", nil)
+		return response.Success(c, fiber.StatusOK, "Lumio License API is running", nil)
 	})
 
 	log.Printf("Server starting on port %s", port)

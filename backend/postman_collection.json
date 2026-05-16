@@ -1,7 +1,7 @@
 {
     "info": {
         "_postman_id": "posify-license-api",
-        "name": "POSify License API",
+        "name": "Lumio License API",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "item": [
@@ -311,7 +311,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"tier_level\": \"pro\",\n    \"customer_email\": \"consumer@example.com\",\n    \"order_id\": \"ORDER-123\",\n    \"source\": \"posify-saas\"\n}",
+                            "raw": "{\n    \"tier_level\": \"pro\",\n    \"customer_email\": \"consumer@example.com\",\n    \"order_id\": \"ORDER-123\",\n    \"source\": \"lumio-saas\"\n}",
                             "options": {
                                 "raw": {
                                     "language": "json"
@@ -346,7 +346,7 @@
                                 ],
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n    \"tier_level\": \"pro\",\n    \"customer_email\": \"consumer@example.com\",\n    \"order_id\": \"ORDER-123\",\n    \"source\": \"posify-saas\"\n}",
+                                    "raw": "{\n    \"tier_level\": \"pro\",\n    \"customer_email\": \"consumer@example.com\",\n    \"order_id\": \"ORDER-123\",\n    \"source\": \"lumio-saas\"\n}",
                                     "options": {
                                         "raw": {
                                             "language": "json"

@@ -16,7 +16,7 @@ func NewMailer() *Mailer {
 	apiKey := os.Getenv("RESEND_API_KEY")
 	from := os.Getenv("EMAIL_FROM")
 	if from == "" {
-		from = "POSify <onboarding@resend.dev>" // Default Resend test email
+		from = "Lumio POS <onboarding@resend.dev>" // Default Resend test email
 	}
 
 	return &Mailer{
@@ -133,5 +133,4 @@ func (m *Mailer) SendLicenseEmail(to, licenseCode, tier string, maxDevices int, 
 	}
 
 	return nil
-}
 }
