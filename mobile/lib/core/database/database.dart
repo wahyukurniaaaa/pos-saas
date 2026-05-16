@@ -446,6 +446,10 @@ class LumioDatabase extends _$LumioDatabase {
     employees,
   )..where((e) => e.role.equals('owner'))).getSingleOrNull();
 
+  Stream<Employee?> watchOwner() => (select(employees)
+        ..where((e) => e.role.equals('owner')))
+      .watchSingleOrNull();
+
   Future<String> insertEmployee(EmployeesCompanion entry) async {
     final row = await into(employees).insertReturning(entry);
     await enqueueSync('employees', 'INSERT', row.id);
@@ -2720,12 +2724,25 @@ class LumioDatabase extends _$LumioDatabase {
         final placeholders = <String>[];
         final values = <dynamic>[];
 
-        // Get actual columns in the local table to avoid "no such column" errors
-        final tableInfo = allTables.firstWhere((t) => t.actualTableName == tableName);
-        final validColumns = tableInfo.$columns.map((c) => c.$name).toSet();
+        // Get actual columns in the local table to avoid "no such column" errors.
+        // Use a safe lookup; if the table isn't found, query its pragma directly.
+        Set<String>? validColumns;
+        try {
+          final tableInfo = allTables.firstWhere(
+            (t) => t.actualTableName == tableName,
+          );
+          validColumns = tableInfo.$columns.map((c) => c.$name).toSet();
+        } catch (_) {
+          // Fallback: query PRAGMA to get actual columns
+          final pragmaResult = await customSelect(
+            'PRAGMA table_info($tableName)',
+            readsFrom: {},
+          ).get();
+          validColumns = pragmaResult.map((r) => r.read<String>('name')).toSet();
+        }
 
         row.forEach((key, value) {
-          if (!validColumns.contains(key)) return;
+          if (!validColumns!.contains(key)) return;
 
           if (value is String &&
               key.contains('_at') &&

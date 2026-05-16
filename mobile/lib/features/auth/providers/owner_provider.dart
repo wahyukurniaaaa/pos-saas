@@ -109,6 +109,11 @@ final ownerProvider = AsyncNotifierProvider<OwnerNotifier, Employee?>(
   OwnerNotifier.new,
 );
 
+final storeProfileProvider = StreamProvider<StoreProfileData?>((ref) {
+  final db = ref.watch(databaseProvider);
+  return db.watchStoreProfile();
+});
+
 /// Provider for current logged-in employee (via PIN).
 /// Non-autoDispose so session persists throughout app lifecycle.
 class SessionNotifier extends AsyncNotifier<Employee?> {

@@ -108,6 +108,7 @@ class _AppBootstrapState extends ConsumerState<AppBootstrap> {
     final session = ref.watch(supabaseSessionProvider);
     final licenseAsync = ref.watch(licenseProvider);
     final ownerAsync = ref.watch(ownerProvider);
+    final storeProfileAsync = ref.watch(storeProfileProvider);
 
     // Layer 1: Account Session (Supabase)
     if (session == null) {
@@ -126,33 +127,37 @@ class _AppBootstrapState extends ConsumerState<AppBootstrap> {
           return const UnlicensedScreen();
         }
 
-        // Tunggu sync pertama selesai JIKA database lokal benar-benar kosong (Perangkat Baru / Reinstall)
         final isPro = license.tierLevel?.toLowerCase() == 'pro';
-        final isLocalOwnerEmpty = !ownerAsync.isLoading && ownerAsync.value == null;
         final isInitialSyncDone = ref.watch(initialSyncProvider);
 
-        // Kita harus menunggu sync selesai sebelum memastikan owner tidak ada.
-        // HANYA UNTUK PRO USER. Jika bukan Pro, tidak ada sync, jadi langsung Setup.
-        if (isPro && isLocalOwnerEmpty && !isInitialSyncDone) {
-          return const _SplashScreen(errorMessage: 'Menyinkronkan data profil dari cloud...');
+        // Still loading? Show splash.
+        if (ownerAsync.isLoading || storeProfileAsync.isLoading) {
+          return const _SplashScreen();
         }
 
-        // Layer 3: Owner (Store setup)
-        return ownerAsync.when(
-          loading: () => const _SplashScreen(),
-          error: (error, stackTrace) => _SplashScreen(
+        if (ownerAsync.hasError) {
+          return _SplashScreen(
             errorMessage: 'Gagal memuat profil toko.',
             onRetry: () => ref.invalidate(ownerProvider),
-          ),
-          data: (owner) {
-            if (owner == null) {
-              return const OwnerSetupScreen();
-            }
+          );
+        }
 
-            // Layer 4: Employee Selection (PIN Login)
-            return const EmployeeSelectionScreen();
-          },
-        );
+        final owner = ownerAsync.value;
+        final storeProfile = storeProfileAsync.value;
+
+        // Tunggu sync selesai jika belum ada data sama sekali (fresh install).
+        if (isPro && owner == null && storeProfile == null && !isInitialSyncDone) {
+          return const _SplashScreen(
+              errorMessage: 'Menyinkronkan data profil dari cloud...');
+        }
+
+        // Layer 3: Jika tidak ada owner DAN tidak ada store profile → perlu setup.
+        if (owner == null && storeProfile == null) {
+          return const OwnerSetupScreen();
+        }
+
+        // Layer 4: Data sudah ada → Employee Selection (PIN Login).
+        return const EmployeeSelectionScreen();
       },
     );
   }
