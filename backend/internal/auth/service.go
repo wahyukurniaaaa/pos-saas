@@ -4,6 +4,7 @@ import (
 	"errors"
 	"posify-backend/internal/license"
 	"posify-backend/internal/models"
+	"posify-backend/pkg/uuidgen"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -43,25 +44,20 @@ func (s *service) RegisterWithLicense(req RegisterRequest) (*RegisterResponse, e
 		return nil, errors.New("gagal membuat akun")
 	}
 
+	// 4. Buat Store Profile dari data registrasi
+	phone := req.Phone
+	businessType := req.BusinessType
+	profile := &models.StoreProfile{
+		ID:           uuidgen.New(),
+		Name:         req.StoreName,
+		Phone:        &phone,
+		BusinessType: &businessType,
+	}
+	// Non-fatal: jika gagal buat profil, akun tetap terbuat
+	_ = s.repo.CreateStoreProfile(profile)
+
 	res := &RegisterResponse{
 		User: &user,
-	}
-
-	// 4. Proses Lisensi (Jika disediakan)
-	if req.LicenseCode != "" && req.DeviceFingerprint != "" {
-		actRes, err := s.licenseSvc.Activate(license.ActivateRequest{
-			LicenseCode:       req.LicenseCode,
-			DeviceFingerprint: req.DeviceFingerprint,
-			DeviceModel:       "Unified Registration",
-			OsVersion:         "N/A",
-		})
-		
-		if err != nil {
-			// Kita biarkan user terbuat, tapi error lisensi akan dilampirkan/ditangani
-			// Agar akun tidak fail-to-create hanya krn salah ketik lisensi
-			return res, errors.New("akun berhasil dibuat, tapi aktivasi lisensi gagal: " + err.Error())
-		}
-		res.License = actRes
 	}
 
 	return res, nil

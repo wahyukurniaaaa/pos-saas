@@ -74,10 +74,9 @@ class LicenseNotifier extends AsyncNotifier<License?> {
       // If no local license, check if the current Supabase user has one in cloud metadata.
       // Read current user directly from Supabase SDK (no provider dependency).
       final authUser = Supabase.instance.client.auth.currentUser;
-      final cloudLicenseCode = authUser?.userMetadata?['license_code'] as String?;
-
-      if (cloudLicenseCode != null) {
-        final syncedLicense = await _activateSilently(cloudLicenseCode);
+      
+      if (authUser != null && authUser.email != null) {
+        final syncedLicense = await _verifyAccountSilently(authUser.email!);
         if (syncedLicense != null) {
           license = syncedLicense;
         }
@@ -126,9 +125,20 @@ class LicenseNotifier extends AsyncNotifier<License?> {
     final dio = ref.read(dioProvider);
 
     try {
+      final authUser = Supabase.instance.client.auth.currentUser;
+      if (authUser == null || authUser.email == null) return;
+      
+      final model = await _getDeviceModel();
+      
       final response = await dio.post(
-        'license/verify',
-        data: {'license_code': code, 'device_fingerprint': deviceId},
+        'license/verify-account',
+        data: {
+          'email': authUser.email,
+          'user_id': authUser.id,
+          'device_fingerprint': deviceId,
+          'device_model': model,
+          'os_version': Platform.operatingSystemVersion,
+        },
       );
 
       final data = response.data;
@@ -140,28 +150,8 @@ class LicenseNotifier extends AsyncNotifier<License?> {
         await _storage.write(key: _serverTimeKey, value: DateTime.now().toIso8601String());
         await db.updateLicenseFingerprint(code, deviceId);
       } else {
-        final model = await _getDeviceModel();
-        final actResponse = await dio.post(
-          'license/activate',
-          data: {
-            'license_code': code,
-            'device_fingerprint': deviceId,
-            'device_model': model,
-            'os_version': Platform.operatingSystemVersion,
-          },
-        );
-
-        final actData = actResponse.data;
-        final isActSuccess = (actData is Map && actData['status'] == 'success') ||
-            (actData is Map && actData['success'] == true);
-
-        if (isActSuccess) {
-          await _storage.write(key: _serverTimeKey, value: DateTime.now().toIso8601String());
-          await db.updateLicenseFingerprint(code, deviceId);
-        } else {
-          await db.deleteLicense(code);
-          ref.invalidateSelf();
-        }
+        await db.deleteLicense(code);
+        ref.invalidateSelf();
       }
     } catch (e) {
       try {
@@ -173,7 +163,7 @@ class LicenseNotifier extends AsyncNotifier<License?> {
     }
   }
 
-  Future<(bool, String?)> activate(String code) async {
+  Future<(bool, String?)> verifyAccount(String email) async {
     final db = ref.read(databaseProvider);
     final dio = ref.read(dioProvider);
 
@@ -181,10 +171,13 @@ class LicenseNotifier extends AsyncNotifier<License?> {
       final deviceId = await _getDeviceId();
       final model = await _getDeviceModel();
 
+      final authUser = Supabase.instance.client.auth.currentUser;
+
       final response = await dio.post(
-        'license/activate',
+        'license/verify-account',
         data: {
-          'license_code': code,
+          'email': email,
+          'user_id': authUser?.id,
           'device_fingerprint': deviceId,
           'device_model': model,
           'os_version': Platform.operatingSystemVersion,
@@ -205,24 +198,16 @@ class LicenseNotifier extends AsyncNotifier<License?> {
         final resData = data['data'] as Map?;
         await db.into(db.licenses).insert(
           LicensesCompanion.insert(
-            licenseCode: code,
+            licenseCode: resData?['license_code'] as String? ?? 'ACCOUNT-BOUND',
             deviceFingerprint: Value(deviceId),
             activationDate: Value(DateTime.now()),
             status: const Value('active'),
             tierLevel: Value(resData?['tier_level'] as String?),
             maxDevices: Value(resData?['max_devices'] as int? ?? 1),
             maxOutlets: Value(resData?['max_outlets'] as int? ?? 1),
+            expiredAt: resData?['expired_at'] != null ? Value(DateTime.parse(resData!['expired_at'] as String)) : const Value(null),
           ),
         );
-
-        // Sync to Supabase Cloud Metadata
-        try {
-          await Supabase.instance.client.auth.updateUser(
-            UserAttributes(data: {'license_code': code}),
-          );
-        } catch (e) {
-          debugPrint('Failed to sync license code to Supabase: $e');
-        }
 
         final newLicense = await db.getLocalLicense();
         if (ref.mounted) {
@@ -232,8 +217,8 @@ class LicenseNotifier extends AsyncNotifier<License?> {
       }
 
       final errorMsg = (data is Map)
-          ? (data['message']?.toString() ?? 'Aktivasi gagal')
-          : 'Aktivasi gagal: Server mengembalikan status ${response.statusCode}';
+          ? (data['message']?.toString() ?? 'Verifikasi gagal')
+          : 'Verifikasi gagal: Server mengembalikan status ${response.statusCode}';
 
       if (ref.mounted) state = const AsyncValue.data(null);
       return (false, errorMsg);
@@ -261,7 +246,7 @@ class LicenseNotifier extends AsyncNotifier<License?> {
 
   /// Internal helper to activate a license without modifying the Notifier state directly.
   /// Useful for the build() method sync logic.
-  Future<License?> _activateSilently(String code) async {
+  Future<License?> _verifyAccountSilently(String email) async {
     final db = ref.read(databaseProvider);
     final dio = ref.read(dioProvider);
 
@@ -269,10 +254,13 @@ class LicenseNotifier extends AsyncNotifier<License?> {
       final deviceId = await _getDeviceId();
       final model = await _getDeviceModel();
 
+      final authUser = Supabase.instance.client.auth.currentUser;
+
       final response = await dio.post(
-        'license/activate',
+        'license/verify-account',
         data: {
-          'license_code': code,
+          'email': email,
+          'user_id': authUser?.id,
           'device_fingerprint': deviceId,
           'device_model': model,
           'os_version': Platform.operatingSystemVersion,
@@ -291,22 +279,16 @@ class LicenseNotifier extends AsyncNotifier<License?> {
         final resData = data['data'] as Map?;
         await db.into(db.licenses).insert(
           LicensesCompanion.insert(
-            licenseCode: code,
+            licenseCode: resData?['license_code'] as String? ?? 'ACCOUNT-BOUND',
             deviceFingerprint: Value(deviceId),
             activationDate: Value(DateTime.now()),
             status: const Value('active'),
             tierLevel: Value(resData?['tier_level'] as String?),
             maxDevices: Value(resData?['max_devices'] as int? ?? 1),
             maxOutlets: Value(resData?['max_outlets'] as int? ?? 1),
+            expiredAt: resData?['expired_at'] != null ? Value(DateTime.parse(resData!['expired_at'] as String)) : const Value(null),
           ),
         );
-
-        // Sync to Supabase Cloud Metadata (even in silent mode to be sure)
-        try {
-          await Supabase.instance.client.auth.updateUser(
-            UserAttributes(data: {'license_code': code}),
-          );
-        } catch (_) {}
 
         return await db.getLocalLicense();
       }
@@ -344,22 +326,17 @@ class AuthNotifier extends AsyncNotifier<User?> {
   Future<(bool, String?)> signUp({
     required String email,
     required String password,
-    String? licenseCode,
+    Map<String, dynamic>? data,
   }) async {
     try {
       final response = await _supabase.auth.signUp(
         email: email,
         password: password,
+        data: data,
       );
 
       if (response.user == null) {
         return (false, 'Registrasi gagal. Coba lagi.');
-      }
-
-      // If license code provided, activate it via Go backend
-      if (licenseCode != null && licenseCode.isNotEmpty) {
-        final lNotifier = ref.read(licenseProvider.notifier);
-        await lNotifier.activate(licenseCode);
       }
 
       if (ref.mounted) state = AsyncValue.data(response.user);

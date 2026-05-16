@@ -4,7 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/theme/app_theme.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'features/auth/screens/unified_registration_screen.dart';
-import 'package:posify_app/features/auth/screens/license_activation_screen.dart';
+import 'package:posify_app/features/auth/screens/unlicensed_screen.dart';
 import 'package:posify_app/features/auth/screens/owner_setup_screen.dart';
 import 'package:posify_app/features/auth/screens/pin_login_screen.dart';
 import 'package:posify_app/features/auth/screens/employee_selection_screen.dart';
@@ -50,7 +50,7 @@ class LumioApp extends StatelessWidget {
       routes: {
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const UnifiedRegistrationScreen(),
-        '/license': (context) => const LicenseActivationScreen(),
+        '/unlicensed': (context) => const UnlicensedScreen(),
         '/owner-setup': (context) => const OwnerSetupScreen(),
         '/pin-login': (context) {
           final employee = ModalRoute.of(context)!.settings.arguments;
@@ -133,7 +133,7 @@ class _AppBootstrapState extends ConsumerState<AppBootstrap> {
       ),
       data: (license) {
         if (license == null) {
-          return const LicenseActivationScreen();
+          return const UnlicensedScreen();
         }
 
         // Layer 3: Owner (Store setup)

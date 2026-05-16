@@ -78,6 +78,7 @@ func main() {
 		&models.MappingSKU{},
 		&models.Employee{},
 		&models.Outlet{},
+		&models.StoreProfile{},
 	)
 
 	// API Groups

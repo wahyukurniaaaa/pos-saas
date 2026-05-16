@@ -16,7 +16,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
   final _loginPasswordController = TextEditingController();
   final _registerEmailController = TextEditingController();
   final _registerPasswordController = TextEditingController();
-  final _licenseController = TextEditingController();
   
   bool _isLoading = false;
   bool _obscurePassword = true;
@@ -34,7 +33,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
     _loginPasswordController.dispose();
     _registerEmailController.dispose();
     _registerPasswordController.dispose();
-    _licenseController.dispose();
     super.dispose();
   }
 
@@ -72,7 +70,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
     final (success, error) = await ref.read(authProvider.notifier).signUp(
       email: _registerEmailController.text.trim(),
       password: _registerPasswordController.text.trim(),
-      licenseCode: _licenseController.text.trim().isEmpty ? null : _licenseController.text.trim(),
     );
 
     if (!mounted) return;
@@ -253,16 +250,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
               border: OutlineInputBorder(),
             ),
             obscureText: true,
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _licenseController,
-            decoration: const InputDecoration(
-              labelText: 'Kode Lisensi (Opsional)',
-              prefixIcon: Icon(Icons.key_outlined),
-              border: OutlineInputBorder(),
-              helperText: 'Masukkan jika Anda sudah memiliki lisensi Pro.',
-            ),
           ),
           const SizedBox(height: 24),
           ElevatedButton(

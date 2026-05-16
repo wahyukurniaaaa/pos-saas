@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:posify_app/core/theme/app_theme.dart';
-import 'package:app_links/app_links.dart';
 import '../providers/auth_providers.dart';
 import 'package:posify_app/core/widgets/responsive_layout.dart';
 
@@ -20,17 +18,17 @@ class _UnifiedRegistrationScreenState extends ConsumerState<UnifiedRegistrationS
     with SingleTickerProviderStateMixin {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _licenseController = TextEditingController();
+  final _storeNameController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  
+
   bool _isLoading = false;
   bool _obscurePassword = true;
   String? _errorMessage;
+  String? _selectedBusinessType;
 
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
-  late AppLinks _appLinks;
-  StreamSubscription<Uri>? _linkSubscription;
 
   @override
   void initState() {
@@ -44,58 +42,15 @@ class _UnifiedRegistrationScreenState extends ConsumerState<UnifiedRegistrationS
       curve: Curves.easeInOut,
     );
     _animController.forward();
-    _initDeepLinks();
-  }
-
-  Future<void> _initDeepLinks() async {
-    _appLinks = AppLinks();
-    
-    // Check initial link if app was closed
-    try {
-      final initialUri = await _appLinks.getInitialLink();
-      if (initialUri != null) {
-        _handleDeepLink(initialUri);
-      }
-    } catch (_) {}
-
-    // Listen to link when app is in background
-    _linkSubscription = _appLinks.uriLinkStream.listen((uri) {
-      _handleDeepLink(uri);
-    });
-  }
-
-  void _handleDeepLink(Uri uri) {
-    if (uri.queryParameters.containsKey('code')) {
-      final code = uri.queryParameters['code'];
-      if (code != null && code.isNotEmpty) {
-        setState(() {
-          _licenseController.text = code.toUpperCase();
-        });
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.check_circle_rounded, color: Colors.white),
-                const SizedBox(width: 10),
-                const Expanded(child: Text('Kode Lisensi berhasil dimuat dari Tautan.')),
-              ],
-            ),
-            backgroundColor: AppTheme.successColor,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    }
   }
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
-    _licenseController.dispose();
+    _storeNameController.dispose();
+    _phoneController.dispose();
     _animController.dispose();
-    _linkSubscription?.cancel();
     super.dispose();
   }
 
@@ -144,7 +99,7 @@ class _UnifiedRegistrationScreenState extends ConsumerState<UnifiedRegistrationS
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Daftar dan aktifkan lisensi dalam 1 langkah',
+                        'Daftar akun untuk mencoba Lumio POS',
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
@@ -222,54 +177,77 @@ class _UnifiedRegistrationScreenState extends ConsumerState<UnifiedRegistrationS
                               ),
                               const SizedBox(height: 16),
 
-                              // Separator
-                              Row(
-                                children: [
-                                  Expanded(child: Divider(color: AppTheme.textSecondary.withValues(alpha: 0.2))),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                                    child: Text(
-                                      'Opsional',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 12,
-                                        color: AppTheme.textSecondary.withValues(alpha: 0.6),
-                                      ),
-                                    ),
-                                  ),
-                                  Expanded(child: Divider(color: AppTheme.textSecondary.withValues(alpha: 0.2))),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-
-                              // License Input
-                              _buildLabel('Kode Lisensi (Jika Ada)'),
+                              // Nama Toko Input
+                              _buildLabel('Nama Toko / Usaha'),
                               const SizedBox(height: 8),
                               TextFormField(
-                                controller: _licenseController,
-                                textCapitalization: TextCapitalization.characters,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9\-]')),
-                                  UpperCaseTextFormatter(),
-                                ],
-                                style: GoogleFonts.jetBrainsMono(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w500,
-                                  letterSpacing: 1.2,
-                                ),
+                                controller: _storeNameController,
+                                keyboardType: TextInputType.text,
+                                style: GoogleFonts.poppins(fontSize: 15),
                                 decoration: _inputDecoration(
-                                  hint: 'Contoh: POS-L1-XXXXX',
-                                  icon: Icons.vpn_key_outlined,
+                                  hint: 'Kopi Nusantara, Warung Maju, dll.',
+                                  icon: Icons.storefront_outlined,
                                 ),
                                 validator: (value) {
-                                  if (value != null && value.isNotEmpty && value.length < 10) {
-                                    return 'Kode lisensi tidak lengkap';
-                                  }
+                                  if (value == null || value.isEmpty) return 'Nama toko wajib diisi';
                                   return null;
                                 },
                               ),
+                              const SizedBox(height: 16),
+
+                              // No WhatsApp Input
+                              _buildLabel('Nomor WhatsApp Aktif'),
+                              const SizedBox(height: 8),
+                              TextFormField(
+                                controller: _phoneController,
+                                keyboardType: TextInputType.phone,
+                                style: GoogleFonts.poppins(fontSize: 15),
+                                decoration: _inputDecoration(
+                                  hint: '08xxxxxxxxxx',
+                                  icon: Icons.phone_outlined,
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) return 'Nomor WA wajib diisi';
+                                  if (value.length < 9) return 'Nomor WA tidak valid';
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 16),
+
+                              // Kategori Usaha Dropdown
+                              _buildLabel('Kategori Usaha'),
+                              const SizedBox(height: 8),
+                              DropdownButtonFormField<String>(
+                                value: _selectedBusinessType,
+                                hint: Text(
+                                  'Pilih kategori usaha...',
+                                  style: GoogleFonts.poppins(
+                                    color: AppTheme.textSecondary.withValues(alpha: 0.4),
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                items: const [
+                                  DropdownMenuItem(value: 'fnb', child: Text('F&B (Makanan & Minuman)')),
+                                  DropdownMenuItem(value: 'retail', child: Text('Retail / Toko')),
+                                  DropdownMenuItem(value: 'jasa', child: Text('Jasa / Layanan')),
+                                  DropdownMenuItem(value: 'lainnya', child: Text('Lainnya')),
+                                ],
+                                style: GoogleFonts.poppins(fontSize: 14),
+                                decoration: InputDecoration(
+                                  prefixIcon: Icon(Icons.category_outlined, color: AppTheme.primaryColor.withValues(alpha: 0.8)),
+                                  filled: true,
+                                  fillColor: Theme.of(context).inputDecorationTheme.fillColor,
+                                  contentPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                ),
+                                onChanged: (val) => setState(() => _selectedBusinessType = val),
+                              ),
+                              const SizedBox(height: 16),
                               
                               if (_errorMessage != null) ...[
-                                const SizedBox(height: 16),
                                 Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
@@ -399,12 +377,18 @@ class _UnifiedRegistrationScreenState extends ConsumerState<UnifiedRegistrationS
 
     final email = _emailController.text.trim();
     final password = _passwordController.text;
-    final licenseCode = _licenseController.text.trim();
+    final storeName = _storeNameController.text.trim();
+    final phone = _phoneController.text.trim();
+    final businessType = _selectedBusinessType ?? 'lainnya';
 
     final result = await ref.read(authProvider.notifier).signUp(
       email: email,
       password: password,
-      licenseCode: licenseCode,
+      data: {
+        'store_name': storeName,
+        'phone': phone,
+        'business_type': businessType,
+      },
     );
 
     if (!mounted) return;
@@ -424,18 +408,5 @@ class _UnifiedRegistrationScreenState extends ConsumerState<UnifiedRegistrationS
     } else {
       setState(() => _errorMessage = serverError ?? 'Gagal menghubungi server.');
     }
-  }
-}
-
-class UpperCaseTextFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    return TextEditingValue(
-      text: newValue.text.toUpperCase(),
-      selection: newValue.selection,
-    );
   }
 }

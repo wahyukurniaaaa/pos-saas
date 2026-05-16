@@ -89,11 +89,15 @@ class _SupervisorAuthDialogState extends ConsumerState<SupervisorAuthDialog> {
       },
       child: Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.85,
+          ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -186,6 +190,7 @@ class _SupervisorAuthDialogState extends ConsumerState<SupervisorAuthDialog> {
               ),
             ],
           ),
+        ),
         ),
       ),
     );

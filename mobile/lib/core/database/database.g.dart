@@ -113,6 +113,17 @@ class $LicensesTable extends Licenses with TableInfo<$LicensesTable, License> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _expiredAtMeta = const VerificationMeta(
+    'expiredAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> expiredAt = GeneratedColumn<DateTime>(
+    'expired_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _tierLevelMeta = const VerificationMeta(
     'tierLevel',
   );
@@ -159,6 +170,7 @@ class $LicensesTable extends Licenses with TableInfo<$LicensesTable, License> {
     updatedAt,
     isDirty,
     deletedAt,
+    expiredAt,
     tierLevel,
     maxDevices,
     maxOutlets,
@@ -240,6 +252,12 @@ class $LicensesTable extends Licenses with TableInfo<$LicensesTable, License> {
         deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
       );
     }
+    if (data.containsKey('expired_at')) {
+      context.handle(
+        _expiredAtMeta,
+        expiredAt.isAcceptableOrUnknown(data['expired_at']!, _expiredAtMeta),
+      );
+    }
     if (data.containsKey('tier_level')) {
       context.handle(
         _tierLevelMeta,
@@ -303,6 +321,10 @@ class $LicensesTable extends Licenses with TableInfo<$LicensesTable, License> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}deleted_at'],
       ),
+      expiredAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}expired_at'],
+      ),
       tierLevel: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}tier_level'],
@@ -334,6 +356,7 @@ class License extends DataClass implements Insertable<License> {
   final DateTime updatedAt;
   final bool isDirty;
   final DateTime? deletedAt;
+  final DateTime? expiredAt;
   final String? tierLevel;
   final int maxDevices;
   final int maxOutlets;
@@ -347,6 +370,7 @@ class License extends DataClass implements Insertable<License> {
     required this.updatedAt,
     required this.isDirty,
     this.deletedAt,
+    this.expiredAt,
     this.tierLevel,
     required this.maxDevices,
     required this.maxOutlets,
@@ -370,6 +394,9 @@ class License extends DataClass implements Insertable<License> {
     map['is_dirty'] = Variable<bool>(isDirty);
     if (!nullToAbsent || deletedAt != null) {
       map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    if (!nullToAbsent || expiredAt != null) {
+      map['expired_at'] = Variable<DateTime>(expiredAt);
     }
     if (!nullToAbsent || tierLevel != null) {
       map['tier_level'] = Variable<String>(tierLevel);
@@ -398,6 +425,9 @@ class License extends DataClass implements Insertable<License> {
       deletedAt: deletedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(deletedAt),
+      expiredAt: expiredAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(expiredAt),
       tierLevel: tierLevel == null && nullToAbsent
           ? const Value.absent()
           : Value(tierLevel),
@@ -423,6 +453,7 @@ class License extends DataClass implements Insertable<License> {
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       isDirty: serializer.fromJson<bool>(json['isDirty']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      expiredAt: serializer.fromJson<DateTime?>(json['expiredAt']),
       tierLevel: serializer.fromJson<String?>(json['tierLevel']),
       maxDevices: serializer.fromJson<int>(json['maxDevices']),
       maxOutlets: serializer.fromJson<int>(json['maxOutlets']),
@@ -441,6 +472,7 @@ class License extends DataClass implements Insertable<License> {
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'isDirty': serializer.toJson<bool>(isDirty),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'expiredAt': serializer.toJson<DateTime?>(expiredAt),
       'tierLevel': serializer.toJson<String?>(tierLevel),
       'maxDevices': serializer.toJson<int>(maxDevices),
       'maxOutlets': serializer.toJson<int>(maxOutlets),
@@ -457,6 +489,7 @@ class License extends DataClass implements Insertable<License> {
     DateTime? updatedAt,
     bool? isDirty,
     Value<DateTime?> deletedAt = const Value.absent(),
+    Value<DateTime?> expiredAt = const Value.absent(),
     Value<String?> tierLevel = const Value.absent(),
     int? maxDevices,
     int? maxOutlets,
@@ -474,6 +507,7 @@ class License extends DataClass implements Insertable<License> {
     updatedAt: updatedAt ?? this.updatedAt,
     isDirty: isDirty ?? this.isDirty,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    expiredAt: expiredAt.present ? expiredAt.value : this.expiredAt,
     tierLevel: tierLevel.present ? tierLevel.value : this.tierLevel,
     maxDevices: maxDevices ?? this.maxDevices,
     maxOutlets: maxOutlets ?? this.maxOutlets,
@@ -497,6 +531,7 @@ class License extends DataClass implements Insertable<License> {
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       isDirty: data.isDirty.present ? data.isDirty.value : this.isDirty,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      expiredAt: data.expiredAt.present ? data.expiredAt.value : this.expiredAt,
       tierLevel: data.tierLevel.present ? data.tierLevel.value : this.tierLevel,
       maxDevices: data.maxDevices.present
           ? data.maxDevices.value
@@ -519,6 +554,7 @@ class License extends DataClass implements Insertable<License> {
           ..write('updatedAt: $updatedAt, ')
           ..write('isDirty: $isDirty, ')
           ..write('deletedAt: $deletedAt, ')
+          ..write('expiredAt: $expiredAt, ')
           ..write('tierLevel: $tierLevel, ')
           ..write('maxDevices: $maxDevices, ')
           ..write('maxOutlets: $maxOutlets')
@@ -537,6 +573,7 @@ class License extends DataClass implements Insertable<License> {
     updatedAt,
     isDirty,
     deletedAt,
+    expiredAt,
     tierLevel,
     maxDevices,
     maxOutlets,
@@ -554,6 +591,7 @@ class License extends DataClass implements Insertable<License> {
           other.updatedAt == this.updatedAt &&
           other.isDirty == this.isDirty &&
           other.deletedAt == this.deletedAt &&
+          other.expiredAt == this.expiredAt &&
           other.tierLevel == this.tierLevel &&
           other.maxDevices == this.maxDevices &&
           other.maxOutlets == this.maxOutlets);
@@ -569,6 +607,7 @@ class LicensesCompanion extends UpdateCompanion<License> {
   final Value<DateTime> updatedAt;
   final Value<bool> isDirty;
   final Value<DateTime?> deletedAt;
+  final Value<DateTime?> expiredAt;
   final Value<String?> tierLevel;
   final Value<int> maxDevices;
   final Value<int> maxOutlets;
@@ -583,6 +622,7 @@ class LicensesCompanion extends UpdateCompanion<License> {
     this.updatedAt = const Value.absent(),
     this.isDirty = const Value.absent(),
     this.deletedAt = const Value.absent(),
+    this.expiredAt = const Value.absent(),
     this.tierLevel = const Value.absent(),
     this.maxDevices = const Value.absent(),
     this.maxOutlets = const Value.absent(),
@@ -598,6 +638,7 @@ class LicensesCompanion extends UpdateCompanion<License> {
     this.updatedAt = const Value.absent(),
     this.isDirty = const Value.absent(),
     this.deletedAt = const Value.absent(),
+    this.expiredAt = const Value.absent(),
     this.tierLevel = const Value.absent(),
     this.maxDevices = const Value.absent(),
     this.maxOutlets = const Value.absent(),
@@ -613,6 +654,7 @@ class LicensesCompanion extends UpdateCompanion<License> {
     Expression<DateTime>? updatedAt,
     Expression<bool>? isDirty,
     Expression<DateTime>? deletedAt,
+    Expression<DateTime>? expiredAt,
     Expression<String>? tierLevel,
     Expression<int>? maxDevices,
     Expression<int>? maxOutlets,
@@ -628,6 +670,7 @@ class LicensesCompanion extends UpdateCompanion<License> {
       if (updatedAt != null) 'updated_at': updatedAt,
       if (isDirty != null) 'is_dirty': isDirty,
       if (deletedAt != null) 'deleted_at': deletedAt,
+      if (expiredAt != null) 'expired_at': expiredAt,
       if (tierLevel != null) 'tier_level': tierLevel,
       if (maxDevices != null) 'max_devices': maxDevices,
       if (maxOutlets != null) 'max_outlets': maxOutlets,
@@ -645,6 +688,7 @@ class LicensesCompanion extends UpdateCompanion<License> {
     Value<DateTime>? updatedAt,
     Value<bool>? isDirty,
     Value<DateTime?>? deletedAt,
+    Value<DateTime?>? expiredAt,
     Value<String?>? tierLevel,
     Value<int>? maxDevices,
     Value<int>? maxOutlets,
@@ -660,6 +704,7 @@ class LicensesCompanion extends UpdateCompanion<License> {
       updatedAt: updatedAt ?? this.updatedAt,
       isDirty: isDirty ?? this.isDirty,
       deletedAt: deletedAt ?? this.deletedAt,
+      expiredAt: expiredAt ?? this.expiredAt,
       tierLevel: tierLevel ?? this.tierLevel,
       maxDevices: maxDevices ?? this.maxDevices,
       maxOutlets: maxOutlets ?? this.maxOutlets,
@@ -697,6 +742,9 @@ class LicensesCompanion extends UpdateCompanion<License> {
     if (deletedAt.present) {
       map['deleted_at'] = Variable<DateTime>(deletedAt.value);
     }
+    if (expiredAt.present) {
+      map['expired_at'] = Variable<DateTime>(expiredAt.value);
+    }
     if (tierLevel.present) {
       map['tier_level'] = Variable<String>(tierLevel.value);
     }
@@ -724,6 +772,7 @@ class LicensesCompanion extends UpdateCompanion<License> {
           ..write('updatedAt: $updatedAt, ')
           ..write('isDirty: $isDirty, ')
           ..write('deletedAt: $deletedAt, ')
+          ..write('expiredAt: $expiredAt, ')
           ..write('tierLevel: $tierLevel, ')
           ..write('maxDevices: $maxDevices, ')
           ..write('maxOutlets: $maxOutlets, ')
@@ -2050,6 +2099,26 @@ class $StoreProfileTable extends StoreProfile
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _businessTypeMeta = const VerificationMeta(
+    'businessType',
+  );
+  @override
+  late final GeneratedColumn<String> businessType = GeneratedColumn<String>(
+    'business_type',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _taxPercentageMeta = const VerificationMeta(
     'taxPercentage',
   );
@@ -2179,6 +2248,8 @@ class $StoreProfileTable extends StoreProfile
     name,
     address,
     phone,
+    userId,
+    businessType,
     taxPercentage,
     taxType,
     serviceChargePercentage,
@@ -2223,6 +2294,21 @@ class $StoreProfileTable extends StoreProfile
       context.handle(
         _phoneMeta,
         phone.isAcceptableOrUnknown(data['phone']!, _phoneMeta),
+      );
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    }
+    if (data.containsKey('business_type')) {
+      context.handle(
+        _businessTypeMeta,
+        businessType.isAcceptableOrUnknown(
+          data['business_type']!,
+          _businessTypeMeta,
+        ),
       );
     }
     if (data.containsKey('tax_percentage')) {
@@ -2325,6 +2411,14 @@ class $StoreProfileTable extends StoreProfile
         DriftSqlType.string,
         data['${effectivePrefix}phone'],
       ),
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      ),
+      businessType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}business_type'],
+      ),
       taxPercentage: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}tax_percentage'],
@@ -2380,6 +2474,8 @@ class StoreProfileData extends DataClass
   final String name;
   final String? address;
   final String? phone;
+  final String? userId;
+  final String? businessType;
   final int taxPercentage;
   final String taxType;
   final int serviceChargePercentage;
@@ -2395,6 +2491,8 @@ class StoreProfileData extends DataClass
     required this.name,
     this.address,
     this.phone,
+    this.userId,
+    this.businessType,
     required this.taxPercentage,
     required this.taxType,
     required this.serviceChargePercentage,
@@ -2416,6 +2514,12 @@ class StoreProfileData extends DataClass
     }
     if (!nullToAbsent || phone != null) {
       map['phone'] = Variable<String>(phone);
+    }
+    if (!nullToAbsent || userId != null) {
+      map['user_id'] = Variable<String>(userId);
+    }
+    if (!nullToAbsent || businessType != null) {
+      map['business_type'] = Variable<String>(businessType);
     }
     map['tax_percentage'] = Variable<int>(taxPercentage);
     map['tax_type'] = Variable<String>(taxType);
@@ -2444,6 +2548,12 @@ class StoreProfileData extends DataClass
       phone: phone == null && nullToAbsent
           ? const Value.absent()
           : Value(phone),
+      userId: userId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(userId),
+      businessType: businessType == null && nullToAbsent
+          ? const Value.absent()
+          : Value(businessType),
       taxPercentage: Value(taxPercentage),
       taxType: Value(taxType),
       serviceChargePercentage: Value(serviceChargePercentage),
@@ -2471,6 +2581,8 @@ class StoreProfileData extends DataClass
       name: serializer.fromJson<String>(json['name']),
       address: serializer.fromJson<String?>(json['address']),
       phone: serializer.fromJson<String?>(json['phone']),
+      userId: serializer.fromJson<String?>(json['userId']),
+      businessType: serializer.fromJson<String?>(json['businessType']),
       taxPercentage: serializer.fromJson<int>(json['taxPercentage']),
       taxType: serializer.fromJson<String>(json['taxType']),
       serviceChargePercentage: serializer.fromJson<int>(
@@ -2495,6 +2607,8 @@ class StoreProfileData extends DataClass
       'name': serializer.toJson<String>(name),
       'address': serializer.toJson<String?>(address),
       'phone': serializer.toJson<String?>(phone),
+      'userId': serializer.toJson<String?>(userId),
+      'businessType': serializer.toJson<String?>(businessType),
       'taxPercentage': serializer.toJson<int>(taxPercentage),
       'taxType': serializer.toJson<String>(taxType),
       'serviceChargePercentage': serializer.toJson<int>(
@@ -2515,6 +2629,8 @@ class StoreProfileData extends DataClass
     String? name,
     Value<String?> address = const Value.absent(),
     Value<String?> phone = const Value.absent(),
+    Value<String?> userId = const Value.absent(),
+    Value<String?> businessType = const Value.absent(),
     int? taxPercentage,
     String? taxType,
     int? serviceChargePercentage,
@@ -2530,6 +2646,8 @@ class StoreProfileData extends DataClass
     name: name ?? this.name,
     address: address.present ? address.value : this.address,
     phone: phone.present ? phone.value : this.phone,
+    userId: userId.present ? userId.value : this.userId,
+    businessType: businessType.present ? businessType.value : this.businessType,
     taxPercentage: taxPercentage ?? this.taxPercentage,
     taxType: taxType ?? this.taxType,
     serviceChargePercentage:
@@ -2549,6 +2667,10 @@ class StoreProfileData extends DataClass
       name: data.name.present ? data.name.value : this.name,
       address: data.address.present ? data.address.value : this.address,
       phone: data.phone.present ? data.phone.value : this.phone,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      businessType: data.businessType.present
+          ? data.businessType.value
+          : this.businessType,
       taxPercentage: data.taxPercentage.present
           ? data.taxPercentage.value
           : this.taxPercentage,
@@ -2579,6 +2701,8 @@ class StoreProfileData extends DataClass
           ..write('name: $name, ')
           ..write('address: $address, ')
           ..write('phone: $phone, ')
+          ..write('userId: $userId, ')
+          ..write('businessType: $businessType, ')
           ..write('taxPercentage: $taxPercentage, ')
           ..write('taxType: $taxType, ')
           ..write('serviceChargePercentage: $serviceChargePercentage, ')
@@ -2599,6 +2723,8 @@ class StoreProfileData extends DataClass
     name,
     address,
     phone,
+    userId,
+    businessType,
     taxPercentage,
     taxType,
     serviceChargePercentage,
@@ -2618,6 +2744,8 @@ class StoreProfileData extends DataClass
           other.name == this.name &&
           other.address == this.address &&
           other.phone == this.phone &&
+          other.userId == this.userId &&
+          other.businessType == this.businessType &&
           other.taxPercentage == this.taxPercentage &&
           other.taxType == this.taxType &&
           other.serviceChargePercentage == this.serviceChargePercentage &&
@@ -2635,6 +2763,8 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
   final Value<String> name;
   final Value<String?> address;
   final Value<String?> phone;
+  final Value<String?> userId;
+  final Value<String?> businessType;
   final Value<int> taxPercentage;
   final Value<String> taxType;
   final Value<int> serviceChargePercentage;
@@ -2651,6 +2781,8 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
     this.name = const Value.absent(),
     this.address = const Value.absent(),
     this.phone = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.businessType = const Value.absent(),
     this.taxPercentage = const Value.absent(),
     this.taxType = const Value.absent(),
     this.serviceChargePercentage = const Value.absent(),
@@ -2668,6 +2800,8 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
     required String name,
     this.address = const Value.absent(),
     this.phone = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.businessType = const Value.absent(),
     this.taxPercentage = const Value.absent(),
     this.taxType = const Value.absent(),
     this.serviceChargePercentage = const Value.absent(),
@@ -2685,6 +2819,8 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
     Expression<String>? name,
     Expression<String>? address,
     Expression<String>? phone,
+    Expression<String>? userId,
+    Expression<String>? businessType,
     Expression<int>? taxPercentage,
     Expression<String>? taxType,
     Expression<int>? serviceChargePercentage,
@@ -2702,6 +2838,8 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
       if (name != null) 'name': name,
       if (address != null) 'address': address,
       if (phone != null) 'phone': phone,
+      if (userId != null) 'user_id': userId,
+      if (businessType != null) 'business_type': businessType,
       if (taxPercentage != null) 'tax_percentage': taxPercentage,
       if (taxType != null) 'tax_type': taxType,
       if (serviceChargePercentage != null)
@@ -2723,6 +2861,8 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
     Value<String>? name,
     Value<String?>? address,
     Value<String?>? phone,
+    Value<String?>? userId,
+    Value<String?>? businessType,
     Value<int>? taxPercentage,
     Value<String>? taxType,
     Value<int>? serviceChargePercentage,
@@ -2740,6 +2880,8 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
       name: name ?? this.name,
       address: address ?? this.address,
       phone: phone ?? this.phone,
+      userId: userId ?? this.userId,
+      businessType: businessType ?? this.businessType,
       taxPercentage: taxPercentage ?? this.taxPercentage,
       taxType: taxType ?? this.taxType,
       serviceChargePercentage:
@@ -2770,6 +2912,12 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
     }
     if (phone.present) {
       map['phone'] = Variable<String>(phone.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (businessType.present) {
+      map['business_type'] = Variable<String>(businessType.value);
     }
     if (taxPercentage.present) {
       map['tax_percentage'] = Variable<int>(taxPercentage.value);
@@ -2818,6 +2966,8 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
           ..write('name: $name, ')
           ..write('address: $address, ')
           ..write('phone: $phone, ')
+          ..write('userId: $userId, ')
+          ..write('businessType: $businessType, ')
           ..write('taxPercentage: $taxPercentage, ')
           ..write('taxType: $taxType, ')
           ..write('serviceChargePercentage: $serviceChargePercentage, ')
@@ -19269,6 +19419,7 @@ typedef $$LicensesTableCreateCompanionBuilder =
       Value<DateTime> updatedAt,
       Value<bool> isDirty,
       Value<DateTime?> deletedAt,
+      Value<DateTime?> expiredAt,
       Value<String?> tierLevel,
       Value<int> maxDevices,
       Value<int> maxOutlets,
@@ -19285,6 +19436,7 @@ typedef $$LicensesTableUpdateCompanionBuilder =
       Value<DateTime> updatedAt,
       Value<bool> isDirty,
       Value<DateTime?> deletedAt,
+      Value<DateTime?> expiredAt,
       Value<String?> tierLevel,
       Value<int> maxDevices,
       Value<int> maxOutlets,
@@ -19342,6 +19494,11 @@ class $$LicensesTableFilterComposer
 
   ColumnFilters<DateTime> get deletedAt => $composableBuilder(
     column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get expiredAt => $composableBuilder(
+    column: $table.expiredAt,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -19415,6 +19572,11 @@ class $$LicensesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get expiredAt => $composableBuilder(
+    column: $table.expiredAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get tierLevel => $composableBuilder(
     column: $table.tierLevel,
     builder: (column) => ColumnOrderings(column),
@@ -19475,6 +19637,9 @@ class $$LicensesTableAnnotationComposer
   GeneratedColumn<DateTime> get deletedAt =>
       $composableBuilder(column: $table.deletedAt, builder: (column) => column);
 
+  GeneratedColumn<DateTime> get expiredAt =>
+      $composableBuilder(column: $table.expiredAt, builder: (column) => column);
+
   GeneratedColumn<String> get tierLevel =>
       $composableBuilder(column: $table.tierLevel, builder: (column) => column);
 
@@ -19526,6 +19691,7 @@ class $$LicensesTableTableManager
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<bool> isDirty = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
+                Value<DateTime?> expiredAt = const Value.absent(),
                 Value<String?> tierLevel = const Value.absent(),
                 Value<int> maxDevices = const Value.absent(),
                 Value<int> maxOutlets = const Value.absent(),
@@ -19540,6 +19706,7 @@ class $$LicensesTableTableManager
                 updatedAt: updatedAt,
                 isDirty: isDirty,
                 deletedAt: deletedAt,
+                expiredAt: expiredAt,
                 tierLevel: tierLevel,
                 maxDevices: maxDevices,
                 maxOutlets: maxOutlets,
@@ -19556,6 +19723,7 @@ class $$LicensesTableTableManager
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<bool> isDirty = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
+                Value<DateTime?> expiredAt = const Value.absent(),
                 Value<String?> tierLevel = const Value.absent(),
                 Value<int> maxDevices = const Value.absent(),
                 Value<int> maxOutlets = const Value.absent(),
@@ -19570,6 +19738,7 @@ class $$LicensesTableTableManager
                 updatedAt: updatedAt,
                 isDirty: isDirty,
                 deletedAt: deletedAt,
+                expiredAt: expiredAt,
                 tierLevel: tierLevel,
                 maxDevices: maxDevices,
                 maxOutlets: maxOutlets,
@@ -22861,6 +23030,8 @@ typedef $$StoreProfileTableCreateCompanionBuilder =
       required String name,
       Value<String?> address,
       Value<String?> phone,
+      Value<String?> userId,
+      Value<String?> businessType,
       Value<int> taxPercentage,
       Value<String> taxType,
       Value<int> serviceChargePercentage,
@@ -22879,6 +23050,8 @@ typedef $$StoreProfileTableUpdateCompanionBuilder =
       Value<String> name,
       Value<String?> address,
       Value<String?> phone,
+      Value<String?> userId,
+      Value<String?> businessType,
       Value<int> taxPercentage,
       Value<String> taxType,
       Value<int> serviceChargePercentage,
@@ -22918,6 +23091,16 @@ class $$StoreProfileTableFilterComposer
 
   ColumnFilters<String> get phone => $composableBuilder(
     column: $table.phone,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get businessType => $composableBuilder(
+    column: $table.businessType,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -23001,6 +23184,16 @@ class $$StoreProfileTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get businessType => $composableBuilder(
+    column: $table.businessType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get taxPercentage => $composableBuilder(
     column: $table.taxPercentage,
     builder: (column) => ColumnOrderings(column),
@@ -23072,6 +23265,14 @@ class $$StoreProfileTableAnnotationComposer
 
   GeneratedColumn<String> get phone =>
       $composableBuilder(column: $table.phone, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get businessType => $composableBuilder(
+    column: $table.businessType,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<int> get taxPercentage => $composableBuilder(
     column: $table.taxPercentage,
@@ -23153,6 +23354,8 @@ class $$StoreProfileTableTableManager
                 Value<String> name = const Value.absent(),
                 Value<String?> address = const Value.absent(),
                 Value<String?> phone = const Value.absent(),
+                Value<String?> userId = const Value.absent(),
+                Value<String?> businessType = const Value.absent(),
                 Value<int> taxPercentage = const Value.absent(),
                 Value<String> taxType = const Value.absent(),
                 Value<int> serviceChargePercentage = const Value.absent(),
@@ -23169,6 +23372,8 @@ class $$StoreProfileTableTableManager
                 name: name,
                 address: address,
                 phone: phone,
+                userId: userId,
+                businessType: businessType,
                 taxPercentage: taxPercentage,
                 taxType: taxType,
                 serviceChargePercentage: serviceChargePercentage,
@@ -23187,6 +23392,8 @@ class $$StoreProfileTableTableManager
                 required String name,
                 Value<String?> address = const Value.absent(),
                 Value<String?> phone = const Value.absent(),
+                Value<String?> userId = const Value.absent(),
+                Value<String?> businessType = const Value.absent(),
                 Value<int> taxPercentage = const Value.absent(),
                 Value<String> taxType = const Value.absent(),
                 Value<int> serviceChargePercentage = const Value.absent(),
@@ -23203,6 +23410,8 @@ class $$StoreProfileTableTableManager
                 name: name,
                 address: address,
                 phone: phone,
+                userId: userId,
+                businessType: businessType,
                 taxPercentage: taxPercentage,
                 taxType: taxType,
                 serviceChargePercentage: serviceChargePercentage,

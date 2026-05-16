@@ -22,6 +22,7 @@ func NewHandler(service Service) *Handler {
 func (h *Handler) RegisterRoutes(router fiber.Router) {
 	router.Post("/activate", h.Activate)
 	router.Post("/verify", h.Verify)
+	router.Post("/verify-account", h.VerifyAccount)
 	router.Post("/reset", h.Deregister)
 	router.Post("/devices", h.GetDevices)
 }
@@ -97,6 +98,30 @@ func (h *Handler) Verify(c *fiber.Ctx) error {
 	return response.Success(c, fiber.StatusOK, "Lisensi Aktif.", VerifyResponseData{IsActive: isActive})
 }
 
+func (h *Handler) VerifyAccount(c *fiber.Ctx) error {
+	var req VerifyAccountRequest
+	if err := c.BodyParser(&req); err != nil {
+		return response.Error(c, fiber.StatusBadRequest, "Format JSON tidak valid.")
+	}
+	if err := validate.Struct(req); err != nil {
+		return response.Error(c, fiber.StatusBadRequest, "Data yang dikirim tidak lengkap.")
+	}
+
+	resData, err := h.service.VerifyAccount(req)
+	if err != nil {
+		if err.Error() == "Akun belum berlangganan. Hubungi Admin via WhatsApp untuk mengaktifkan." {
+			return response.Error(c, fiber.StatusPaymentRequired, err.Error())
+		}
+		if err == ErrLicenseBanned || err == ErrLicenseUsed {
+			return response.Error(c, fiber.StatusForbidden, err.Error())
+		}
+		log.Println("VerifyAccountError:", err)
+		return response.Error(c, fiber.StatusInternalServerError, "Terjadi kesalahan pada server.")
+	}
+
+	return response.Success(c, fiber.StatusOK, "Lisensi berhasil diverifikasi.", resData)
+}
+
 func (h *Handler) Generate(c *fiber.Ctx) error {
 	var req GenerateRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -109,7 +134,7 @@ func (h *Handler) Generate(c *fiber.Ctx) error {
 
 	lic, err := h.service.Generate(req)
 	if err != nil {
-		if err.Error() == "TierLevel tidak valid. Harus 'lite' atau 'pro'." {
+		if err.Error() == "TierLevel tidak valid. Harus 'lite', 'pro', atau 'trial'." {
 			return response.Error(c, fiber.StatusBadRequest, err.Error())
 		}
 		log.Println("GenerateError:", err)
@@ -122,6 +147,11 @@ func (h *Handler) Generate(c *fiber.Ctx) error {
 		MaxDevices:    lic.MaxDevices,
 		MaxOutlets:    lic.MaxOutlets,
 		CustomerEmail: lic.CustomerEmail,
+		UserID:        lic.UserID,
+	}
+
+	if lic.ExpiredAt != nil {
+		resData.ExpiredAt = lic.ExpiredAt.Format("2006-01-02T15:04:05Z")
 	}
 
 	return response.Success(c, fiber.StatusCreated, "Lisensi berhasil dibuat.", resData)

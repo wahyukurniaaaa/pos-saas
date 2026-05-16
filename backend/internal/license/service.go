@@ -32,6 +32,7 @@ func generate10DigitCode() (string, error) {
 type Service interface {
 	Activate(req ActivateRequest) (*models.License, error)
 	Verify(req VerifyRequest) (bool, error)
+	VerifyAccount(req VerifyAccountRequest) (*VerifyAccountResponseData, error)
 	Generate(req GenerateRequest) (*models.License, error)
 	Deregister(req DeregisterRequest) error
 	GetDevices(req GetDevicesRequest) ([]models.LicenseDevice, error)
@@ -121,6 +122,10 @@ func (s *service) Verify(req VerifyRequest) (bool, error) {
 		return false, ErrLicenseBanned
 	}
 
+	if lic.ExpiredAt != nil && time.Now().After(*lic.ExpiredAt) {
+		return false, errors.New("Lisensi Anda telah kedaluwarsa.")
+	}
+
 	// Find the device
 	var associatedDevice *models.LicenseDevice
 	for i := range lic.Devices {
@@ -143,12 +148,100 @@ func (s *service) Verify(req VerifyRequest) (bool, error) {
 	return true, nil
 }
 
+func (s *service) VerifyAccount(req VerifyAccountRequest) (*VerifyAccountResponseData, error) {
+	var lic *models.License
+	var err error
+
+	if req.UserID != "" {
+		lic, err = s.repo.FindByUserID(req.UserID)
+	}
+	
+	if lic == nil && req.Email != "" {
+		lic, err = s.repo.FindByEmail(req.Email)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+	if lic == nil {
+		return nil, errors.New("Akun belum berlangganan. Hubungi Admin via WhatsApp untuk mengaktifkan.")
+	}
+
+	if !lic.IsActive {
+		return nil, ErrLicenseBanned
+	}
+
+	now := time.Now()
+	if lic.ExpiredAt != nil && now.After(*lic.ExpiredAt) {
+		return nil, errors.New("Lisensi Anda telah kedaluwarsa. Hubungi Admin untuk perpanjangan.")
+	}
+
+	var associatedDevice *models.LicenseDevice
+	for i := range lic.Devices {
+		if lic.Devices[i].DeviceFingerprint == req.DeviceFingerprint {
+			associatedDevice = &lic.Devices[i]
+			break
+		}
+	}
+
+	if associatedDevice != nil {
+		associatedDevice.LastVerifiedAt = now
+		associatedDevice.DeviceModel = req.DeviceModel
+		associatedDevice.OsVersion = req.OsVersion
+		if err := s.repo.UpdateDevice(associatedDevice); err != nil {
+			return nil, err
+		}
+	} else {
+		// New device
+		if len(lic.Devices) >= lic.MaxDevices {
+			return nil, ErrLicenseUsed
+		}
+		newDevice := models.LicenseDevice{
+			LicenseID:         lic.ID,
+			DeviceFingerprint: req.DeviceFingerprint,
+			DeviceModel:       req.DeviceModel,
+			OsVersion:         req.OsVersion,
+			ActivationDate:    now,
+			LastVerifiedAt:    now,
+		}
+		lic.Devices = append(lic.Devices, newDevice)
+		if err := s.repo.Update(lic); err != nil {
+			return nil, err
+		}
+	}
+
+	devicesResponse := make([]DeviceResponse, len(lic.Devices))
+	for i, d := range lic.Devices {
+		devicesResponse[i] = DeviceResponse{
+			DeviceFingerprint: d.DeviceFingerprint,
+			DeviceModel:       d.DeviceModel,
+			OsVersion:         d.OsVersion,
+			ActivationDate:    d.ActivationDate.Format(time.RFC3339),
+		}
+	}
+
+	res := &VerifyAccountResponseData{
+		IsActive:    lic.IsActive,
+		LicenseCode: lic.LicenseCode,
+		TierLevel:   lic.TierLevel,
+		MaxDevices:  lic.MaxDevices,
+		MaxOutlets:  lic.MaxOutlets,
+		Devices:     devicesResponse,
+	}
+
+	if lic.ExpiredAt != nil {
+		res.ExpiredAt = lic.ExpiredAt.Format(time.RFC3339)
+	}
+
+	return res, nil
+}
+
 // Generate creates a new random license code
 func (s *service) Generate(req GenerateRequest) (*models.License, error) {
 	// Validate Tier
 	maxDevices, ok := TierDeviceLimit[req.TierLevel]
 	if !ok {
-		return nil, errors.New("TierLevel tidak valid. Harus 'lite' atau 'pro'.")
+		return nil, errors.New("TierLevel tidak valid. Harus 'lite', 'pro', atau 'trial'.")
 	}
 	maxOutlets := TierOutletLimit[req.TierLevel]
 
@@ -176,12 +269,23 @@ func (s *service) Generate(req GenerateRequest) (*models.License, error) {
 		source = "manual"
 	}
 
+	var expiredAt *time.Time
+	if req.TierLevel == TierTrial {
+		exp := time.Now().AddDate(0, 0, 7)
+		expiredAt = &exp
+	} else if req.TierLevel == TierPro && req.DurationMonths > 0 {
+		exp := time.Now().AddDate(0, req.DurationMonths, 0)
+		expiredAt = &exp
+	}
+
 	license := &models.License{
 		LicenseCode:   code,
 		TierLevel:     req.TierLevel,
 		MaxDevices:    maxDevices,
 		MaxOutlets:    maxOutlets,
 		CustomerEmail: req.CustomerEmail,
+		UserID:        req.UserID,
+		ExpiredAt:     expiredAt,
 		IsActive:      true,
 		OrderID:       req.OrderID,
 		Source:        source,
