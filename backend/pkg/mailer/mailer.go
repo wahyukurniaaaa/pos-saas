@@ -25,74 +25,90 @@ func NewMailer() *Mailer {
 	}
 }
 
-func (m *Mailer) SendLicenseEmail(to, licenseCode, tier string, maxDevices int) error {
-	// Colors from mobile/lib/core/theme/app_theme.dart:
-	// primaryColor: #1A237E
-	// textPrimary: #0F172A
-	// textSecondary: #64748B
-	// backgroundLight: #F6F6F8
-	// borderColor: #E2E8F0
+func (m *Mailer) SendLicenseEmail(to, licenseCode, tier string, maxDevices int, expiredAt string) error {
+	// Colors from Lumio Brand:
+	// Navy (Primary): #0F2F62
+	// Cyan (Accent): #08ABE6
+	// Background: #F8FAFC
+
+	if expiredAt == "" {
+		expiredAt = "Selamanya (Lifetime)"
+	}
 
 	htmlContent := fmt.Sprintf(`
 		<!DOCTYPE html>
 		<html>
-		<body style="margin: 0; padding: 0; background-color: #F6F6F8; font-family: 'Inter', Helvetica, Arial, sans-serif; color: #0F172A;">
-			<table width="100%%" border="0" cellspacing="0" cellpadding="0" style="background-color: #F6F6F8; padding: 40px 20px;">
+		<head>
+			<meta charset="utf-8">
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+			<title>Aktivasi Akun Lumio POS</title>
+		</head>
+		<body style="margin: 0; padding: 0; background-color: #F8FAFC; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1B2A44;">
+			<table width="100%%" border="0" cellspacing="0" cellpadding="0" style="background-color: #F8FAFC; padding: 40px 20px;">
 				<tr>
 					<td align="center">
-						<table width="100%%" style="max-width: 550px; background-color: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
-							<!-- Header: Brand Indigo -->
+						<table width="100%%" style="max-width: 600px; background-color: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(15, 47, 98, 0.1);">
+							<!-- Header -->
 							<tr>
-								<td style="padding: 48px 48px 32px 48px; text-align: left;">
-									<div style="font-size: 13px; letter-spacing: 0.1em; color: #1A237E; font-weight: 700; text-transform: uppercase; margin-bottom: 24px;">
-										Konfirmasi Lisensi — POSify
+								<td style="padding: 48px 48px 32px 48px; text-align: center;">
+									<div style="font-size: 28px; font-weight: 900; color: #0F2F62; letter-spacing: -0.02em; margin-bottom: 8px;">
+										LUMIO<span style="color: #08ABE6;">POS</span>
 									</div>
-									<h1 style="font-size: 32px; font-weight: 800; line-height: 1.2; margin: 0; color: #0F172A; letter-spacing: -0.01em;">
-										Aktivasi Premium <br/>Siap Digunakan.
+									<div style="height: 2px; width: 40px; background-color: #08ABE6; margin: 0 auto 24px auto;"></div>
+									<h1 style="font-size: 24px; font-weight: 800; line-height: 1.3; margin: 0; color: #0F2F62;">
+										Akun Anda Kini <br/>Sudah Premium!
 									</h1>
 								</td>
 							</tr>
 							
-							<!-- Content -->
+							<!-- Main Content -->
 							<tr>
-								<td style="padding: 0 48px 48px 48px;">
-									<p style="font-size: 16px; line-height: 1.6; color: #64748B; margin: 0 0 32px 0;">
-										Terima kasih telah memilih POSify. Berikut adalah detail lisensi eksklusif untuk akun Anda.
+								<td style="padding: 0 48px 40px 48px;">
+									<p style="font-size: 16px; line-height: 1.6; color: #475569; margin: 0 0 32px 0; text-align: center;">
+										Kabar baik! Paket <strong>%s</strong> telah berhasil diaktifkan untuk akun Anda. Nikmati kemudahan mengelola bisnis dengan fitur terlengkap dari Lumio POS.
 									</p>
 									
-									<div style="background-color: #F8FAFC; border: 2px dashed #E2E8F0; padding: 32px; text-align: center; border-radius: 8px;">
-										<div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em; color: #94A3B8; margin-bottom: 12px; font-weight: 600;">License Key Anda</div>
-										<div style="font-size: 24px; font-family: 'Courier New', monospace; font-weight: 700; color: #1A237E; letter-spacing: 0.05em;">%s</div>
+									<div style="background: linear-gradient(135deg, #0F2F62 0%%, #1B2A44 100%%); padding: 32px; text-align: center; border-radius: 20px;">
+										<div style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.15em; color: #08ABE6; margin-bottom: 8px; font-weight: 700;">Status Aktivasi</div>
+										<div style="font-size: 24px; font-weight: 800; color: #FFFFFF;">Otomatis Aktif</div>
+										<p style="font-size: 13px; color: #CBD5E1; margin: 8px 0 0 0;">Cukup login ke aplikasi Lumio POS untuk mulai.</p>
 									</div>
 
-									<!-- Specs Section -->
-									<div style="margin-top: 32px; border: 1px solid #F1F5F9; border-radius: 8px; padding: 16px;">
-										<table width="100%%">
+									<!-- Specs Table -->
+									<div style="margin-top: 32px; background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 16px; padding: 24px;">
+										<table width="100%%" border="0" cellspacing="0" cellpadding="0">
 											<tr>
-												<td style="padding: 8px 0; font-size: 14px; color: #64748B;">Level Paket</td>
-												<td align="right" style="padding: 8px 0; font-size: 14px; color: #0F172A; font-weight: 700;">%s</td>
+												<td style="padding-bottom: 12px; font-size: 14px; color: #64748B;">Email Terdaftar</td>
+												<td align="right" style="padding-bottom: 12px; font-size: 14px; color: #0F2F62; font-weight: 700;">%s</td>
 											</tr>
 											<tr>
-												<td style="padding: 8px 0; font-size: 14px; color: #64748B;">Batas Perangkat</td>
-												<td align="right" style="padding: 8px 0; font-size: 14px; color: #0F172A; font-weight: 700;">%d Perangkat</td>
+												<td style="padding: 12px 0; border-top: 1px solid #F1F5F9; font-size: 14px; color: #64748B;">Batas Perangkat</td>
+												<td align="right" style="padding: 12px 0; border-top: 1px solid #F1F5F9; font-size: 14px; color: #0F2F62; font-weight: 700;">%d Unit</td>
+											</tr>
+											<tr>
+												<td style="padding-top: 12px; border-top: 1px solid #F1F5F9; font-size: 14px; color: #64748B;">Masa Aktif Hingga</td>
+												<td align="right" style="padding-top: 12px; border-top: 1px solid #F1F5F9; font-size: 14px; color: #08ABE6; font-weight: 700;">%s</td>
 											</tr>
 										</table>
 									</div>
 
 									<div style="margin-top: 40px; text-align: center;">
-										<a href="#" style="display: inline-block; background-color: #1A237E; color: #FFFFFF; text-decoration: none; padding: 18px 40px; font-size: 15px; font-weight: 700; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(26, 35, 126, 0.2);">
-											Aktivasi Sekarang
+										<a href="https://wa.me/628123456789" style="display: inline-block; background-color: #08ABE6; color: #FFFFFF; text-decoration: none; padding: 16px 32px; font-size: 15px; font-weight: 700; border-radius: 12px; box-shadow: 0 4px 14px 0 rgba(8, 171, 230, 0.39);">
+											Hubungi Tim Support
 										</a>
+										<p style="margin-top: 16px; font-size: 12px; color: #94A3B8;">
+											ID Transaksi: <span style="font-family: monospace;">%s</span>
+										</p>
 									</div>
 								</td>
 							</tr>
 
 							<!-- Footer -->
 							<tr>
-								<td style="padding: 40px; background-color: #F8FAFC; border-top: 1px solid #E2E8F0; text-align: center;">
-									<p style="font-size: 11px; line-height: 1.6; color: #94A3B8; margin: 0;">
-										&copy; 2026 POSify Core. Dikirim otomatis oleh sistem lisensi kami.<br/>
-										Jika ada pertanyaan, hubungi tim support kami.
+								<td style="padding: 32px 48px; background-color: #F8FAFC; border-top: 1px solid #E2E8F0; text-align: center;">
+									<p style="font-size: 12px; line-height: 1.6; color: #94A3B8; margin: 0;">
+										&copy; 2026 <strong>Lumio Indonesia</strong>. Seluruh hak cipta dilindungi.<br/>
+										Email ini dikirim otomatis, mohon tidak membalas email ini.
 									</p>
 								</td>
 							</tr>
@@ -102,12 +118,12 @@ func (m *Mailer) SendLicenseEmail(to, licenseCode, tier string, maxDevices int) 
 			</table>
 		</body>
 		</html>
-	`, licenseCode, tier, maxDevices)
+	`, tier, to, maxDevices, expiredAt, licenseCode)
 
 	params := &resend.SendEmailRequest{
 		From:    m.from,
 		To:      []string{to},
-		Subject: "POSify: Kode Lisensi Anda Telah Tersedia",
+		Subject: "Lumio POS: Akun Premium Anda Telah Aktif!",
 		Html:    htmlContent,
 	}
 
@@ -117,4 +133,5 @@ func (m *Mailer) SendLicenseEmail(to, licenseCode, tier string, maxDevices int) 
 	}
 
 	return nil
+}
 }

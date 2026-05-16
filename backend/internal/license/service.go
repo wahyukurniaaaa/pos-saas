@@ -298,7 +298,11 @@ func (s *service) Generate(req GenerateRequest) (*models.License, error) {
 	// Send Email Async
 	if s.mailer != nil {
 		go func() {
-			if err := s.mailer.SendLicenseEmail(req.CustomerEmail, code, req.TierLevel, maxDevices); err != nil {
+			expiredAtStr := ""
+			if license.ExpiredAt != nil {
+				expiredAtStr = license.ExpiredAt.Format("02 January 2006")
+			}
+			if err := s.mailer.SendLicenseEmail(req.CustomerEmail, code, req.TierLevel, maxDevices, expiredAtStr); err != nil {
 				fmt.Printf("Email error for %s: %v\n", req.CustomerEmail, err)
 			}
 		}()
