@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:posify_app/core/theme/app_theme.dart';
-import 'package:posify_app/core/database/database.dart';
-import 'package:posify_app/core/providers/database_provider.dart';
-import 'package:posify_app/core/providers/receipt_provider.dart';
-import 'package:posify_app/features/auth/providers/owner_provider.dart';
-import 'package:posify_app/features/settings/screens/receipt_detail_screen.dart';
-import 'package:posify_app/features/auth/widgets/supervisor_auth_dialog.dart';
-import 'package:posify_app/features/pos/providers/pos_providers.dart';
-import 'package:posify_app/features/pos/screens/shift/shift_report_modal.dart';
+import 'package:lumio/core/theme/app_theme.dart';
+import 'package:lumio/core/database/database.dart';
+import 'package:lumio/core/providers/database_provider.dart';
+import 'package:lumio/core/providers/receipt_provider.dart';
+import 'package:lumio/features/auth/providers/owner_provider.dart';
+import 'package:lumio/features/settings/screens/receipt_detail_screen.dart';
+import 'package:lumio/features/auth/widgets/supervisor_auth_dialog.dart';
+import 'package:lumio/features/pos/providers/pos_providers.dart';
+import 'package:lumio/features/pos/screens/shift/shift_report_modal.dart';
 
 /// Payment totals for a date-range history filter, sourced from transaction_payments.
 final historyPaymentTotalsProvider =

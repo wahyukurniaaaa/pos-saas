@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:posify_app/core/database/database.dart';
-import 'package:posify_app/core/theme/app_theme.dart';
+import 'package:lumio/core/database/database.dart';
+import 'package:lumio/core/theme/app_theme.dart';
 
 /// Data class combining low-stock products and low-stock ingredients
 class LowStockSummary {

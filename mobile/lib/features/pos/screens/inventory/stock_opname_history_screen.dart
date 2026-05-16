@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:posify_app/core/theme/app_theme.dart';
-import 'package:posify_app/features/pos/providers/pos_providers.dart';
-import 'package:posify_app/core/database/database.dart';
-import 'package:posify_app/core/providers/database_provider.dart';
+import 'package:lumio/core/theme/app_theme.dart';
+import 'package:lumio/features/pos/providers/pos_providers.dart';
+import 'package:lumio/core/database/database.dart';
+import 'package:lumio/core/providers/database_provider.dart';
 
 class StockOpnameHistoryScreen extends ConsumerWidget {
   final String type; // 'PRODUCT' or 'INGREDIENT'
@@ -286,7 +286,7 @@ class _OpnameItemTile extends ConsumerWidget {
     );
   }
 
-  Future<String> _getName(PosifyDatabase db) async {
+  Future<String> _getName(LumioDatabase db) async {
     if (type == 'INGREDIENT') {
       final ing = await db.getIngredientById(item.ingredientId!);
       return ing?.name ?? 'Unknown';

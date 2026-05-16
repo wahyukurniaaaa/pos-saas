@@ -1,4 +1,4 @@
-package com.posify.posify_app
+package com.lumio.lumio
 
 import io.flutter.embedding.android.FlutterActivity
 

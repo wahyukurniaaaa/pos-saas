@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:posify_app/core/database/database.dart';
-import 'package:posify_app/core/theme/app_theme.dart';
-import 'package:posify_app/features/inventory/providers/po_provider.dart';
-import 'package:posify_app/core/widgets/responsive_layout.dart';
+import 'package:lumio/core/database/database.dart';
+import 'package:lumio/core/theme/app_theme.dart';
+import 'package:lumio/features/inventory/providers/po_provider.dart';
+import 'package:lumio/core/widgets/responsive_layout.dart';
 
 class PoDetailScreen extends ConsumerStatefulWidget {
   final String poId;

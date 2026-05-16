@@ -3,11 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:drift/drift.dart' show Value;
-import 'package:posify_app/core/database/database.dart';
-import 'package:posify_app/core/theme/app_theme.dart';
-import 'package:posify_app/core/widgets/responsive_layout.dart';
-import 'package:posify_app/features/auth/providers/owner_provider.dart';
-import 'package:posify_app/features/pos/providers/discount_provider.dart';
+import 'package:lumio/core/database/database.dart';
+import 'package:lumio/core/theme/app_theme.dart';
+import 'package:lumio/core/widgets/responsive_layout.dart';
+import 'package:lumio/features/auth/providers/owner_provider.dart';
+import 'package:lumio/features/pos/providers/discount_provider.dart';
 
 final _currency =
     NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);

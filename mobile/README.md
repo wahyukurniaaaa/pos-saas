@@ -1,4 +1,4 @@
-# posify_app
+# lumio
 
 A new Flutter project.
 

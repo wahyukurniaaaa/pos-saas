@@ -4,8 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:posify_app/core/database/database.dart';
-import 'package:posify_app/core/widgets/whatsapp_receipt_widget.dart';
+import 'package:lumio/core/database/database.dart';
+import 'package:lumio/core/widgets/whatsapp_receipt_widget.dart';
 
 class ReceiptService {
   final BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
@@ -46,7 +46,7 @@ class ReceiptService {
     //   }
     // }
 
-    await bluetooth.printCustom(profile?.name ?? 'POSIFY STORE', 2, 1);
+    await bluetooth.printCustom(profile?.name ?? 'LUMIO STORE', 2, 1);
 
     if (profile?.address != null) {
       await bluetooth.printCustom(profile!.address!, 0, 1);
@@ -193,7 +193,7 @@ class ReceiptService {
     );
     final buffer = StringBuffer();
 
-    buffer.writeln('🛍️ *STRUK BELANJA - ${profile?.name ?? 'POSIFY'}*');
+    buffer.writeln('🛍️ *STRUK BELANJA - ${profile?.name ?? 'LUMIO'}*');
     buffer.writeln('--------------------------------');
     buffer.writeln('No. Struk: ${data.transaction.receiptNumber ?? 'DRAFT'}');
     buffer.writeln(

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:posify_app/core/theme/app_theme.dart';
+import 'package:lumio/core/theme/app_theme.dart';
 import 'pos_tab.dart';
 import 'inventory_tab.dart';
 import 'settings_tab.dart';

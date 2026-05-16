@@ -3,10 +3,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:posify_app/core/providers/database_provider.dart';
-import 'package:posify_app/features/auth/providers/auth_providers.dart';
-import 'package:posify_app/features/auth/providers/owner_provider.dart';
-import 'package:posify_app/core/providers/license_tier_provider.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:lumio/core/database/database.dart';
+import 'package:lumio/core/providers/database_provider.dart';
+import 'package:lumio/features/auth/providers/auth_providers.dart';
+import 'package:lumio/features/auth/providers/owner_provider.dart';
 
 /// Enumeration of possible sync states for the UI indicator.
 enum SyncStatus { idle, syncing, error }
@@ -48,27 +49,94 @@ class SyncService {
 
   SyncService(this._ref);
 
-  Timer? _syncTimer;
+  StreamSubscription<void>? _syncQueueSub;
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
+  RealtimeChannel? _realtimeChannel;
   bool _isSyncing = false;
 
-  /// Starts the background sync polling (every 30 seconds).
+  /// Starts the event-driven background sync.
   void start() {
-    _syncTimer?.cancel();
-    _syncTimer = Timer.periodic(
-      const Duration(seconds: 30),
-      (_) => performSync(),
-    );
+    _syncQueueSub?.cancel();
+    _connectivitySub?.cancel();
+
+    final db = _ref.read(databaseProvider);
+
+    // Listen for local changes
+    _syncQueueSub = db.syncQueueNotifier.stream.listen((_) {
+      _processSyncQueue();
+    });
+
+    // Listen for network recovery
+    _connectivitySub = Connectivity().onConnectivityChanged.listen((
+      List<ConnectivityResult> results,
+    ) {
+      if (!results.contains(ConnectivityResult.none)) {
+        performSync();
+      }
+    });
+
+    // Listen for cloud changes (Realtime)
+    _startRealtimePull();
+
     // Perform an immediate sync on start
     performSync();
-    debugPrint('SyncService: Started');
+    debugPrint('SyncService: Started (Event-Driven & Realtime)');
   }
 
-  /// Stops the sync timer.
+  /// Stops the background sync and listeners.
   void stop() {
-    _syncTimer?.cancel();
-    _syncTimer = null;
+    _syncQueueSub?.cancel();
+    _syncQueueSub = null;
+
+    _connectivitySub?.cancel();
+    _connectivitySub = null;
+
+    _stopRealtimePull();
+
     _ref.read(syncStatusProvider.notifier).setStatus(SyncStatus.idle);
     debugPrint('SyncService: Stopped');
+  }
+
+  void _startRealtimePull() {
+    final supabase = Supabase.instance.client;
+    final db = _ref.read(databaseProvider);
+
+    _realtimeChannel = supabase
+        .channel('public:*')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          callback: (payload) async {
+            final currentEmployee = _ref.read(sessionProvider).value;
+            final outletId = currentEmployee?.outletId;
+
+            if (payload.eventType == PostgresChangeEvent.delete) {
+              if (payload.oldRecord.isNotEmpty) {
+                final id = payload.oldRecord['id']?.toString();
+                if (id != null) {
+                  await db.deleteCloudRow(payload.table, id);
+                }
+              }
+            } else {
+              if (payload.newRecord.isNotEmpty) {
+                // Apply outlet filter for incoming realtime data if applicable
+                if (outletId != null && payload.table != 'outlets') {
+                  if (payload.newRecord.containsKey('outlet_id') &&
+                      payload.newRecord['outlet_id'] != outletId) {
+                    return;
+                  }
+                }
+                await db.importCloudRows(payload.table, [payload.newRecord]);
+              }
+            }
+          },
+        )
+        .subscribe();
+  }
+
+  void _stopRealtimePull() {
+    _realtimeChannel?.unsubscribe();
+    _realtimeChannel = null;
   }
 
   /// Push all dirty local records to Supabase.
@@ -105,7 +173,7 @@ class SyncService {
 
     try {
       await _pullChanges();
-      await _pushAllDirty();
+      await _processSyncQueue();
       if (!_ref.read(initialSyncProvider)) {
         _ref.invalidate(ownerProvider);
         _ref.read(initialSyncProvider.notifier).markCompleted();
@@ -123,41 +191,75 @@ class SyncService {
     }
   }
 
-  Future<void> _pushAllDirty() async {
+  Future<void> _processSyncQueue() async {
     final db = _ref.read(databaseProvider);
     final supabase = Supabase.instance.client;
 
-    for (final table in _syncableTables) {
-      final dirtyRows = await db.getDirtyRows(table);
-      if (dirtyRows.isEmpty) continue;
+    debugPrint('SyncService: Processing Sync Queue...');
 
-      debugPrint('SyncService: Pushing ${dirtyRows.length} rows → $table');
+    while (true) {
+      final tasks = await db.getPendingSyncTasks(50);
+      if (tasks.isEmpty) break;
 
-      // Remove internal-only / Supabase-incompatible fields before upsert
-      final payload = dirtyRows.map((row) {
-        final cleaned = Map<String, dynamic>.from(row);
-        cleaned.remove('is_dirty'); // Supabase doesn't need this flag
+      final processedIds = <String>[];
 
-        // Strip 'stock' component to prevent conflict with Supabase triggers (Delta approach)
-        if (table == 'products' || table == 'product_variants') {
-          cleaned.remove('stock');
+      for (final task in tasks) {
+        try {
+          if (task.operation == 'DELETE') {
+            await supabase
+                .from(task.targetTable)
+                .delete()
+                .eq('id', task.recordId);
+            processedIds.add(task.id);
+            debugPrint(
+              'SyncService: Deleted \${task.recordId} from \${task.targetTable}',
+            );
+          } else {
+            final record = await db.getRecordAsMap(
+              task.targetTable,
+              task.recordId,
+            );
+            if (record != null) {
+              // Strip unnecessary columns
+              record.remove('is_dirty');
+              if (task.targetTable == 'products' ||
+                  task.targetTable == 'product_variants') {
+                record.remove('stock');
+              }
+              if (task.targetTable == 'employees') {
+                record.remove('failed_login_attempts');
+                record.remove('locked_until');
+                record.remove('photo_uri');
+              }
+              await supabase.from(task.targetTable).upsert(record);
+              debugPrint(
+                'SyncService: Upserted \${task.recordId} to \${task.targetTable}',
+              );
+            } else {
+              debugPrint(
+                'SyncService: Record \${task.recordId} not found locally for \${task.targetTable}. Skipping.',
+              );
+            }
+            processedIds.add(task.id);
+          }
+        } catch (e) {
+          debugPrint(
+            'SyncService: Error processing queue task \${task.id} (\${task.targetTable}): $e',
+          );
+          // Stop processing this batch on first error to maintain sequential order.
+          break;
         }
+      }
 
-        // Strip local-only security columns from employees table
-        if (table == 'employees') {
-          cleaned.remove('failed_login_attempts');
-          cleaned.remove('locked_until');
-          cleaned.remove('photo_uri'); // Local file path, not syncable
-        }
+      if (processedIds.isNotEmpty) {
+        await db.removeSyncTasks(processedIds);
+      }
 
-        return cleaned;
-      }).toList();
-
-      await supabase.from(table).upsert(payload);
-
-      // Mark as clean after successful push
-      final ids = dirtyRows.map((r) => r['id'] as String).toList();
-      await db.markAsClean(table, ids);
+      // If we didn't process all tasks in this batch, an error occurred.
+      // Break the loop to retry later.
+      if (processedIds.length < tasks.length) {
+        break;
+      }
     }
   }
 
@@ -173,20 +275,66 @@ class SyncService {
     final lastSyncStr = await storage.read(key: 'last_pull_sync');
     final lastSync = lastSyncStr != null ? DateTime.parse(lastSyncStr) : null;
 
-    for (final table in _syncableTables) {
-      if (outletId == null && table != 'outlets') {
-        debugPrint(
-          'SyncService: Skipping $table - No outlet assigned to session',
-        );
-        continue;
-      }
+    // Group tables to parallelize pulling without breaking foreign key constraints
+    final groups = [
+      ['outlets', 'categories', 'suppliers', 'customers', 'employees', 'store_profile', 'unit_conversions', 'printer_settings'],
+      ['products', 'ingredients'],
+      ['product_variants', 'discounts', 'product_recipes'],
+      ['shifts', 'transactions', 'expenses', 'purchase_orders', 'stock_opname'],
+      ['transaction_items', 'transaction_payments', 'stock_opname_items', 'stock_transactions', 'ingredient_stock_history'],
+    ];
 
+    for (final group in groups) {
+      await Future.wait(
+        group.map(
+          (table) => _pullTableWithPagination(
+            table,
+            outletId,
+            lastSync,
+            db,
+            supabase,
+          ),
+        ),
+      );
+    }
+
+    await storage.write(
+      key: 'last_pull_sync',
+      value: DateTime.now().toUtc().toIso8601String(),
+    );
+  }
+
+  Future<void> _pullTableWithPagination(
+    String table,
+    String? outletId,
+    DateTime? lastSync,
+    LumioDatabase db,
+    SupabaseClient supabase,
+  ) async {
+    // Removed: Do not skip tables if outletId is null.
+    // On fresh install, we MUST pull employees and store_profile even before
+    // an outlet is selected so the user can actually log in.
+    if (outletId == null) {
+      debugPrint('SyncService: Pulling $table globally (no outlet filter)');
+    }
+
+    bool hasMore = true;
+    int from = 0;
+    const pageSize = 500;
+
+    while (hasMore) {
       var query = supabase.from(table).select();
 
+      // Tables that do not have an outlet_id column (Owner-level or global)
+      const globalTables = {
+        'outlets',
+        'store_profile',
+        'product_recipes',
+        'unit_conversions',
+      };
+
       // Apply Outlet Filter (Efficiency Phase 1)
-      // Note: 'outlets' table might be visible across branches for owners,
-      // but for now we filter it as well or keep it global if needed.
-      if (table != 'outlets' && outletId != null) {
+      if (!globalTables.contains(table) && outletId != null) {
         query = query.eq('outlet_id', outletId);
       }
 
@@ -194,20 +342,33 @@ class SyncService {
         query = query.gt('updated_at', lastSync.toUtc().toIso8601String());
       }
 
-      final List<dynamic> records = await query;
-      if (records.isNotEmpty) {
-        debugPrint('SyncService: Pulled ${records.length} rows ← $table');
-        await db.importCloudRows(
-          table,
-          List<Map<String, dynamic>>.from(records),
-        );
+      final queryBuilder = query.order('updated_at', ascending: true).range(from, from + pageSize - 1);
+
+      try {
+        final List<dynamic> records = await queryBuilder;
+        if (records.isNotEmpty) {
+          debugPrint(
+            'SyncService: Pulled ${records.length} rows ← $table (offset: $from)',
+          );
+          await db.importCloudRows(
+            table,
+            List<Map<String, dynamic>>.from(records),
+          );
+
+          if (records.length < pageSize) {
+            hasMore = false;
+          } else {
+            from += pageSize;
+          }
+        } else {
+          hasMore = false;
+        }
+      } catch (e) {
+        debugPrint('SyncService: Error pulling $table at offset $from: $e');
+        // Stop pulling this table on error to prevent infinite loop or incomplete data issues
+        hasMore = false;
       }
     }
-
-    await storage.write(
-      key: 'last_pull_sync',
-      value: DateTime.now().toUtc().toIso8601String(),
-    );
   }
 }
 

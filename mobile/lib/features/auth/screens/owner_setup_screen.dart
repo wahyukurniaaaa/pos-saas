@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:posify_app/core/theme/app_theme.dart';
+import 'package:lumio/core/theme/app_theme.dart';
 import '../providers/owner_provider.dart';
-import 'package:posify_app/core/widgets/responsive_layout.dart';
+import 'package:lumio/core/widgets/responsive_layout.dart';
 
 class OwnerSetupScreen extends ConsumerStatefulWidget {
   const OwnerSetupScreen({super.key});
@@ -225,7 +225,7 @@ class _OwnerSetupScreenState extends ConsumerState<OwnerSetupScreen> {
                               label: Text(
                                 _isLoading
                                     ? 'MENYIMPAN...'
-                                    : 'MULAI GUNAKAN POSIFY',
+                                    : 'MULAI GUNAKAN LUMIO',
                                 style: GoogleFonts.poppins(
                                   fontWeight: FontWeight.w700,
                                   letterSpacing: 0.5,

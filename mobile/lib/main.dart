@@ -4,20 +4,20 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/theme/app_theme.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'features/auth/screens/unified_registration_screen.dart';
-import 'package:posify_app/features/auth/screens/unlicensed_screen.dart';
-import 'package:posify_app/features/auth/screens/owner_setup_screen.dart';
-import 'package:posify_app/features/auth/screens/pin_login_screen.dart';
-import 'package:posify_app/features/auth/screens/employee_selection_screen.dart';
-import 'package:posify_app/features/pos/screens/pos_dashboard_screen.dart';
-import 'package:posify_app/features/dashboard/screens/owner_dashboard_screen.dart';
-import 'package:posify_app/features/auth/providers/auth_providers.dart';
-import 'package:posify_app/features/auth/providers/owner_provider.dart';
-import 'package:posify_app/core/database/database.dart';
-import 'package:posify_app/features/auth/screens/login_screen.dart';
-import 'package:posify_app/core/constants/app_constants.dart';
-import 'package:posify_app/core/providers/supabase_provider.dart';
-import 'package:posify_app/core/services/sync_service.dart';
-import 'package:posify_app/core/services/realtime_service.dart';
+import 'package:lumio/features/auth/screens/unlicensed_screen.dart';
+import 'package:lumio/features/auth/screens/owner_setup_screen.dart';
+import 'package:lumio/features/auth/screens/pin_login_screen.dart';
+import 'package:lumio/features/auth/screens/employee_selection_screen.dart';
+import 'package:lumio/features/pos/screens/pos_dashboard_screen.dart';
+import 'package:lumio/features/dashboard/screens/owner_dashboard_screen.dart';
+import 'package:lumio/features/auth/providers/auth_providers.dart';
+import 'package:lumio/features/auth/providers/owner_provider.dart';
+import 'package:lumio/core/database/database.dart';
+import 'package:lumio/features/auth/screens/login_screen.dart';
+import 'package:lumio/core/constants/app_constants.dart';
+import 'package:lumio/core/providers/supabase_provider.dart';
+import 'package:lumio/core/services/sync_service.dart';
+import 'package:lumio/core/services/realtime_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -83,21 +83,21 @@ class AppBootstrap extends ConsumerStatefulWidget {
 class _AppBootstrapState extends ConsumerState<AppBootstrap> {
   @override
   Widget build(BuildContext context) {
-    // 1. Listen for future auth changes
-    ref.listen(authProvider, (previous, next) {
-      final user = next.value;
-      if (user != null) {
+    // 1. Listen for future license changes to start sync
+    ref.listen(licenseProvider, (previous, next) {
+      final license = next.value;
+      if (license != null && license.tierLevel?.toLowerCase() == 'pro') {
         ref.read(syncServiceProvider).start();
         ref.read(realtimeServiceProvider).start();
-      } else {
+      } else if (!next.isLoading) {
         ref.read(syncServiceProvider).stop();
         ref.read(realtimeServiceProvider).stop();
       }
     });
 
-    // 2. Initial trigger for cold boot (if user is already logged in)
-    final initialUser = ref.read(authProvider).value;
-    if (initialUser != null) {
+    // 2. Initial trigger for cold boot (if license is already loaded)
+    final initialLicense = ref.read(licenseProvider).value;
+    if (initialLicense != null && initialLicense.tierLevel?.toLowerCase() == 'pro') {
       // Use microtask or post-frame to avoid calling start() during build
       Future.microtask(() {
         ref.read(syncServiceProvider).start();
@@ -114,16 +114,6 @@ class _AppBootstrapState extends ConsumerState<AppBootstrap> {
       return const LoginScreen();
     }
 
-    // Tunggu sync pertama selesai JIKA database lokal benar-benar kosong (Perangkat Baru / Reinstall)
-    // Kita hanya mengkonfirmasi data kosong jika state sudah TIDAK loading dan nilainya murni null
-    final isLocalLicenseEmpty = !licenseAsync.isLoading && licenseAsync.value == null;
-    final isLocalOwnerEmpty = !ownerAsync.isLoading && ownerAsync.value == null;
-    final isInitialSyncDone = ref.watch(initialSyncProvider);
-
-    if (isLocalLicenseEmpty && isLocalOwnerEmpty && !isInitialSyncDone) {
-      return const _SplashScreen(errorMessage: 'Menyinkronkan data profil dari cloud...');
-    }
-
     // Layer 2: License (Device/Subscription)
     return licenseAsync.when(
       loading: () => const _SplashScreen(),
@@ -134,6 +124,17 @@ class _AppBootstrapState extends ConsumerState<AppBootstrap> {
       data: (license) {
         if (license == null) {
           return const UnlicensedScreen();
+        }
+
+        // Tunggu sync pertama selesai JIKA database lokal benar-benar kosong (Perangkat Baru / Reinstall)
+        final isPro = license.tierLevel?.toLowerCase() == 'pro';
+        final isLocalOwnerEmpty = !ownerAsync.isLoading && ownerAsync.value == null;
+        final isInitialSyncDone = ref.watch(initialSyncProvider);
+
+        // Kita harus menunggu sync selesai sebelum memastikan owner tidak ada.
+        // HANYA UNTUK PRO USER. Jika bukan Pro, tidak ada sync, jadi langsung Setup.
+        if (isPro && isLocalOwnerEmpty && !isInitialSyncDone) {
+          return const _SplashScreen(errorMessage: 'Menyinkronkan data profil dari cloud...');
         }
 
         // Layer 3: Owner (Store setup)

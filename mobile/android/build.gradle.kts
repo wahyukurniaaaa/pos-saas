@@ -32,7 +32,7 @@ subprojects {
                     val defaultNamespace = if (p.group.toString().isNotEmpty()) {
                         p.group.toString()
                     } else {
-                        "com.posify.${p.name.replace("-", "_")}"
+                        "com.lumio.${p.name.replace("-", "_")}"
                     }
                     setNamespace.invoke(android, defaultNamespace)
                 }

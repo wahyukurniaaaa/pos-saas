@@ -7,10 +7,10 @@ import 'package:drift/drift.dart' hide Column;
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 
-import 'package:posify_app/core/theme/app_theme.dart';
-import 'package:posify_app/core/database/database.dart';
-import 'package:posify_app/core/providers/database_provider.dart';
-import 'package:posify_app/core/widgets/responsive_layout.dart';
+import 'package:lumio/core/theme/app_theme.dart';
+import 'package:lumio/core/database/database.dart';
+import 'package:lumio/core/providers/database_provider.dart';
+import 'package:lumio/core/widgets/responsive_layout.dart';
 
 class StoreProfileScreen extends ConsumerStatefulWidget {
   const StoreProfileScreen({super.key});

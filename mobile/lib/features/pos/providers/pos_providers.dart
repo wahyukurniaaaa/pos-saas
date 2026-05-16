@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:drift/drift.dart' as drift;
-import 'package:posify_app/core/database/database.dart';
-import 'package:posify_app/core/providers/database_provider.dart';
+import 'package:lumio/core/database/database.dart';
+import 'package:lumio/core/providers/database_provider.dart';
 import 'cart_notes_provider.dart';
 import 'selected_customer_provider.dart';
 import 'split_payment_provider.dart';
-import 'package:posify_app/features/auth/providers/owner_provider.dart';
+import 'package:lumio/features/auth/providers/owner_provider.dart';
 
 // ===== Category Provider =====
 
@@ -15,47 +15,20 @@ class CategoryNotifier extends AsyncNotifier<List<Category>> {
   Future<List<Category>> build() async {
     final db = ref.watch(databaseProvider);
     final session = ref.watch(sessionProvider).value;
-    if (session == null || session.outletId == null) return _getDummyCategories();
+    if (session == null || session.outletId == null) return [];
     final outletId = session.outletId!;
     
     final subscription = db.watchAllCategories(outletId).listen((categories) {
       if (ref.mounted) {
-        state = AsyncValue.data(categories.isEmpty ? _getDummyCategories() : categories);
+        state = AsyncValue.data(categories);
       }
     });
 
     ref.onDispose(() => subscription.cancel());
 
-    final all = await db.getAllCategories(outletId);
-    return all.isEmpty ? _getDummyCategories() : all;
+    return await db.getAllCategories(outletId);
   }
 
-  List<Category> _getDummyCategories() {
-    final now = DateTime.now();
-    return [
-      Category(
-        id: '88265004-8975-4c07-b3f9-7f3e803d3511',
-        name: 'Makanan',
-        createdAt: now,
-        updatedAt: now,
-        isDirty: false,
-      ),
-      Category(
-        id: '77465004-8975-4c07-b3f9-7f3e803d3522',
-        name: 'Minuman',
-        createdAt: now,
-        updatedAt: now,
-        isDirty: false,
-      ),
-      Category(
-        id: '66365004-8975-4c07-b3f9-7f3e803d3533',
-        name: 'Camilan',
-        createdAt: now,
-        updatedAt: now,
-        isDirty: false,
-      ),
-    ];
-  }
 }
 
 final categoryProvider =
@@ -693,7 +666,7 @@ class HistoryDataNotifier extends AsyncNotifier<HistoryData> {
   }
 
   Stream<List<Transaction>> _getTransactionStream(
-    PosifyDatabase db, HistoryFilter filter, Shift? openShift, String outletId,
+    LumioDatabase db, HistoryFilter filter, Shift? openShift, String outletId,
   ) {
     if (filter.type == HistoryFilterType.currentShift) {
       if (openShift == null) return Stream.value([]);
@@ -705,7 +678,7 @@ class HistoryDataNotifier extends AsyncNotifier<HistoryData> {
   }
 
   Future<List<Transaction>> _getTransactions(
-    PosifyDatabase db, HistoryFilter filter, Shift? openShift, String outletId,
+    LumioDatabase db, HistoryFilter filter, Shift? openShift, String outletId,
   ) {
     return _getTransactionStream(db, filter, openShift, outletId).first;
   }

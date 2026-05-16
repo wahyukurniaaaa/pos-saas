@@ -3,8 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:posify_app/core/theme/app_theme.dart';
-import 'package:posify_app/core/providers/database_provider.dart';
+import 'package:lumio/core/theme/app_theme.dart';
+import 'package:lumio/core/providers/database_provider.dart';
 import '../providers/pos_providers.dart';
 
 class BarcodeScannerModal extends ConsumerStatefulWidget {

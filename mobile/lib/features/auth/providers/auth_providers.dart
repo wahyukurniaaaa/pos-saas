@@ -12,12 +12,12 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'package:posify_app/core/constants/app_constants.dart';
-import 'package:posify_app/core/database/database.dart';
-import 'package:posify_app/core/providers/database_provider.dart';
-import 'package:posify_app/core/providers/dio_provider.dart';
-import 'package:posify_app/core/providers/license_tier_provider.dart';
-import 'package:posify_app/core/providers/supabase_provider.dart';
+import 'package:lumio/core/constants/app_constants.dart';
+import 'package:lumio/core/database/database.dart';
+import 'package:lumio/core/providers/database_provider.dart';
+import 'package:lumio/core/providers/dio_provider.dart';
+import 'package:lumio/core/providers/license_tier_provider.dart';
+import 'package:lumio/core/providers/supabase_provider.dart';
 
 // ==========================================
 // LICENSE NOTIFIER (Tetap via Go Backend)
@@ -27,14 +27,14 @@ import 'package:posify_app/core/providers/supabase_provider.dart';
 class LicenseNotifier extends AsyncNotifier<License?> {
   final _deviceInfo = DeviceInfoPlugin();
   final _storage = const FlutterSecureStorage();
-  static const String _deviceIdKey = 'posify_device_id_stable';
-  static const String _serverTimeKey = 'posify_last_server_time';
+  static const String _deviceIdKey = 'lumio_device_id_stable';
+  static const String _serverTimeKey = 'lumio_last_server_time';
 
   Future<String> _getDeviceId() async {
     final cachedId = await _storage.read(key: _deviceIdKey);
     if (cachedId != null) return cachedId;
 
-    String baseId = 'posify';
+    String baseId = 'lumio';
     if (Platform.isAndroid) {
       final androidInfo = await _deviceInfo.androidInfo;
       baseId = '${androidInfo.brand}-${androidInfo.model}-${androidInfo.id}';
@@ -44,7 +44,7 @@ class LicenseNotifier extends AsyncNotifier<License?> {
     }
 
     // Use a deterministic hash based on stable device properties
-    final hashedId = sha256.convert(utf8.encode('posify_stable_$baseId')).toString();
+    final hashedId = sha256.convert(utf8.encode('lumio_stable_$baseId')).toString();
     await _storage.write(key: _deviceIdKey, value: hashedId);
     return hashedId;
   }
@@ -122,31 +122,19 @@ class LicenseNotifier extends AsyncNotifier<License?> {
 
   Future<void> _verifyWithServer(String code, String deviceId) async {
     final db = ref.read(databaseProvider);
-    final dio = ref.read(dioProvider);
 
     try {
       final authUser = Supabase.instance.client.auth.currentUser;
-      if (authUser == null || authUser.email == null) return;
+      if (authUser == null) return;
       
-      final model = await _getDeviceModel();
-      
-      final response = await dio.post(
-        'license/verify-account',
-        data: {
-          'email': authUser.email,
-          'user_id': authUser.id,
-          'device_fingerprint': deviceId,
-          'device_model': model,
-          'os_version': Platform.operatingSystemVersion,
-        },
-      );
+      final response = await Supabase.instance.client
+          .from('licenses')
+          .select()
+          .eq('user_id', authUser.id)
+          .eq('is_active', true)
+          .maybeSingle();
 
-      final data = response.data;
-      final isSuccess = (data is Map && data['status'] == 'success') ||
-          (data is Map && data['success'] == true) ||
-          (data is Map && data['data'] is Map && data['data']['is_active'] == true);
-
-      if (isSuccess) {
+      if (response != null) {
         await _storage.write(key: _serverTimeKey, value: DateTime.now().toIso8601String());
         await db.updateLicenseFingerprint(code, deviceId);
       } else {
@@ -154,58 +142,41 @@ class LicenseNotifier extends AsyncNotifier<License?> {
         ref.invalidateSelf();
       }
     } catch (e) {
-      try {
-        await dio.head('https://1.1.1.1', options: Options(receiveTimeout: const Duration(seconds: 3)));
-        throw Exception('Akses API terblokir. Harap periksa jaringan / matikan VPN.');
-      } catch (_) {
-        // Truly offline — grace period applies
-      }
+      // Offline or error
     }
   }
 
   Future<(bool, String?)> verifyAccount(String email) async {
     final db = ref.read(databaseProvider);
-    final dio = ref.read(dioProvider);
 
     try {
-      final deviceId = await _getDeviceId();
-      final model = await _getDeviceModel();
-
       final authUser = Supabase.instance.client.auth.currentUser;
+      if (authUser == null) return (false, 'User belum login.');
 
-      final response = await dio.post(
-        'license/verify-account',
-        data: {
-          'email': email,
-          'user_id': authUser?.id,
-          'device_fingerprint': deviceId,
-          'device_model': model,
-          'os_version': Platform.operatingSystemVersion,
-        },
-      );
+      final response = await Supabase.instance.client
+          .from('licenses')
+          .select()
+          .eq('user_id', authUser.id)
+          .eq('is_active', true)
+          .maybeSingle();
 
       if (!ref.mounted) return (false, null);
 
-      final data = response.data;
-      final isSuccess = (data is Map && data['status'] == 'success') ||
-          (data is Map && data['success'] == true) ||
-          response.statusCode == 200;
-
-      if (isSuccess) {
+      if (response != null) {
         await _storage.write(key: _serverTimeKey, value: DateTime.now().toIso8601String());
         await (db.delete(db.licenses)).go();
 
-        final resData = data['data'] as Map?;
+        final deviceId = await _getDeviceId();
         await db.into(db.licenses).insert(
           LicensesCompanion.insert(
-            licenseCode: resData?['license_code'] as String? ?? 'ACCOUNT-BOUND',
+            licenseCode: response['license_code'] as String? ?? 'ACCOUNT-BOUND',
             deviceFingerprint: Value(deviceId),
             activationDate: Value(DateTime.now()),
             status: const Value('active'),
-            tierLevel: Value(resData?['tier_level'] as String?),
-            maxDevices: Value(resData?['max_devices'] as int? ?? 1),
-            maxOutlets: Value(resData?['max_outlets'] as int? ?? 1),
-            expiredAt: resData?['expired_at'] != null ? Value(DateTime.parse(resData!['expired_at'] as String)) : const Value(null),
+            tierLevel: Value(response['tier_level'] as String?),
+            maxDevices: Value(response['max_devices'] as int? ?? 1),
+            maxOutlets: Value(response['max_outlets'] as int? ?? 1),
+            expiredAt: response['expired_at'] != null ? Value(DateTime.parse(response['expired_at'] as String)) : const Value(null),
           ),
         );
 
@@ -216,31 +187,12 @@ class LicenseNotifier extends AsyncNotifier<License?> {
         return (true, null);
       }
 
-      final errorMsg = (data is Map)
-          ? (data['message']?.toString() ?? 'Verifikasi gagal')
-          : 'Verifikasi gagal: Server mengembalikan status ${response.statusCode}';
-
       if (ref.mounted) state = const AsyncValue.data(null);
-      return (false, errorMsg);
-    } on DioException catch (e) {
-      if (!ref.mounted) return (false, null);
-
-      var responseData = e.response?.data;
-      if (responseData is String) {
-        try {
-          responseData = jsonDecode(responseData);
-        } catch (_) {}
-      }
-
-      final msg = (responseData is Map && responseData['message'] != null)
-          ? responseData['message'].toString()
-          : 'Gagal menghubungi server (${e.response?.statusCode ?? "Unknown"})';
-      if (ref.mounted) state = const AsyncValue.data(null);
-      return (false, msg);
+      return (false, 'Akun belum berlangganan atau masa aktif telah habis.');
     } catch (e) {
       if (!ref.mounted) return (false, null);
       state = const AsyncValue.data(null);
-      return (false, e.toString());
+      return (false, 'Gagal menghubungi server: ${e.toString()}');
     }
   }
 
@@ -248,45 +200,33 @@ class LicenseNotifier extends AsyncNotifier<License?> {
   /// Useful for the build() method sync logic.
   Future<License?> _verifyAccountSilently(String email) async {
     final db = ref.read(databaseProvider);
-    final dio = ref.read(dioProvider);
 
     try {
-      final deviceId = await _getDeviceId();
-      final model = await _getDeviceModel();
-
       final authUser = Supabase.instance.client.auth.currentUser;
+      if (authUser == null) return null;
 
-      final response = await dio.post(
-        'license/verify-account',
-        data: {
-          'email': email,
-          'user_id': authUser?.id,
-          'device_fingerprint': deviceId,
-          'device_model': model,
-          'os_version': Platform.operatingSystemVersion,
-        },
-      );
+      final response = await Supabase.instance.client
+          .from('licenses')
+          .select()
+          .eq('user_id', authUser.id)
+          .eq('is_active', true)
+          .maybeSingle();
 
-      final data = response.data;
-      final isSuccess = (data is Map && data['status'] == 'success') ||
-          (data is Map && data['success'] == true) ||
-          response.statusCode == 200;
-
-      if (isSuccess) {
+      if (response != null) {
         await _storage.write(key: _serverTimeKey, value: DateTime.now().toIso8601String());
         await (db.delete(db.licenses)).go();
         
-        final resData = data['data'] as Map?;
+        final deviceId = await _getDeviceId();
         await db.into(db.licenses).insert(
           LicensesCompanion.insert(
-            licenseCode: resData?['license_code'] as String? ?? 'ACCOUNT-BOUND',
+            licenseCode: response['license_code'] as String? ?? 'ACCOUNT-BOUND',
             deviceFingerprint: Value(deviceId),
             activationDate: Value(DateTime.now()),
             status: const Value('active'),
-            tierLevel: Value(resData?['tier_level'] as String?),
-            maxDevices: Value(resData?['max_devices'] as int? ?? 1),
-            maxOutlets: Value(resData?['max_outlets'] as int? ?? 1),
-            expiredAt: resData?['expired_at'] != null ? Value(DateTime.parse(resData!['expired_at'] as String)) : const Value(null),
+            tierLevel: Value(response['tier_level'] as String?),
+            maxDevices: Value(response['max_devices'] as int? ?? 1),
+            maxOutlets: Value(response['max_outlets'] as int? ?? 1),
+            expiredAt: response['expired_at'] != null ? Value(DateTime.parse(response['expired_at'] as String)) : const Value(null),
           ),
         );
 

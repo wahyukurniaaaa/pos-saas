@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:posify_app/core/providers/dio_provider.dart';
-import 'package:posify_app/features/auth/providers/auth_providers.dart';
+import 'package:lumio/core/providers/dio_provider.dart';
+import 'package:lumio/features/auth/providers/auth_providers.dart';
 
 // Model to represent a device from backend
 class LicenseDevice {

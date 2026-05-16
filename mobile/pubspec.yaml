@@ -1,4 +1,4 @@
-name: posify_app
+name: lumio
 description: "Lumio — AI-powered POS untuk UMKM. Kelola bisnis lebih cerdas, mudah, dan efisien."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -60,6 +60,7 @@ dependencies:
   supabase_flutter: ^2.8.4
   google_sign_in: ^6.2.2
   uuid: ^4.5.3
+  connectivity_plus: ^7.1.1
 
 dev_dependencies:
   flutter_test:

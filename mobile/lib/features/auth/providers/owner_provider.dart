@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:posify_app/core/providers/database_provider.dart';
-import 'package:posify_app/core/database/database.dart';
+import 'package:lumio/core/providers/database_provider.dart';
+import 'package:lumio/core/database/database.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:posify_app/core/providers/license_tier_provider.dart';
+import 'package:lumio/core/providers/license_tier_provider.dart';
 
 /// Notifier for owner setup.
 /// Non-autoDispose so owner state persists throughout app lifecycle.
@@ -43,6 +43,20 @@ class OwnerNotifier extends AsyncNotifier<Employee?> {
           outletId: Value(outletId),
         ),
       );
+
+      // 1.1 Seed Default Categories for the new outlet
+      await db.insertCategory(CategoriesCompanion.insert(
+        name: 'Makanan',
+        outletId: Value(outletId),
+      ));
+      await db.insertCategory(CategoriesCompanion.insert(
+        name: 'Minuman',
+        outletId: Value(outletId),
+      ));
+      await db.insertCategory(CategoriesCompanion.insert(
+        name: 'Camilan',
+        outletId: Value(outletId),
+      ));
 
       if (!ref.mounted) return false;
 
@@ -289,6 +303,32 @@ class SessionNotifier extends AsyncNotifier<Employee?> {
 
   void logout() {
     state = const AsyncValue.data(null);
+  }
+
+  Future<void> hardLogout() async {
+    final db = ref.read(databaseProvider);
+    // Clear all tables
+    await db.transaction(() async {
+      final tables = [
+        'transaction_items', 'transactions', 'shifts', 'stock_transactions',
+        'product_variants', 'products', 'categories', 'employees',
+        'licenses', 'store_profile', 'printer_settings', 'outlets',
+        'ingredients', 'product_recipes', 'ingredient_stock_history',
+        'unit_conversions', 'stock_opname', 'stock_opname_items',
+        'discounts', 'expense_categories', 'expenses', 'sync_queue'
+      ];
+      
+      for (final table in tables) {
+        try {
+          await db.customStatement('DELETE FROM "$table"');
+        } catch (_) {
+          // Some tables might not exist yet or have different names
+        }
+      }
+    });
+
+    state = const AsyncValue.data(null);
+    ref.invalidate(ownerProvider);
   }
 }
 

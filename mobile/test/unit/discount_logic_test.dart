@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:posify_app/features/pos/providers/discount_provider.dart';
-import 'package:posify_app/core/database/database.dart';
+import 'package:lumio/features/pos/providers/discount_provider.dart';
+import 'package:lumio/core/database/database.dart';
 
 void main() {
   group('Discount Calculation Logic', () {

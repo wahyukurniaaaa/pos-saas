@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:posify_app/core/theme/app_theme.dart';
-import 'package:posify_app/features/reports/screens/loyalty_analytics_screen.dart';
-import 'package:posify_app/features/reports/screens/sales_analytics_screen.dart';
-import 'package:posify_app/features/reports/screens/stock_loss_report_screen.dart';
-import 'package:posify_app/features/settings/screens/transaction_history_screen.dart';
-import 'package:posify_app/features/settings/screens/shift_history_screen.dart';
-import 'package:posify_app/features/pos/screens/inventory/global_stock_history_screen.dart';
-import 'package:posify_app/features/dashboard/screens/cashflow_screen.dart';
+import 'package:lumio/core/theme/app_theme.dart';
+import 'package:lumio/features/reports/screens/loyalty_analytics_screen.dart';
+import 'package:lumio/features/reports/screens/sales_analytics_screen.dart';
+import 'package:lumio/features/reports/screens/stock_loss_report_screen.dart';
+import 'package:lumio/features/settings/screens/transaction_history_screen.dart';
+import 'package:lumio/features/settings/screens/shift_history_screen.dart';
+import 'package:lumio/features/pos/screens/inventory/global_stock_history_screen.dart';
+import 'package:lumio/features/dashboard/screens/cashflow_screen.dart';
 
 class ReportMenuScreen extends StatelessWidget {
   const ReportMenuScreen({super.key});

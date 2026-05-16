@@ -29,7 +29,7 @@ class BackupService {
     try {
       final dbFolder = await getApplicationDocumentsDirectory();
       // File ini SUDAH merupakan brankas AES-256 yang aman buatan Drift SQLCipher
-      final dbFile = File(p.join(dbFolder.path, 'posify.db'));
+      final dbFile = File(p.join(dbFolder.path, 'lumio.db'));
 
       if (!await dbFile.exists()) return 'Database tidak ditemukan';
 
@@ -41,10 +41,10 @@ class BackupService {
       }
 
       final timestamp = DateFormat('yyyyMMdd_HHmm').format(DateTime.now());
-      // Disimpan dengan format eksklusif .posifybak agar mudah di-filter FilePicker
+      // Disimpan dengan format eksklusif .lumiobak agar mudah di-filter FilePicker
       final backupPath = p.join(
         backupsDir.path,
-        'posify_backup_$timestamp.posifybak',
+        'lumio_backup_$timestamp.lumiobak',
       );
 
       // LANGSUNG Salin file! Tidak perlu encrypt lagi.
@@ -63,7 +63,7 @@ class BackupService {
 
     if (!await backupsDir.exists()) return [];
 
-    // Bisa disaring berdasarkan ekstensi .posifybak jika diperlukan
+    // Bisa disaring berdasarkan ekstensi .lumiobak jika diperlukan
     final files = backupsDir.listSync().whereType<File>().toList();
     files.sort((a, b) => b.path.compareTo(a.path)); // Terbaru di atas
     return files;
@@ -72,7 +72,7 @@ class BackupService {
   /// Me-restore file backup ke direktori utama aplikasi Drift
   Future<void> restoreBackup(File backupFile, {String? recoveryKey}) async {
     final dbFolder = await getApplicationDocumentsDirectory();
-    final dbPath = p.join(dbFolder.path, 'posify.db');
+    final dbPath = p.join(dbFolder.path, 'lumio.db');
 
     // JIKA RESTORE DARI HP LAIN & KUNCI (PASSWORD) DIMASUKKAN OLEH PENGGUNA
     if (recoveryKey != null && recoveryKey.isNotEmpty) {
@@ -99,7 +99,7 @@ class BackupService {
     final timestamp = DateFormat('yyyyMMdd_HHmm').format(DateTime.now());
     final internalPath = p.join(
       backupsDir.path,
-      'imported_backup_$timestamp.posifybak',
+      'imported_backup_$timestamp.lumiobak',
     );
     
     // 1. Amankan salinan backup dari file picker ke direktori internal aplikasi

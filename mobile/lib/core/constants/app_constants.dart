@@ -3,9 +3,9 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class AppConstants {
   AppConstants._();
 
-  static const String appName = 'POSify';
+  static const String appName = 'Lumio';
   static const String appVersion = '1.0.0';
-  static const String packageName = 'com.posify.umkm';
+  static const String packageName = 'com.lumio.umkm';
 
   // API
   static String get baseUrl {
