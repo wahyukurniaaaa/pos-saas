@@ -1,6 +1,7 @@
 package license
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/go-playground/validator/v10"
@@ -138,7 +139,8 @@ func (h *Handler) Generate(c *fiber.Ctx) error {
 			return response.Error(c, fiber.StatusBadRequest, err.Error())
 		}
 		log.Println("GenerateError:", err)
-		return response.Error(c, fiber.StatusInternalServerError, "Gagal membuat lisensi.")
+		// Return detail error in response for debugging
+		return response.Error(c, fiber.StatusInternalServerError, fmt.Sprintf("Gagal membuat lisensi: %v", err))
 	}
 
 	resData := GenerateResponseData{
