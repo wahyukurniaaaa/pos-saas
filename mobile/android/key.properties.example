@@ -1,0 +1,11 @@
+# Template untuk release signing keystore
+# Di CI: dibuat otomatis oleh workflow dari GitHub Secrets
+# Di lokal: copy ke key.properties dan isi nilainya
+#
+# PENTING: Jangan commit key.properties ke git!
+# File ini sudah ada di .gitignore
+
+storePassword=your_keystore_password
+keyPassword=your_key_password
+keyAlias=lumio
+storeFile=app/release.keystore
