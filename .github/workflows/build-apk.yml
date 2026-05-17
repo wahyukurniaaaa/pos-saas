@@ -161,23 +161,26 @@ jobs:
           } > "/tmp/lumio-apk/releases/${VERSION_FOLDER}/release-notes.md"
 
           # Update latest.json — dibaca oleh app untuk cek update otomatis
-          # Gunakan python3 untuk JSON encoding yang aman (handle karakter ", \n, dll)
+          # Gunakan jq untuk JSON encoding yang aman (sudah pre-installed di ubuntu-latest)
           DOWNLOAD_URL="https://github.com/wahyukurniaaaa/lumio-apk/raw/main/releases/${VERSION_FOLDER}/${APK_SIMPLE_NAME}"
-          export DOWNLOAD_URL BUILD_DATE SHORT_SHA
-          python3 -c "
-import json, os
-data = {
-    'latest_version': os.environ['APP_VERSION'],
-    'download_url': os.environ['DOWNLOAD_URL'],
-    'release_notes': os.environ['RELEASE_NOTES'],
-    'force_update': False,
-    'minimum_version': '1.0.0',
-    'build_number': int(os.environ['BUILD_NUMBER']),
-    'released_at': os.environ['BUILD_DATE'],
-    'commit': os.environ['SHORT_SHA'],
-}
-print(json.dumps(data, ensure_ascii=False, indent=2))
-" > /tmp/lumio-apk/releases/latest.json
+          jq -n \
+            --arg latest_version "$APP_VERSION" \
+            --arg download_url "$DOWNLOAD_URL" \
+            --arg release_notes "$RELEASE_NOTES" \
+            --arg minimum_version "1.0.0" \
+            --argjson build_number "$BUILD_NUMBER" \
+            --arg released_at "$BUILD_DATE" \
+            --arg commit "$SHORT_SHA" \
+            '{
+              latest_version: $latest_version,
+              download_url: $download_url,
+              release_notes: $release_notes,
+              force_update: false,
+              minimum_version: $minimum_version,
+              build_number: $build_number,
+              released_at: $released_at,
+              commit: $commit
+            }' > /tmp/lumio-apk/releases/latest.json
 
           # Update RELEASES.md di root
           cd /tmp/lumio-apk
