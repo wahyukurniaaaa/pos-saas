@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:posify_app/core/theme/app_theme.dart';
-import 'package:posify_app/core/providers/database_provider.dart';
+import 'package:lumio/core/theme/app_theme.dart';
+import 'package:lumio/core/providers/database_provider.dart';
 
 class SupervisorAuthDialog extends ConsumerStatefulWidget {
   final String actionDescription;
@@ -89,11 +89,15 @@ class _SupervisorAuthDialogState extends ConsumerState<SupervisorAuthDialog> {
       },
       child: Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.85,
+          ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -186,6 +190,7 @@ class _SupervisorAuthDialogState extends ConsumerState<SupervisorAuthDialog> {
               ),
             ],
           ),
+        ),
         ),
       ),
     );

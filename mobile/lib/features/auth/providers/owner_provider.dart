@@ -1,19 +1,81 @@
 import 'package:flutter/foundation.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:posify_app/core/providers/database_provider.dart';
-import 'package:posify_app/core/database/database.dart';
+import 'package:lumio/core/providers/database_provider.dart';
+import 'package:lumio/core/database/database.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:posify_app/core/providers/license_tier_provider.dart';
+import 'package:lumio/core/providers/license_tier_provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+/// Reactive stream of the owner employee record.
+/// Emits a new value whenever the employees table changes.
+final ownerStreamProvider = StreamProvider<Employee?>((ref) {
+  final db = ref.watch(databaseProvider);
+  return db.watchOwner();
+});
 
 /// Notifier for owner setup.
 /// Non-autoDispose so owner state persists throughout app lifecycle.
 class OwnerNotifier extends AsyncNotifier<Employee?> {
   @override
   Future<Employee?> build() async {
-    final db = ref.watch(databaseProvider);
-    return db.getOwner();
+    // Watch the stream reactively — UI auto-updates when sync pulls owner data.
+    return ref.watch(ownerStreamProvider.future);
   }
+
+  /// Automatically creates an owner employee record if the store was set up on the web,
+  /// but no owner employee record was generated.
+  Future<void> autoCreateOwnerFromCloud(String storeName) async {
+    final db = ref.read(databaseProvider);
+    final authUser = Supabase.instance.client.auth.currentUser;
+    if (authUser == null) return;
+
+    final email = authUser.email ?? 'owner@lumio.pos';
+    String displayName = authUser.userMetadata?['name'] ?? 
+                          authUser.userMetadata?['full_name'] ?? 
+                          email.split('@')[0];
+
+    if (displayName.isNotEmpty) {
+      displayName = displayName[0].toUpperCase() + displayName.substring(1);
+    }
+
+    try {
+      // 1. Get first outlet or create a default one
+      String? targetOutletId;
+      final localOutlets = await db.customSelect('SELECT id FROM outlets LIMIT 1').get();
+      
+      if (localOutlets.isNotEmpty) {
+        targetOutletId = localOutlets.first.read<String>('id');
+      } else {
+        // Create default outlet
+        targetOutletId = await db.insertOutlet(
+          OutletsCompanion.insert(
+            name: storeName,
+            address: const Value(''),
+            phone: const Value(''),
+          ),
+        );
+      }
+
+      // 2. Insert owner employee with targetOutletId and default PIN '123456'
+      await db.insertEmployee(
+        EmployeesCompanion.insert(
+          name: displayName,
+          pin: '123456', // Default secure PIN for initial login
+          role: 'owner',
+          outletId: Value(targetOutletId),
+        ),
+      );
+
+      debugPrint('Sync: Auto-created owner employee for $displayName with PIN 123456');
+      
+      // Force refresh owner notification state
+      ref.invalidateSelf();
+    } catch (e) {
+      debugPrint('Sync: Error auto-creating owner employee: $e');
+    }
+  }
+
 
   Future<bool> setupOwner({
     required String name,
@@ -44,6 +106,20 @@ class OwnerNotifier extends AsyncNotifier<Employee?> {
         ),
       );
 
+      // 1.1 Seed Default Categories for the new outlet
+      await db.insertCategory(CategoriesCompanion.insert(
+        name: 'Makanan',
+        outletId: Value(outletId),
+      ));
+      await db.insertCategory(CategoriesCompanion.insert(
+        name: 'Minuman',
+        outletId: Value(outletId),
+      ));
+      await db.insertCategory(CategoriesCompanion.insert(
+        name: 'Camilan',
+        outletId: Value(outletId),
+      ));
+
       if (!ref.mounted) return false;
 
       // 2. Save Store Profile (Global)
@@ -69,7 +145,7 @@ class OwnerNotifier extends AsyncNotifier<Employee?> {
     required String phone,
   }) async {
     final db = ref.read(databaseProvider);
-    
+
     // Evaluate Gate
     final canAdd = await ref.read(canAddOutletProvider.future);
     if (!canAdd) {
@@ -94,6 +170,11 @@ class OwnerNotifier extends AsyncNotifier<Employee?> {
 final ownerProvider = AsyncNotifierProvider<OwnerNotifier, Employee?>(
   OwnerNotifier.new,
 );
+
+final storeProfileProvider = StreamProvider<StoreProfileData?>((ref) {
+  final db = ref.watch(databaseProvider);
+  return db.watchStoreProfile();
+});
 
 /// Provider for current logged-in employee (via PIN).
 /// Non-autoDispose so session persists throughout app lifecycle.
@@ -289,6 +370,32 @@ class SessionNotifier extends AsyncNotifier<Employee?> {
 
   void logout() {
     state = const AsyncValue.data(null);
+  }
+
+  Future<void> hardLogout() async {
+    final db = ref.read(databaseProvider);
+    // Clear all tables
+    await db.transaction(() async {
+      final tables = [
+        'transaction_items', 'transactions', 'shifts', 'stock_transactions',
+        'product_variants', 'products', 'categories', 'employees',
+        'licenses', 'store_profile', 'printer_settings', 'outlets',
+        'ingredients', 'product_recipes', 'ingredient_stock_history',
+        'unit_conversions', 'stock_opname', 'stock_opname_items',
+        'discounts', 'expense_categories', 'expenses', 'sync_queue'
+      ];
+      
+      for (final table in tables) {
+        try {
+          await db.customStatement('DELETE FROM "$table"');
+        } catch (_) {
+          // Some tables might not exist yet or have different names
+        }
+      }
+    });
+
+    state = const AsyncValue.data(null);
+    ref.invalidate(ownerProvider);
   }
 }
 

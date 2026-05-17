@@ -43,7 +43,7 @@ func (s *service) ProcessTikTokOrder(payload TikTokWebhookPayload) error {
 	// TODO: Panggil TikTok Open API get_order_detail menggunakan orderID untuk mendapatkan SKU dan Email.
 	// Untuk MVP/V1, kita hardcode atau mock email khusus karena TikTok menyensor email pembeli.
 	mockSKU := "POS-LITE-TIKTOK" 
-	mockEmail := fmt.Sprintf("buyer_%s@tiktok-dummy.posify", orderID) // Dummy email untuk klaim nanti
+	mockEmail := fmt.Sprintf("buyer_%s@tiktok-dummy.lumio", orderID) // Dummy email untuk klaim nanti
 
 	return s.fulfillOrder(orderID, source, mockSKU, mockEmail)
 }
@@ -67,7 +67,7 @@ func (s *service) ProcessShopeeOrder(payload ShopeeWebhookPayload) error {
 
 	// TODO: Panggil Shopee Open API get_order_detail
 	mockSKU := "POS-LITE-SHOPEE"
-	mockEmail := fmt.Sprintf("buyer_%s@shopee-dummy.posify", orderID)
+	mockEmail := fmt.Sprintf("buyer_%s@shopee-dummy.lumio", orderID)
 
 	return s.fulfillOrder(orderID, source, mockSKU, mockEmail)
 }

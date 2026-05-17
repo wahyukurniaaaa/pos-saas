@@ -3,11 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:posify_app/core/database/database.dart';
-import 'package:posify_app/core/theme/app_theme.dart';
-import 'package:posify_app/features/pos/providers/expense_provider.dart';
-import 'package:posify_app/features/auth/providers/owner_provider.dart';
-import 'package:posify_app/features/pos/providers/shift_provider.dart';
+import 'package:lumio/core/database/database.dart';
+import 'package:lumio/core/theme/app_theme.dart';
+import 'package:lumio/features/pos/providers/expense_provider.dart';
+import 'package:lumio/features/auth/providers/owner_provider.dart';
+import 'package:lumio/features/pos/providers/shift_provider.dart';
 import 'package:drift/drift.dart' hide Column;
 
 class ExpenseManagementScreen extends ConsumerStatefulWidget {

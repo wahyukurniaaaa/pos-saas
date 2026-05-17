@@ -114,11 +114,11 @@ erDiagram
         TEXT address "Alamat Toko (Opsional)"
         TEXT phone "Standar (+62) Opsional"
         TEXT logo_uri "Opsional, Path URI gambar logo"
-        INTEGER tax_percentage "Persentase Pajak (0-100)"
+        REAL tax_percentage "Persentase Pajak (0-100)"
         TEXT tax_type "inclusive/exclusive"
-        INTEGER service_charge_percentage "Persen Service (0-100)"
-        INTEGER loyalty_point_conversion "Nilai belanja per 1 poin"
-        INTEGER loyalty_point_value "Nilai Rp per 1 poin (redeem)"
+        REAL service_charge_percentage "Persen Service (0-100)"
+        REAL loyalty_point_conversion "Nilai belanja per 1 poin"
+        REAL loyalty_point_value "Nilai Rp per 1 poin (redeem)"
         BOOLEAN deduct_stock_on_hold "Potong stok saat draft?"
         TEXT updated_at "ISO 8601"
         BOOLEAN is_dirty "Sync Flag"
@@ -145,6 +145,7 @@ erDiagram
         TEXT name
         TEXT phone "Opsional"
         TEXT address "Opsional"
+        BOOLEAN apply_to_all "Apply ke semua outlet (Global)"
         TEXT created_at "ISO 8601"
         TEXT updated_at "ISO 8601"
         BOOLEAN is_dirty "Sync Flag"
@@ -155,6 +156,7 @@ erDiagram
         TEXT id PK "UUID v7"
         TEXT outlet_id FK "Nullable"
         TEXT name "Unik"
+        BOOLEAN apply_to_all "Apply ke semua outlet (Global)"
         TEXT created_at "ISO 8601"
         TEXT updated_at "ISO 8601"
         BOOLEAN is_dirty "Sync Flag"
@@ -164,8 +166,8 @@ erDiagram
     products {
         TEXT id PK "UUID v7"
         TEXT outlet_id FK "Nullable"
-        TEXT category_id FK 
-        TEXT name 
+        TEXT category_id FK
+        TEXT name
         TEXT sku "Unik, Barcode"
         INTEGER price "Harga Jual (Base)"
         INTEGER purchase_price "Harga Beli / HPP Retail"
@@ -173,6 +175,7 @@ erDiagram
         INTEGER stock "Sisa Fisik"
         INTEGER low_stock_threshold "Default 0"
         TEXT image_uri "Path lokal gambar"
+        BOOLEAN apply_to_all "Apply ke semua outlet (Global)"
         TEXT created_at "ISO 8601"
         TEXT updated_at "ISO 8601"
         BOOLEAN is_dirty "Sync Flag"
@@ -386,6 +389,7 @@ erDiagram
     ingredient_stock_history {
         TEXT id PK "UUID v7"
         TEXT ingredient_id FK
+        TEXT outlet_id FK
         TEXT supplier_id FK "Nullable"
         TEXT type "SALE/PURCHASE/ADJUST/WASTE"
         REAL quantity_change "+/-"

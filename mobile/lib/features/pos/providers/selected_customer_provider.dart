@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:posify_app/core/database/database.dart';
+import 'package:lumio/core/database/database.dart';
 
 class SelectedCustomerNotifier extends Notifier<Customer?> {
   @override

@@ -7,7 +7,7 @@ class Products extends Table {
   TextColumn get id => text().clientDefault(() => UuidGenerator.generate())();
   TextColumn get categoryId => text().references(Categories, #id)();
   TextColumn get name => text().withLength(min: 3, max: 100)();
-  TextColumn get sku => text().withLength(min: 3, max: 30).unique()();
+  TextColumn get sku => text().withLength(min: 1, max: 50).unique()();
   IntColumn get price => integer()(); // Base price (used when variant has no specific price)
   IntColumn get purchasePrice => integer().withDefault(const Constant(0))(); // HPP retail (Rp)
   BoolColumn get hasVariants =>

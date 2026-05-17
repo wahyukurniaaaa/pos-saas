@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:drift/drift.dart' as drift;
-import 'package:posify_app/core/database/database.dart';
-import 'package:posify_app/core/providers/database_provider.dart';
-import 'package:posify_app/features/auth/providers/owner_provider.dart';
+import 'package:lumio/core/database/database.dart';
+import 'package:lumio/core/providers/database_provider.dart';
+import 'package:lumio/features/auth/providers/owner_provider.dart';
 
 final openShiftProvider = StreamProvider<Shift?>((ref) {
   final db = ref.watch(databaseProvider);

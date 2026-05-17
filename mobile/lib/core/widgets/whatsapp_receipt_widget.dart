@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:posify_app/core/database/database.dart';
-import 'package:posify_app/core/theme/app_theme.dart';
+import 'package:lumio/core/database/database.dart';
+import 'package:lumio/core/theme/app_theme.dart';
 
 class WhatsAppReceiptWidget extends StatelessWidget {
   final TransactionWithItems data;
@@ -298,7 +298,7 @@ class WhatsAppReceiptWidget extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'POSIFY - Solusi POS Pintar',
+            'LUMIO - Solusi POS Pintar',
             textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
               fontSize: 14,

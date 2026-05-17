@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
@@ -35,6 +36,7 @@ import 'tables/discounts_table.dart';
 import 'tables/expenses_table.dart';
 import 'tables/transaction_payments_table.dart';
 import 'tables/outlets_table.dart';
+import 'tables/sync_queue_table.dart';
 
 part 'database.g.dart';
 
@@ -78,16 +80,19 @@ class StockTransactionWithProduct {
     Expenses,
     TransactionPayments,
     Outlets,
+    SyncQueue,
   ],
 )
-class PosifyDatabase extends _$PosifyDatabase {
-  PosifyDatabase() : super(_openConnection());
+class LumioDatabase extends _$LumioDatabase {
+  final syncQueueNotifier = StreamController<void>.broadcast();
+
+  LumioDatabase() : super(_openConnection());
 
   // For testing
-  PosifyDatabase.forTesting(super.e);
+  LumioDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 27;
+  int get schemaVersion => 28;
 
   @override
   MigrationStrategy get migration {
@@ -140,7 +145,10 @@ class PosifyDatabase extends _$PosifyDatabase {
         }
         if (from < 10) {
           await m.addColumn(ingredients, ingredients.lastSupplierId);
-          await m.addColumn(ingredientStockHistory, ingredientStockHistory.supplierId);
+          await m.addColumn(
+            ingredientStockHistory,
+            ingredientStockHistory.supplierId,
+          );
         }
         if (from < 11) {
           await m.createTable(unitConversions);
@@ -166,11 +174,36 @@ class PosifyDatabase extends _$PosifyDatabase {
           // Seed default expense categories
           await batch((b) {
             b.insertAll(expenseCategories, [
-              ExpenseCategoriesCompanion.insert(name: 'Bahan Baku', icon: const Value('inventory_2'), color: const Value('#E67E22'), isDefault: const Value(true)),
-              ExpenseCategoriesCompanion.insert(name: 'Gaji & Upah', icon: const Value('people'), color: const Value('#27AE60'), isDefault: const Value(true)),
-              ExpenseCategoriesCompanion.insert(name: 'Listrik & Air', icon: const Value('bolt'), color: const Value('#2980B9'), isDefault: const Value(true)),
-              ExpenseCategoriesCompanion.insert(name: 'Operasional', icon: const Value('build'), color: const Value('#1E3A5F'), isDefault: const Value(true)),
-              ExpenseCategoriesCompanion.insert(name: 'Lain-lain', icon: const Value('more_horiz'), color: const Value('#7F8C8D'), isDefault: const Value(true)),
+              ExpenseCategoriesCompanion.insert(
+                name: 'Bahan Baku',
+                icon: const Value('inventory_2'),
+                color: const Value('#E67E22'),
+                isDefault: const Value(true),
+              ),
+              ExpenseCategoriesCompanion.insert(
+                name: 'Gaji & Upah',
+                icon: const Value('people'),
+                color: const Value('#27AE60'),
+                isDefault: const Value(true),
+              ),
+              ExpenseCategoriesCompanion.insert(
+                name: 'Listrik & Air',
+                icon: const Value('bolt'),
+                color: const Value('#2980B9'),
+                isDefault: const Value(true),
+              ),
+              ExpenseCategoriesCompanion.insert(
+                name: 'Operasional',
+                icon: const Value('build'),
+                color: const Value('#1E3A5F'),
+                isDefault: const Value(true),
+              ),
+              ExpenseCategoriesCompanion.insert(
+                name: 'Lain-lain',
+                icon: const Value('more_horiz'),
+                color: const Value('#7F8C8D'),
+                isDefault: const Value(true),
+              ),
             ]);
           });
         }
@@ -187,8 +220,12 @@ class PosifyDatabase extends _$PosifyDatabase {
         if (from < 20) {
           // Force recreate transactions to handle nullable constraints and notes field cleanly
           await m.database.customStatement('PRAGMA foreign_keys = OFF;');
-          await m.database.customStatement('DROP TABLE IF EXISTS transaction_items;');
-          await m.database.customStatement('DROP TABLE IF EXISTS transactions;');
+          await m.database.customStatement(
+            'DROP TABLE IF EXISTS transaction_items;',
+          );
+          await m.database.customStatement(
+            'DROP TABLE IF EXISTS transactions;',
+          );
           await m.createTable(transactions);
           await m.createTable(transactionItems);
           await m.database.customStatement('PRAGMA foreign_keys = ON;');
@@ -220,16 +257,34 @@ class PosifyDatabase extends _$PosifyDatabase {
 
           // Recreate all tables that need PRIMARY KEY fix
           const tablesToRecreate = [
-            'outlets', 'employees', 'categories', 'products', 'product_variants',
-            'customers', 'suppliers', 'shifts', 'transactions', 'transaction_items',
-            'transaction_payments', 'discounts', 'expenses', 'expense_categories',
-            'purchase_orders', 'purchase_order_items', 'stock_opname',
-            'stock_opname_items', 'ingredients', 'store_profile', 'licenses',
+            'outlets',
+            'employees',
+            'categories',
+            'products',
+            'product_variants',
+            'customers',
+            'suppliers',
+            'shifts',
+            'transactions',
+            'transaction_items',
+            'transaction_payments',
+            'discounts',
+            'expenses',
+            'expense_categories',
+            'purchase_orders',
+            'purchase_order_items',
+            'stock_opname',
+            'stock_opname_items',
+            'ingredients',
+            'store_profile',
+            'licenses',
           ];
 
           for (final t in tablesToRecreate) {
             await m.database.customStatement('DROP TABLE IF EXISTS ${t}_old;');
-            await m.database.customStatement('ALTER TABLE $t RENAME TO ${t}_old;');
+            await m.database.customStatement(
+              'ALTER TABLE $t RENAME TO ${t}_old;',
+            );
           }
 
           // Recreate all tables fresh (with correct PRIMARY KEY via Drift)
@@ -254,13 +309,32 @@ class PosifyDatabase extends _$PosifyDatabase {
         if (from < 27) {
           await m.database.customStatement('PRAGMA foreign_keys = OFF;');
           const allTables = [
-            'outlets', 'employees', 'categories', 'products', 'product_variants',
-            'customers', 'suppliers', 'shifts', 'transactions', 'transaction_items',
-            'transaction_payments', 'discounts', 'expenses', 'expense_categories',
-            'purchase_orders', 'purchase_order_items', 'stock_opname',
-            'stock_opname_items', 'ingredients', 'store_profile', 'licenses',
-            'product_recipes', 'stock_transactions', 'unit_conversions',
-            'ingredient_stock_history', 'printer_settings'
+            'outlets',
+            'employees',
+            'categories',
+            'products',
+            'product_variants',
+            'customers',
+            'suppliers',
+            'shifts',
+            'transactions',
+            'transaction_items',
+            'transaction_payments',
+            'discounts',
+            'expenses',
+            'expense_categories',
+            'purchase_orders',
+            'purchase_order_items',
+            'stock_opname',
+            'stock_opname_items',
+            'ingredients',
+            'store_profile',
+            'licenses',
+            'product_recipes',
+            'stock_transactions',
+            'unit_conversions',
+            'ingredient_stock_history',
+            'printer_settings',
           ];
           for (final t in allTables) {
             await m.database.customStatement('DROP TABLE IF EXISTS $t;');
@@ -268,6 +342,10 @@ class PosifyDatabase extends _$PosifyDatabase {
           await m.createAll();
           await _createSyncTriggers(m);
           await m.database.customStatement('PRAGMA foreign_keys = ON;');
+        }
+        if (from < 28) {
+          await m.createTable(syncQueue);
+          await _dropSyncTriggers(m); // Clean up old triggers
         }
       },
       beforeOpen: (details) async {
@@ -277,32 +355,56 @@ class PosifyDatabase extends _$PosifyDatabase {
     );
   }
 
-  Future<void> _createSyncTriggers(Migrator m) async {
+  Future<void> _dropSyncTriggers(Migrator m) async {
     final tables = [
-      'outlets', 'categories', 'suppliers', 'customers', 'products',
-      'product_variants', 'ingredients', 'discounts', 'employees', 'shifts',
-      'transactions', 'transaction_items', 'transaction_payments', 'expenses',
-      'purchase_orders', 'stock_opname', 'stock_opname_items', 'licenses',
-      'store_profile', 'printer_settings', 'product_recipes', 'unit_conversions'
+      'outlets',
+      'categories',
+      'suppliers',
+      'customers',
+      'products',
+      'product_variants',
+      'ingredients',
+      'discounts',
+      'employees',
+      'shifts',
+      'transactions',
+      'transaction_items',
+      'transaction_payments',
+      'expenses',
+      'purchase_orders',
+      'stock_opname',
+      'stock_opname_items',
+      'licenses',
+      'store_profile',
+      'printer_settings',
+      'product_recipes',
+      'unit_conversions',
     ];
 
     for (final table in tables) {
-      // Create a trigger that auto-sets is_dirty to 1 when a row is updated,
-      // UNLESS the update itself is already setting is_dirty to 1 (to prevent infinite loops
-      // and allow clean sync mark updates).
-      await m.database.customStatement('''
-        CREATE TRIGGER IF NOT EXISTS trg_${table}_mark_dirty
-        AFTER UPDATE ON $table
-        FOR EACH ROW
-        WHEN NEW.is_dirty = 0 
-             AND OLD.is_dirty = 0
-        BEGIN
-          UPDATE $table 
-          SET is_dirty = 1 
-          WHERE id = NEW.id;
-        END;
-      ''');
+      await m.database.customStatement(
+        'DROP TRIGGER IF EXISTS trg_${table}_mark_dirty;',
+      );
     }
+  }
+
+  Future<void> _createSyncTriggers(Migrator m) async {
+    // Triggers are no longer created starting schema 28
+  }
+
+  Future<void> enqueueSync(
+    String tableName,
+    String operation,
+    String recordId,
+  ) async {
+    await into(syncQueue).insert(
+      SyncQueueCompanion.insert(
+        targetTable: tableName,
+        operation: operation,
+        recordId: recordId,
+      ),
+    );
+    syncQueueNotifier.add(null);
   }
 
   // ===== License Queries =====
@@ -329,7 +431,6 @@ class PosifyDatabase extends _$PosifyDatabase {
     );
   }
 
-
   // ===== Employee Queries =====
   Future<List<Employee>> getAllEmployees() => select(employees).get();
 
@@ -337,7 +438,7 @@ class PosifyDatabase extends _$PosifyDatabase {
 
   Future<Employee?> getEmployeeByPin(String pin) =>
       (select(employees)..where((e) => e.pin.equals(pin))).getSingleOrNull();
-  
+
   Future<Employee?> getEmployeeById(String id) =>
       (select(employees)..where((e) => e.id.equals(id))).getSingleOrNull();
 
@@ -345,17 +446,29 @@ class PosifyDatabase extends _$PosifyDatabase {
     employees,
   )..where((e) => e.role.equals('owner'))).getSingleOrNull();
 
+  Stream<Employee?> watchOwner() => (select(employees)
+        ..where((e) => e.role.equals('owner')))
+      .watchSingleOrNull();
+
   Future<String> insertEmployee(EmployeesCompanion entry) async {
     final row = await into(employees).insertReturning(entry);
+    await enqueueSync('employees', 'INSERT', row.id);
     return row.id;
   }
 
-  Future<bool> updateEmployee(Employee entry) =>
-      update(employees).replace(entry);
+  Future<bool> updateEmployee(Employee entry) async {
+    final success = await update(employees).replace(entry);
+    if (success) await enqueueSync('employees', 'UPDATE', entry.id);
+    return success;
+  }
 
-  Future<int> updateEmployeePin(String employeeId, String newPin) {
-    return (update(employees)..where((t) => t.id.equals(employeeId)))
-        .write(EmployeesCompanion(pin: Value(newPin)));
+  Future<int> updateEmployeePin(String employeeId, String newPin) async {
+    final count =
+        await (update(employees)..where((t) => t.id.equals(employeeId))).write(
+          EmployeesCompanion(pin: Value(newPin)),
+        );
+    if (count > 0) await enqueueSync('employees', 'UPDATE', employeeId);
+    return count;
   }
 
   // ===== Store Profile Queries =====
@@ -367,11 +480,15 @@ class PosifyDatabase extends _$PosifyDatabase {
 
   Future<String> insertStoreProfile(StoreProfileCompanion entry) async {
     final row = await into(storeProfile).insertReturning(entry);
+    await enqueueSync('store_profile', 'INSERT', row.id);
     return row.id;
   }
 
-  Future<bool> updateStoreProfile(StoreProfileData entry) =>
-      update(storeProfile).replace(entry);
+  Future<bool> updateStoreProfile(StoreProfileData entry) async {
+    final success = await update(storeProfile).replace(entry);
+    if (success) await enqueueSync('store_profile', 'UPDATE', entry.id);
+    return success;
+  }
 
   // ===== Outlet Queries =====
   Future<List<Outlet>> getAllOutlets() => select(outlets).get();
@@ -383,82 +500,140 @@ class PosifyDatabase extends _$PosifyDatabase {
 
   Future<String> insertOutlet(OutletsCompanion entry) async {
     final row = await into(outlets).insertReturning(entry);
+    await enqueueSync('outlets', 'INSERT', row.id);
     return row.id;
   }
 
-  Future<bool> updateOutlet(Outlet entry) => update(outlets).replace(entry);
+  Future<bool> updateOutlet(Outlet entry) async {
+    final success = await update(outlets).replace(entry);
+    if (success) await enqueueSync('outlets', 'UPDATE', entry.id);
+    return success;
+  }
 
   // ===== Category Queries =====
-  Future<List<Category>> getAllCategories(String outletId) =>
-      (select(categories)..where((c) => c.outletId.equals(outletId))).get();
+  Future<List<Category>> getAllCategories(String outletId) => (select(
+    categories,
+  )..where((c) => c.outletId.equals(outletId) & c.deletedAt.isNull())).get();
 
-  Stream<List<Category>> watchAllCategories(String outletId) =>
-      (select(categories)..where((c) => c.outletId.equals(outletId))).watch();
+  Stream<List<Category>> watchAllCategories(String outletId) => (select(
+    categories,
+  )..where((c) => c.outletId.equals(outletId) & c.deletedAt.isNull())).watch();
 
   Future<String> insertCategory(CategoriesCompanion entry) async {
     final row = await into(categories).insertReturning(entry);
+    await enqueueSync('categories', 'INSERT', row.id);
     return row.id;
   }
 
   // ===== Product Management =====
-  Future<List<Product>> getAllProducts(String outletId) =>
-    (select(products)..where((p) => p.outletId.equals(outletId))).get();
-  Stream<List<Product>> watchAllProducts(String outletId) =>
-    (select(products)..where((p) => p.outletId.equals(outletId))).watch();
+  Future<List<Product>> getAllProducts(String outletId) => (select(
+    products,
+  )..where((p) => p.outletId.equals(outletId) & p.deletedAt.isNull())).get();
+  Stream<List<Product>> watchAllProducts(String outletId) => (select(
+    products,
+  )..where((p) => p.outletId.equals(outletId) & p.deletedAt.isNull())).watch();
   Future<String> insertProduct(ProductsCompanion entry) async {
     final row = await into(products).insertReturning(entry);
+    await enqueueSync('products', 'INSERT', row.id);
     return row.id;
   }
-  Future<bool> updateProduct(Product entry) => update(products).replace(entry);
-  Future<int> deleteProduct(Product entry) => delete(products).delete(entry);
+
+  Future<bool> updateProduct(Product entry) async {
+    final success = await update(products).replace(entry);
+    if (success) await enqueueSync('products', 'UPDATE', entry.id);
+    return success;
+  }
+
+  Future<int> deleteProduct(Product entry) async {
+    final count = await delete(products).delete(entry);
+    if (count > 0) await enqueueSync('products', 'DELETE', entry.id);
+    return count;
+  }
 
   Future<void> insertMultipleProducts(List<ProductsCompanion> entries) async {
     await batch((batch) {
       batch.insertAll(products, entries, mode: InsertMode.insertOrReplace);
+      final syncTasks = entries
+          .map(
+            (e) => SyncQueueCompanion.insert(
+              targetTable: 'products',
+              operation: 'UPSERT',
+              recordId: e.id.value,
+            ),
+          )
+          .toList();
+      batch.insertAll(syncQueue, syncTasks);
     });
   }
 
   // ===== Product Variants =====
-  Future<List<ProductVariant>> getAllVariants() => select(productVariants).get();
+  Future<List<ProductVariant>> getAllVariants() =>
+      (select(productVariants)..where((v) => v.deletedAt.isNull())).get();
 
   Stream<List<ProductVariant>> watchVariantsByProduct(String productId) =>
-      (select(productVariants)
-            ..where((v) => v.productId.equals(productId)))
+      (select(
+            productVariants,
+          )..where((v) => v.productId.equals(productId) & v.deletedAt.isNull()))
           .watch();
 
   Future<List<ProductVariant>> getVariantsByProduct(String productId) async {
     return (select(productVariants)
-          ..where((v) => v.productId.equals(productId)))
+          ..where((v) => v.productId.equals(productId) & v.deletedAt.isNull()))
         .get();
   }
 
   Future<String> insertVariant(ProductVariantsCompanion entry) async {
     final row = await into(productVariants).insertReturning(entry);
+    await enqueueSync('product_variants', 'INSERT', row.id);
     return row.id;
   }
 
-  Future<bool> updateVariant(ProductVariant entry) =>
-      update(productVariants).replace(entry);
+  Future<bool> updateVariant(ProductVariant entry) async {
+    final success = await update(productVariants).replace(entry);
+    if (success) await enqueueSync('product_variants', 'UPDATE', entry.id);
+    return success;
+  }
 
-  Future<int> deleteVariant(ProductVariant entry) =>
-      delete(productVariants).delete(entry);
+  Future<int> deleteVariant(ProductVariant entry) async {
+    final count = await delete(productVariants).delete(entry);
+    if (count > 0) await enqueueSync('product_variants', 'DELETE', entry.id);
+    return count;
+  }
 
-  Future<ProductVariant?> getVariant(String id) =>
-      (select(productVariants)..where((v) => v.id.equals(id))).getSingleOrNull();
+  Future<ProductVariant?> getVariant(String id) => (select(
+    productVariants,
+  )..where((v) => v.id.equals(id))).getSingleOrNull();
 
-  Future<void> deleteVariantsByProduct(String productId) =>
-      (delete(productVariants)
-            ..where((v) => v.productId.equals(productId)))
-          .go();
+  Future<void> deleteVariantsByProduct(String productId) => (delete(
+    productVariants,
+  )..where((v) => v.productId.equals(productId))).go();
 
   Future<void> replaceVariants(
     String productId,
     List<ProductVariantsCompanion> newVariants,
   ) async {
     await transaction(() async {
+      // Queue deletions for existing variants before removing them
+      final existing = await getVariantsByProduct(productId);
+      for (final v in existing) {
+        await enqueueSync('product_variants', 'DELETE', v.id);
+      }
       await deleteVariantsByProduct(productId);
+
       if (newVariants.isNotEmpty) {
-        await batch((b) => b.insertAll(productVariants, newVariants));
+        await batch((b) {
+          b.insertAll(productVariants, newVariants);
+          final syncTasks = newVariants
+              .map(
+                (e) => SyncQueueCompanion.insert(
+                  targetTable: 'product_variants',
+                  operation: 'INSERT',
+                  recordId: e.id.value,
+                ),
+              )
+              .toList();
+          b.insertAll(syncQueue, syncTasks);
+        });
       }
     });
   }
@@ -471,30 +646,41 @@ class PosifyDatabase extends _$PosifyDatabase {
       (select(products)..where((p) => p.sku.equals(sku))).getSingleOrNull();
 
   Future<ProductWithVariants?> getProductWithVariants(String id) async {
-    final product = await (select(products)..where((p) => p.id.equals(id))).getSingleOrNull();
+    final product = await (select(
+      products,
+    )..where((p) => p.id.equals(id) & p.deletedAt.isNull())).getSingleOrNull();
     if (product == null) return null;
-    
-    final variants = await (select(productVariants)..where((p) => p.productId.equals(id))).get();
+
+    final variants = await (select(
+      productVariants,
+    )..where((p) => p.productId.equals(id) & p.deletedAt.isNull())).get();
     return ProductWithVariants(product: product, variants: variants);
   }
 
-  Future<List<ProductWithVariants>> getAllProductsWithVariants(String outletId) async {
+  Future<List<ProductWithVariants>> getAllProductsWithVariants(
+    String outletId,
+  ) async {
     final allProducts = await getAllProducts(outletId);
     final allVariants = await getAllVariants();
-    
+
     return allProducts.map((p) {
-      final productVariants = allVariants.where((v) => v.productId == p.id).toList();
+      final productVariants = allVariants
+          .where((v) => v.productId == p.id)
+          .toList();
       return ProductWithVariants(product: p, variants: productVariants);
     }).toList();
   }
 
-  Stream<List<ProductWithVariants>> watchAllProductsWithVariants(String outletId) {
+  Stream<List<ProductWithVariants>> watchAllProductsWithVariants(
+    String outletId,
+  ) {
     final query = select(products).join([
       leftOuterJoin(
         productVariants,
-        productVariants.productId.equalsExp(products.id),
+        productVariants.productId.equalsExp(products.id) &
+            productVariants.deletedAt.isNull(),
       ),
-    ])..where(products.outletId.equals(outletId));
+    ])..where(products.outletId.equals(outletId) & products.deletedAt.isNull());
 
     return query.watch().map((rows) {
       final results = <String, ProductWithVariants>{};
@@ -517,18 +703,28 @@ class PosifyDatabase extends _$PosifyDatabase {
   }
 
   Future<Shift?> getOpenShift(String outletId) =>
-      (select(shifts)..where((s) => s.outletId.equals(outletId) & s.status.equals('open'))).getSingleOrNull();
+      (select(shifts)..where(
+            (s) => s.outletId.equals(outletId) & s.status.equals('open'),
+          ))
+          .getSingleOrNull();
 
-  Stream<Shift?> watchOpenShift(String outletId) => (select(
-    shifts,
-  )..where((s) => s.outletId.equals(outletId) & s.status.equals('open'))).watchSingleOrNull();
+  Stream<Shift?> watchOpenShift(String outletId) =>
+      (select(shifts)..where(
+            (s) => s.outletId.equals(outletId) & s.status.equals('open'),
+          ))
+          .watchSingleOrNull();
 
   Future<String> insertShift(ShiftsCompanion entry) async {
     final row = await into(shifts).insertReturning(entry);
+    await enqueueSync('shifts', 'INSERT', row.id);
     return row.id;
   }
 
-  Future<bool> updateShift(Shift entry) => update(shifts).replace(entry);
+  Future<bool> updateShift(Shift entry) async {
+    final success = await update(shifts).replace(entry);
+    if (success) await enqueueSync('shifts', 'UPDATE', entry.id);
+    return success;
+  }
 
   // ===== Transaction Queries =====
   Stream<List<Transaction>> watchTransactionsByShift(String shiftId) =>
@@ -536,11 +732,15 @@ class PosifyDatabase extends _$PosifyDatabase {
 
   Future<String> insertTransaction(TransactionsCompanion entry) async {
     final row = await into(transactions).insertReturning(entry);
+    await enqueueSync('transactions', 'INSERT', row.id);
     return row.id;
   }
 
-  Future<bool> updateTransaction(Transaction entry) =>
-      update(transactions).replace(entry);
+  Future<bool> updateTransaction(Transaction entry) async {
+    final success = await update(transactions).replace(entry);
+    if (success) await enqueueSync('transactions', 'UPDATE', entry.id);
+    return success;
+  }
 
   // ===== Transaction Items =====
   Future<List<TransactionItem>> getItemsByTransaction(String transactionId) =>
@@ -550,48 +750,74 @@ class PosifyDatabase extends _$PosifyDatabase {
 
   Future<String> insertTransactionItem(TransactionItemsCompanion entry) async {
     final row = await into(transactionItems).insertReturning(entry);
+    await enqueueSync('transaction_items', 'INSERT', row.id);
     return row.id;
   }
 
   // ===== Stock Transactions =====
-  Future<String> insertStockTransaction(StockTransactionsCompanion entry) async {
+  Future<String> insertStockTransaction(
+    StockTransactionsCompanion entry,
+  ) async {
     final row = await into(stockTransactions).insertReturning(entry);
+    await enqueueSync('stock_transactions', 'INSERT', row.id);
     return row.id;
   }
 
-  Future<DateTime?> getLastAdjustDate(String productId, {String? variantId}) async {
+  Future<DateTime?> getLastAdjustDate(
+    String productId, {
+    String? variantId,
+  }) async {
     final query = select(stockTransactions);
-    
+
     if (productId != '0') {
       query.where((t) => t.productId.equals(productId));
     }
-    
+
     query.where((t) => t.type.equals('ADJUST'));
- 
+
     if (variantId != null) {
       query.where((t) => t.variantId.equals(variantId));
     }
- 
+
     query.orderBy([(t) => OrderingTerm.desc(t.createdAt)]);
     query.limit(1);
- 
+
     final result = await query.getSingleOrNull();
     return result?.createdAt;
   }
 
   // ===== Customers & Suppliers =====
-  Future<List<Customer>> getAllCustomers(String outletId) => (select(customers)..where((c) => c.outletId.equals(outletId))).get();
-  Stream<List<Customer>> watchAllCustomers(String outletId) => (select(customers)..where((c) => c.outletId.equals(outletId))).watch();
+  Future<List<Customer>> getAllCustomers(String outletId) => (select(
+    customers,
+  )..where((c) => c.outletId.equals(outletId) & c.deletedAt.isNull())).get();
+  Stream<List<Customer>> watchAllCustomers(String outletId) => (select(
+    customers,
+  )..where((c) => c.outletId.equals(outletId) & c.deletedAt.isNull())).watch();
   Future<String> insertCustomer(CustomersCompanion entry) async {
     final row = await into(customers).insertReturning(entry);
+    await enqueueSync('customers', 'INSERT', row.id);
     return row.id;
   }
-  Future<bool> updateCustomer(Customer entry) => update(customers).replace(entry);
-  Future<int> deleteCustomer(Customer entry) => (delete(customers)..where((c) => c.id.equals(entry.id))).go();
+
+  Future<bool> updateCustomer(Customer entry) async {
+    final success = await update(customers).replace(entry);
+    if (success) await enqueueSync('customers', 'UPDATE', entry.id);
+    return success;
+  }
+
+  Future<int> deleteCustomer(Customer entry) async {
+    final count = await (delete(
+      customers,
+    )..where((c) => c.id.equals(entry.id))).go();
+    if (count > 0) await enqueueSync('customers', 'DELETE', entry.id);
+    return count;
+  }
 
   /// Returns all customers who have at least 1 transaction, with aggregated stats.
   /// Sorted by points descending by default.
-  Future<List<CustomerLoyaltyStat>> getLoyaltyLeaderboard(String outletId) async {
+  Future<List<CustomerLoyaltyStat>> getLoyaltyLeaderboard(
+    String outletId,
+  ) async {
     final result = await customSelect(
       '''
       SELECT
@@ -629,14 +855,23 @@ class PosifyDatabase extends _$PosifyDatabase {
     }).toList();
   }
 
-
-  Future<List<Supplier>> getAllSuppliers(String outletId) => (select(suppliers)..where((s) => s.outletId.equals(outletId))).get();
-  Stream<List<Supplier>> watchAllSuppliers(String outletId) => (select(suppliers)..where((s) => s.outletId.equals(outletId))).watch();
+  Future<List<Supplier>> getAllSuppliers(String outletId) => (select(
+    suppliers,
+  )..where((s) => s.outletId.equals(outletId) & s.deletedAt.isNull())).get();
+  Stream<List<Supplier>> watchAllSuppliers(String outletId) => (select(
+    suppliers,
+  )..where((s) => s.outletId.equals(outletId) & s.deletedAt.isNull())).watch();
   Future<String> insertSupplier(SuppliersCompanion entry) async {
     final row = await into(suppliers).insertReturning(entry);
+    await enqueueSync('suppliers', 'INSERT', row.id);
     return row.id;
   }
-  Future<bool> updateSupplier(Supplier entry) => update(suppliers).replace(entry);
+
+  Future<bool> updateSupplier(Supplier entry) async {
+    final success = await update(suppliers).replace(entry);
+    if (success) await enqueueSync('suppliers', 'UPDATE', entry.id);
+    return success;
+  }
 
   // ===== Atomic Stock Update Helpers =====
   Future<void> _atomicProductStock(String productId, int quantityDelta) async {
@@ -647,11 +882,9 @@ class PosifyDatabase extends _$PosifyDatabase {
       [quantityDelta.abs(), productId],
     );
     await (update(products)..where((p) => p.id.equals(productId))).write(
-      ProductsCompanion(
-        isDirty: const Value(true),
-        updatedAt: Value(DateTime.now()),
-      )
+      ProductsCompanion(updatedAt: Value(DateTime.now())),
     );
+    await enqueueSync('products', 'UPDATE', productId);
   }
 
   Future<void> _atomicVariantStock(String variantId, int quantityDelta) async {
@@ -662,11 +895,9 @@ class PosifyDatabase extends _$PosifyDatabase {
       [quantityDelta.abs(), variantId],
     );
     await (update(productVariants)..where((v) => v.id.equals(variantId))).write(
-      ProductVariantsCompanion(
-        isDirty: const Value(true),
-        updatedAt: Value(DateTime.now()),
-      )
+      ProductVariantsCompanion(updatedAt: Value(DateTime.now())),
     );
+    await enqueueSync('product_variants', 'UPDATE', variantId);
   }
 
   // ===== Stock In (Purchase from Supplier) =====
@@ -684,14 +915,14 @@ class PosifyDatabase extends _$PosifyDatabase {
       final now = DateTime.now();
 
       if (variantId != null) {
-        final variant = await (select(productVariants)
-              ..where((v) => v.id.equals(variantId)))
-            .getSingleOrNull();
+        final variant = await (select(
+          productVariants,
+        )..where((v) => v.id.equals(variantId))).getSingleOrNull();
         if (variant == null) throw Exception('Variant not found');
-        
-        final product = await (select(products)
-              ..where((p) => p.id.equals(productId)))
-            .getSingleOrNull();
+
+        final product = await (select(
+          products,
+        )..where((p) => p.id.equals(productId))).getSingleOrNull();
         if (product == null) throw Exception('Product not found');
 
         final newStock = variant.stock + quantity;
@@ -699,43 +930,44 @@ class PosifyDatabase extends _$PosifyDatabase {
 
         // Update variant stock
         await _atomicVariantStock(variantId, quantity);
-            
+
         // Updates main product aggregate stock
         final oldStock = product.stock;
         final oldHpp = product.purchasePrice;
         int newHpp = oldHpp;
 
         if (unitCost > 0) {
-           final totalOldValue = oldStock * oldHpp;
-           final totalNewValue = quantity * unitCost;
-           newHpp = newProductStock > 0 
-               ? ((totalOldValue + totalNewValue) / newProductStock).round()
-               : unitCost;
+          final totalOldValue = oldStock * oldHpp;
+          final totalNewValue = quantity * unitCost;
+          newHpp = newProductStock > 0
+              ? ((totalOldValue + totalNewValue) / newProductStock).round()
+              : unitCost;
         }
 
         await _atomicProductStock(productId, quantity);
-        await (update(products)..where((p) => p.id.equals(productId)))
-            .write(ProductsCompanion(
-              purchasePrice: Value(newHpp),
-            ));
+        await (update(products)..where((p) => p.id.equals(productId))).write(
+          ProductsCompanion(purchasePrice: Value(newHpp)),
+        );
 
-        await into(stockTransactions).insert(StockTransactionsCompanion.insert(
-          productId: productId,
-          variantId: Value(variantId),
-          supplierId: Value(supplierId),
-          type: 'IN',
-          quantity: quantity,
-          previousStock: variant.stock,
-          newStock: newStock,
-          reason: Value(note),
-          reference: Value(invoiceRef),
-          createdAt: Value(now),
-          outletId: outletId != null ? Value(outletId) : const Value.absent(),
-        ));
+        await insertStockTransaction(
+          StockTransactionsCompanion.insert(
+            productId: productId,
+            variantId: Value(variantId),
+            supplierId: Value(supplierId),
+            type: 'IN',
+            quantity: quantity,
+            previousStock: variant.stock,
+            newStock: newStock,
+            reason: Value(note),
+            reference: Value(invoiceRef),
+            createdAt: Value(now),
+            outletId: outletId != null ? Value(outletId) : const Value.absent(),
+          ),
+        );
       } else {
-        final product = await (select(products)
-              ..where((p) => p.id.equals(productId)))
-            .getSingleOrNull();
+        final product = await (select(
+          products,
+        )..where((p) => p.id.equals(productId))).getSingleOrNull();
         if (product == null) throw Exception('Product not found');
         final oldStock = product.stock;
         final oldHpp = product.purchasePrice;
@@ -743,30 +975,31 @@ class PosifyDatabase extends _$PosifyDatabase {
         final newStock = product.stock + quantity;
 
         if (unitCost > 0) {
-           final totalOldValue = oldStock * oldHpp;
-           final totalNewValue = quantity * unitCost;
-           newHpp = newStock > 0 
-               ? ((totalOldValue + totalNewValue) / newStock).round()
-               : unitCost;
+          final totalOldValue = oldStock * oldHpp;
+          final totalNewValue = quantity * unitCost;
+          newHpp = newStock > 0
+              ? ((totalOldValue + totalNewValue) / newStock).round()
+              : unitCost;
         }
 
         await _atomicProductStock(productId, quantity);
-        await (update(products)..where((p) => p.id.equals(productId)))
-            .write(ProductsCompanion(
-              purchasePrice: Value(newHpp),
-            ));
-        await into(stockTransactions).insert(StockTransactionsCompanion.insert(
-          productId: productId,
-          supplierId: Value(supplierId),
-          type: 'IN',
-          quantity: quantity,
-          previousStock: product.stock,
-          newStock: newStock,
-          reason: Value(note),
-          reference: Value(invoiceRef),
-          createdAt: Value(now),
-          outletId: outletId != null ? Value(outletId) : const Value.absent(),
-        ));
+        await (update(products)..where((p) => p.id.equals(productId))).write(
+          ProductsCompanion(purchasePrice: Value(newHpp)),
+        );
+        await insertStockTransaction(
+          StockTransactionsCompanion.insert(
+            productId: productId,
+            supplierId: Value(supplierId),
+            type: 'IN',
+            quantity: quantity,
+            previousStock: product.stock,
+            newStock: newStock,
+            reason: Value(note),
+            reference: Value(invoiceRef),
+            createdAt: Value(now),
+            outletId: outletId != null ? Value(outletId) : const Value.absent(),
+          ),
+        );
       }
     });
   }
@@ -783,69 +1016,76 @@ class PosifyDatabase extends _$PosifyDatabase {
     final now = DateTime.now();
     await transaction(() async {
       if (variantId != null) {
-        final variant = await (select(productVariants)
-              ..where((v) => v.id.equals(variantId)))
-            .getSingleOrNull();
+        final variant = await (select(
+          productVariants,
+        )..where((v) => v.id.equals(variantId))).getSingleOrNull();
         if (variant == null) throw Exception('Variant not found');
-        
-        final product = await (select(products)
-              ..where((p) => p.id.equals(productId)))
-            .getSingleOrNull();
+
+        final product = await (select(
+          products,
+        )..where((p) => p.id.equals(productId))).getSingleOrNull();
         if (product == null) throw Exception('Product not found');
 
         final newStock = variant.stock - quantity;
 
         // Update variant stock
         await _atomicVariantStock(variantId, -quantity);
-            
+
         // Also update main product aggregate stock
         await _atomicProductStock(productId, -quantity);
 
-        await into(stockTransactions).insert(StockTransactionsCompanion.insert(
-          productId: productId,
-          variantId: Value(variantId),
-          supplierId: Value(supplierId),
-          type: 'OUT',
-          quantity: quantity,
-          previousStock: variant.stock,
-          newStock: newStock,
-          reason: Value(note),
-          reference: Value(invoiceRef),
-          createdAt: Value(now),
-          outletId: outletId != null ? Value(outletId) : const Value.absent(),
-        ));
+        await insertStockTransaction(
+          StockTransactionsCompanion.insert(
+            productId: productId,
+            variantId: Value(variantId),
+            supplierId: Value(supplierId),
+            type: 'OUT',
+            quantity: quantity,
+            previousStock: variant.stock,
+            newStock: newStock,
+            reason: Value(note),
+            reference: Value(invoiceRef),
+            createdAt: Value(now),
+            outletId: outletId != null ? Value(outletId) : const Value.absent(),
+          ),
+        );
       } else {
-        final product = await (select(products)
-              ..where((p) => p.id.equals(productId)))
-            .getSingleOrNull();
+        final product = await (select(
+          products,
+        )..where((p) => p.id.equals(productId))).getSingleOrNull();
         if (product == null) throw Exception('Product not found');
-        
+
         final newStock = product.stock - quantity;
         await _atomicProductStock(productId, -quantity);
 
-        await into(stockTransactions).insert(StockTransactionsCompanion.insert(
-          productId: productId,
-          supplierId: Value(supplierId),
-          type: 'OUT',
-          quantity: quantity,
-          previousStock: product.stock,
-          newStock: newStock,
-          reason: Value(note),
-          reference: Value(invoiceRef),
-          createdAt: Value(now),
-          outletId: outletId != null ? Value(outletId) : const Value.absent(),
-        ));
+        await insertStockTransaction(
+          StockTransactionsCompanion.insert(
+            productId: productId,
+            supplierId: Value(supplierId),
+            type: 'OUT',
+            quantity: quantity,
+            previousStock: product.stock,
+            newStock: newStock,
+            reason: Value(note),
+            reference: Value(invoiceRef),
+            createdAt: Value(now),
+            outletId: outletId != null ? Value(outletId) : const Value.absent(),
+          ),
+        );
       }
     });
   }
 
   // ===== Stock Card (Full log for a product) =====
-  Stream<List<StockTransactionWithProduct>> watchAllStockTransactionsWithProduct() {
+  Stream<List<StockTransactionWithProduct>>
+  watchAllStockTransactionsWithProduct() {
     final query = select(stockTransactions).join([
       innerJoin(products, products.id.equalsExp(stockTransactions.productId)),
-      leftOuterJoin(productVariants, productVariants.id.equalsExp(stockTransactions.variantId)),
-    ])
-      ..orderBy([OrderingTerm.desc(stockTransactions.createdAt)]);
+      leftOuterJoin(
+        productVariants,
+        productVariants.id.equalsExp(stockTransactions.variantId),
+      ),
+    ])..orderBy([OrderingTerm.desc(stockTransactions.createdAt)]);
 
     return query.watch().map((rows) {
       return rows.map((row) {
@@ -858,7 +1098,10 @@ class PosifyDatabase extends _$PosifyDatabase {
     });
   }
 
-  Future<List<StockTransaction>> getStockCard(String productId, {String? variantId}) {
+  Future<List<StockTransaction>> getStockCard(
+    String productId, {
+    String? variantId,
+  }) {
     final query = select(stockTransactions)
       ..where((t) => t.productId.equals(productId))
       ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]);
@@ -869,10 +1112,13 @@ class PosifyDatabase extends _$PosifyDatabase {
   }
 
   // ===== Low Stock products =====
-  Future<List<Product>> getLowStockProducts() => (select(products)
-        ..where((p) => p.lowStockThreshold.isBiggerThanValue(0) &
-            p.stock.isSmallerThanValue(999999))) // will filter in Dart below
-      .get();
+  Future<List<Product>> getLowStockProducts() =>
+      (select(products)..where(
+            (p) =>
+                p.lowStockThreshold.isBiggerThanValue(0) &
+                p.stock.isSmallerThanValue(999999),
+          )) // will filter in Dart below
+          .get();
 
   Future<List<Product>> getLowStockProductsFiltered({String? outletId}) async {
     final query = select(products);
@@ -892,7 +1138,10 @@ class PosifyDatabase extends _$PosifyDatabase {
     }
     final all = await query.get();
     return all
-        .where((i) => i.minStockThreshold > 0 && i.stockQuantity <= i.minStockThreshold)
+        .where(
+          (i) =>
+              i.minStockThreshold > 0 && i.stockQuantity <= i.minStockThreshold,
+        )
         .toList();
   }
 
@@ -900,36 +1149,40 @@ class PosifyDatabase extends _$PosifyDatabase {
 
   Future<List<PurchaseOrder>> getAllPurchaseOrders(String outletId) =>
       (select(purchaseOrders)
-        ..where((po) => po.outletId.equals(outletId))
-        ..orderBy([(po) => OrderingTerm.desc(po.orderedAt)]))
+            ..where((po) => po.outletId.equals(outletId))
+            ..orderBy([(po) => OrderingTerm.desc(po.orderedAt)]))
           .get();
 
   Stream<List<PurchaseOrder>> watchAllPurchaseOrders(String outletId) =>
       (select(purchaseOrders)
-        ..where((po) => po.outletId.equals(outletId))
-        ..orderBy([(po) => OrderingTerm.desc(po.orderedAt)]))
+            ..where((po) => po.outletId.equals(outletId))
+            ..orderBy([(po) => OrderingTerm.desc(po.orderedAt)]))
           .watch();
 
-  Future<List<PurchaseOrderItem>> getPurchaseOrderItems(String poId) =>
-      (select(purchaseOrderItems)
-        ..where((i) => i.purchaseOrderId.equals(poId)))
-          .get();
+  Future<List<PurchaseOrderItem>> getPurchaseOrderItems(String poId) => (select(
+    purchaseOrderItems,
+  )..where((i) => i.purchaseOrderId.equals(poId))).get();
 
   Future<String> createPurchaseOrder(PurchaseOrdersCompanion entry) async {
     final row = await into(purchaseOrders).insertReturning(entry);
+    await enqueueSync('purchase_orders', 'INSERT', row.id);
     return row.id;
   }
 
-  Future<void> addPurchaseOrderItem(PurchaseOrderItemsCompanion entry) =>
-      into(purchaseOrderItems).insert(entry).then((_) {});
+  Future<void> addPurchaseOrderItem(PurchaseOrderItemsCompanion entry) async {
+    final row = await into(purchaseOrderItems).insertReturning(entry);
+    await enqueueSync('purchase_order_items', 'INSERT', row.id);
+  }
 
-  Future<void> updatePurchaseOrderStatus(String poId, String status) =>
-      (update(purchaseOrders)..where((po) => po.id.equals(poId))).write(
-        PurchaseOrdersCompanion(
-          status: Value(status),
-          updatedAt: Value(DateTime.now()),
-        ),
-      );
+  Future<void> updatePurchaseOrderStatus(String poId, String status) async {
+    await (update(purchaseOrders)..where((po) => po.id.equals(poId))).write(
+      PurchaseOrdersCompanion(
+        status: Value(status),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+    await enqueueSync('purchase_orders', 'UPDATE', poId);
+  }
 
   /// Marks PO as received, updates received quantities,
   /// and auto-increments product or ingredient stock.
@@ -942,30 +1195,30 @@ class PosifyDatabase extends _$PosifyDatabase {
 
       for (final received in receivedItems) {
         // Update received quantity on the PO item
-        await (update(purchaseOrderItems)
-              ..where((i) => i.id.equals(received.itemId)))
-            .write(
+        await (update(
+          purchaseOrderItems,
+        )..where((i) => i.id.equals(received.itemId))).write(
           PurchaseOrderItemsCompanion(
             receivedQuantity: Value(received.receivedQty),
           ),
         );
 
         // Fetch the PO item to determine which stock to update
-        final item = await (select(purchaseOrderItems)
-              ..where((i) => i.id.equals(received.itemId)))
-            .getSingleOrNull();
+        final item = await (select(
+          purchaseOrderItems,
+        )..where((i) => i.id.equals(received.itemId))).getSingleOrNull();
         if (item == null || received.receivedQty <= 0) continue;
 
         if (item.productId != null) {
           // Update product stock
-          final product = await (select(products)
-                ..where((p) => p.id.equals(item.productId!)))
-              .getSingleOrNull();
+          final product = await (select(
+            products,
+          )..where((p) => p.id.equals(item.productId!))).getSingleOrNull();
           if (product != null) {
             final qty = received.receivedQty.round();
             final newStock = product.stock + qty;
             await _atomicProductStock(product.id, qty);
-            await into(stockTransactions).insert(
+            await insertStockTransaction(
               StockTransactionsCompanion.insert(
                 productId: product.id,
                 type: 'IN',
@@ -1000,23 +1253,44 @@ class PosifyDatabase extends _$PosifyDatabase {
   // ===== Discount Queries =====
 
   Future<List<Discount>> getAllDiscounts(String outletId) =>
-      (select(discounts)..where((d) => d.outletId.equals(outletId))..orderBy([(d) => OrderingTerm.desc(d.createdAt)])).get();
+      (select(discounts)
+            ..where((d) => d.outletId.equals(outletId))
+            ..orderBy([(d) => OrderingTerm.desc(d.createdAt)]))
+          .get();
 
   Stream<List<Discount>> watchAllDiscounts(String outletId) =>
-      (select(discounts)..where((d) => d.outletId.equals(outletId))..orderBy([(d) => OrderingTerm.desc(d.createdAt)])).watch();
+      (select(discounts)
+            ..where((d) => d.outletId.equals(outletId))
+            ..orderBy([(d) => OrderingTerm.desc(d.createdAt)]))
+          .watch();
 
-  Future<int> upsertDiscount(DiscountsCompanion entry) =>
-      into(discounts).insertOnConflictUpdate(entry);
+  Future<int> upsertDiscount(DiscountsCompanion entry) async {
+    final id = await into(discounts).insertOnConflictUpdate(entry);
+    await enqueueSync('discounts', 'UPSERT', entry.id.value);
+    return id;
+  }
 
-  Future<int> deleteDiscount(String id) =>
-      (delete(discounts)..where((d) => d.id.equals(id))).go();
+  Future<int> deleteDiscount(String id) async {
+    final count = await (delete(discounts)..where((d) => d.id.equals(id))).go();
+    if (count > 0) await enqueueSync('discounts', 'DELETE', id);
+    return count;
+  }
 
-  Future<List<Discount>> getValidDiscounts({required double cartTotal, required String scope, required String outletId}) async {
+  Future<List<Discount>> getValidDiscounts({
+    required double cartTotal,
+    required String scope,
+    required String outletId,
+  }) async {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final all = await (select(discounts)
-          ..where((d) => d.outletId.equals(outletId) & d.isActive.equals(true) & d.scope.equals(scope)))
-        .get();
+    final all =
+        await (select(discounts)..where(
+              (d) =>
+                  d.outletId.equals(outletId) &
+                  d.isActive.equals(true) &
+                  d.scope.equals(scope),
+            ))
+            .get();
     return all.where((d) {
       final afterStart = !d.startDate.isAfter(today);
       final beforeEnd = d.endDate == null || !d.endDate!.isBefore(today);
@@ -1028,31 +1302,48 @@ class PosifyDatabase extends _$PosifyDatabase {
   // ===== Expense Category Queries =====
 
   Future<List<ExpenseCategory>> getAllExpenseCategories(String outletId) =>
-      (select(expenseCategories)..where((c) => c.outletId.equals(outletId))..orderBy([(c) => OrderingTerm.asc(c.name)])).get();
+      (select(expenseCategories)
+            ..where((c) => c.outletId.equals(outletId))
+            ..orderBy([(c) => OrderingTerm.asc(c.name)]))
+          .get();
 
-  Future<int> upsertExpenseCategory(ExpenseCategoriesCompanion entry) =>
-      into(expenseCategories).insertOnConflictUpdate(entry);
+  Future<int> upsertExpenseCategory(ExpenseCategoriesCompanion entry) async {
+    final id = await into(expenseCategories).insertOnConflictUpdate(entry);
+    await enqueueSync('expense_categories', 'UPSERT', entry.id.value);
+    return id;
+  }
 
-  Future<int> deleteExpenseCategory(String id) =>
-      (delete(expenseCategories)..where((c) => c.id.equals(id))).go();
+  Future<int> deleteExpenseCategory(String id) async {
+    final count = await (delete(
+      expenseCategories,
+    )..where((c) => c.id.equals(id))).go();
+    if (count > 0) await enqueueSync('expense_categories', 'DELETE', id);
+    return count;
+  }
 
   // ===== Expense Queries =====
 
   /// Returns all expenses for a given day, joined with their category.
-  Future<List<ExpenseWithCategory>> getExpensesWithCategory({required DateTime date, required String outletId}) async {
+  Future<List<ExpenseWithCategory>> getExpensesWithCategory({
+    required DateTime date,
+    required String outletId,
+  }) async {
     final startOfDay = DateTime(date.year, date.month, date.day);
     final endOfDay = startOfDay.add(const Duration(days: 1));
 
-    final rows = await (select(expenses)
-          ..where((e) =>
-              e.outletId.equals(outletId) &
-              e.createdAt.isBiggerOrEqualValue(startOfDay) &
-              e.createdAt.isSmallerThanValue(endOfDay))
-          ..orderBy([(e) => OrderingTerm.desc(e.createdAt)]))
-        .get();
+    final rows =
+        await (select(expenses)
+              ..where(
+                (e) =>
+                    e.outletId.equals(outletId) &
+                    e.createdAt.isBiggerOrEqualValue(startOfDay) &
+                    e.createdAt.isSmallerThanValue(endOfDay),
+              )
+              ..orderBy([(e) => OrderingTerm.desc(e.createdAt)]))
+            .get();
 
     final categories = {
-      for (final c in await getAllExpenseCategories(outletId)) c.id: c
+      for (final c in await getAllExpenseCategories(outletId)) c.id: c,
     };
 
     return rows.map((e) {
@@ -1065,54 +1356,74 @@ class PosifyDatabase extends _$PosifyDatabase {
 
   Future<String> insertExpense(ExpensesCompanion entry) async {
     final row = await into(expenses).insertReturning(entry);
+    await enqueueSync('expenses', 'INSERT', row.id);
     return row.id;
   }
 
-  Future<int> deleteExpense(String id) =>
-      (delete(expenses)..where((e) => e.id.equals(id))).go();
+  Future<int> deleteExpense(String id) async {
+    final count = await (delete(expenses)..where((e) => e.id.equals(id))).go();
+    if (count > 0) await enqueueSync('expenses', 'DELETE', id);
+    return count;
+  }
 
   Future<int> getTotalExpenseByShift(String shiftId) async {
-    final rows = await (select(expenses)
-          ..where((e) => e.shiftId.equals(shiftId)))
-        .get();
+    final rows = await (select(
+      expenses,
+    )..where((e) => e.shiftId.equals(shiftId))).get();
     return rows.fold<int>(0, (sum, e) => sum + e.amount);
   }
 
   /// Returns cash flow data for the given date range.
-  Future<CashFlowData> getCashFlowData({required DateTime from, required DateTime to, required String outletId}) async {
+  Future<CashFlowData> getCashFlowData({
+    required DateTime from,
+    required DateTime to,
+    required String outletId,
+  }) async {
     // Total revenue from paid transactions
-    final txRows = await (select(transactions)
-          ..where((t) =>
-              t.outletId.equals(outletId) &
-              t.createdAt.isBiggerOrEqualValue(from) &
-              t.createdAt.isSmallerThanValue(to.add(const Duration(days: 1))) &
-              t.paymentStatus.equals('paid')))
-        .get();
+    final txRows =
+        await (select(transactions)..where(
+              (t) =>
+                  t.outletId.equals(outletId) &
+                  t.createdAt.isBiggerOrEqualValue(from) &
+                  t.createdAt.isSmallerThanValue(
+                    to.add(const Duration(days: 1)),
+                  ) &
+                  t.paymentStatus.equals('paid'),
+            ))
+            .get();
     final totalRevenue = txRows.fold(0, (sum, t) => sum + t.totalAmount);
 
     // Total expenses
-    final expenseRows = await (select(expenses)
-          ..where((e) =>
-              e.outletId.equals(outletId) &
-              e.createdAt.isBiggerOrEqualValue(from) &
-              e.createdAt.isSmallerThanValue(to.add(const Duration(days: 1)))))
-        .get();
+    final expenseRows =
+        await (select(expenses)..where(
+              (e) =>
+                  e.outletId.equals(outletId) &
+                  e.createdAt.isBiggerOrEqualValue(from) &
+                  e.createdAt.isSmallerThanValue(
+                    to.add(const Duration(days: 1)),
+                  ),
+            ))
+            .get();
     final totalExpense = expenseRows.fold(0, (sum, e) => sum + e.amount);
 
     // Daily expense summaries (for chart)
     final Map<String, int> dailyMap = {};
     for (final e in expenseRows) {
-      final key = '${e.createdAt.year}-${e.createdAt.month.toString().padLeft(2, '0')}-${e.createdAt.day.toString().padLeft(2, '0')}';
+      final key =
+          '${e.createdAt.year}-${e.createdAt.month.toString().padLeft(2, '0')}-${e.createdAt.day.toString().padLeft(2, '0')}';
       dailyMap[key] = (dailyMap[key] ?? 0) + e.amount;
     }
 
-    final daily = dailyMap.entries
-        .map((e) => DailyExpenseSummary(
-              date: DateTime.parse(e.key),
-              total: e.value,
-            ))
-        .toList()
-      ..sort((a, b) => a.date.compareTo(b.date));
+    final daily =
+        dailyMap.entries
+            .map(
+              (e) => DailyExpenseSummary(
+                date: DateTime.parse(e.key),
+                total: e.value,
+              ),
+            )
+            .toList()
+          ..sort((a, b) => a.date.compareTo(b.date));
 
     return CashFlowData(
       totalRevenue: totalRevenue,
@@ -1132,9 +1443,11 @@ class PosifyDatabase extends _$PosifyDatabase {
       final finalTxEntry = transactionEntry.copyWith(outletId: Value(outletId));
       final insertedTx = await into(transactions).insertReturning(finalTxEntry);
       final txId = insertedTx.id;
+      await enqueueSync('transactions', 'INSERT', txId);
 
-      final isPending = transactionEntry.paymentStatus.present && 
-                        transactionEntry.paymentStatus.value == 'pending';
+      final isPending =
+          transactionEntry.paymentStatus.present &&
+          transactionEntry.paymentStatus.value == 'pending';
 
       // 2. Insert Items & 3. Update Stocks
       for (final itemParam in itemsParams) {
@@ -1142,7 +1455,10 @@ class PosifyDatabase extends _$PosifyDatabase {
           transactionId: Value(txId),
           outletId: Value(outletId),
         );
-        await into(transactionItems).insert(finalItem);
+        final insertedItem = await into(
+          transactionItems,
+        ).insertReturning(finalItem);
+        await enqueueSync('transaction_items', 'INSERT', insertedItem.id);
 
         // If it's a pending bill (Hold Bill), we DON'T deduct stock yet.
         if (isPending) continue;
@@ -1156,95 +1472,117 @@ class PosifyDatabase extends _$PosifyDatabase {
 
         if (variantId != null) {
           // Variable product: decrement variant stock
-          final variant = await (select(productVariants)
-                ..where((v) => v.id.equals(variantId)))
-              .getSingleOrNull();
+          final variant = await (select(
+            productVariants,
+          )..where((v) => v.id.equals(variantId))).getSingleOrNull();
           if (variant != null) {
             final newStock = variant.stock - qty;
             await _atomicVariantStock(variant.id, -qty);
-            final refStr = transactionEntry.receiptNumber.present && transactionEntry.receiptNumber.value != null
+            final refStr =
+                transactionEntry.receiptNumber.present &&
+                    transactionEntry.receiptNumber.value != null
                 ? transactionEntry.receiptNumber.value!
                 : 'TX-$txId';
 
-            await into(stockTransactions).insert(StockTransactionsCompanion.insert(
-              productId: productId,
-              variantId: Value(variant.id),
-              type: 'SALE',
-              quantity: -qty,
-              previousStock: variant.stock,
-              newStock: newStock,
-              reference: Value(refStr),
-              createdAt: Value(DateTime.now()),
-              outletId: Value(outletId),
-            ));
+            await insertStockTransaction(
+              StockTransactionsCompanion.insert(
+                productId: productId,
+                variantId: Value(variant.id),
+                type: 'SALE',
+                quantity: -qty,
+                previousStock: variant.stock,
+                newStock: newStock,
+                reference: Value(refStr),
+                createdAt: Value(DateTime.now()),
+                outletId: Value(outletId),
+              ),
+            );
           }
         } else {
           // Simple product: decrement product stock
-          final product = await (select(products)
-                ..where((p) => p.id.equals(productId)))
-              .getSingleOrNull();
+          final product = await (select(
+            products,
+          )..where((p) => p.id.equals(productId))).getSingleOrNull();
           if (product != null) {
             final newStock = product.stock - qty;
             await _atomicProductStock(product.id, -qty);
-            final refStr = transactionEntry.receiptNumber.present && transactionEntry.receiptNumber.value != null
+            final refStr =
+                transactionEntry.receiptNumber.present &&
+                    transactionEntry.receiptNumber.value != null
                 ? transactionEntry.receiptNumber.value!
                 : 'TX-$txId';
 
-            await into(stockTransactions).insert(StockTransactionsCompanion.insert(
-              productId: productId,
-              type: 'SALE',
-              quantity: -qty,
-              previousStock: product.stock,
-              newStock: newStock,
-              reference: Value(refStr),
-              createdAt: Value(DateTime.now()),
-              outletId: Value(outletId),
-            ));
+            await insertStockTransaction(
+              StockTransactionsCompanion.insert(
+                productId: productId,
+                type: 'SALE',
+                quantity: -qty,
+                previousStock: product.stock,
+                newStock: newStock,
+                reference: Value(refStr),
+                createdAt: Value(DateTime.now()),
+                outletId: Value(outletId),
+              ),
+            );
           }
         }
 
         // 4. Update Ingredients Stock (New Recipe Integration)
         final recipes = await getRecipesByProductId(productId);
-        final refStr = transactionEntry.receiptNumber.present && transactionEntry.receiptNumber.value != null
+        final refStr =
+            transactionEntry.receiptNumber.present &&
+                transactionEntry.receiptNumber.value != null
             ? transactionEntry.receiptNumber.value!
             : 'TX-$txId';
-            
+
         for (final recipe in recipes) {
-            final totalDeduction = recipe.quantityNeeded * qty;
-            await deductIngredientStock(
-              ingredientId: recipe.ingredientId,
-              quantityInBaseUnit: totalDeduction,
-              type: 'SALE',
-              referenceId: refStr,
-              reason: 'Penjualan: $refStr',
-              outletId: outletId,
-            );
+          final totalDeduction = recipe.quantityNeeded * qty;
+          await deductIngredientStock(
+            ingredientId: recipe.ingredientId,
+            quantityInBaseUnit: totalDeduction,
+            type: 'SALE',
+            referenceId: refStr,
+            reason: 'Penjualan: $refStr',
+            outletId: outletId,
+          );
         }
       }
 
       // 5. Update Customer Points (Only for paid transactions)
-      if (!isPending && transactionEntry.customerId.present && transactionEntry.customerId.value != null) {
+      if (!isPending &&
+          transactionEntry.customerId.present &&
+          transactionEntry.customerId.value != null) {
         final customerId = transactionEntry.customerId.value!;
-        final earned = transactionEntry.pointsEarned.present ? transactionEntry.pointsEarned.value : 0;
-        final redeemed = transactionEntry.pointsRedeemed.present ? transactionEntry.pointsRedeemed.value : 0;
+        final earned = transactionEntry.pointsEarned.present
+            ? transactionEntry.pointsEarned.value
+            : 0;
+        final redeemed = transactionEntry.pointsRedeemed.present
+            ? transactionEntry.pointsRedeemed.value
+            : 0;
 
         if (earned > 0 || redeemed > 0) {
-          final customer = await (select(customers)..where((c) => c.id.equals(customerId))).getSingleOrNull();
+          final customer = await (select(
+            customers,
+          )..where((c) => c.id.equals(customerId))).getSingleOrNull();
           if (customer != null) {
             final newPoints = customer.points + earned - redeemed;
-            await update(customers).replace(customer.copyWith(points: newPoints));
+            await update(
+              customers,
+            ).replace(customer.copyWith(points: newPoints));
+            await enqueueSync('customers', 'UPDATE', customer.id);
           }
         }
       }
 
       // 6. Insert payment breakdown rows (Split Payment support)
       for (final payment in paymentEntries) {
-        await into(transactionPayments).insert(
+        final insertedPayment = await into(transactionPayments).insertReturning(
           payment.copyWith(
             transactionId: Value(txId),
             outletId: Value(outletId),
           ),
         );
+        await enqueueSync('transaction_payments', 'INSERT', insertedPayment.id);
       }
 
       return txId;
@@ -1252,55 +1590,93 @@ class PosifyDatabase extends _$PosifyDatabase {
   }
 
   // ===== Additional Transaction Queries =====
-  Future<List<Transaction>> getAllTransactions(String outletId) => (select(
-    transactions,
-  )..where((t) => t.outletId.equals(outletId))..orderBy([(t) => OrderingTerm.desc(t.createdAt)])).get();
+  Future<List<Transaction>> getAllTransactions(String outletId) =>
+      (select(transactions)
+            ..where((t) => t.outletId.equals(outletId))
+            ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
+          .get();
 
-  Stream<List<Transaction>> watchAllTransactions(String outletId) => (select(
-    transactions,
-  )..where((t) => t.outletId.equals(outletId))..orderBy([(t) => OrderingTerm.desc(t.createdAt)])).watch();
+  Stream<List<Transaction>> watchAllTransactions(String outletId) =>
+      (select(transactions)
+            ..where((t) => t.outletId.equals(outletId))
+            ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
+          .watch();
 
   Stream<List<Transaction>> watchPendingTransactions(String outletId) =>
       (select(transactions)
-            ..where((t) => t.outletId.equals(outletId) & t.paymentStatus.equals('pending'))
+            ..where(
+              (t) =>
+                  t.outletId.equals(outletId) &
+                  t.paymentStatus.equals('pending'),
+            )
             ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
           .watch();
 
   Future<void> deleteTransaction(String id) async {
     await transaction(() async {
-      await (delete(transactionPayments)..where((t) => t.transactionId.equals(id))).go();
-      await (delete(transactionItems)..where((t) => t.transactionId.equals(id))).go();
+      // Find items and payments first
+      final items = await (select(
+        transactionItems,
+      )..where((t) => t.transactionId.equals(id))).get();
+      final payments = await (select(
+        transactionPayments,
+      )..where((t) => t.transactionId.equals(id))).get();
+
+      await (delete(
+        transactionPayments,
+      )..where((t) => t.transactionId.equals(id))).go();
+      for (final p in payments) {
+        await enqueueSync('transaction_payments', 'DELETE', p.id);
+      }
+
+      await (delete(
+        transactionItems,
+      )..where((t) => t.transactionId.equals(id))).go();
+      for (final i in items) {
+        await enqueueSync('transaction_items', 'DELETE', i.id);
+      }
+
       await (delete(transactions)..where((t) => t.id.equals(id))).go();
+      await enqueueSync('transactions', 'DELETE', id);
     });
   }
 
-  Future<List<TransactionPayment>> getTransactionPayments(String transactionId) {
-    return (select(transactionPayments)
-          ..where((t) => t.transactionId.equals(transactionId)))
-        .get();
+  Future<List<TransactionPayment>> getTransactionPayments(
+    String transactionId,
+  ) {
+    return (select(
+      transactionPayments,
+    )..where((t) => t.transactionId.equals(transactionId))).get();
   }
 
   Future<List<TransactionItem>> getTransactionItems(String transactionId) {
-    return (select(transactionItems)..where((t) => t.transactionId.equals(transactionId))).get();
+    return (select(
+      transactionItems,
+    )..where((t) => t.transactionId.equals(transactionId))).get();
   }
 
   Stream<List<Transaction>> watchTransactionsByRange(
     DateTime start,
     DateTime end,
     String outletId,
-  ) => (select(
-    transactions,
-  )
-    ..where((t) => t.outletId.equals(outletId) & t.createdAt.isBetweenValues(start, end))
-    ..orderBy([(t) => OrderingTerm.desc(t.createdAt)])).watch();
+  ) =>
+      (select(transactions)
+            ..where(
+              (t) =>
+                  t.outletId.equals(outletId) &
+                  t.createdAt.isBetweenValues(start, end),
+            )
+            ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
+          .watch();
 
   // ===== All Shifts =====
   Future<List<ShiftWithEmployee>> getAllShifts(String outletId) async {
-    final query = select(shifts).join([
-      innerJoin(employees, employees.id.equalsExp(shifts.employeeId)),
-    ])
-      ..where(shifts.outletId.equals(outletId))
-      ..orderBy([OrderingTerm.desc(shifts.startTime)]);
+    final query =
+        select(shifts).join([
+            innerJoin(employees, employees.id.equalsExp(shifts.employeeId)),
+          ])
+          ..where(shifts.outletId.equals(outletId))
+          ..orderBy([OrderingTerm.desc(shifts.startTime)]);
 
     final rows = await query.get();
     return rows.map((row) {
@@ -1312,11 +1688,12 @@ class PosifyDatabase extends _$PosifyDatabase {
   }
 
   Stream<List<ShiftWithEmployee>> watchAllShifts(String outletId) {
-    final query = select(shifts).join([
-      innerJoin(employees, employees.id.equalsExp(shifts.employeeId)),
-    ])
-      ..where(shifts.outletId.equals(outletId))
-      ..orderBy([OrderingTerm.desc(shifts.startTime)]);
+    final query =
+        select(shifts).join([
+            innerJoin(employees, employees.id.equalsExp(shifts.employeeId)),
+          ])
+          ..where(shifts.outletId.equals(outletId))
+          ..orderBy([OrderingTerm.desc(shifts.startTime)]);
 
     return query.watch().map((rows) {
       return rows.map((row) {
@@ -1329,16 +1706,20 @@ class PosifyDatabase extends _$PosifyDatabase {
   }
 
   // ===== Category Management =====
-  Future<bool> updateCategory(Category category) =>
-      (update(categories)..where((t) => t.id.equals(category.id))).write(
-        CategoriesCompanion(
-          isDirty: const Value(true),
-          updatedAt: Value(DateTime.now()),
-        ),
-      ).then((rows) => rows > 0);
+  Future<bool> updateCategory(Category category) async {
+    final success =
+        await (update(categories)..where((t) => t.id.equals(category.id)))
+            .write(CategoriesCompanion(updatedAt: Value(DateTime.now())))
+            .then((rows) => rows > 0);
+    if (success) await enqueueSync('categories', 'UPDATE', category.id);
+    return success;
+  }
 
-  Future<int> deleteCategory(Category entry) =>
-      delete(categories).delete(entry);
+  Future<int> deleteCategory(Category entry) async {
+    final count = await delete(categories).delete(entry);
+    if (count > 0) await enqueueSync('categories', 'DELETE', entry.id);
+    return count;
+  }
 
   // ===== Detail & Void Transaction =====
   Future<TransactionWithItems?> getTransactionWithItems(
@@ -1361,16 +1742,21 @@ class PosifyDatabase extends _$PosifyDatabase {
       );
     }).toList();
 
-    final payments = await (select(transactionPayments)..where((p) => p.transactionId.equals(transactionId))).get();
+    final payments = await (select(
+      transactionPayments,
+    )..where((p) => p.transactionId.equals(transactionId))).get();
 
     return TransactionWithItems(
-      transaction: transaction, 
+      transaction: transaction,
       items: itemsList,
       payments: payments,
     );
   }
 
-  Future<bool> voidTransaction(String transactionId, String supervisorId) async {
+  Future<bool> voidTransaction(
+    String transactionId,
+    String supervisorId,
+  ) async {
     return transaction(() async {
       // 1. Get transaction
       final t = await (select(
@@ -1395,23 +1781,25 @@ class PosifyDatabase extends _$PosifyDatabase {
       for (final item in items) {
         if (item.variantId != null) {
           // Restore variant stock
-          final variant = await (select(productVariants)
-                ..where((v) => v.id.equals(item.variantId!)))
-              .getSingleOrNull();
+          final variant = await (select(
+            productVariants,
+          )..where((v) => v.id.equals(item.variantId!))).getSingleOrNull();
           if (variant != null) {
             final newStock = variant.stock + item.quantity;
             await _atomicVariantStock(variant.id, item.quantity);
-            await into(stockTransactions).insert(StockTransactionsCompanion.insert(
-              productId: item.productId,
-              variantId: Value(variant.id),
-              type: 'VOID',
-              quantity: item.quantity,
-              previousStock: variant.stock,
-              newStock: newStock,
-              reference: Value('VOID-${t.receiptNumber}'),
-              createdAt: Value(DateTime.now()),
-              outletId: Value(t.outletId),
-            ));
+            await insertStockTransaction(
+              StockTransactionsCompanion.insert(
+                productId: item.productId,
+                variantId: Value(variant.id),
+                type: 'VOID',
+                quantity: item.quantity,
+                previousStock: variant.stock,
+                newStock: newStock,
+                reference: Value('VOID-${t.receiptNumber}'),
+                createdAt: Value(DateTime.now()),
+                outletId: Value(t.outletId),
+              ),
+            );
           }
         } else {
           // Restore product stock
@@ -1421,16 +1809,18 @@ class PosifyDatabase extends _$PosifyDatabase {
           if (product != null) {
             final newStock = product.stock + item.quantity;
             await _atomicProductStock(product.id, item.quantity);
-            await into(stockTransactions).insert(StockTransactionsCompanion.insert(
-              productId: item.productId,
-              type: 'VOID',
-              quantity: item.quantity,
-              previousStock: product.stock,
-              newStock: newStock,
-              reference: Value('VOID-${t.receiptNumber}'),
-              createdAt: Value(DateTime.now()),
-              outletId: Value(t.outletId),
-            ));
+            await insertStockTransaction(
+              StockTransactionsCompanion.insert(
+                productId: item.productId,
+                type: 'VOID',
+                quantity: item.quantity,
+                previousStock: product.stock,
+                newStock: newStock,
+                reference: Value('VOID-${t.receiptNumber}'),
+                createdAt: Value(DateTime.now()),
+                outletId: Value(t.outletId),
+              ),
+            );
           }
         }
       }
@@ -1439,9 +1829,12 @@ class PosifyDatabase extends _$PosifyDatabase {
     });
   }
 
-
   // ===== Sales Analytics =====
-  Future<int> getTotalRevenue(DateTime start, DateTime end, String outletId) async {
+  Future<int> getTotalRevenue(
+    DateTime start,
+    DateTime end,
+    String outletId,
+  ) async {
     final query = selectOnly(transactions)
       ..addColumns([transactions.totalAmount.sum()])
       ..where(transactions.outletId.equals(outletId))
@@ -1489,7 +1882,11 @@ class PosifyDatabase extends _$PosifyDatabase {
     }).toList();
   }
 
-  Future<List<DailySales>> getDailySales(DateTime start, DateTime end, String outletId) async {
+  Future<List<DailySales>> getDailySales(
+    DateTime start,
+    DateTime end,
+    String outletId,
+  ) async {
     final list =
         await (select(transactions)
               ..where((t) => t.outletId.equals(outletId))
@@ -1507,7 +1904,11 @@ class PosifyDatabase extends _$PosifyDatabase {
     return grouped.entries.map((e) => DailySales(e.key, e.value)).toList();
   }
 
-  Future<int> getTotalTransactions(DateTime start, DateTime end, String outletId) async {
+  Future<int> getTotalTransactions(
+    DateTime start,
+    DateTime end,
+    String outletId,
+  ) async {
     final query = selectOnly(transactions)
       ..addColumns([transactions.id.count()])
       ..where(transactions.outletId.equals(outletId))
@@ -1528,17 +1929,18 @@ class PosifyDatabase extends _$PosifyDatabase {
     final amountExp = transactionPayments.amount.sum();
     final countExp = transactionPayments.transactionId.count();
 
-    final query = select(transactionPayments).join([
-      innerJoin(
-        transactions,
-        transactions.id.equalsExp(transactionPayments.transactionId),
-      ),
-    ])
-      ..addColumns([transactionPayments.method, amountExp, countExp])
-      ..where(transactions.outletId.equals(outletId))
-      ..where(transactions.createdAt.isBetweenValues(start, end))
-      ..where(transactions.paymentStatus.equals('paid'))
-      ..groupBy([transactionPayments.method]);
+    final query =
+        select(transactionPayments).join([
+            innerJoin(
+              transactions,
+              transactions.id.equalsExp(transactionPayments.transactionId),
+            ),
+          ])
+          ..addColumns([transactionPayments.method, amountExp, countExp])
+          ..where(transactions.outletId.equals(outletId))
+          ..where(transactions.createdAt.isBetweenValues(start, end))
+          ..where(transactions.paymentStatus.equals('paid'))
+          ..groupBy([transactionPayments.method]);
 
     final result = await query.get();
     return result.map((row) {
@@ -1556,16 +1958,17 @@ class PosifyDatabase extends _$PosifyDatabase {
   Future<Map<String, int>> getShiftPaymentTotals(String shiftId) async {
     final amountExp = transactionPayments.amount.sum();
 
-    final query = select(transactionPayments).join([
-      innerJoin(
-        transactions,
-        transactions.id.equalsExp(transactionPayments.transactionId),
-      ),
-    ])
-      ..addColumns([transactionPayments.method, amountExp])
-      ..where(transactions.shiftId.equals(shiftId))
-      ..where(transactions.paymentStatus.equals('paid'))
-      ..groupBy([transactionPayments.method]);
+    final query =
+        select(transactionPayments).join([
+            innerJoin(
+              transactions,
+              transactions.id.equalsExp(transactionPayments.transactionId),
+            ),
+          ])
+          ..addColumns([transactionPayments.method, amountExp])
+          ..where(transactions.shiftId.equals(shiftId))
+          ..where(transactions.paymentStatus.equals('paid'))
+          ..groupBy([transactionPayments.method]);
 
     final result = await query.get();
     return {
@@ -1575,20 +1978,35 @@ class PosifyDatabase extends _$PosifyDatabase {
     };
   }
 
-  Future<int> getTotalGrossProfit(DateTime start, DateTime end, String outletId) async {
+  Future<int> getTotalGrossProfit(
+    DateTime start,
+    DateTime end,
+    String outletId,
+  ) async {
     final report = await getProductProfitReport(start, end, outletId);
     final totalProfit = report.fold<int>(0, (sum, p) => sum + p.totalProfit);
     return totalProfit;
   }
 
-  Future<List<ProductProfit>> getProductProfitReport(DateTime start, DateTime end, String outletId) async {
-    final query = select(transactionItems).join([
-      innerJoin(products, products.id.equalsExp(transactionItems.productId)),
-      innerJoin(transactions, transactions.id.equalsExp(transactionItems.transactionId)),
-    ])
-      ..where(transactions.outletId.equals(outletId))
-      ..where(transactions.createdAt.isBetweenValues(start, end))
-      ..where(transactions.paymentStatus.equals('paid'));
+  Future<List<ProductProfit>> getProductProfitReport(
+    DateTime start,
+    DateTime end,
+    String outletId,
+  ) async {
+    final query =
+        select(transactionItems).join([
+            innerJoin(
+              products,
+              products.id.equalsExp(transactionItems.productId),
+            ),
+            innerJoin(
+              transactions,
+              transactions.id.equalsExp(transactionItems.transactionId),
+            ),
+          ])
+          ..where(transactions.outletId.equals(outletId))
+          ..where(transactions.createdAt.isBetweenValues(start, end))
+          ..where(transactions.paymentStatus.equals('paid'));
 
     final results = await query.get();
 
@@ -1602,11 +2020,18 @@ class PosifyDatabase extends _$PosifyDatabase {
       double cost = 0.0;
 
       // 1. Check if it has recipe
-      final recipeCostQuery = selectOnly(productRecipes).join([
-        innerJoin(ingredients, ingredients.id.equalsExp(productRecipes.ingredientId)),
-      ])
-        ..addColumns([productRecipes.quantityNeeded, ingredients.averageCost])
-        ..where(productRecipes.productId.equals(product.id));
+      final recipeCostQuery =
+          selectOnly(productRecipes).join([
+              innerJoin(
+                ingredients,
+                ingredients.id.equalsExp(productRecipes.ingredientId),
+              ),
+            ])
+            ..addColumns([
+              productRecipes.quantityNeeded,
+              ingredients.averageCost,
+            ])
+            ..where(productRecipes.productId.equals(product.id));
 
       final recipeCostResults = await recipeCostQuery.get();
       if (recipeCostResults.isNotEmpty) {
@@ -1640,15 +2065,26 @@ class PosifyDatabase extends _$PosifyDatabase {
     return list;
   }
 
-  Future<List<CategoryProfit>> getCategoryProfitReport(DateTime start, DateTime end, String outletId) async {
-    final query = select(transactionItems).join([
-      innerJoin(products, products.id.equalsExp(transactionItems.productId)),
-      innerJoin(categories, categories.id.equalsExp(products.categoryId)),
-      innerJoin(transactions, transactions.id.equalsExp(transactionItems.transactionId)),
-    ])
-      ..where(transactions.outletId.equals(outletId))
-      ..where(transactions.createdAt.isBetweenValues(start, end))
-      ..where(transactions.paymentStatus.equals('paid'));
+  Future<List<CategoryProfit>> getCategoryProfitReport(
+    DateTime start,
+    DateTime end,
+    String outletId,
+  ) async {
+    final query =
+        select(transactionItems).join([
+            innerJoin(
+              products,
+              products.id.equalsExp(transactionItems.productId),
+            ),
+            innerJoin(categories, categories.id.equalsExp(products.categoryId)),
+            innerJoin(
+              transactions,
+              transactions.id.equalsExp(transactionItems.transactionId),
+            ),
+          ])
+          ..where(transactions.outletId.equals(outletId))
+          ..where(transactions.createdAt.isBetweenValues(start, end))
+          ..where(transactions.paymentStatus.equals('paid'));
 
     final results = await query.get();
 
@@ -1663,11 +2099,18 @@ class PosifyDatabase extends _$PosifyDatabase {
       double cost = 0.0;
 
       // 1. Check if it has recipe
-      final recipeCostQuery = selectOnly(productRecipes).join([
-        innerJoin(ingredients, ingredients.id.equalsExp(productRecipes.ingredientId)),
-      ])
-        ..addColumns([productRecipes.quantityNeeded, ingredients.averageCost])
-        ..where(productRecipes.productId.equals(product.id));
+      final recipeCostQuery =
+          selectOnly(productRecipes).join([
+              innerJoin(
+                ingredients,
+                ingredients.id.equalsExp(productRecipes.ingredientId),
+              ),
+            ])
+            ..addColumns([
+              productRecipes.quantityNeeded,
+              ingredients.averageCost,
+            ])
+            ..where(productRecipes.productId.equals(product.id));
 
       final recipeCostResults = await recipeCostQuery.get();
       if (recipeCostResults.isNotEmpty) {
@@ -1701,7 +2144,11 @@ class PosifyDatabase extends _$PosifyDatabase {
     return list;
   }
 
-  Future<List<DailySales>> getHourlySales(DateTime start, DateTime end, String outletId) async {
+  Future<List<DailySales>> getHourlySales(
+    DateTime start,
+    DateTime end,
+    String outletId,
+  ) async {
     final list =
         await (select(transactions)
               ..where((t) => t.outletId.equals(outletId))
@@ -1737,71 +2184,106 @@ class PosifyDatabase extends _$PosifyDatabase {
   }
 
   // ===== Ingredients Queries =====
-  Future<List<Ingredient>> getAllIngredients(String outletId) => (select(ingredients)..where((i) => i.outletId.equals(outletId))).get();
+  Future<List<Ingredient>> getAllIngredients(String outletId) =>
+      (select(ingredients)..where((i) => i.outletId.equals(outletId))).get();
 
-  Stream<List<Ingredient>> watchAllIngredients(String outletId) => (select(ingredients)..where((i) => i.outletId.equals(outletId))).watch();
+  Stream<List<Ingredient>> watchAllIngredients(String outletId) =>
+      (select(ingredients)..where((i) => i.outletId.equals(outletId))).watch();
 
   Future<String> insertIngredient(IngredientsCompanion entry) async {
     final row = await into(ingredients).insertReturning(entry);
+    await enqueueSync('ingredients', 'INSERT', row.id);
     return row.id;
   }
 
-  Future<bool> updateIngredient(Ingredient entry) =>
-      update(ingredients).replace(entry);
+  Future<bool> updateIngredient(Ingredient entry) async {
+    final success = await update(ingredients).replace(entry);
+    if (success) await enqueueSync('ingredients', 'UPDATE', entry.id);
+    return success;
+  }
 
-  Future<int> deleteIngredient(Ingredient entry) =>
-      delete(ingredients).delete(entry);
+  Future<int> deleteIngredient(Ingredient entry) async {
+    final count = await delete(ingredients).delete(entry);
+    if (count > 0) await enqueueSync('ingredients', 'DELETE', entry.id);
+    return count;
+  }
 
   Future<Ingredient?> getIngredientById(String id) =>
       (select(ingredients)..where((t) => t.id.equals(id))).getSingleOrNull();
 
   // ===== Product Recipes Queries =====
   Future<List<ProductRecipe>> getRecipesByProductId(String productId) =>
-      (select(productRecipes)..where((t) => t.productId.equals(productId))).get();
+      (select(
+        productRecipes,
+      )..where((t) => t.productId.equals(productId))).get();
 
   Stream<List<ProductRecipe>> watchRecipesByProductId(String productId) =>
-      (select(productRecipes)..where((t) => t.productId.equals(productId))).watch();
+      (select(
+        productRecipes,
+      )..where((t) => t.productId.equals(productId))).watch();
 
   Future<String> insertProductRecipe(ProductRecipesCompanion entry) async {
     final row = await into(productRecipes).insertReturning(entry);
+    await enqueueSync('product_recipes', 'INSERT', row.id);
     return row.id;
   }
 
-  Future<bool> updateProductRecipe(ProductRecipe entry) =>
-      update(productRecipes).replace(entry);
+  Future<bool> updateProductRecipe(ProductRecipe entry) async {
+    final success = await update(productRecipes).replace(entry);
+    if (success) await enqueueSync('product_recipes', 'UPDATE', entry.id);
+    return success;
+  }
 
-  Future<int> deleteProductRecipe(ProductRecipe entry) =>
-      delete(productRecipes).delete(entry);
+  Future<int> deleteProductRecipe(ProductRecipe entry) async {
+    final count = await delete(productRecipes).delete(entry);
+    if (count > 0) await enqueueSync('product_recipes', 'DELETE', entry.id);
+    return count;
+  }
 
   Future<void> replaceProductRecipes(
     String productId,
     List<ProductRecipesCompanion> newRecipes,
   ) async {
     await transaction(() async {
-      await (delete(productRecipes)..where((r) => r.productId.equals(productId)))
-          .go();
-      if (newRecipes.isNotEmpty) {
-        await batch((b) => b.insertAll(productRecipes, newRecipes));
+      final existing = await (select(
+        productRecipes,
+      )..where((r) => r.productId.equals(productId))).get();
+      await (delete(
+        productRecipes,
+      )..where((r) => r.productId.equals(productId))).go();
+
+      for (final old in existing) {
+        await enqueueSync('product_recipes', 'DELETE', old.id);
+      }
+
+      for (final r in newRecipes) {
+        await insertProductRecipe(r);
       }
     });
   }
 
   // ===== Ingredient Stock History Queries =====
-  Future<List<IngredientStockHistoryData>> getIngredientHistory(String ingredientId) =>
+  Future<List<IngredientStockHistoryData>> getIngredientHistory(
+    String ingredientId,
+  ) =>
       (select(ingredientStockHistory)
             ..where((t) => t.ingredientId.equals(ingredientId))
             ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
           .get();
 
-  Stream<List<IngredientStockHistoryData>> watchIngredientHistory(String ingredientId) =>
+  Stream<List<IngredientStockHistoryData>> watchIngredientHistory(
+    String ingredientId,
+  ) =>
       (select(ingredientStockHistory)
             ..where((t) => t.ingredientId.equals(ingredientId))
             ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
           .watch();
 
   Future<String> insertIngredientStockHistory(
-      IngredientStockHistoryCompanion entry) async {
+    IngredientStockHistoryCompanion entry,
+  ) async {
     final row = await into(ingredientStockHistory).insertReturning(entry);
+    await enqueueSync('ingredient_stock_history', 'INSERT', row.id);
     return row.id;
   }
 
@@ -1832,11 +2314,13 @@ class PosifyDatabase extends _$PosifyDatabase {
             : newCostPerUnit;
       }
 
-      await updateIngredient(ingredient.copyWith(
-        stockQuantity: newBalance,
-        averageCost: updatedCost,
-        lastSupplierId: Value(supplierId),
-      ));
+      await updateIngredient(
+        ingredient.copyWith(
+          stockQuantity: newBalance,
+          averageCost: updatedCost,
+          lastSupplierId: Value(supplierId),
+        ),
+      );
 
       await insertIngredientStockHistory(
         IngredientStockHistoryCompanion.insert(
@@ -1867,7 +2351,10 @@ class PosifyDatabase extends _$PosifyDatabase {
       if (ingredient == null) return;
 
       final previousBalance = ingredient.stockQuantity;
-      final newBalance = (previousBalance - quantityInBaseUnit).clamp(0.0, double.infinity);
+      final newBalance = (previousBalance - quantityInBaseUnit).clamp(
+        0.0,
+        double.infinity,
+      );
 
       await updateIngredient(ingredient.copyWith(stockQuantity: newBalance));
 
@@ -1895,14 +2382,23 @@ class PosifyDatabase extends _$PosifyDatabase {
 
   Future<String> insertUnitConversion(UnitConversionsCompanion entry) async {
     final row = await into(unitConversions).insertReturning(entry);
+    await enqueueSync('unit_conversions', 'INSERT', row.id);
     return row.id;
   }
 
-  Future<bool> updateUnitConversion(UnitConversion entry) =>
-      update(unitConversions).replace(entry);
+  Future<bool> updateUnitConversion(UnitConversion entry) async {
+    final success = await update(unitConversions).replace(entry);
+    if (success) await enqueueSync('unit_conversions', 'UPDATE', entry.id);
+    return success;
+  }
 
-  Future<int> deleteUnitConversion(String id) =>
-      (delete(unitConversions)..where((t) => t.id.equals(id))).go();
+  Future<int> deleteUnitConversion(String id) async {
+    final count = await (delete(
+      unitConversions,
+    )..where((t) => t.id.equals(id))).go();
+    if (count > 0) await enqueueSync('unit_conversions', 'DELETE', id);
+    return count;
+  }
 
   Future<List<UnitConversion>> getConversionsForBaseUnit(String baseUnit) =>
       (select(unitConversions)..where((t) => t.toUnit.equals(baseUnit))).get();
@@ -1910,34 +2406,52 @@ class PosifyDatabase extends _$PosifyDatabase {
   // ===== Full-Structured Stock Opname =====
   Future<String> createDraftOpname(StockOpnameCompanion entry) async {
     final row = await into(stockOpname).insertReturning(entry);
+    await enqueueSync('stock_opname', 'INSERT', row.id);
     return row.id;
   }
 
   Future<List<StockOpnameData>> getDraftOpnames(String outletId) =>
-      (select(stockOpname)..where((o) => o.outletId.equals(outletId) & o.status.equals('DRAFT'))).get();
+      (select(stockOpname)..where(
+            (o) => o.outletId.equals(outletId) & o.status.equals('DRAFT'),
+          ))
+          .get();
 
   Stream<List<StockOpnameData>> watchDraftOpnames(String outletId) =>
-      (select(stockOpname)..where((o) => o.outletId.equals(outletId) & o.status.equals('DRAFT'))).watch();
+      (select(stockOpname)..where(
+            (o) => o.outletId.equals(outletId) & o.status.equals('DRAFT'),
+          ))
+          .watch();
 
   Future<StockOpnameData?> getOpnameById(String id) =>
       (select(stockOpname)..where((o) => o.id.equals(id))).getSingleOrNull();
 
-  Future<List<StockOpnameItem>> getOpnameItems(String opnameId) =>
-      (select(stockOpnameItems)..where((i) => i.stockOpnameId.equals(opnameId))).get();
+  Future<List<StockOpnameItem>> getOpnameItems(String opnameId) => (select(
+    stockOpnameItems,
+  )..where((i) => i.stockOpnameId.equals(opnameId))).get();
 
-  Stream<List<StockOpnameItem>> watchOpnameItems(String opnameId) =>
-      (select(stockOpnameItems)..where((i) => i.stockOpnameId.equals(opnameId))).watch();
+  Stream<List<StockOpnameItem>> watchOpnameItems(String opnameId) => (select(
+    stockOpnameItems,
+  )..where((i) => i.stockOpnameId.equals(opnameId))).watch();
 
   Future<String> addOpnameItem(StockOpnameItemsCompanion entry) async {
     final row = await into(stockOpnameItems).insertReturning(entry);
+    await enqueueSync('stock_opname_items', 'INSERT', row.id);
     return row.id;
   }
 
-  Future<bool> updateOpnameItem(StockOpnameItem entry) =>
-      update(stockOpnameItems).replace(entry);
+  Future<bool> updateOpnameItem(StockOpnameItem entry) async {
+    final success = await update(stockOpnameItems).replace(entry);
+    if (success) await enqueueSync('stock_opname_items', 'UPDATE', entry.id);
+    return success;
+  }
 
-  Future<int> removeOpnameItem(String id) =>
-      (delete(stockOpnameItems)..where((i) => i.id.equals(id))).go();
+  Future<int> removeOpnameItem(String id) async {
+    final count = await (delete(
+      stockOpnameItems,
+    )..where((i) => i.id.equals(id))).go();
+    if (count > 0) await enqueueSync('stock_opname_items', 'DELETE', id);
+    return count;
+  }
 
   Future<void> submitOpname(String opnameId) async {
     await transaction(() async {
@@ -1945,14 +2459,16 @@ class PosifyDatabase extends _$PosifyDatabase {
       if (opname == null || opname.status == 'COMPLETED') return;
 
       final items = await getOpnameItems(opnameId);
-      
+
       for (final item in items) {
         if (item.variance == 0.0) continue;
 
         if (opname.type == 'INGREDIENT' && item.ingredientId != null) {
           final ingredient = await getIngredientById(item.ingredientId!);
           if (ingredient != null) {
-            await updateIngredient(ingredient.copyWith(stockQuantity: item.physicalStock));
+            await updateIngredient(
+              ingredient.copyWith(stockQuantity: item.physicalStock),
+            );
             await insertIngredientStockHistory(
               IngredientStockHistoryCompanion.insert(
                 ingredientId: ingredient.id,
@@ -1960,61 +2476,76 @@ class PosifyDatabase extends _$PosifyDatabase {
                 quantityChange: item.variance,
                 previousBalance: item.systemStock,
                 newBalance: item.physicalStock,
-                reason: Value(item.varianceReason ?? 'Opname ${opname.opnameNumber}'),
-                outletId: opname.outletId != null ? Value(opname.outletId!) : const Value.absent(),
+                reason: Value(
+                  item.varianceReason ?? 'Opname ${opname.opnameNumber}',
+                ),
+                outletId: opname.outletId != null
+                    ? Value(opname.outletId!)
+                    : const Value.absent(),
               ),
             );
           }
         } else if (opname.type == 'PRODUCT' && item.productId != null) {
-           final baseProduct = await getProduct(item.productId!);
-            if (item.variantId != null) {
-              final variant = await getVariant(item.variantId!);
-              if (variant != null) {
-                await _atomicVariantStock(variant.id, item.variance.toInt());
-                await insertStockTransaction(
-                  StockTransactionsCompanion.insert(
-                    productId: item.productId!,
-                    variantId: Value(item.variantId!),
-                    type: 'ADJUST',
-                    quantity: item.variance.toInt(),
-                    previousStock: item.systemStock.toInt(),
-                    newStock: item.physicalStock.toInt(),
-                    reason: Value(item.varianceReason ?? 'Opname ${opname.opnameNumber}'),
-                    createdAt: Value(DateTime.now()),
-                    outletId: Value(opname.outletId!),
-                  ),
-                );
-              }
-            } else if (baseProduct != null) {
-              await _atomicProductStock(baseProduct.id, item.variance.toInt());
+          final baseProduct = await getProduct(item.productId!);
+          if (item.variantId != null) {
+            final variant = await getVariant(item.variantId!);
+            if (variant != null) {
+              await _atomicVariantStock(variant.id, item.variance.toInt());
               await insertStockTransaction(
                 StockTransactionsCompanion.insert(
                   productId: item.productId!,
+                  variantId: Value(item.variantId!),
                   type: 'ADJUST',
                   quantity: item.variance.toInt(),
                   previousStock: item.systemStock.toInt(),
                   newStock: item.physicalStock.toInt(),
-                  reason: Value(item.varianceReason ?? 'Opname ${opname.opnameNumber}'),
+                  reason: Value(
+                    item.varianceReason ?? 'Opname ${opname.opnameNumber}',
+                  ),
                   createdAt: Value(DateTime.now()),
                   outletId: Value(opname.outletId!),
                 ),
               );
             }
+          } else if (baseProduct != null) {
+            await _atomicProductStock(baseProduct.id, item.variance.toInt());
+            await insertStockTransaction(
+              StockTransactionsCompanion.insert(
+                productId: item.productId!,
+                type: 'ADJUST',
+                quantity: item.variance.toInt(),
+                previousStock: item.systemStock.toInt(),
+                newStock: item.physicalStock.toInt(),
+                reason: Value(
+                  item.varianceReason ?? 'Opname ${opname.opnameNumber}',
+                ),
+                createdAt: Value(DateTime.now()),
+                outletId: Value(opname.outletId!),
+              ),
+            );
+          }
         }
       }
 
-      await update(stockOpname).replace(opname.copyWith(status: 'COMPLETED', updatedAt: DateTime.now()));
+      await update(stockOpname).replace(
+        opname.copyWith(status: 'COMPLETED', updatedAt: DateTime.now()),
+      );
+      await enqueueSync('stock_opname', 'UPDATE', opnameId);
     });
   }
 
   Stream<List<StockOpnameData>> watchCompletedOpnames(String type) =>
       (select(stockOpname)
-        ..where((o) => o.status.equals('COMPLETED') & o.type.equals(type))
-        ..orderBy([(o) => OrderingTerm.desc(o.createdAt)]))
+            ..where((o) => o.status.equals('COMPLETED') & o.type.equals(type))
+            ..orderBy([(o) => OrderingTerm.desc(o.createdAt)]))
           .watch();
 
   // ===== Stock Loss Report =====
-  Future<List<StockLossItem>> getStockLossReport(DateTime start, DateTime end, String outletId) async {
+  Future<List<StockLossItem>> getStockLossReport(
+    DateTime start,
+    DateTime end,
+    String outletId,
+  ) async {
     final List<StockLossItem> results = [];
 
     // Products and Variants
@@ -2037,17 +2568,23 @@ class PosifyDatabase extends _$PosifyDatabase {
         AND o.outlet_id = ?
         AND o.created_at >= ? AND o.created_at <= ?
       ''',
-      variables: [Variable<String>(outletId), Variable<DateTime>(start), Variable<DateTime>(end)],
+      variables: [
+        Variable<String>(outletId),
+        Variable<DateTime>(start),
+        Variable<DateTime>(end),
+      ],
     ).get();
 
     for (final row in productQuery) {
-      results.add(StockLossItem(
-        row.read<String>('item_name'),
-        row.read<String>('type'),
-        row.read<String>('reason'),
-        row.read<double>('loss_qty'),
-        row.read<double>('loss_value').round(),
-      ));
+      results.add(
+        StockLossItem(
+          row.read<String>('item_name'),
+          row.read<String>('type'),
+          row.read<String>('reason'),
+          row.read<double>('loss_qty'),
+          row.read<double>('loss_value').round(),
+        ),
+      );
     }
 
     // Ingredients
@@ -2066,17 +2603,23 @@ class PosifyDatabase extends _$PosifyDatabase {
         AND o.outlet_id = ?
         AND o.created_at >= ? AND o.created_at <= ?
       ''',
-      variables: [Variable<String>(outletId), Variable<DateTime>(start), Variable<DateTime>(end)],
+      variables: [
+        Variable<String>(outletId),
+        Variable<DateTime>(start),
+        Variable<DateTime>(end),
+      ],
     ).get();
 
     for (final row in ingredientQuery) {
-      results.add(StockLossItem(
-        row.read<String>('item_name'),
-        row.read<String>('type'),
-        row.read<String>('reason'),
-        row.read<double>('loss_qty'),
-        row.read<double>('loss_value').round(),
-      ));
+      results.add(
+        StockLossItem(
+          row.read<String>('item_name'),
+          row.read<String>('type'),
+          row.read<String>('reason'),
+          row.read<double>('loss_qty'),
+          row.read<double>('loss_value').round(),
+        ),
+      );
     }
 
     return results;
@@ -2084,95 +2627,127 @@ class PosifyDatabase extends _$PosifyDatabase {
 
   // ===== Cloud Sync Helpers =====
 
-  /// Fetches all dirty rows from a given table using raw SQL.
-  /// Returns results as a list of JSON-compatible maps for Supabase upsert.
-  Future<List<Map<String, dynamic>>> getDirtyRows(String tableName) async {
-    final allowedTables = {
-      'outlets', 'categories', 'suppliers', 'customers', 'products',
-      'product_variants', 'ingredients', 'discounts', 'employees', 'shifts',
-      'transactions', 'transaction_items', 'transaction_payments', 'expenses',
-      'purchase_orders', 'stock_opname', 'stock_opname_items', 'licenses',
-    };
+  Future<List<SyncQueueData>> getPendingSyncTasks(int limit) =>
+      (select(syncQueue)
+            ..orderBy([(t) => OrderingTerm.asc(t.createdAt)])
+            ..limit(limit))
+          .get();
 
-    if (!allowedTables.contains(tableName)) return [];
+  Future<void> removeSyncTasks(List<String> ids) =>
+      (delete(syncQueue)..where((t) => t.id.isIn(ids))).go();
 
+  Future<Map<String, dynamic>?> getRecordAsMap(
+    String tableName,
+    String recordId,
+  ) async {
     try {
       final rows = await customSelect(
-        'SELECT * FROM $tableName WHERE is_dirty = 1',
-        readsFrom: {},
+        'SELECT * FROM $tableName WHERE id = ?',
+        variables: [Variable<String>(recordId)],
       ).get();
+      if (rows.isEmpty) return null;
 
-      return rows.map((row) {
-        final map = <String, dynamic>{};
-        for (final col in row.data.entries) {
-          final val = col.value;
-          // Convert DateTime int (unix ms) to ISO string for Supabase compatibility
-          if (val is int && col.key.contains('_at')) {
-            map[col.key] = DateTime.fromMillisecondsSinceEpoch(val).toUtc().toIso8601String();
-          } else if (val is int && col.key == 'is_dirty') {
-            map[col.key] = val == 1;
-          } else {
-            map[col.key] = val;
-          }
+      final map = <String, dynamic>{};
+      for (final col in rows.first.data.entries) {
+        final val = col.value;
+        if (val is int && col.key.contains('_at')) {
+          map[col.key] = DateTime.fromMillisecondsSinceEpoch(
+            val,
+          ).toUtc().toIso8601String();
+        } else if (val is int && col.key == 'is_dirty') {
+          map[col.key] = val == 1;
+        } else {
+          map[col.key] = val;
         }
-        return map;
-      }).toList();
+      }
+      return map;
     } catch (_) {
-      return [];
+      return null;
     }
   }
 
-  /// Marks a batch of rows as clean (is_dirty = false) in a given table.
-  Future<void> markAsClean(String tableName, List<String> ids) async {
-    if (ids.isEmpty) return;
-    final placeholders = ids.map((_) => '?').join(', ');
-    await customStatement(
-      'UPDATE $tableName SET is_dirty = 0 WHERE id IN ($placeholders)',
-      ids,
-    );
-  }
-
   /// Merges pulled records from Supabase into the local SQLite database using Last Write Wins logic.
-  Future<void> importCloudRows(String tableName, List<Map<String, dynamic>> cloudRows) async {
+  Future<void> importCloudRows(
+    String tableName,
+    List<Map<String, dynamic>> cloudRows,
+  ) async {
     if (cloudRows.isEmpty) return;
-    
+
     await transaction(() async {
       for (final row in cloudRows) {
         final id = row['id'];
         if (id == null) continue;
 
-        // 1. Fetch existing local record metadata
+        // 1. Check if there is an active local sync task for this record
+        final localQueueCount = await customSelect(
+          'SELECT COUNT(*) as c FROM sync_queue WHERE record_id = ? AND target_table = ?',
+          variables: [Variable<String>(id), Variable<String>(tableName)],
+          readsFrom: {syncQueue},
+        ).getSingle();
+        final isLocallyDirty = localQueueCount.read<int>('c') > 0;
+
+        if (isLocallyDirty) {
+          debugPrint(
+            'Sync: Collision detected for $tableName:$id - Keeping local version (in sync queue)',
+          );
+          continue;
+        }
+
+        // 2. Fetch existing local record metadata
         final localRow = await customSelect(
-          'SELECT updated_at, is_dirty FROM $tableName WHERE id = ?',
+          'SELECT updated_at FROM $tableName WHERE id = ?',
           variables: [Variable<String>(id)],
           readsFrom: {},
         ).getSingleOrNull();
 
-        // 2. Conflict Resolution Logic (Phase 1: LWW)
+        // 3. Conflict Resolution Logic (Phase 1: LWW)
         if (localRow != null) {
           final localUpdatedAtMs = localRow.read<int>('updated_at');
-          final localIsDirty = localRow.read<int>('is_dirty') == 1;
-          
           final cloudUpdatedAtStr = row['updated_at'] as String?;
-          if (cloudUpdatedAtStr == null) continue;
-          final cloudUpdatedAtMs = DateTime.parse(cloudUpdatedAtStr).millisecondsSinceEpoch;
-
-          // If local data is newer OR it's currently flagged as dirty (being edited)
-          // we ignore the cloud update to prevent losing local progress.
-          if (localUpdatedAtMs >= cloudUpdatedAtMs || localIsDirty) {
-            debugPrint('Sync: Collision detected for $tableName:$id - Keeping local version');
-            continue;
+          if (cloudUpdatedAtStr != null) {
+            final cloudUpdatedAtMs = DateTime.parse(
+              cloudUpdatedAtStr,
+            ).millisecondsSinceEpoch;
+            // Only skip if local is STRICTLY newer.
+            // If equal, it's a Realtime echo of our own push — accept silently.
+            if (localUpdatedAtMs > cloudUpdatedAtMs) {
+              debugPrint(
+                'Sync: Conflict for $tableName:$id - Local is newer, keeping local.',
+              );
+              continue;
+            }
           }
         }
 
-        // 3. Prepare values for INSERT/UPDATE
+        // 4. Prepare values for INSERT/UPDATE
         final columns = <String>[];
         final placeholders = <String>[];
         final values = <dynamic>[];
 
+        // Get actual columns in the local table to avoid "no such column" errors.
+        // Use a safe lookup; if the table isn't found, query its pragma directly.
+        Set<String>? validColumns;
+        try {
+          final tableInfo = allTables.firstWhere(
+            (t) => t.actualTableName == tableName,
+          );
+          validColumns = tableInfo.$columns.map((c) => c.$name).toSet();
+        } catch (_) {
+          // Fallback: query PRAGMA to get actual columns
+          final pragmaResult = await customSelect(
+            'PRAGMA table_info($tableName)',
+            readsFrom: {},
+          ).get();
+          validColumns = pragmaResult.map((r) => r.read<String>('name')).toSet();
+        }
+
         row.forEach((key, value) {
-          if (value is String && key.contains('_at') && DateTime.tryParse(value) != null) {
-            values.add(DateTime.parse(value).millisecondsSinceEpoch); 
+          if (!validColumns!.contains(key)) return;
+
+          if (value is String &&
+              key.contains('_at') &&
+              DateTime.tryParse(value) != null) {
+            values.add(DateTime.parse(value).millisecondsSinceEpoch);
           } else {
             values.add(value);
           }
@@ -2180,30 +2755,86 @@ class PosifyDatabase extends _$PosifyDatabase {
           placeholders.add('?');
         });
 
-        // is_dirty MUST be 0 manually to prevent infinite sync loops
-        if (!columns.contains('is_dirty')) {
-          columns.add('is_dirty');
-          placeholders.add('?');
-          values.add(0);
-        } else {
-          final index = columns.indexOf('is_dirty');
-          values[index] = 0;
-        }
+        // We can optionally set is_dirty = 0 if the column still exists for backward compatibility,
+        // but since we no longer rely on it, we can omit it if the DB defaults it to 0.
+        // We'll leave it out.
 
         final colsStr = columns.join(', ');
         final valsStr = placeholders.join(', ');
+        final updatesStr = columns.map((c) => '$c = EXCLUDED.$c').join(', ');
 
-        // Perform UPSERT (if exists, update; else insert)
-        // Since we already did LWW check above, it's safe to overwrite now.
-        await customStatement(
-          '''
-          INSERT INTO $tableName ($colsStr) VALUES ($valsStr)
-          ON CONFLICT(id) DO UPDATE SET ${columns.map((c) => '$c=excluded.$c').join(', ')}
-          ''',
-          values,
-        );
+        try {
+          await customStatement(
+            'INSERT INTO $tableName ($colsStr) VALUES ($valsStr) '
+            'ON CONFLICT(id) DO UPDATE SET $updatesStr',
+            values,
+          );
+        } catch (e) {
+          debugPrint('Failed to upsert $tableName:$id - $e');
+        }
       }
     });
+
+    // Notify Drift stream watchers so UI auto-updates without pull-to-refresh
+    _notifyTableUpdate(tableName);
+  }
+
+  /// Deletes a record that was deleted in the cloud (Realtime sync).
+  Future<void> deleteCloudRow(String tableName, String id) async {
+    // 1. Check if there is an active local sync task for this record
+    final localQueueCount = await customSelect(
+      'SELECT COUNT(*) as c FROM sync_queue WHERE record_id = ? AND target_table = ?',
+      variables: [Variable<String>(id), Variable<String>(tableName)],
+      readsFrom: {syncQueue},
+    ).getSingle();
+
+    if (localQueueCount.read<int>('c') > 0) {
+      debugPrint(
+        'Sync: Collision detected for $tableName:$id delete - Keeping local version',
+      );
+      return;
+    }
+
+    try {
+      await customStatement('DELETE FROM $tableName WHERE id = ?', [id]);
+      // Notify Drift stream watchers so UI auto-updates
+      _notifyTableUpdate(tableName);
+    } catch (e) {
+      debugPrint('Failed to delete cloud row $tableName:$id - $e');
+    }
+  }
+
+  /// Notifies Drift's table watchers after a raw SQL change,
+  /// ensuring all [watch] streams (and thus the UI) are refreshed automatically.
+  void _notifyTableUpdate(String tableName) {
+    final tableMap = <String, TableInfo>{
+      'products': products,
+      'categories': categories,
+      'product_variants': productVariants,
+      'outlets': outlets,
+      'employees': employees,
+      'shifts': shifts,
+      'transactions': transactions,
+      'transaction_items': transactionItems,
+      'transaction_payments': transactionPayments,
+      'customers': customers,
+      'suppliers': suppliers,
+      'discounts': discounts,
+      'store_profile': storeProfile,
+      'ingredients': ingredients,
+      'product_recipes': productRecipes,
+      'expenses': expenses,
+      'purchase_orders': purchaseOrders,
+      'purchase_order_items': purchaseOrderItems,
+      'stock_opname': stockOpname,
+      'stock_opname_items': stockOpnameItems,
+      'stock_transactions': stockTransactions,
+      'ingredient_stock_history': ingredientStockHistory,
+      'unit_conversions': unitConversions,
+      'printer_settings': printerSettings,
+    };
+    final table = tableMap[tableName];
+    if (table != null) markTablesUpdated({table});
   }
 
   Future<void> _fixLegacyDummyIds() async {
@@ -2219,21 +2850,30 @@ class PosifyDatabase extends _$PosifyDatabase {
         final oldId = entry.key;
         final newId = entry.value;
 
+        final affectedProducts = await (select(
+          products,
+        )..where((p) => p.categoryId.equals(oldId))).get();
+
         // Update products that reference the old dummy ID
-        await (update(products)..where((p) => p.categoryId.equals(oldId))).write(
-          ProductsCompanion(
-            categoryId: Value(newId),
-            isDirty: const Value(true),
-          ),
-        );
+        await (update(products)..where((p) => p.categoryId.equals(oldId)))
+            .write(ProductsCompanion(categoryId: Value(newId)));
+
+        for (final p in affectedProducts) {
+          await enqueueSync('products', 'UPDATE', p.id);
+        }
+
+        final affectedCats = await (select(
+          categories,
+        )..where((c) => c.id.equals(oldId))).get();
 
         // If categories table contains the old ID, update it too
         await (update(categories)..where((c) => c.id.equals(oldId))).write(
-          CategoriesCompanion(
-            id: Value(newId),
-            isDirty: const Value(true),
-          ),
+          CategoriesCompanion(id: Value(newId)),
         );
+
+        for (final _ in affectedCats) {
+          await enqueueSync('categories', 'UPDATE', newId);
+        }
       }
     });
   }
@@ -2294,8 +2934,8 @@ class TransactionWithItems {
   final List<TransactionItemWithProduct> items;
   final List<TransactionPayment> payments;
   TransactionWithItems({
-    required this.transaction, 
-    required this.items, 
+    required this.transaction,
+    required this.items,
     this.payments = const [],
   });
 }
@@ -2313,7 +2953,13 @@ class StockLossItem {
   final double varianceQuantity;
   final int lossValue;
 
-  StockLossItem(this.itemName, this.type, this.reason, this.varianceQuantity, this.lossValue);
+  StockLossItem(
+    this.itemName,
+    this.type,
+    this.reason,
+    this.varianceQuantity,
+    this.lossValue,
+  );
 }
 
 class ExpenseWithCategory {
@@ -2363,12 +3009,12 @@ String _generateRandomKey() {
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dbFolder.path, 'posify.db'));
+    final file = File(p.join(dbFolder.path, 'lumio.db'));
 
     // Ambil atau buat kunci dekripsi dari memori aman (Secure Storage)
     const storage = FlutterSecureStorage();
     String? encryptionKey = await storage.read(key: 'db_encryption_key');
-    
+
     if (encryptionKey == null) {
       encryptionKey = _generateRandomKey();
       await storage.write(key: 'db_encryption_key', value: encryptionKey);

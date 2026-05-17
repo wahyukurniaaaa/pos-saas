@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'package:posify_app/core/theme/app_theme.dart';
-import 'package:posify_app/core/widgets/responsive_layout.dart';
-import 'package:posify_app/features/auth/providers/auth_providers.dart';
-import 'package:posify_app/features/auth/providers/device_management_provider.dart';
-import 'package:posify_app/features/auth/providers/owner_provider.dart';
+import 'package:lumio/core/theme/app_theme.dart';
+import 'package:lumio/core/widgets/responsive_layout.dart';
+import 'package:lumio/features/auth/providers/auth_providers.dart';
+import 'package:lumio/features/auth/providers/device_management_provider.dart';
+import 'package:lumio/features/auth/providers/owner_provider.dart';
 
 class DeviceManagementScreen extends ConsumerStatefulWidget {
   const DeviceManagementScreen({super.key});

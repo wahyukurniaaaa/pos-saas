@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:posify_app/core/theme/app_theme.dart';
-import 'package:posify_app/features/auth/providers/auth_providers.dart';
+import 'package:lumio/core/theme/app_theme.dart';
+import 'package:lumio/features/auth/providers/auth_providers.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -16,7 +16,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
   final _loginPasswordController = TextEditingController();
   final _registerEmailController = TextEditingController();
   final _registerPasswordController = TextEditingController();
-  final _licenseController = TextEditingController();
   
   bool _isLoading = false;
   bool _obscurePassword = true;
@@ -34,7 +33,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
     _loginPasswordController.dispose();
     _registerEmailController.dispose();
     _registerPasswordController.dispose();
-    _licenseController.dispose();
     super.dispose();
   }
 
@@ -72,7 +70,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
     final (success, error) = await ref.read(authProvider.notifier).signUp(
       email: _registerEmailController.text.trim(),
       password: _registerPasswordController.text.trim(),
-      licenseCode: _licenseController.text.trim().isEmpty ? null : _licenseController.text.trim(),
     );
 
     if (!mounted) return;
@@ -122,14 +119,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.storefront, size: 64, color: AppTheme.primaryColor),
-                      const SizedBox(height: 16),
-                      Text(
-                        'POSify UMKM',
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.primaryColor,
-                            ),
+                      // Lumio Logo
+                      Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Image.asset(
+                          'assets/branding/lumio_logo_wordmark.png',
+                          height: 60,
+                          fit: BoxFit.contain,
+                        ),
                       ),
                       const SizedBox(height: 24),
                       TabBar(
@@ -253,16 +250,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
               border: OutlineInputBorder(),
             ),
             obscureText: true,
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _licenseController,
-            decoration: const InputDecoration(
-              labelText: 'Kode Lisensi (Opsional)',
-              prefixIcon: Icon(Icons.key_outlined),
-              border: OutlineInputBorder(),
-              helperText: 'Masukkan jika Anda sudah memiliki lisensi Pro.',
-            ),
           ),
           const SizedBox(height: 24),
           ElevatedButton(

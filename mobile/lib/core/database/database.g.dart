@@ -113,6 +113,17 @@ class $LicensesTable extends Licenses with TableInfo<$LicensesTable, License> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _expiredAtMeta = const VerificationMeta(
+    'expiredAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> expiredAt = GeneratedColumn<DateTime>(
+    'expired_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _tierLevelMeta = const VerificationMeta(
     'tierLevel',
   );
@@ -159,6 +170,7 @@ class $LicensesTable extends Licenses with TableInfo<$LicensesTable, License> {
     updatedAt,
     isDirty,
     deletedAt,
+    expiredAt,
     tierLevel,
     maxDevices,
     maxOutlets,
@@ -240,6 +252,12 @@ class $LicensesTable extends Licenses with TableInfo<$LicensesTable, License> {
         deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
       );
     }
+    if (data.containsKey('expired_at')) {
+      context.handle(
+        _expiredAtMeta,
+        expiredAt.isAcceptableOrUnknown(data['expired_at']!, _expiredAtMeta),
+      );
+    }
     if (data.containsKey('tier_level')) {
       context.handle(
         _tierLevelMeta,
@@ -303,6 +321,10 @@ class $LicensesTable extends Licenses with TableInfo<$LicensesTable, License> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}deleted_at'],
       ),
+      expiredAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}expired_at'],
+      ),
       tierLevel: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}tier_level'],
@@ -334,6 +356,7 @@ class License extends DataClass implements Insertable<License> {
   final DateTime updatedAt;
   final bool isDirty;
   final DateTime? deletedAt;
+  final DateTime? expiredAt;
   final String? tierLevel;
   final int maxDevices;
   final int maxOutlets;
@@ -347,6 +370,7 @@ class License extends DataClass implements Insertable<License> {
     required this.updatedAt,
     required this.isDirty,
     this.deletedAt,
+    this.expiredAt,
     this.tierLevel,
     required this.maxDevices,
     required this.maxOutlets,
@@ -370,6 +394,9 @@ class License extends DataClass implements Insertable<License> {
     map['is_dirty'] = Variable<bool>(isDirty);
     if (!nullToAbsent || deletedAt != null) {
       map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    if (!nullToAbsent || expiredAt != null) {
+      map['expired_at'] = Variable<DateTime>(expiredAt);
     }
     if (!nullToAbsent || tierLevel != null) {
       map['tier_level'] = Variable<String>(tierLevel);
@@ -398,6 +425,9 @@ class License extends DataClass implements Insertable<License> {
       deletedAt: deletedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(deletedAt),
+      expiredAt: expiredAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(expiredAt),
       tierLevel: tierLevel == null && nullToAbsent
           ? const Value.absent()
           : Value(tierLevel),
@@ -423,6 +453,7 @@ class License extends DataClass implements Insertable<License> {
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       isDirty: serializer.fromJson<bool>(json['isDirty']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      expiredAt: serializer.fromJson<DateTime?>(json['expiredAt']),
       tierLevel: serializer.fromJson<String?>(json['tierLevel']),
       maxDevices: serializer.fromJson<int>(json['maxDevices']),
       maxOutlets: serializer.fromJson<int>(json['maxOutlets']),
@@ -441,6 +472,7 @@ class License extends DataClass implements Insertable<License> {
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'isDirty': serializer.toJson<bool>(isDirty),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'expiredAt': serializer.toJson<DateTime?>(expiredAt),
       'tierLevel': serializer.toJson<String?>(tierLevel),
       'maxDevices': serializer.toJson<int>(maxDevices),
       'maxOutlets': serializer.toJson<int>(maxOutlets),
@@ -457,6 +489,7 @@ class License extends DataClass implements Insertable<License> {
     DateTime? updatedAt,
     bool? isDirty,
     Value<DateTime?> deletedAt = const Value.absent(),
+    Value<DateTime?> expiredAt = const Value.absent(),
     Value<String?> tierLevel = const Value.absent(),
     int? maxDevices,
     int? maxOutlets,
@@ -474,6 +507,7 @@ class License extends DataClass implements Insertable<License> {
     updatedAt: updatedAt ?? this.updatedAt,
     isDirty: isDirty ?? this.isDirty,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    expiredAt: expiredAt.present ? expiredAt.value : this.expiredAt,
     tierLevel: tierLevel.present ? tierLevel.value : this.tierLevel,
     maxDevices: maxDevices ?? this.maxDevices,
     maxOutlets: maxOutlets ?? this.maxOutlets,
@@ -497,6 +531,7 @@ class License extends DataClass implements Insertable<License> {
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       isDirty: data.isDirty.present ? data.isDirty.value : this.isDirty,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      expiredAt: data.expiredAt.present ? data.expiredAt.value : this.expiredAt,
       tierLevel: data.tierLevel.present ? data.tierLevel.value : this.tierLevel,
       maxDevices: data.maxDevices.present
           ? data.maxDevices.value
@@ -519,6 +554,7 @@ class License extends DataClass implements Insertable<License> {
           ..write('updatedAt: $updatedAt, ')
           ..write('isDirty: $isDirty, ')
           ..write('deletedAt: $deletedAt, ')
+          ..write('expiredAt: $expiredAt, ')
           ..write('tierLevel: $tierLevel, ')
           ..write('maxDevices: $maxDevices, ')
           ..write('maxOutlets: $maxOutlets')
@@ -537,6 +573,7 @@ class License extends DataClass implements Insertable<License> {
     updatedAt,
     isDirty,
     deletedAt,
+    expiredAt,
     tierLevel,
     maxDevices,
     maxOutlets,
@@ -554,6 +591,7 @@ class License extends DataClass implements Insertable<License> {
           other.updatedAt == this.updatedAt &&
           other.isDirty == this.isDirty &&
           other.deletedAt == this.deletedAt &&
+          other.expiredAt == this.expiredAt &&
           other.tierLevel == this.tierLevel &&
           other.maxDevices == this.maxDevices &&
           other.maxOutlets == this.maxOutlets);
@@ -569,6 +607,7 @@ class LicensesCompanion extends UpdateCompanion<License> {
   final Value<DateTime> updatedAt;
   final Value<bool> isDirty;
   final Value<DateTime?> deletedAt;
+  final Value<DateTime?> expiredAt;
   final Value<String?> tierLevel;
   final Value<int> maxDevices;
   final Value<int> maxOutlets;
@@ -583,6 +622,7 @@ class LicensesCompanion extends UpdateCompanion<License> {
     this.updatedAt = const Value.absent(),
     this.isDirty = const Value.absent(),
     this.deletedAt = const Value.absent(),
+    this.expiredAt = const Value.absent(),
     this.tierLevel = const Value.absent(),
     this.maxDevices = const Value.absent(),
     this.maxOutlets = const Value.absent(),
@@ -598,6 +638,7 @@ class LicensesCompanion extends UpdateCompanion<License> {
     this.updatedAt = const Value.absent(),
     this.isDirty = const Value.absent(),
     this.deletedAt = const Value.absent(),
+    this.expiredAt = const Value.absent(),
     this.tierLevel = const Value.absent(),
     this.maxDevices = const Value.absent(),
     this.maxOutlets = const Value.absent(),
@@ -613,6 +654,7 @@ class LicensesCompanion extends UpdateCompanion<License> {
     Expression<DateTime>? updatedAt,
     Expression<bool>? isDirty,
     Expression<DateTime>? deletedAt,
+    Expression<DateTime>? expiredAt,
     Expression<String>? tierLevel,
     Expression<int>? maxDevices,
     Expression<int>? maxOutlets,
@@ -628,6 +670,7 @@ class LicensesCompanion extends UpdateCompanion<License> {
       if (updatedAt != null) 'updated_at': updatedAt,
       if (isDirty != null) 'is_dirty': isDirty,
       if (deletedAt != null) 'deleted_at': deletedAt,
+      if (expiredAt != null) 'expired_at': expiredAt,
       if (tierLevel != null) 'tier_level': tierLevel,
       if (maxDevices != null) 'max_devices': maxDevices,
       if (maxOutlets != null) 'max_outlets': maxOutlets,
@@ -645,6 +688,7 @@ class LicensesCompanion extends UpdateCompanion<License> {
     Value<DateTime>? updatedAt,
     Value<bool>? isDirty,
     Value<DateTime?>? deletedAt,
+    Value<DateTime?>? expiredAt,
     Value<String?>? tierLevel,
     Value<int>? maxDevices,
     Value<int>? maxOutlets,
@@ -660,6 +704,7 @@ class LicensesCompanion extends UpdateCompanion<License> {
       updatedAt: updatedAt ?? this.updatedAt,
       isDirty: isDirty ?? this.isDirty,
       deletedAt: deletedAt ?? this.deletedAt,
+      expiredAt: expiredAt ?? this.expiredAt,
       tierLevel: tierLevel ?? this.tierLevel,
       maxDevices: maxDevices ?? this.maxDevices,
       maxOutlets: maxOutlets ?? this.maxOutlets,
@@ -697,6 +742,9 @@ class LicensesCompanion extends UpdateCompanion<License> {
     if (deletedAt.present) {
       map['deleted_at'] = Variable<DateTime>(deletedAt.value);
     }
+    if (expiredAt.present) {
+      map['expired_at'] = Variable<DateTime>(expiredAt.value);
+    }
     if (tierLevel.present) {
       map['tier_level'] = Variable<String>(tierLevel.value);
     }
@@ -724,6 +772,7 @@ class LicensesCompanion extends UpdateCompanion<License> {
           ..write('updatedAt: $updatedAt, ')
           ..write('isDirty: $isDirty, ')
           ..write('deletedAt: $deletedAt, ')
+          ..write('expiredAt: $expiredAt, ')
           ..write('tierLevel: $tierLevel, ')
           ..write('maxDevices: $maxDevices, ')
           ..write('maxOutlets: $maxOutlets, ')
@@ -2050,6 +2099,26 @@ class $StoreProfileTable extends StoreProfile
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _businessTypeMeta = const VerificationMeta(
+    'businessType',
+  );
+  @override
+  late final GeneratedColumn<String> businessType = GeneratedColumn<String>(
+    'business_type',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _taxPercentageMeta = const VerificationMeta(
     'taxPercentage',
   );
@@ -2179,6 +2248,8 @@ class $StoreProfileTable extends StoreProfile
     name,
     address,
     phone,
+    userId,
+    businessType,
     taxPercentage,
     taxType,
     serviceChargePercentage,
@@ -2223,6 +2294,21 @@ class $StoreProfileTable extends StoreProfile
       context.handle(
         _phoneMeta,
         phone.isAcceptableOrUnknown(data['phone']!, _phoneMeta),
+      );
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    }
+    if (data.containsKey('business_type')) {
+      context.handle(
+        _businessTypeMeta,
+        businessType.isAcceptableOrUnknown(
+          data['business_type']!,
+          _businessTypeMeta,
+        ),
       );
     }
     if (data.containsKey('tax_percentage')) {
@@ -2325,6 +2411,14 @@ class $StoreProfileTable extends StoreProfile
         DriftSqlType.string,
         data['${effectivePrefix}phone'],
       ),
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      ),
+      businessType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}business_type'],
+      ),
       taxPercentage: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}tax_percentage'],
@@ -2380,6 +2474,8 @@ class StoreProfileData extends DataClass
   final String name;
   final String? address;
   final String? phone;
+  final String? userId;
+  final String? businessType;
   final int taxPercentage;
   final String taxType;
   final int serviceChargePercentage;
@@ -2395,6 +2491,8 @@ class StoreProfileData extends DataClass
     required this.name,
     this.address,
     this.phone,
+    this.userId,
+    this.businessType,
     required this.taxPercentage,
     required this.taxType,
     required this.serviceChargePercentage,
@@ -2416,6 +2514,12 @@ class StoreProfileData extends DataClass
     }
     if (!nullToAbsent || phone != null) {
       map['phone'] = Variable<String>(phone);
+    }
+    if (!nullToAbsent || userId != null) {
+      map['user_id'] = Variable<String>(userId);
+    }
+    if (!nullToAbsent || businessType != null) {
+      map['business_type'] = Variable<String>(businessType);
     }
     map['tax_percentage'] = Variable<int>(taxPercentage);
     map['tax_type'] = Variable<String>(taxType);
@@ -2444,6 +2548,12 @@ class StoreProfileData extends DataClass
       phone: phone == null && nullToAbsent
           ? const Value.absent()
           : Value(phone),
+      userId: userId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(userId),
+      businessType: businessType == null && nullToAbsent
+          ? const Value.absent()
+          : Value(businessType),
       taxPercentage: Value(taxPercentage),
       taxType: Value(taxType),
       serviceChargePercentage: Value(serviceChargePercentage),
@@ -2471,6 +2581,8 @@ class StoreProfileData extends DataClass
       name: serializer.fromJson<String>(json['name']),
       address: serializer.fromJson<String?>(json['address']),
       phone: serializer.fromJson<String?>(json['phone']),
+      userId: serializer.fromJson<String?>(json['userId']),
+      businessType: serializer.fromJson<String?>(json['businessType']),
       taxPercentage: serializer.fromJson<int>(json['taxPercentage']),
       taxType: serializer.fromJson<String>(json['taxType']),
       serviceChargePercentage: serializer.fromJson<int>(
@@ -2495,6 +2607,8 @@ class StoreProfileData extends DataClass
       'name': serializer.toJson<String>(name),
       'address': serializer.toJson<String?>(address),
       'phone': serializer.toJson<String?>(phone),
+      'userId': serializer.toJson<String?>(userId),
+      'businessType': serializer.toJson<String?>(businessType),
       'taxPercentage': serializer.toJson<int>(taxPercentage),
       'taxType': serializer.toJson<String>(taxType),
       'serviceChargePercentage': serializer.toJson<int>(
@@ -2515,6 +2629,8 @@ class StoreProfileData extends DataClass
     String? name,
     Value<String?> address = const Value.absent(),
     Value<String?> phone = const Value.absent(),
+    Value<String?> userId = const Value.absent(),
+    Value<String?> businessType = const Value.absent(),
     int? taxPercentage,
     String? taxType,
     int? serviceChargePercentage,
@@ -2530,6 +2646,8 @@ class StoreProfileData extends DataClass
     name: name ?? this.name,
     address: address.present ? address.value : this.address,
     phone: phone.present ? phone.value : this.phone,
+    userId: userId.present ? userId.value : this.userId,
+    businessType: businessType.present ? businessType.value : this.businessType,
     taxPercentage: taxPercentage ?? this.taxPercentage,
     taxType: taxType ?? this.taxType,
     serviceChargePercentage:
@@ -2549,6 +2667,10 @@ class StoreProfileData extends DataClass
       name: data.name.present ? data.name.value : this.name,
       address: data.address.present ? data.address.value : this.address,
       phone: data.phone.present ? data.phone.value : this.phone,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      businessType: data.businessType.present
+          ? data.businessType.value
+          : this.businessType,
       taxPercentage: data.taxPercentage.present
           ? data.taxPercentage.value
           : this.taxPercentage,
@@ -2579,6 +2701,8 @@ class StoreProfileData extends DataClass
           ..write('name: $name, ')
           ..write('address: $address, ')
           ..write('phone: $phone, ')
+          ..write('userId: $userId, ')
+          ..write('businessType: $businessType, ')
           ..write('taxPercentage: $taxPercentage, ')
           ..write('taxType: $taxType, ')
           ..write('serviceChargePercentage: $serviceChargePercentage, ')
@@ -2599,6 +2723,8 @@ class StoreProfileData extends DataClass
     name,
     address,
     phone,
+    userId,
+    businessType,
     taxPercentage,
     taxType,
     serviceChargePercentage,
@@ -2618,6 +2744,8 @@ class StoreProfileData extends DataClass
           other.name == this.name &&
           other.address == this.address &&
           other.phone == this.phone &&
+          other.userId == this.userId &&
+          other.businessType == this.businessType &&
           other.taxPercentage == this.taxPercentage &&
           other.taxType == this.taxType &&
           other.serviceChargePercentage == this.serviceChargePercentage &&
@@ -2635,6 +2763,8 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
   final Value<String> name;
   final Value<String?> address;
   final Value<String?> phone;
+  final Value<String?> userId;
+  final Value<String?> businessType;
   final Value<int> taxPercentage;
   final Value<String> taxType;
   final Value<int> serviceChargePercentage;
@@ -2651,6 +2781,8 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
     this.name = const Value.absent(),
     this.address = const Value.absent(),
     this.phone = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.businessType = const Value.absent(),
     this.taxPercentage = const Value.absent(),
     this.taxType = const Value.absent(),
     this.serviceChargePercentage = const Value.absent(),
@@ -2668,6 +2800,8 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
     required String name,
     this.address = const Value.absent(),
     this.phone = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.businessType = const Value.absent(),
     this.taxPercentage = const Value.absent(),
     this.taxType = const Value.absent(),
     this.serviceChargePercentage = const Value.absent(),
@@ -2685,6 +2819,8 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
     Expression<String>? name,
     Expression<String>? address,
     Expression<String>? phone,
+    Expression<String>? userId,
+    Expression<String>? businessType,
     Expression<int>? taxPercentage,
     Expression<String>? taxType,
     Expression<int>? serviceChargePercentage,
@@ -2702,6 +2838,8 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
       if (name != null) 'name': name,
       if (address != null) 'address': address,
       if (phone != null) 'phone': phone,
+      if (userId != null) 'user_id': userId,
+      if (businessType != null) 'business_type': businessType,
       if (taxPercentage != null) 'tax_percentage': taxPercentage,
       if (taxType != null) 'tax_type': taxType,
       if (serviceChargePercentage != null)
@@ -2723,6 +2861,8 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
     Value<String>? name,
     Value<String?>? address,
     Value<String?>? phone,
+    Value<String?>? userId,
+    Value<String?>? businessType,
     Value<int>? taxPercentage,
     Value<String>? taxType,
     Value<int>? serviceChargePercentage,
@@ -2740,6 +2880,8 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
       name: name ?? this.name,
       address: address ?? this.address,
       phone: phone ?? this.phone,
+      userId: userId ?? this.userId,
+      businessType: businessType ?? this.businessType,
       taxPercentage: taxPercentage ?? this.taxPercentage,
       taxType: taxType ?? this.taxType,
       serviceChargePercentage:
@@ -2770,6 +2912,12 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
     }
     if (phone.present) {
       map['phone'] = Variable<String>(phone.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (businessType.present) {
+      map['business_type'] = Variable<String>(businessType.value);
     }
     if (taxPercentage.present) {
       map['tax_percentage'] = Variable<int>(taxPercentage.value);
@@ -2818,6 +2966,8 @@ class StoreProfileCompanion extends UpdateCompanion<StoreProfileData> {
           ..write('name: $name, ')
           ..write('address: $address, ')
           ..write('phone: $phone, ')
+          ..write('userId: $userId, ')
+          ..write('businessType: $businessType, ')
           ..write('taxPercentage: $taxPercentage, ')
           ..write('taxType: $taxType, ')
           ..write('serviceChargePercentage: $serviceChargePercentage, ')
@@ -3343,8 +3493,8 @@ class $ProductsTable extends Products with TableInfo<$ProductsTable, Product> {
     aliasedName,
     false,
     additionalChecks: GeneratedColumn.checkTextLength(
-      minTextLength: 3,
-      maxTextLength: 30,
+      minTextLength: 1,
+      maxTextLength: 50,
     ),
     type: DriftSqlType.string,
     requiredDuringInsert: true,
@@ -19180,9 +19330,373 @@ class TransactionPaymentsCompanion extends UpdateCompanion<TransactionPayment> {
   }
 }
 
-abstract class _$PosifyDatabase extends GeneratedDatabase {
-  _$PosifyDatabase(QueryExecutor e) : super(e);
-  $PosifyDatabaseManager get managers => $PosifyDatabaseManager(this);
+class $SyncQueueTable extends SyncQueue
+    with TableInfo<$SyncQueueTable, SyncQueueData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SyncQueueTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    clientDefault: () => UuidGenerator.generate(),
+  );
+  static const VerificationMeta _targetTableMeta = const VerificationMeta(
+    'targetTable',
+  );
+  @override
+  late final GeneratedColumn<String> targetTable = GeneratedColumn<String>(
+    'target_table',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _operationMeta = const VerificationMeta(
+    'operation',
+  );
+  @override
+  late final GeneratedColumn<String> operation = GeneratedColumn<String>(
+    'operation',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _recordIdMeta = const VerificationMeta(
+    'recordId',
+  );
+  @override
+  late final GeneratedColumn<String> recordId = GeneratedColumn<String>(
+    'record_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    targetTable,
+    operation,
+    recordId,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'sync_queue';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SyncQueueData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('target_table')) {
+      context.handle(
+        _targetTableMeta,
+        targetTable.isAcceptableOrUnknown(
+          data['target_table']!,
+          _targetTableMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_targetTableMeta);
+    }
+    if (data.containsKey('operation')) {
+      context.handle(
+        _operationMeta,
+        operation.isAcceptableOrUnknown(data['operation']!, _operationMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_operationMeta);
+    }
+    if (data.containsKey('record_id')) {
+      context.handle(
+        _recordIdMeta,
+        recordId.isAcceptableOrUnknown(data['record_id']!, _recordIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_recordIdMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SyncQueueData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SyncQueueData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      targetTable: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}target_table'],
+      )!,
+      operation: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}operation'],
+      )!,
+      recordId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}record_id'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $SyncQueueTable createAlias(String alias) {
+    return $SyncQueueTable(attachedDatabase, alias);
+  }
+}
+
+class SyncQueueData extends DataClass implements Insertable<SyncQueueData> {
+  final String id;
+  final String targetTable;
+  final String operation;
+  final String recordId;
+  final DateTime createdAt;
+  const SyncQueueData({
+    required this.id,
+    required this.targetTable,
+    required this.operation,
+    required this.recordId,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['target_table'] = Variable<String>(targetTable);
+    map['operation'] = Variable<String>(operation);
+    map['record_id'] = Variable<String>(recordId);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  SyncQueueCompanion toCompanion(bool nullToAbsent) {
+    return SyncQueueCompanion(
+      id: Value(id),
+      targetTable: Value(targetTable),
+      operation: Value(operation),
+      recordId: Value(recordId),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory SyncQueueData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SyncQueueData(
+      id: serializer.fromJson<String>(json['id']),
+      targetTable: serializer.fromJson<String>(json['targetTable']),
+      operation: serializer.fromJson<String>(json['operation']),
+      recordId: serializer.fromJson<String>(json['recordId']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'targetTable': serializer.toJson<String>(targetTable),
+      'operation': serializer.toJson<String>(operation),
+      'recordId': serializer.toJson<String>(recordId),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  SyncQueueData copyWith({
+    String? id,
+    String? targetTable,
+    String? operation,
+    String? recordId,
+    DateTime? createdAt,
+  }) => SyncQueueData(
+    id: id ?? this.id,
+    targetTable: targetTable ?? this.targetTable,
+    operation: operation ?? this.operation,
+    recordId: recordId ?? this.recordId,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  SyncQueueData copyWithCompanion(SyncQueueCompanion data) {
+    return SyncQueueData(
+      id: data.id.present ? data.id.value : this.id,
+      targetTable: data.targetTable.present
+          ? data.targetTable.value
+          : this.targetTable,
+      operation: data.operation.present ? data.operation.value : this.operation,
+      recordId: data.recordId.present ? data.recordId.value : this.recordId,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncQueueData(')
+          ..write('id: $id, ')
+          ..write('targetTable: $targetTable, ')
+          ..write('operation: $operation, ')
+          ..write('recordId: $recordId, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, targetTable, operation, recordId, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SyncQueueData &&
+          other.id == this.id &&
+          other.targetTable == this.targetTable &&
+          other.operation == this.operation &&
+          other.recordId == this.recordId &&
+          other.createdAt == this.createdAt);
+}
+
+class SyncQueueCompanion extends UpdateCompanion<SyncQueueData> {
+  final Value<String> id;
+  final Value<String> targetTable;
+  final Value<String> operation;
+  final Value<String> recordId;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const SyncQueueCompanion({
+    this.id = const Value.absent(),
+    this.targetTable = const Value.absent(),
+    this.operation = const Value.absent(),
+    this.recordId = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SyncQueueCompanion.insert({
+    this.id = const Value.absent(),
+    required String targetTable,
+    required String operation,
+    required String recordId,
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : targetTable = Value(targetTable),
+       operation = Value(operation),
+       recordId = Value(recordId);
+  static Insertable<SyncQueueData> custom({
+    Expression<String>? id,
+    Expression<String>? targetTable,
+    Expression<String>? operation,
+    Expression<String>? recordId,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (targetTable != null) 'target_table': targetTable,
+      if (operation != null) 'operation': operation,
+      if (recordId != null) 'record_id': recordId,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SyncQueueCompanion copyWith({
+    Value<String>? id,
+    Value<String>? targetTable,
+    Value<String>? operation,
+    Value<String>? recordId,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return SyncQueueCompanion(
+      id: id ?? this.id,
+      targetTable: targetTable ?? this.targetTable,
+      operation: operation ?? this.operation,
+      recordId: recordId ?? this.recordId,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (targetTable.present) {
+      map['target_table'] = Variable<String>(targetTable.value);
+    }
+    if (operation.present) {
+      map['operation'] = Variable<String>(operation.value);
+    }
+    if (recordId.present) {
+      map['record_id'] = Variable<String>(recordId.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncQueueCompanion(')
+          ..write('id: $id, ')
+          ..write('targetTable: $targetTable, ')
+          ..write('operation: $operation, ')
+          ..write('recordId: $recordId, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+abstract class _$LumioDatabase extends GeneratedDatabase {
+  _$LumioDatabase(QueryExecutor e) : super(e);
+  $LumioDatabaseManager get managers => $LumioDatabaseManager(this);
   late final $LicensesTable licenses = $LicensesTable(this);
   late final $OutletsTable outlets = $OutletsTable(this);
   late final $EmployeesTable employees = $EmployeesTable(this);
@@ -19224,6 +19738,7 @@ abstract class _$PosifyDatabase extends GeneratedDatabase {
   late final $ExpensesTable expenses = $ExpensesTable(this);
   late final $TransactionPaymentsTable transactionPayments =
       $TransactionPaymentsTable(this);
+  late final $SyncQueueTable syncQueue = $SyncQueueTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -19255,6 +19770,7 @@ abstract class _$PosifyDatabase extends GeneratedDatabase {
     expenseCategories,
     expenses,
     transactionPayments,
+    syncQueue,
   ];
 }
 
@@ -19269,6 +19785,7 @@ typedef $$LicensesTableCreateCompanionBuilder =
       Value<DateTime> updatedAt,
       Value<bool> isDirty,
       Value<DateTime?> deletedAt,
+      Value<DateTime?> expiredAt,
       Value<String?> tierLevel,
       Value<int> maxDevices,
       Value<int> maxOutlets,
@@ -19285,6 +19802,7 @@ typedef $$LicensesTableUpdateCompanionBuilder =
       Value<DateTime> updatedAt,
       Value<bool> isDirty,
       Value<DateTime?> deletedAt,
+      Value<DateTime?> expiredAt,
       Value<String?> tierLevel,
       Value<int> maxDevices,
       Value<int> maxOutlets,
@@ -19292,7 +19810,7 @@ typedef $$LicensesTableUpdateCompanionBuilder =
     });
 
 class $$LicensesTableFilterComposer
-    extends Composer<_$PosifyDatabase, $LicensesTable> {
+    extends Composer<_$LumioDatabase, $LicensesTable> {
   $$LicensesTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -19345,6 +19863,11 @@ class $$LicensesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<DateTime> get expiredAt => $composableBuilder(
+    column: $table.expiredAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get tierLevel => $composableBuilder(
     column: $table.tierLevel,
     builder: (column) => ColumnFilters(column),
@@ -19362,7 +19885,7 @@ class $$LicensesTableFilterComposer
 }
 
 class $$LicensesTableOrderingComposer
-    extends Composer<_$PosifyDatabase, $LicensesTable> {
+    extends Composer<_$LumioDatabase, $LicensesTable> {
   $$LicensesTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -19415,6 +19938,11 @@ class $$LicensesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get expiredAt => $composableBuilder(
+    column: $table.expiredAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get tierLevel => $composableBuilder(
     column: $table.tierLevel,
     builder: (column) => ColumnOrderings(column),
@@ -19432,7 +19960,7 @@ class $$LicensesTableOrderingComposer
 }
 
 class $$LicensesTableAnnotationComposer
-    extends Composer<_$PosifyDatabase, $LicensesTable> {
+    extends Composer<_$LumioDatabase, $LicensesTable> {
   $$LicensesTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -19475,6 +20003,9 @@ class $$LicensesTableAnnotationComposer
   GeneratedColumn<DateTime> get deletedAt =>
       $composableBuilder(column: $table.deletedAt, builder: (column) => column);
 
+  GeneratedColumn<DateTime> get expiredAt =>
+      $composableBuilder(column: $table.expiredAt, builder: (column) => column);
+
   GeneratedColumn<String> get tierLevel =>
       $composableBuilder(column: $table.tierLevel, builder: (column) => column);
 
@@ -19492,7 +20023,7 @@ class $$LicensesTableAnnotationComposer
 class $$LicensesTableTableManager
     extends
         RootTableManager<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $LicensesTable,
           License,
           $$LicensesTableFilterComposer,
@@ -19500,11 +20031,11 @@ class $$LicensesTableTableManager
           $$LicensesTableAnnotationComposer,
           $$LicensesTableCreateCompanionBuilder,
           $$LicensesTableUpdateCompanionBuilder,
-          (License, BaseReferences<_$PosifyDatabase, $LicensesTable, License>),
+          (License, BaseReferences<_$LumioDatabase, $LicensesTable, License>),
           License,
           PrefetchHooks Function()
         > {
-  $$LicensesTableTableManager(_$PosifyDatabase db, $LicensesTable table)
+  $$LicensesTableTableManager(_$LumioDatabase db, $LicensesTable table)
     : super(
         TableManagerState(
           db: db,
@@ -19526,6 +20057,7 @@ class $$LicensesTableTableManager
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<bool> isDirty = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
+                Value<DateTime?> expiredAt = const Value.absent(),
                 Value<String?> tierLevel = const Value.absent(),
                 Value<int> maxDevices = const Value.absent(),
                 Value<int> maxOutlets = const Value.absent(),
@@ -19540,6 +20072,7 @@ class $$LicensesTableTableManager
                 updatedAt: updatedAt,
                 isDirty: isDirty,
                 deletedAt: deletedAt,
+                expiredAt: expiredAt,
                 tierLevel: tierLevel,
                 maxDevices: maxDevices,
                 maxOutlets: maxOutlets,
@@ -19556,6 +20089,7 @@ class $$LicensesTableTableManager
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<bool> isDirty = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
+                Value<DateTime?> expiredAt = const Value.absent(),
                 Value<String?> tierLevel = const Value.absent(),
                 Value<int> maxDevices = const Value.absent(),
                 Value<int> maxOutlets = const Value.absent(),
@@ -19570,6 +20104,7 @@ class $$LicensesTableTableManager
                 updatedAt: updatedAt,
                 isDirty: isDirty,
                 deletedAt: deletedAt,
+                expiredAt: expiredAt,
                 tierLevel: tierLevel,
                 maxDevices: maxDevices,
                 maxOutlets: maxOutlets,
@@ -19585,7 +20120,7 @@ class $$LicensesTableTableManager
 
 typedef $$LicensesTableProcessedTableManager =
     ProcessedTableManager<
-      _$PosifyDatabase,
+      _$LumioDatabase,
       $LicensesTable,
       License,
       $$LicensesTableFilterComposer,
@@ -19593,7 +20128,7 @@ typedef $$LicensesTableProcessedTableManager =
       $$LicensesTableAnnotationComposer,
       $$LicensesTableCreateCompanionBuilder,
       $$LicensesTableUpdateCompanionBuilder,
-      (License, BaseReferences<_$PosifyDatabase, $LicensesTable, License>),
+      (License, BaseReferences<_$LumioDatabase, $LicensesTable, License>),
       License,
       PrefetchHooks Function()
     >;
@@ -19623,11 +20158,11 @@ typedef $$OutletsTableUpdateCompanionBuilder =
     });
 
 final class $$OutletsTableReferences
-    extends BaseReferences<_$PosifyDatabase, $OutletsTable, Outlet> {
+    extends BaseReferences<_$LumioDatabase, $OutletsTable, Outlet> {
   $$OutletsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static MultiTypedResultKey<$EmployeesTable, List<Employee>>
-  _employeesRefsTable(_$PosifyDatabase db) => MultiTypedResultKey.fromTable(
+  _employeesRefsTable(_$LumioDatabase db) => MultiTypedResultKey.fromTable(
     db.employees,
     aliasName: $_aliasNameGenerator(db.outlets.id, db.employees.outletId),
   );
@@ -19645,7 +20180,7 @@ final class $$OutletsTableReferences
   }
 
   static MultiTypedResultKey<$CategoriesTable, List<Category>>
-  _categoriesRefsTable(_$PosifyDatabase db) => MultiTypedResultKey.fromTable(
+  _categoriesRefsTable(_$LumioDatabase db) => MultiTypedResultKey.fromTable(
     db.categories,
     aliasName: $_aliasNameGenerator(db.outlets.id, db.categories.outletId),
   );
@@ -19663,7 +20198,7 @@ final class $$OutletsTableReferences
   }
 
   static MultiTypedResultKey<$ProductsTable, List<Product>> _productsRefsTable(
-    _$PosifyDatabase db,
+    _$LumioDatabase db,
   ) => MultiTypedResultKey.fromTable(
     db.products,
     aliasName: $_aliasNameGenerator(db.outlets.id, db.products.outletId),
@@ -19682,7 +20217,7 @@ final class $$OutletsTableReferences
   }
 
   static MultiTypedResultKey<$ProductVariantsTable, List<ProductVariant>>
-  _productVariantsRefsTable(_$PosifyDatabase db) =>
+  _productVariantsRefsTable(_$LumioDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.productVariants,
         aliasName: $_aliasNameGenerator(
@@ -19706,7 +20241,7 @@ final class $$OutletsTableReferences
   }
 
   static MultiTypedResultKey<$ShiftsTable, List<Shift>> _shiftsRefsTable(
-    _$PosifyDatabase db,
+    _$LumioDatabase db,
   ) => MultiTypedResultKey.fromTable(
     db.shifts,
     aliasName: $_aliasNameGenerator(db.outlets.id, db.shifts.outletId),
@@ -19725,7 +20260,7 @@ final class $$OutletsTableReferences
   }
 
   static MultiTypedResultKey<$DiscountsTable, List<Discount>>
-  _discountsRefsTable(_$PosifyDatabase db) => MultiTypedResultKey.fromTable(
+  _discountsRefsTable(_$LumioDatabase db) => MultiTypedResultKey.fromTable(
     db.discounts,
     aliasName: $_aliasNameGenerator(db.outlets.id, db.discounts.outletId),
   );
@@ -19743,7 +20278,7 @@ final class $$OutletsTableReferences
   }
 
   static MultiTypedResultKey<$TransactionsTable, List<Transaction>>
-  _transactionsRefsTable(_$PosifyDatabase db) => MultiTypedResultKey.fromTable(
+  _transactionsRefsTable(_$LumioDatabase db) => MultiTypedResultKey.fromTable(
     db.transactions,
     aliasName: $_aliasNameGenerator(db.outlets.id, db.transactions.outletId),
   );
@@ -19761,7 +20296,7 @@ final class $$OutletsTableReferences
   }
 
   static MultiTypedResultKey<$TransactionItemsTable, List<TransactionItem>>
-  _transactionItemsRefsTable(_$PosifyDatabase db) =>
+  _transactionItemsRefsTable(_$LumioDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.transactionItems,
         aliasName: $_aliasNameGenerator(
@@ -19785,7 +20320,7 @@ final class $$OutletsTableReferences
   }
 
   static MultiTypedResultKey<$StockTransactionsTable, List<StockTransaction>>
-  _stockTransactionsRefsTable(_$PosifyDatabase db) =>
+  _stockTransactionsRefsTable(_$LumioDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.stockTransactions,
         aliasName: $_aliasNameGenerator(
@@ -19809,7 +20344,7 @@ final class $$OutletsTableReferences
   }
 
   static MultiTypedResultKey<$CustomersTable, List<Customer>>
-  _customersRefsTable(_$PosifyDatabase db) => MultiTypedResultKey.fromTable(
+  _customersRefsTable(_$LumioDatabase db) => MultiTypedResultKey.fromTable(
     db.customers,
     aliasName: $_aliasNameGenerator(db.outlets.id, db.customers.outletId),
   );
@@ -19827,7 +20362,7 @@ final class $$OutletsTableReferences
   }
 
   static MultiTypedResultKey<$SuppliersTable, List<Supplier>>
-  _suppliersRefsTable(_$PosifyDatabase db) => MultiTypedResultKey.fromTable(
+  _suppliersRefsTable(_$LumioDatabase db) => MultiTypedResultKey.fromTable(
     db.suppliers,
     aliasName: $_aliasNameGenerator(db.outlets.id, db.suppliers.outletId),
   );
@@ -19845,7 +20380,7 @@ final class $$OutletsTableReferences
   }
 
   static MultiTypedResultKey<$PrinterSettingsTable, List<PrinterSetting>>
-  _printerSettingsRefsTable(_$PosifyDatabase db) =>
+  _printerSettingsRefsTable(_$LumioDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.printerSettings,
         aliasName: $_aliasNameGenerator(
@@ -19869,7 +20404,7 @@ final class $$OutletsTableReferences
   }
 
   static MultiTypedResultKey<$IngredientsTable, List<Ingredient>>
-  _ingredientsRefsTable(_$PosifyDatabase db) => MultiTypedResultKey.fromTable(
+  _ingredientsRefsTable(_$LumioDatabase db) => MultiTypedResultKey.fromTable(
     db.ingredients,
     aliasName: $_aliasNameGenerator(db.outlets.id, db.ingredients.outletId),
   );
@@ -19887,7 +20422,7 @@ final class $$OutletsTableReferences
   }
 
   static MultiTypedResultKey<$ProductRecipesTable, List<ProductRecipe>>
-  _productRecipesRefsTable(_$PosifyDatabase db) =>
+  _productRecipesRefsTable(_$LumioDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.productRecipes,
         aliasName: $_aliasNameGenerator(
@@ -19912,7 +20447,7 @@ final class $$OutletsTableReferences
     $IngredientStockHistoryTable,
     List<IngredientStockHistoryData>
   >
-  _ingredientStockHistoryRefsTable(_$PosifyDatabase db) =>
+  _ingredientStockHistoryRefsTable(_$LumioDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.ingredientStockHistory,
         aliasName: $_aliasNameGenerator(
@@ -19937,7 +20472,7 @@ final class $$OutletsTableReferences
   }
 
   static MultiTypedResultKey<$UnitConversionsTable, List<UnitConversion>>
-  _unitConversionsRefsTable(_$PosifyDatabase db) =>
+  _unitConversionsRefsTable(_$LumioDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.unitConversions,
         aliasName: $_aliasNameGenerator(
@@ -19961,7 +20496,7 @@ final class $$OutletsTableReferences
   }
 
   static MultiTypedResultKey<$StockOpnameTable, List<StockOpnameData>>
-  _stockOpnameRefsTable(_$PosifyDatabase db) => MultiTypedResultKey.fromTable(
+  _stockOpnameRefsTable(_$LumioDatabase db) => MultiTypedResultKey.fromTable(
     db.stockOpname,
     aliasName: $_aliasNameGenerator(db.outlets.id, db.stockOpname.outletId),
   );
@@ -19979,7 +20514,7 @@ final class $$OutletsTableReferences
   }
 
   static MultiTypedResultKey<$StockOpnameItemsTable, List<StockOpnameItem>>
-  _stockOpnameItemsRefsTable(_$PosifyDatabase db) =>
+  _stockOpnameItemsRefsTable(_$LumioDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.stockOpnameItems,
         aliasName: $_aliasNameGenerator(
@@ -20003,7 +20538,7 @@ final class $$OutletsTableReferences
   }
 
   static MultiTypedResultKey<$PurchaseOrdersTable, List<PurchaseOrder>>
-  _purchaseOrdersRefsTable(_$PosifyDatabase db) =>
+  _purchaseOrdersRefsTable(_$LumioDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.purchaseOrders,
         aliasName: $_aliasNameGenerator(
@@ -20025,7 +20560,7 @@ final class $$OutletsTableReferences
   }
 
   static MultiTypedResultKey<$PurchaseOrderItemsTable, List<PurchaseOrderItem>>
-  _purchaseOrderItemsRefsTable(_$PosifyDatabase db) =>
+  _purchaseOrderItemsRefsTable(_$LumioDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.purchaseOrderItems,
         aliasName: $_aliasNameGenerator(
@@ -20049,7 +20584,7 @@ final class $$OutletsTableReferences
   }
 
   static MultiTypedResultKey<$ExpenseCategoriesTable, List<ExpenseCategory>>
-  _expenseCategoriesRefsTable(_$PosifyDatabase db) =>
+  _expenseCategoriesRefsTable(_$LumioDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.expenseCategories,
         aliasName: $_aliasNameGenerator(
@@ -20073,7 +20608,7 @@ final class $$OutletsTableReferences
   }
 
   static MultiTypedResultKey<$ExpensesTable, List<Expense>> _expensesRefsTable(
-    _$PosifyDatabase db,
+    _$LumioDatabase db,
   ) => MultiTypedResultKey.fromTable(
     db.expenses,
     aliasName: $_aliasNameGenerator(db.outlets.id, db.expenses.outletId),
@@ -20095,7 +20630,7 @@ final class $$OutletsTableReferences
     $TransactionPaymentsTable,
     List<TransactionPayment>
   >
-  _transactionPaymentsRefsTable(_$PosifyDatabase db) =>
+  _transactionPaymentsRefsTable(_$LumioDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.transactionPayments,
         aliasName: $_aliasNameGenerator(
@@ -20120,7 +20655,7 @@ final class $$OutletsTableReferences
 }
 
 class $$OutletsTableFilterComposer
-    extends Composer<_$PosifyDatabase, $OutletsTable> {
+    extends Composer<_$LumioDatabase, $OutletsTable> {
   $$OutletsTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -20746,7 +21281,7 @@ class $$OutletsTableFilterComposer
 }
 
 class $$OutletsTableOrderingComposer
-    extends Composer<_$PosifyDatabase, $OutletsTable> {
+    extends Composer<_$LumioDatabase, $OutletsTable> {
   $$OutletsTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -20796,7 +21331,7 @@ class $$OutletsTableOrderingComposer
 }
 
 class $$OutletsTableAnnotationComposer
-    extends Composer<_$PosifyDatabase, $OutletsTable> {
+    extends Composer<_$LumioDatabase, $OutletsTable> {
   $$OutletsTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -21412,7 +21947,7 @@ class $$OutletsTableAnnotationComposer
 class $$OutletsTableTableManager
     extends
         RootTableManager<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $OutletsTable,
           Outlet,
           $$OutletsTableFilterComposer,
@@ -21448,7 +21983,7 @@ class $$OutletsTableTableManager
             bool transactionPaymentsRefs,
           })
         > {
-  $$OutletsTableTableManager(_$PosifyDatabase db, $OutletsTable table)
+  $$OutletsTableTableManager(_$LumioDatabase db, $OutletsTable table)
     : super(
         TableManagerState(
           db: db,
@@ -22056,7 +22591,7 @@ class $$OutletsTableTableManager
 
 typedef $$OutletsTableProcessedTableManager =
     ProcessedTableManager<
-      _$PosifyDatabase,
+      _$LumioDatabase,
       $OutletsTable,
       Outlet,
       $$OutletsTableFilterComposer,
@@ -22128,10 +22663,10 @@ typedef $$EmployeesTableUpdateCompanionBuilder =
     });
 
 final class $$EmployeesTableReferences
-    extends BaseReferences<_$PosifyDatabase, $EmployeesTable, Employee> {
+    extends BaseReferences<_$LumioDatabase, $EmployeesTable, Employee> {
   $$EmployeesTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $OutletsTable _outletIdTable(_$PosifyDatabase db) => db.outlets
+  static $OutletsTable _outletIdTable(_$LumioDatabase db) => db.outlets
       .createAlias($_aliasNameGenerator(db.employees.outletId, db.outlets.id));
 
   $$OutletsTableProcessedTableManager? get outletId {
@@ -22149,7 +22684,7 @@ final class $$EmployeesTableReferences
   }
 
   static MultiTypedResultKey<$ShiftsTable, List<Shift>> _shiftsRefsTable(
-    _$PosifyDatabase db,
+    _$LumioDatabase db,
   ) => MultiTypedResultKey.fromTable(
     db.shifts,
     aliasName: $_aliasNameGenerator(db.employees.id, db.shifts.employeeId),
@@ -22168,7 +22703,7 @@ final class $$EmployeesTableReferences
   }
 
   static MultiTypedResultKey<$TransactionsTable, List<Transaction>>
-  _transactionsRefsTable(_$PosifyDatabase db) => MultiTypedResultKey.fromTable(
+  _transactionsRefsTable(_$LumioDatabase db) => MultiTypedResultKey.fromTable(
     db.transactions,
     aliasName: $_aliasNameGenerator(db.employees.id, db.transactions.voidBy),
   );
@@ -22186,7 +22721,7 @@ final class $$EmployeesTableReferences
   }
 
   static MultiTypedResultKey<$ExpensesTable, List<Expense>> _expensesRefsTable(
-    _$PosifyDatabase db,
+    _$LumioDatabase db,
   ) => MultiTypedResultKey.fromTable(
     db.expenses,
     aliasName: $_aliasNameGenerator(db.employees.id, db.expenses.recordedBy),
@@ -22206,7 +22741,7 @@ final class $$EmployeesTableReferences
 }
 
 class $$EmployeesTableFilterComposer
-    extends Composer<_$PosifyDatabase, $EmployeesTable> {
+    extends Composer<_$LumioDatabase, $EmployeesTable> {
   $$EmployeesTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -22374,7 +22909,7 @@ class $$EmployeesTableFilterComposer
 }
 
 class $$EmployeesTableOrderingComposer
-    extends Composer<_$PosifyDatabase, $EmployeesTable> {
+    extends Composer<_$LumioDatabase, $EmployeesTable> {
   $$EmployeesTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -22467,7 +23002,7 @@ class $$EmployeesTableOrderingComposer
 }
 
 class $$EmployeesTableAnnotationComposer
-    extends Composer<_$PosifyDatabase, $EmployeesTable> {
+    extends Composer<_$LumioDatabase, $EmployeesTable> {
   $$EmployeesTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -22617,7 +23152,7 @@ class $$EmployeesTableAnnotationComposer
 class $$EmployeesTableTableManager
     extends
         RootTableManager<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $EmployeesTable,
           Employee,
           $$EmployeesTableFilterComposer,
@@ -22634,7 +23169,7 @@ class $$EmployeesTableTableManager
             bool expensesRefs,
           })
         > {
-  $$EmployeesTableTableManager(_$PosifyDatabase db, $EmployeesTable table)
+  $$EmployeesTableTableManager(_$LumioDatabase db, $EmployeesTable table)
     : super(
         TableManagerState(
           db: db,
@@ -22838,7 +23373,7 @@ class $$EmployeesTableTableManager
 
 typedef $$EmployeesTableProcessedTableManager =
     ProcessedTableManager<
-      _$PosifyDatabase,
+      _$LumioDatabase,
       $EmployeesTable,
       Employee,
       $$EmployeesTableFilterComposer,
@@ -22861,6 +23396,8 @@ typedef $$StoreProfileTableCreateCompanionBuilder =
       required String name,
       Value<String?> address,
       Value<String?> phone,
+      Value<String?> userId,
+      Value<String?> businessType,
       Value<int> taxPercentage,
       Value<String> taxType,
       Value<int> serviceChargePercentage,
@@ -22879,6 +23416,8 @@ typedef $$StoreProfileTableUpdateCompanionBuilder =
       Value<String> name,
       Value<String?> address,
       Value<String?> phone,
+      Value<String?> userId,
+      Value<String?> businessType,
       Value<int> taxPercentage,
       Value<String> taxType,
       Value<int> serviceChargePercentage,
@@ -22893,7 +23432,7 @@ typedef $$StoreProfileTableUpdateCompanionBuilder =
     });
 
 class $$StoreProfileTableFilterComposer
-    extends Composer<_$PosifyDatabase, $StoreProfileTable> {
+    extends Composer<_$LumioDatabase, $StoreProfileTable> {
   $$StoreProfileTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -22918,6 +23457,16 @@ class $$StoreProfileTableFilterComposer
 
   ColumnFilters<String> get phone => $composableBuilder(
     column: $table.phone,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get businessType => $composableBuilder(
+    column: $table.businessType,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -22973,7 +23522,7 @@ class $$StoreProfileTableFilterComposer
 }
 
 class $$StoreProfileTableOrderingComposer
-    extends Composer<_$PosifyDatabase, $StoreProfileTable> {
+    extends Composer<_$LumioDatabase, $StoreProfileTable> {
   $$StoreProfileTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -22998,6 +23547,16 @@ class $$StoreProfileTableOrderingComposer
 
   ColumnOrderings<String> get phone => $composableBuilder(
     column: $table.phone,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get businessType => $composableBuilder(
+    column: $table.businessType,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -23053,7 +23612,7 @@ class $$StoreProfileTableOrderingComposer
 }
 
 class $$StoreProfileTableAnnotationComposer
-    extends Composer<_$PosifyDatabase, $StoreProfileTable> {
+    extends Composer<_$LumioDatabase, $StoreProfileTable> {
   $$StoreProfileTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -23072,6 +23631,14 @@ class $$StoreProfileTableAnnotationComposer
 
   GeneratedColumn<String> get phone =>
       $composableBuilder(column: $table.phone, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get businessType => $composableBuilder(
+    column: $table.businessType,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<int> get taxPercentage => $composableBuilder(
     column: $table.taxPercentage,
@@ -23117,7 +23684,7 @@ class $$StoreProfileTableAnnotationComposer
 class $$StoreProfileTableTableManager
     extends
         RootTableManager<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $StoreProfileTable,
           StoreProfileData,
           $$StoreProfileTableFilterComposer,
@@ -23128,7 +23695,7 @@ class $$StoreProfileTableTableManager
           (
             StoreProfileData,
             BaseReferences<
-              _$PosifyDatabase,
+              _$LumioDatabase,
               $StoreProfileTable,
               StoreProfileData
             >,
@@ -23136,7 +23703,7 @@ class $$StoreProfileTableTableManager
           StoreProfileData,
           PrefetchHooks Function()
         > {
-  $$StoreProfileTableTableManager(_$PosifyDatabase db, $StoreProfileTable table)
+  $$StoreProfileTableTableManager(_$LumioDatabase db, $StoreProfileTable table)
     : super(
         TableManagerState(
           db: db,
@@ -23153,6 +23720,8 @@ class $$StoreProfileTableTableManager
                 Value<String> name = const Value.absent(),
                 Value<String?> address = const Value.absent(),
                 Value<String?> phone = const Value.absent(),
+                Value<String?> userId = const Value.absent(),
+                Value<String?> businessType = const Value.absent(),
                 Value<int> taxPercentage = const Value.absent(),
                 Value<String> taxType = const Value.absent(),
                 Value<int> serviceChargePercentage = const Value.absent(),
@@ -23169,6 +23738,8 @@ class $$StoreProfileTableTableManager
                 name: name,
                 address: address,
                 phone: phone,
+                userId: userId,
+                businessType: businessType,
                 taxPercentage: taxPercentage,
                 taxType: taxType,
                 serviceChargePercentage: serviceChargePercentage,
@@ -23187,6 +23758,8 @@ class $$StoreProfileTableTableManager
                 required String name,
                 Value<String?> address = const Value.absent(),
                 Value<String?> phone = const Value.absent(),
+                Value<String?> userId = const Value.absent(),
+                Value<String?> businessType = const Value.absent(),
                 Value<int> taxPercentage = const Value.absent(),
                 Value<String> taxType = const Value.absent(),
                 Value<int> serviceChargePercentage = const Value.absent(),
@@ -23203,6 +23776,8 @@ class $$StoreProfileTableTableManager
                 name: name,
                 address: address,
                 phone: phone,
+                userId: userId,
+                businessType: businessType,
                 taxPercentage: taxPercentage,
                 taxType: taxType,
                 serviceChargePercentage: serviceChargePercentage,
@@ -23225,7 +23800,7 @@ class $$StoreProfileTableTableManager
 
 typedef $$StoreProfileTableProcessedTableManager =
     ProcessedTableManager<
-      _$PosifyDatabase,
+      _$LumioDatabase,
       $StoreProfileTable,
       StoreProfileData,
       $$StoreProfileTableFilterComposer,
@@ -23235,7 +23810,7 @@ typedef $$StoreProfileTableProcessedTableManager =
       $$StoreProfileTableUpdateCompanionBuilder,
       (
         StoreProfileData,
-        BaseReferences<_$PosifyDatabase, $StoreProfileTable, StoreProfileData>,
+        BaseReferences<_$LumioDatabase, $StoreProfileTable, StoreProfileData>,
       ),
       StoreProfileData,
       PrefetchHooks Function()
@@ -23264,10 +23839,10 @@ typedef $$CategoriesTableUpdateCompanionBuilder =
     });
 
 final class $$CategoriesTableReferences
-    extends BaseReferences<_$PosifyDatabase, $CategoriesTable, Category> {
+    extends BaseReferences<_$LumioDatabase, $CategoriesTable, Category> {
   $$CategoriesTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $OutletsTable _outletIdTable(_$PosifyDatabase db) => db.outlets
+  static $OutletsTable _outletIdTable(_$LumioDatabase db) => db.outlets
       .createAlias($_aliasNameGenerator(db.categories.outletId, db.outlets.id));
 
   $$OutletsTableProcessedTableManager? get outletId {
@@ -23285,7 +23860,7 @@ final class $$CategoriesTableReferences
   }
 
   static MultiTypedResultKey<$ProductsTable, List<Product>> _productsRefsTable(
-    _$PosifyDatabase db,
+    _$LumioDatabase db,
   ) => MultiTypedResultKey.fromTable(
     db.products,
     aliasName: $_aliasNameGenerator(db.categories.id, db.products.categoryId),
@@ -23305,7 +23880,7 @@ final class $$CategoriesTableReferences
 }
 
 class $$CategoriesTableFilterComposer
-    extends Composer<_$PosifyDatabase, $CategoriesTable> {
+    extends Composer<_$LumioDatabase, $CategoriesTable> {
   $$CategoriesTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -23393,7 +23968,7 @@ class $$CategoriesTableFilterComposer
 }
 
 class $$CategoriesTableOrderingComposer
-    extends Composer<_$PosifyDatabase, $CategoriesTable> {
+    extends Composer<_$LumioDatabase, $CategoriesTable> {
   $$CategoriesTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -23456,7 +24031,7 @@ class $$CategoriesTableOrderingComposer
 }
 
 class $$CategoriesTableAnnotationComposer
-    extends Composer<_$PosifyDatabase, $CategoriesTable> {
+    extends Composer<_$LumioDatabase, $CategoriesTable> {
   $$CategoriesTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -23534,7 +24109,7 @@ class $$CategoriesTableAnnotationComposer
 class $$CategoriesTableTableManager
     extends
         RootTableManager<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $CategoriesTable,
           Category,
           $$CategoriesTableFilterComposer,
@@ -23546,7 +24121,7 @@ class $$CategoriesTableTableManager
           Category,
           PrefetchHooks Function({bool outletId, bool productsRefs})
         > {
-  $$CategoriesTableTableManager(_$PosifyDatabase db, $CategoriesTable table)
+  $$CategoriesTableTableManager(_$LumioDatabase db, $CategoriesTable table)
     : super(
         TableManagerState(
           db: db,
@@ -23672,7 +24247,7 @@ class $$CategoriesTableTableManager
 
 typedef $$CategoriesTableProcessedTableManager =
     ProcessedTableManager<
-      _$PosifyDatabase,
+      _$LumioDatabase,
       $CategoriesTable,
       Category,
       $$CategoriesTableFilterComposer,
@@ -23724,10 +24299,10 @@ typedef $$ProductsTableUpdateCompanionBuilder =
     });
 
 final class $$ProductsTableReferences
-    extends BaseReferences<_$PosifyDatabase, $ProductsTable, Product> {
+    extends BaseReferences<_$LumioDatabase, $ProductsTable, Product> {
   $$ProductsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $CategoriesTable _categoryIdTable(_$PosifyDatabase db) =>
+  static $CategoriesTable _categoryIdTable(_$LumioDatabase db) =>
       db.categories.createAlias(
         $_aliasNameGenerator(db.products.categoryId, db.categories.id),
       );
@@ -23746,7 +24321,7 @@ final class $$ProductsTableReferences
     );
   }
 
-  static $OutletsTable _outletIdTable(_$PosifyDatabase db) => db.outlets
+  static $OutletsTable _outletIdTable(_$LumioDatabase db) => db.outlets
       .createAlias($_aliasNameGenerator(db.products.outletId, db.outlets.id));
 
   $$OutletsTableProcessedTableManager? get outletId {
@@ -23764,7 +24339,7 @@ final class $$ProductsTableReferences
   }
 
   static MultiTypedResultKey<$ProductVariantsTable, List<ProductVariant>>
-  _productVariantsRefsTable(_$PosifyDatabase db) =>
+  _productVariantsRefsTable(_$LumioDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.productVariants,
         aliasName: $_aliasNameGenerator(
@@ -23788,7 +24363,7 @@ final class $$ProductsTableReferences
   }
 
   static MultiTypedResultKey<$TransactionItemsTable, List<TransactionItem>>
-  _transactionItemsRefsTable(_$PosifyDatabase db) =>
+  _transactionItemsRefsTable(_$LumioDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.transactionItems,
         aliasName: $_aliasNameGenerator(
@@ -23812,7 +24387,7 @@ final class $$ProductsTableReferences
   }
 
   static MultiTypedResultKey<$ProductRecipesTable, List<ProductRecipe>>
-  _productRecipesRefsTable(_$PosifyDatabase db) =>
+  _productRecipesRefsTable(_$LumioDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.productRecipes,
         aliasName: $_aliasNameGenerator(
@@ -23834,7 +24409,7 @@ final class $$ProductsTableReferences
   }
 
   static MultiTypedResultKey<$PurchaseOrderItemsTable, List<PurchaseOrderItem>>
-  _purchaseOrderItemsRefsTable(_$PosifyDatabase db) =>
+  _purchaseOrderItemsRefsTable(_$LumioDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.purchaseOrderItems,
         aliasName: $_aliasNameGenerator(
@@ -23859,7 +24434,7 @@ final class $$ProductsTableReferences
 }
 
 class $$ProductsTableFilterComposer
-    extends Composer<_$PosifyDatabase, $ProductsTable> {
+    extends Composer<_$LumioDatabase, $ProductsTable> {
   $$ProductsTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -24080,7 +24655,7 @@ class $$ProductsTableFilterComposer
 }
 
 class $$ProductsTableOrderingComposer
-    extends Composer<_$PosifyDatabase, $ProductsTable> {
+    extends Composer<_$LumioDatabase, $ProductsTable> {
   $$ProductsTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -24201,7 +24776,7 @@ class $$ProductsTableOrderingComposer
 }
 
 class $$ProductsTableAnnotationComposer
-    extends Composer<_$PosifyDatabase, $ProductsTable> {
+    extends Composer<_$LumioDatabase, $ProductsTable> {
   $$ProductsTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -24405,7 +24980,7 @@ class $$ProductsTableAnnotationComposer
 class $$ProductsTableTableManager
     extends
         RootTableManager<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $ProductsTable,
           Product,
           $$ProductsTableFilterComposer,
@@ -24424,7 +24999,7 @@ class $$ProductsTableTableManager
             bool purchaseOrderItemsRefs,
           })
         > {
-  $$ProductsTableTableManager(_$PosifyDatabase db, $ProductsTable table)
+  $$ProductsTableTableManager(_$LumioDatabase db, $ProductsTable table)
     : super(
         TableManagerState(
           db: db,
@@ -24673,7 +25248,7 @@ class $$ProductsTableTableManager
 
 typedef $$ProductsTableProcessedTableManager =
     ProcessedTableManager<
-      _$PosifyDatabase,
+      _$LumioDatabase,
       $ProductsTable,
       Product,
       $$ProductsTableFilterComposer,
@@ -24728,7 +25303,7 @@ typedef $$ProductVariantsTableUpdateCompanionBuilder =
 final class $$ProductVariantsTableReferences
     extends
         BaseReferences<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $ProductVariantsTable,
           ProductVariant
         > {
@@ -24738,7 +25313,7 @@ final class $$ProductVariantsTableReferences
     super.$_typedResult,
   );
 
-  static $ProductsTable _productIdTable(_$PosifyDatabase db) =>
+  static $ProductsTable _productIdTable(_$LumioDatabase db) =>
       db.products.createAlias(
         $_aliasNameGenerator(db.productVariants.productId, db.products.id),
       );
@@ -24757,7 +25332,7 @@ final class $$ProductVariantsTableReferences
     );
   }
 
-  static $OutletsTable _outletIdTable(_$PosifyDatabase db) =>
+  static $OutletsTable _outletIdTable(_$LumioDatabase db) =>
       db.outlets.createAlias(
         $_aliasNameGenerator(db.productVariants.outletId, db.outlets.id),
       );
@@ -24777,7 +25352,7 @@ final class $$ProductVariantsTableReferences
   }
 
   static MultiTypedResultKey<$TransactionItemsTable, List<TransactionItem>>
-  _transactionItemsRefsTable(_$PosifyDatabase db) =>
+  _transactionItemsRefsTable(_$LumioDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.transactionItems,
         aliasName: $_aliasNameGenerator(
@@ -24802,7 +25377,7 @@ final class $$ProductVariantsTableReferences
 }
 
 class $$ProductVariantsTableFilterComposer
-    extends Composer<_$PosifyDatabase, $ProductVariantsTable> {
+    extends Composer<_$LumioDatabase, $ProductVariantsTable> {
   $$ProductVariantsTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -24933,7 +25508,7 @@ class $$ProductVariantsTableFilterComposer
 }
 
 class $$ProductVariantsTableOrderingComposer
-    extends Composer<_$PosifyDatabase, $ProductVariantsTable> {
+    extends Composer<_$LumioDatabase, $ProductVariantsTable> {
   $$ProductVariantsTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -25039,7 +25614,7 @@ class $$ProductVariantsTableOrderingComposer
 }
 
 class $$ProductVariantsTableAnnotationComposer
-    extends Composer<_$PosifyDatabase, $ProductVariantsTable> {
+    extends Composer<_$LumioDatabase, $ProductVariantsTable> {
   $$ProductVariantsTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -25154,7 +25729,7 @@ class $$ProductVariantsTableAnnotationComposer
 class $$ProductVariantsTableTableManager
     extends
         RootTableManager<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $ProductVariantsTable,
           ProductVariant,
           $$ProductVariantsTableFilterComposer,
@@ -25171,7 +25746,7 @@ class $$ProductVariantsTableTableManager
           })
         > {
   $$ProductVariantsTableTableManager(
-    _$PosifyDatabase db,
+    _$LumioDatabase db,
     $ProductVariantsTable table,
   ) : super(
         TableManagerState(
@@ -25344,7 +25919,7 @@ class $$ProductVariantsTableTableManager
 
 typedef $$ProductVariantsTableProcessedTableManager =
     ProcessedTableManager<
-      _$PosifyDatabase,
+      _$LumioDatabase,
       $ProductVariantsTable,
       ProductVariant,
       $$ProductVariantsTableFilterComposer,
@@ -25396,10 +25971,10 @@ typedef $$ShiftsTableUpdateCompanionBuilder =
     });
 
 final class $$ShiftsTableReferences
-    extends BaseReferences<_$PosifyDatabase, $ShiftsTable, Shift> {
+    extends BaseReferences<_$LumioDatabase, $ShiftsTable, Shift> {
   $$ShiftsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $EmployeesTable _employeeIdTable(_$PosifyDatabase db) => db.employees
+  static $EmployeesTable _employeeIdTable(_$LumioDatabase db) => db.employees
       .createAlias($_aliasNameGenerator(db.shifts.employeeId, db.employees.id));
 
   $$EmployeesTableProcessedTableManager get employeeId {
@@ -25416,7 +25991,7 @@ final class $$ShiftsTableReferences
     );
   }
 
-  static $OutletsTable _outletIdTable(_$PosifyDatabase db) => db.outlets
+  static $OutletsTable _outletIdTable(_$LumioDatabase db) => db.outlets
       .createAlias($_aliasNameGenerator(db.shifts.outletId, db.outlets.id));
 
   $$OutletsTableProcessedTableManager? get outletId {
@@ -25434,7 +26009,7 @@ final class $$ShiftsTableReferences
   }
 
   static MultiTypedResultKey<$TransactionsTable, List<Transaction>>
-  _transactionsRefsTable(_$PosifyDatabase db) => MultiTypedResultKey.fromTable(
+  _transactionsRefsTable(_$LumioDatabase db) => MultiTypedResultKey.fromTable(
     db.transactions,
     aliasName: $_aliasNameGenerator(db.shifts.id, db.transactions.shiftId),
   );
@@ -25453,7 +26028,7 @@ final class $$ShiftsTableReferences
 }
 
 class $$ShiftsTableFilterComposer
-    extends Composer<_$PosifyDatabase, $ShiftsTable> {
+    extends Composer<_$LumioDatabase, $ShiftsTable> {
   $$ShiftsTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -25589,7 +26164,7 @@ class $$ShiftsTableFilterComposer
 }
 
 class $$ShiftsTableOrderingComposer
-    extends Composer<_$PosifyDatabase, $ShiftsTable> {
+    extends Composer<_$LumioDatabase, $ShiftsTable> {
   $$ShiftsTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -25700,7 +26275,7 @@ class $$ShiftsTableOrderingComposer
 }
 
 class $$ShiftsTableAnnotationComposer
-    extends Composer<_$PosifyDatabase, $ShiftsTable> {
+    extends Composer<_$LumioDatabase, $ShiftsTable> {
   $$ShiftsTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -25822,7 +26397,7 @@ class $$ShiftsTableAnnotationComposer
 class $$ShiftsTableTableManager
     extends
         RootTableManager<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $ShiftsTable,
           Shift,
           $$ShiftsTableFilterComposer,
@@ -25838,7 +26413,7 @@ class $$ShiftsTableTableManager
             bool transactionsRefs,
           })
         > {
-  $$ShiftsTableTableManager(_$PosifyDatabase db, $ShiftsTable table)
+  $$ShiftsTableTableManager(_$LumioDatabase db, $ShiftsTable table)
     : super(
         TableManagerState(
           db: db,
@@ -26008,7 +26583,7 @@ class $$ShiftsTableTableManager
 
 typedef $$ShiftsTableProcessedTableManager =
     ProcessedTableManager<
-      _$PosifyDatabase,
+      _$LumioDatabase,
       $ShiftsTable,
       Shift,
       $$ShiftsTableFilterComposer,
@@ -26068,10 +26643,10 @@ typedef $$DiscountsTableUpdateCompanionBuilder =
     });
 
 final class $$DiscountsTableReferences
-    extends BaseReferences<_$PosifyDatabase, $DiscountsTable, Discount> {
+    extends BaseReferences<_$LumioDatabase, $DiscountsTable, Discount> {
   $$DiscountsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $OutletsTable _outletIdTable(_$PosifyDatabase db) => db.outlets
+  static $OutletsTable _outletIdTable(_$LumioDatabase db) => db.outlets
       .createAlias($_aliasNameGenerator(db.discounts.outletId, db.outlets.id));
 
   $$OutletsTableProcessedTableManager? get outletId {
@@ -26089,7 +26664,7 @@ final class $$DiscountsTableReferences
   }
 
   static MultiTypedResultKey<$TransactionsTable, List<Transaction>>
-  _transactionsRefsTable(_$PosifyDatabase db) => MultiTypedResultKey.fromTable(
+  _transactionsRefsTable(_$LumioDatabase db) => MultiTypedResultKey.fromTable(
     db.transactions,
     aliasName: $_aliasNameGenerator(
       db.discounts.id,
@@ -26110,7 +26685,7 @@ final class $$DiscountsTableReferences
   }
 
   static MultiTypedResultKey<$TransactionItemsTable, List<TransactionItem>>
-  _transactionItemsRefsTable(_$PosifyDatabase db) =>
+  _transactionItemsRefsTable(_$LumioDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.transactionItems,
         aliasName: $_aliasNameGenerator(
@@ -26135,7 +26710,7 @@ final class $$DiscountsTableReferences
 }
 
 class $$DiscountsTableFilterComposer
-    extends Composer<_$PosifyDatabase, $DiscountsTable> {
+    extends Composer<_$LumioDatabase, $DiscountsTable> {
   $$DiscountsTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -26298,7 +26873,7 @@ class $$DiscountsTableFilterComposer
 }
 
 class $$DiscountsTableOrderingComposer
-    extends Composer<_$PosifyDatabase, $DiscountsTable> {
+    extends Composer<_$LumioDatabase, $DiscountsTable> {
   $$DiscountsTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -26411,7 +26986,7 @@ class $$DiscountsTableOrderingComposer
 }
 
 class $$DiscountsTableAnnotationComposer
-    extends Composer<_$PosifyDatabase, $DiscountsTable> {
+    extends Composer<_$LumioDatabase, $DiscountsTable> {
   $$DiscountsTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -26548,7 +27123,7 @@ class $$DiscountsTableAnnotationComposer
 class $$DiscountsTableTableManager
     extends
         RootTableManager<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $DiscountsTable,
           Discount,
           $$DiscountsTableFilterComposer,
@@ -26564,7 +27139,7 @@ class $$DiscountsTableTableManager
             bool transactionItemsRefs,
           })
         > {
-  $$DiscountsTableTableManager(_$PosifyDatabase db, $DiscountsTable table)
+  $$DiscountsTableTableManager(_$LumioDatabase db, $DiscountsTable table)
     : super(
         TableManagerState(
           db: db,
@@ -26761,7 +27336,7 @@ class $$DiscountsTableTableManager
 
 typedef $$DiscountsTableProcessedTableManager =
     ProcessedTableManager<
-      _$PosifyDatabase,
+      _$LumioDatabase,
       $DiscountsTable,
       Discount,
       $$DiscountsTableFilterComposer,
@@ -26833,10 +27408,10 @@ typedef $$TransactionsTableUpdateCompanionBuilder =
     });
 
 final class $$TransactionsTableReferences
-    extends BaseReferences<_$PosifyDatabase, $TransactionsTable, Transaction> {
+    extends BaseReferences<_$LumioDatabase, $TransactionsTable, Transaction> {
   $$TransactionsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $ShiftsTable _shiftIdTable(_$PosifyDatabase db) => db.shifts
+  static $ShiftsTable _shiftIdTable(_$LumioDatabase db) => db.shifts
       .createAlias($_aliasNameGenerator(db.transactions.shiftId, db.shifts.id));
 
   $$ShiftsTableProcessedTableManager get shiftId {
@@ -26853,7 +27428,7 @@ final class $$TransactionsTableReferences
     );
   }
 
-  static $EmployeesTable _voidByTable(_$PosifyDatabase db) =>
+  static $EmployeesTable _voidByTable(_$LumioDatabase db) =>
       db.employees.createAlias(
         $_aliasNameGenerator(db.transactions.voidBy, db.employees.id),
       );
@@ -26872,7 +27447,7 @@ final class $$TransactionsTableReferences
     );
   }
 
-  static $DiscountsTable _discountIdTable(_$PosifyDatabase db) =>
+  static $DiscountsTable _discountIdTable(_$LumioDatabase db) =>
       db.discounts.createAlias(
         $_aliasNameGenerator(db.transactions.discountId, db.discounts.id),
       );
@@ -26891,7 +27466,7 @@ final class $$TransactionsTableReferences
     );
   }
 
-  static $OutletsTable _outletIdTable(_$PosifyDatabase db) =>
+  static $OutletsTable _outletIdTable(_$LumioDatabase db) =>
       db.outlets.createAlias(
         $_aliasNameGenerator(db.transactions.outletId, db.outlets.id),
       );
@@ -26911,7 +27486,7 @@ final class $$TransactionsTableReferences
   }
 
   static MultiTypedResultKey<$TransactionItemsTable, List<TransactionItem>>
-  _transactionItemsRefsTable(_$PosifyDatabase db) =>
+  _transactionItemsRefsTable(_$LumioDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.transactionItems,
         aliasName: $_aliasNameGenerator(
@@ -26938,7 +27513,7 @@ final class $$TransactionsTableReferences
     $TransactionPaymentsTable,
     List<TransactionPayment>
   >
-  _transactionPaymentsRefsTable(_$PosifyDatabase db) =>
+  _transactionPaymentsRefsTable(_$LumioDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.transactionPayments,
         aliasName: $_aliasNameGenerator(
@@ -26963,7 +27538,7 @@ final class $$TransactionsTableReferences
 }
 
 class $$TransactionsTableFilterComposer
-    extends Composer<_$PosifyDatabase, $TransactionsTable> {
+    extends Composer<_$LumioDatabase, $TransactionsTable> {
   $$TransactionsTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -27210,7 +27785,7 @@ class $$TransactionsTableFilterComposer
 }
 
 class $$TransactionsTableOrderingComposer
-    extends Composer<_$PosifyDatabase, $TransactionsTable> {
+    extends Composer<_$LumioDatabase, $TransactionsTable> {
   $$TransactionsTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -27407,7 +27982,7 @@ class $$TransactionsTableOrderingComposer
 }
 
 class $$TransactionsTableAnnotationComposer
-    extends Composer<_$PosifyDatabase, $TransactionsTable> {
+    extends Composer<_$LumioDatabase, $TransactionsTable> {
   $$TransactionsTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -27641,7 +28216,7 @@ class $$TransactionsTableAnnotationComposer
 class $$TransactionsTableTableManager
     extends
         RootTableManager<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $TransactionsTable,
           Transaction,
           $$TransactionsTableFilterComposer,
@@ -27660,7 +28235,7 @@ class $$TransactionsTableTableManager
             bool transactionPaymentsRefs,
           })
         > {
-  $$TransactionsTableTableManager(_$PosifyDatabase db, $TransactionsTable table)
+  $$TransactionsTableTableManager(_$LumioDatabase db, $TransactionsTable table)
     : super(
         TableManagerState(
           db: db,
@@ -27931,7 +28506,7 @@ class $$TransactionsTableTableManager
 
 typedef $$TransactionsTableProcessedTableManager =
     ProcessedTableManager<
-      _$PosifyDatabase,
+      _$LumioDatabase,
       $TransactionsTable,
       Transaction,
       $$TransactionsTableFilterComposer,
@@ -27992,7 +28567,7 @@ typedef $$TransactionItemsTableUpdateCompanionBuilder =
 final class $$TransactionItemsTableReferences
     extends
         BaseReferences<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $TransactionItemsTable,
           TransactionItem
         > {
@@ -28002,7 +28577,7 @@ final class $$TransactionItemsTableReferences
     super.$_typedResult,
   );
 
-  static $TransactionsTable _transactionIdTable(_$PosifyDatabase db) =>
+  static $TransactionsTable _transactionIdTable(_$LumioDatabase db) =>
       db.transactions.createAlias(
         $_aliasNameGenerator(
           db.transactionItems.transactionId,
@@ -28024,7 +28599,7 @@ final class $$TransactionItemsTableReferences
     );
   }
 
-  static $ProductsTable _productIdTable(_$PosifyDatabase db) =>
+  static $ProductsTable _productIdTable(_$LumioDatabase db) =>
       db.products.createAlias(
         $_aliasNameGenerator(db.transactionItems.productId, db.products.id),
       );
@@ -28043,7 +28618,7 @@ final class $$TransactionItemsTableReferences
     );
   }
 
-  static $ProductVariantsTable _variantIdTable(_$PosifyDatabase db) =>
+  static $ProductVariantsTable _variantIdTable(_$LumioDatabase db) =>
       db.productVariants.createAlias(
         $_aliasNameGenerator(
           db.transactionItems.variantId,
@@ -28065,7 +28640,7 @@ final class $$TransactionItemsTableReferences
     );
   }
 
-  static $DiscountsTable _discountIdTable(_$PosifyDatabase db) =>
+  static $DiscountsTable _discountIdTable(_$LumioDatabase db) =>
       db.discounts.createAlias(
         $_aliasNameGenerator(db.transactionItems.discountId, db.discounts.id),
       );
@@ -28084,7 +28659,7 @@ final class $$TransactionItemsTableReferences
     );
   }
 
-  static $OutletsTable _outletIdTable(_$PosifyDatabase db) =>
+  static $OutletsTable _outletIdTable(_$LumioDatabase db) =>
       db.outlets.createAlias(
         $_aliasNameGenerator(db.transactionItems.outletId, db.outlets.id),
       );
@@ -28105,7 +28680,7 @@ final class $$TransactionItemsTableReferences
 }
 
 class $$TransactionItemsTableFilterComposer
-    extends Composer<_$PosifyDatabase, $TransactionItemsTable> {
+    extends Composer<_$LumioDatabase, $TransactionItemsTable> {
   $$TransactionItemsTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -28280,7 +28855,7 @@ class $$TransactionItemsTableFilterComposer
 }
 
 class $$TransactionItemsTableOrderingComposer
-    extends Composer<_$PosifyDatabase, $TransactionItemsTable> {
+    extends Composer<_$LumioDatabase, $TransactionItemsTable> {
   $$TransactionItemsTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -28455,7 +29030,7 @@ class $$TransactionItemsTableOrderingComposer
 }
 
 class $$TransactionItemsTableAnnotationComposer
-    extends Composer<_$PosifyDatabase, $TransactionItemsTable> {
+    extends Composer<_$LumioDatabase, $TransactionItemsTable> {
   $$TransactionItemsTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -28618,7 +29193,7 @@ class $$TransactionItemsTableAnnotationComposer
 class $$TransactionItemsTableTableManager
     extends
         RootTableManager<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $TransactionItemsTable,
           TransactionItem,
           $$TransactionItemsTableFilterComposer,
@@ -28637,7 +29212,7 @@ class $$TransactionItemsTableTableManager
           })
         > {
   $$TransactionItemsTableTableManager(
-    _$PosifyDatabase db,
+    _$LumioDatabase db,
     $TransactionItemsTable table,
   ) : super(
         TableManagerState(
@@ -28845,7 +29420,7 @@ class $$TransactionItemsTableTableManager
 
 typedef $$TransactionItemsTableProcessedTableManager =
     ProcessedTableManager<
-      _$PosifyDatabase,
+      _$LumioDatabase,
       $TransactionItemsTable,
       TransactionItem,
       $$TransactionItemsTableFilterComposer,
@@ -28905,7 +29480,7 @@ typedef $$StockTransactionsTableUpdateCompanionBuilder =
 final class $$StockTransactionsTableReferences
     extends
         BaseReferences<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $StockTransactionsTable,
           StockTransaction
         > {
@@ -28915,7 +29490,7 @@ final class $$StockTransactionsTableReferences
     super.$_typedResult,
   );
 
-  static $OutletsTable _outletIdTable(_$PosifyDatabase db) =>
+  static $OutletsTable _outletIdTable(_$LumioDatabase db) =>
       db.outlets.createAlias(
         $_aliasNameGenerator(db.stockTransactions.outletId, db.outlets.id),
       );
@@ -28936,7 +29511,7 @@ final class $$StockTransactionsTableReferences
 }
 
 class $$StockTransactionsTableFilterComposer
-    extends Composer<_$PosifyDatabase, $StockTransactionsTable> {
+    extends Composer<_$LumioDatabase, $StockTransactionsTable> {
   $$StockTransactionsTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -29039,7 +29614,7 @@ class $$StockTransactionsTableFilterComposer
 }
 
 class $$StockTransactionsTableOrderingComposer
-    extends Composer<_$PosifyDatabase, $StockTransactionsTable> {
+    extends Composer<_$LumioDatabase, $StockTransactionsTable> {
   $$StockTransactionsTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -29142,7 +29717,7 @@ class $$StockTransactionsTableOrderingComposer
 }
 
 class $$StockTransactionsTableAnnotationComposer
-    extends Composer<_$PosifyDatabase, $StockTransactionsTable> {
+    extends Composer<_$LumioDatabase, $StockTransactionsTable> {
   $$StockTransactionsTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -29223,7 +29798,7 @@ class $$StockTransactionsTableAnnotationComposer
 class $$StockTransactionsTableTableManager
     extends
         RootTableManager<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $StockTransactionsTable,
           StockTransaction,
           $$StockTransactionsTableFilterComposer,
@@ -29236,7 +29811,7 @@ class $$StockTransactionsTableTableManager
           PrefetchHooks Function({bool outletId})
         > {
   $$StockTransactionsTableTableManager(
-    _$PosifyDatabase db,
+    _$LumioDatabase db,
     $StockTransactionsTable table,
   ) : super(
         TableManagerState(
@@ -29380,7 +29955,7 @@ class $$StockTransactionsTableTableManager
 
 typedef $$StockTransactionsTableProcessedTableManager =
     ProcessedTableManager<
-      _$PosifyDatabase,
+      _$LumioDatabase,
       $StockTransactionsTable,
       StockTransaction,
       $$StockTransactionsTableFilterComposer,
@@ -29426,10 +30001,10 @@ typedef $$CustomersTableUpdateCompanionBuilder =
     });
 
 final class $$CustomersTableReferences
-    extends BaseReferences<_$PosifyDatabase, $CustomersTable, Customer> {
+    extends BaseReferences<_$LumioDatabase, $CustomersTable, Customer> {
   $$CustomersTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $OutletsTable _outletIdTable(_$PosifyDatabase db) => db.outlets
+  static $OutletsTable _outletIdTable(_$LumioDatabase db) => db.outlets
       .createAlias($_aliasNameGenerator(db.customers.outletId, db.outlets.id));
 
   $$OutletsTableProcessedTableManager? get outletId {
@@ -29448,7 +30023,7 @@ final class $$CustomersTableReferences
 }
 
 class $$CustomersTableFilterComposer
-    extends Composer<_$PosifyDatabase, $CustomersTable> {
+    extends Composer<_$LumioDatabase, $CustomersTable> {
   $$CustomersTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -29536,7 +30111,7 @@ class $$CustomersTableFilterComposer
 }
 
 class $$CustomersTableOrderingComposer
-    extends Composer<_$PosifyDatabase, $CustomersTable> {
+    extends Composer<_$LumioDatabase, $CustomersTable> {
   $$CustomersTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -29624,7 +30199,7 @@ class $$CustomersTableOrderingComposer
 }
 
 class $$CustomersTableAnnotationComposer
-    extends Composer<_$PosifyDatabase, $CustomersTable> {
+    extends Composer<_$LumioDatabase, $CustomersTable> {
   $$CustomersTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -29692,7 +30267,7 @@ class $$CustomersTableAnnotationComposer
 class $$CustomersTableTableManager
     extends
         RootTableManager<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $CustomersTable,
           Customer,
           $$CustomersTableFilterComposer,
@@ -29704,7 +30279,7 @@ class $$CustomersTableTableManager
           Customer,
           PrefetchHooks Function({bool outletId})
         > {
-  $$CustomersTableTableManager(_$PosifyDatabase db, $CustomersTable table)
+  $$CustomersTableTableManager(_$LumioDatabase db, $CustomersTable table)
     : super(
         TableManagerState(
           db: db,
@@ -29830,7 +30405,7 @@ class $$CustomersTableTableManager
 
 typedef $$CustomersTableProcessedTableManager =
     ProcessedTableManager<
-      _$PosifyDatabase,
+      _$LumioDatabase,
       $CustomersTable,
       Customer,
       $$CustomersTableFilterComposer,
@@ -29870,10 +30445,10 @@ typedef $$SuppliersTableUpdateCompanionBuilder =
     });
 
 final class $$SuppliersTableReferences
-    extends BaseReferences<_$PosifyDatabase, $SuppliersTable, Supplier> {
+    extends BaseReferences<_$LumioDatabase, $SuppliersTable, Supplier> {
   $$SuppliersTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $OutletsTable _outletIdTable(_$PosifyDatabase db) => db.outlets
+  static $OutletsTable _outletIdTable(_$LumioDatabase db) => db.outlets
       .createAlias($_aliasNameGenerator(db.suppliers.outletId, db.outlets.id));
 
   $$OutletsTableProcessedTableManager? get outletId {
@@ -29891,7 +30466,7 @@ final class $$SuppliersTableReferences
   }
 
   static MultiTypedResultKey<$IngredientsTable, List<Ingredient>>
-  _ingredientsRefsTable(_$PosifyDatabase db) => MultiTypedResultKey.fromTable(
+  _ingredientsRefsTable(_$LumioDatabase db) => MultiTypedResultKey.fromTable(
     db.ingredients,
     aliasName: $_aliasNameGenerator(
       db.suppliers.id,
@@ -29915,7 +30490,7 @@ final class $$SuppliersTableReferences
     $IngredientStockHistoryTable,
     List<IngredientStockHistoryData>
   >
-  _ingredientStockHistoryRefsTable(_$PosifyDatabase db) =>
+  _ingredientStockHistoryRefsTable(_$LumioDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.ingredientStockHistory,
         aliasName: $_aliasNameGenerator(
@@ -29940,7 +30515,7 @@ final class $$SuppliersTableReferences
   }
 
   static MultiTypedResultKey<$PurchaseOrdersTable, List<PurchaseOrder>>
-  _purchaseOrdersRefsTable(_$PosifyDatabase db) =>
+  _purchaseOrdersRefsTable(_$LumioDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.purchaseOrders,
         aliasName: $_aliasNameGenerator(
@@ -29963,7 +30538,7 @@ final class $$SuppliersTableReferences
 }
 
 class $$SuppliersTableFilterComposer
-    extends Composer<_$PosifyDatabase, $SuppliersTable> {
+    extends Composer<_$LumioDatabase, $SuppliersTable> {
   $$SuppliersTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -30112,7 +30687,7 @@ class $$SuppliersTableFilterComposer
 }
 
 class $$SuppliersTableOrderingComposer
-    extends Composer<_$PosifyDatabase, $SuppliersTable> {
+    extends Composer<_$LumioDatabase, $SuppliersTable> {
   $$SuppliersTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -30185,7 +30760,7 @@ class $$SuppliersTableOrderingComposer
 }
 
 class $$SuppliersTableAnnotationComposer
-    extends Composer<_$PosifyDatabase, $SuppliersTable> {
+    extends Composer<_$LumioDatabase, $SuppliersTable> {
   $$SuppliersTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -30320,7 +30895,7 @@ class $$SuppliersTableAnnotationComposer
 class $$SuppliersTableTableManager
     extends
         RootTableManager<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $SuppliersTable,
           Supplier,
           $$SuppliersTableFilterComposer,
@@ -30337,7 +30912,7 @@ class $$SuppliersTableTableManager
             bool purchaseOrdersRefs,
           })
         > {
-  $$SuppliersTableTableManager(_$PosifyDatabase db, $SuppliersTable table)
+  $$SuppliersTableTableManager(_$LumioDatabase db, $SuppliersTable table)
     : super(
         TableManagerState(
           db: db,
@@ -30525,7 +31100,7 @@ class $$SuppliersTableTableManager
 
 typedef $$SuppliersTableProcessedTableManager =
     ProcessedTableManager<
-      _$PosifyDatabase,
+      _$LumioDatabase,
       $SuppliersTable,
       Supplier,
       $$SuppliersTableFilterComposer,
@@ -30574,7 +31149,7 @@ typedef $$PrinterSettingsTableUpdateCompanionBuilder =
 final class $$PrinterSettingsTableReferences
     extends
         BaseReferences<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $PrinterSettingsTable,
           PrinterSetting
         > {
@@ -30584,7 +31159,7 @@ final class $$PrinterSettingsTableReferences
     super.$_typedResult,
   );
 
-  static $OutletsTable _outletIdTable(_$PosifyDatabase db) =>
+  static $OutletsTable _outletIdTable(_$LumioDatabase db) =>
       db.outlets.createAlias(
         $_aliasNameGenerator(db.printerSettings.outletId, db.outlets.id),
       );
@@ -30605,7 +31180,7 @@ final class $$PrinterSettingsTableReferences
 }
 
 class $$PrinterSettingsTableFilterComposer
-    extends Composer<_$PosifyDatabase, $PrinterSettingsTable> {
+    extends Composer<_$LumioDatabase, $PrinterSettingsTable> {
   $$PrinterSettingsTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -30683,7 +31258,7 @@ class $$PrinterSettingsTableFilterComposer
 }
 
 class $$PrinterSettingsTableOrderingComposer
-    extends Composer<_$PosifyDatabase, $PrinterSettingsTable> {
+    extends Composer<_$LumioDatabase, $PrinterSettingsTable> {
   $$PrinterSettingsTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -30761,7 +31336,7 @@ class $$PrinterSettingsTableOrderingComposer
 }
 
 class $$PrinterSettingsTableAnnotationComposer
-    extends Composer<_$PosifyDatabase, $PrinterSettingsTable> {
+    extends Composer<_$LumioDatabase, $PrinterSettingsTable> {
   $$PrinterSettingsTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -30827,7 +31402,7 @@ class $$PrinterSettingsTableAnnotationComposer
 class $$PrinterSettingsTableTableManager
     extends
         RootTableManager<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $PrinterSettingsTable,
           PrinterSetting,
           $$PrinterSettingsTableFilterComposer,
@@ -30840,7 +31415,7 @@ class $$PrinterSettingsTableTableManager
           PrefetchHooks Function({bool outletId})
         > {
   $$PrinterSettingsTableTableManager(
-    _$PosifyDatabase db,
+    _$LumioDatabase db,
     $PrinterSettingsTable table,
   ) : super(
         TableManagerState(
@@ -30961,7 +31536,7 @@ class $$PrinterSettingsTableTableManager
 
 typedef $$PrinterSettingsTableProcessedTableManager =
     ProcessedTableManager<
-      _$PosifyDatabase,
+      _$LumioDatabase,
       $PrinterSettingsTable,
       PrinterSetting,
       $$PrinterSettingsTableFilterComposer,
@@ -31007,10 +31582,10 @@ typedef $$IngredientsTableUpdateCompanionBuilder =
     });
 
 final class $$IngredientsTableReferences
-    extends BaseReferences<_$PosifyDatabase, $IngredientsTable, Ingredient> {
+    extends BaseReferences<_$LumioDatabase, $IngredientsTable, Ingredient> {
   $$IngredientsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $SuppliersTable _lastSupplierIdTable(_$PosifyDatabase db) =>
+  static $SuppliersTable _lastSupplierIdTable(_$LumioDatabase db) =>
       db.suppliers.createAlias(
         $_aliasNameGenerator(db.ingredients.lastSupplierId, db.suppliers.id),
       );
@@ -31029,7 +31604,7 @@ final class $$IngredientsTableReferences
     );
   }
 
-  static $OutletsTable _outletIdTable(_$PosifyDatabase db) =>
+  static $OutletsTable _outletIdTable(_$LumioDatabase db) =>
       db.outlets.createAlias(
         $_aliasNameGenerator(db.ingredients.outletId, db.outlets.id),
       );
@@ -31049,7 +31624,7 @@ final class $$IngredientsTableReferences
   }
 
   static MultiTypedResultKey<$ProductRecipesTable, List<ProductRecipe>>
-  _productRecipesRefsTable(_$PosifyDatabase db) =>
+  _productRecipesRefsTable(_$LumioDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.productRecipes,
         aliasName: $_aliasNameGenerator(
@@ -31074,7 +31649,7 @@ final class $$IngredientsTableReferences
     $IngredientStockHistoryTable,
     List<IngredientStockHistoryData>
   >
-  _ingredientStockHistoryRefsTable(_$PosifyDatabase db) =>
+  _ingredientStockHistoryRefsTable(_$LumioDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.ingredientStockHistory,
         aliasName: $_aliasNameGenerator(
@@ -31099,7 +31674,7 @@ final class $$IngredientsTableReferences
   }
 
   static MultiTypedResultKey<$PurchaseOrderItemsTable, List<PurchaseOrderItem>>
-  _purchaseOrderItemsRefsTable(_$PosifyDatabase db) =>
+  _purchaseOrderItemsRefsTable(_$LumioDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.purchaseOrderItems,
         aliasName: $_aliasNameGenerator(
@@ -31124,7 +31699,7 @@ final class $$IngredientsTableReferences
 }
 
 class $$IngredientsTableFilterComposer
-    extends Composer<_$PosifyDatabase, $IngredientsTable> {
+    extends Composer<_$LumioDatabase, $IngredientsTable> {
   $$IngredientsTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -31306,7 +31881,7 @@ class $$IngredientsTableFilterComposer
 }
 
 class $$IngredientsTableOrderingComposer
-    extends Composer<_$PosifyDatabase, $IngredientsTable> {
+    extends Composer<_$LumioDatabase, $IngredientsTable> {
   $$IngredientsTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -31412,7 +31987,7 @@ class $$IngredientsTableOrderingComposer
 }
 
 class $$IngredientsTableAnnotationComposer
-    extends Composer<_$PosifyDatabase, $IngredientsTable> {
+    extends Composer<_$LumioDatabase, $IngredientsTable> {
   $$IngredientsTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -31583,7 +32158,7 @@ class $$IngredientsTableAnnotationComposer
 class $$IngredientsTableTableManager
     extends
         RootTableManager<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $IngredientsTable,
           Ingredient,
           $$IngredientsTableFilterComposer,
@@ -31601,7 +32176,7 @@ class $$IngredientsTableTableManager
             bool purchaseOrderItemsRefs,
           })
         > {
-  $$IngredientsTableTableManager(_$PosifyDatabase db, $IngredientsTable table)
+  $$IngredientsTableTableManager(_$LumioDatabase db, $IngredientsTable table)
     : super(
         TableManagerState(
           db: db,
@@ -31819,7 +32394,7 @@ class $$IngredientsTableTableManager
 
 typedef $$IngredientsTableProcessedTableManager =
     ProcessedTableManager<
-      _$PosifyDatabase,
+      _$LumioDatabase,
       $IngredientsTable,
       Ingredient,
       $$IngredientsTableFilterComposer,
@@ -31866,14 +32441,14 @@ typedef $$ProductRecipesTableUpdateCompanionBuilder =
 
 final class $$ProductRecipesTableReferences
     extends
-        BaseReferences<_$PosifyDatabase, $ProductRecipesTable, ProductRecipe> {
+        BaseReferences<_$LumioDatabase, $ProductRecipesTable, ProductRecipe> {
   $$ProductRecipesTableReferences(
     super.$_db,
     super.$_table,
     super.$_typedResult,
   );
 
-  static $ProductsTable _productIdTable(_$PosifyDatabase db) =>
+  static $ProductsTable _productIdTable(_$LumioDatabase db) =>
       db.products.createAlias(
         $_aliasNameGenerator(db.productRecipes.productId, db.products.id),
       );
@@ -31892,7 +32467,7 @@ final class $$ProductRecipesTableReferences
     );
   }
 
-  static $IngredientsTable _ingredientIdTable(_$PosifyDatabase db) =>
+  static $IngredientsTable _ingredientIdTable(_$LumioDatabase db) =>
       db.ingredients.createAlias(
         $_aliasNameGenerator(db.productRecipes.ingredientId, db.ingredients.id),
       );
@@ -31911,7 +32486,7 @@ final class $$ProductRecipesTableReferences
     );
   }
 
-  static $OutletsTable _outletIdTable(_$PosifyDatabase db) =>
+  static $OutletsTable _outletIdTable(_$LumioDatabase db) =>
       db.outlets.createAlias(
         $_aliasNameGenerator(db.productRecipes.outletId, db.outlets.id),
       );
@@ -31932,7 +32507,7 @@ final class $$ProductRecipesTableReferences
 }
 
 class $$ProductRecipesTableFilterComposer
-    extends Composer<_$PosifyDatabase, $ProductRecipesTable> {
+    extends Composer<_$LumioDatabase, $ProductRecipesTable> {
   $$ProductRecipesTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -32041,7 +32616,7 @@ class $$ProductRecipesTableFilterComposer
 }
 
 class $$ProductRecipesTableOrderingComposer
-    extends Composer<_$PosifyDatabase, $ProductRecipesTable> {
+    extends Composer<_$LumioDatabase, $ProductRecipesTable> {
   $$ProductRecipesTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -32150,7 +32725,7 @@ class $$ProductRecipesTableOrderingComposer
 }
 
 class $$ProductRecipesTableAnnotationComposer
-    extends Composer<_$PosifyDatabase, $ProductRecipesTable> {
+    extends Composer<_$LumioDatabase, $ProductRecipesTable> {
   $$ProductRecipesTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -32251,7 +32826,7 @@ class $$ProductRecipesTableAnnotationComposer
 class $$ProductRecipesTableTableManager
     extends
         RootTableManager<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $ProductRecipesTable,
           ProductRecipe,
           $$ProductRecipesTableFilterComposer,
@@ -32268,7 +32843,7 @@ class $$ProductRecipesTableTableManager
           })
         > {
   $$ProductRecipesTableTableManager(
-    _$PosifyDatabase db,
+    _$LumioDatabase db,
     $ProductRecipesTable table,
   ) : super(
         TableManagerState(
@@ -32416,7 +32991,7 @@ class $$ProductRecipesTableTableManager
 
 typedef $$ProductRecipesTableProcessedTableManager =
     ProcessedTableManager<
-      _$PosifyDatabase,
+      _$LumioDatabase,
       $ProductRecipesTable,
       ProductRecipe,
       $$ProductRecipesTableFilterComposer,
@@ -32468,7 +33043,7 @@ typedef $$IngredientStockHistoryTableUpdateCompanionBuilder =
 final class $$IngredientStockHistoryTableReferences
     extends
         BaseReferences<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $IngredientStockHistoryTable,
           IngredientStockHistoryData
         > {
@@ -32478,7 +33053,7 @@ final class $$IngredientStockHistoryTableReferences
     super.$_typedResult,
   );
 
-  static $IngredientsTable _ingredientIdTable(_$PosifyDatabase db) =>
+  static $IngredientsTable _ingredientIdTable(_$LumioDatabase db) =>
       db.ingredients.createAlias(
         $_aliasNameGenerator(
           db.ingredientStockHistory.ingredientId,
@@ -32500,7 +33075,7 @@ final class $$IngredientStockHistoryTableReferences
     );
   }
 
-  static $SuppliersTable _supplierIdTable(_$PosifyDatabase db) =>
+  static $SuppliersTable _supplierIdTable(_$LumioDatabase db) =>
       db.suppliers.createAlias(
         $_aliasNameGenerator(
           db.ingredientStockHistory.supplierId,
@@ -32522,7 +33097,7 @@ final class $$IngredientStockHistoryTableReferences
     );
   }
 
-  static $OutletsTable _outletIdTable(_$PosifyDatabase db) =>
+  static $OutletsTable _outletIdTable(_$LumioDatabase db) =>
       db.outlets.createAlias(
         $_aliasNameGenerator(db.ingredientStockHistory.outletId, db.outlets.id),
       );
@@ -32543,7 +33118,7 @@ final class $$IngredientStockHistoryTableReferences
 }
 
 class $$IngredientStockHistoryTableFilterComposer
-    extends Composer<_$PosifyDatabase, $IngredientStockHistoryTable> {
+    extends Composer<_$LumioDatabase, $IngredientStockHistoryTable> {
   $$IngredientStockHistoryTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -32677,7 +33252,7 @@ class $$IngredientStockHistoryTableFilterComposer
 }
 
 class $$IngredientStockHistoryTableOrderingComposer
-    extends Composer<_$PosifyDatabase, $IngredientStockHistoryTable> {
+    extends Composer<_$LumioDatabase, $IngredientStockHistoryTable> {
   $$IngredientStockHistoryTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -32811,7 +33386,7 @@ class $$IngredientStockHistoryTableOrderingComposer
 }
 
 class $$IngredientStockHistoryTableAnnotationComposer
-    extends Composer<_$PosifyDatabase, $IngredientStockHistoryTable> {
+    extends Composer<_$LumioDatabase, $IngredientStockHistoryTable> {
   $$IngredientStockHistoryTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -32933,7 +33508,7 @@ class $$IngredientStockHistoryTableAnnotationComposer
 class $$IngredientStockHistoryTableTableManager
     extends
         RootTableManager<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $IngredientStockHistoryTable,
           IngredientStockHistoryData,
           $$IngredientStockHistoryTableFilterComposer,
@@ -32950,7 +33525,7 @@ class $$IngredientStockHistoryTableTableManager
           })
         > {
   $$IngredientStockHistoryTableTableManager(
-    _$PosifyDatabase db,
+    _$LumioDatabase db,
     $IngredientStockHistoryTable table,
   ) : super(
         TableManagerState(
@@ -33127,7 +33702,7 @@ class $$IngredientStockHistoryTableTableManager
 
 typedef $$IngredientStockHistoryTableProcessedTableManager =
     ProcessedTableManager<
-      _$PosifyDatabase,
+      _$LumioDatabase,
       $IngredientStockHistoryTable,
       IngredientStockHistoryData,
       $$IngredientStockHistoryTableFilterComposer,
@@ -33175,7 +33750,7 @@ typedef $$UnitConversionsTableUpdateCompanionBuilder =
 final class $$UnitConversionsTableReferences
     extends
         BaseReferences<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $UnitConversionsTable,
           UnitConversion
         > {
@@ -33185,7 +33760,7 @@ final class $$UnitConversionsTableReferences
     super.$_typedResult,
   );
 
-  static $OutletsTable _outletIdTable(_$PosifyDatabase db) =>
+  static $OutletsTable _outletIdTable(_$LumioDatabase db) =>
       db.outlets.createAlias(
         $_aliasNameGenerator(db.unitConversions.outletId, db.outlets.id),
       );
@@ -33206,7 +33781,7 @@ final class $$UnitConversionsTableReferences
 }
 
 class $$UnitConversionsTableFilterComposer
-    extends Composer<_$PosifyDatabase, $UnitConversionsTable> {
+    extends Composer<_$LumioDatabase, $UnitConversionsTable> {
   $$UnitConversionsTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -33284,7 +33859,7 @@ class $$UnitConversionsTableFilterComposer
 }
 
 class $$UnitConversionsTableOrderingComposer
-    extends Composer<_$PosifyDatabase, $UnitConversionsTable> {
+    extends Composer<_$LumioDatabase, $UnitConversionsTable> {
   $$UnitConversionsTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -33362,7 +33937,7 @@ class $$UnitConversionsTableOrderingComposer
 }
 
 class $$UnitConversionsTableAnnotationComposer
-    extends Composer<_$PosifyDatabase, $UnitConversionsTable> {
+    extends Composer<_$LumioDatabase, $UnitConversionsTable> {
   $$UnitConversionsTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -33426,7 +34001,7 @@ class $$UnitConversionsTableAnnotationComposer
 class $$UnitConversionsTableTableManager
     extends
         RootTableManager<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $UnitConversionsTable,
           UnitConversion,
           $$UnitConversionsTableFilterComposer,
@@ -33439,7 +34014,7 @@ class $$UnitConversionsTableTableManager
           PrefetchHooks Function({bool outletId})
         > {
   $$UnitConversionsTableTableManager(
-    _$PosifyDatabase db,
+    _$LumioDatabase db,
     $UnitConversionsTable table,
   ) : super(
         TableManagerState(
@@ -33560,7 +34135,7 @@ class $$UnitConversionsTableTableManager
 
 typedef $$UnitConversionsTableProcessedTableManager =
     ProcessedTableManager<
-      _$PosifyDatabase,
+      _$LumioDatabase,
       $UnitConversionsTable,
       UnitConversion,
       $$UnitConversionsTableFilterComposer,
@@ -33607,10 +34182,10 @@ typedef $$StockOpnameTableUpdateCompanionBuilder =
 
 final class $$StockOpnameTableReferences
     extends
-        BaseReferences<_$PosifyDatabase, $StockOpnameTable, StockOpnameData> {
+        BaseReferences<_$LumioDatabase, $StockOpnameTable, StockOpnameData> {
   $$StockOpnameTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $OutletsTable _outletIdTable(_$PosifyDatabase db) =>
+  static $OutletsTable _outletIdTable(_$LumioDatabase db) =>
       db.outlets.createAlias(
         $_aliasNameGenerator(db.stockOpname.outletId, db.outlets.id),
       );
@@ -33631,7 +34206,7 @@ final class $$StockOpnameTableReferences
 }
 
 class $$StockOpnameTableFilterComposer
-    extends Composer<_$PosifyDatabase, $StockOpnameTable> {
+    extends Composer<_$LumioDatabase, $StockOpnameTable> {
   $$StockOpnameTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -33719,7 +34294,7 @@ class $$StockOpnameTableFilterComposer
 }
 
 class $$StockOpnameTableOrderingComposer
-    extends Composer<_$PosifyDatabase, $StockOpnameTable> {
+    extends Composer<_$LumioDatabase, $StockOpnameTable> {
   $$StockOpnameTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -33807,7 +34382,7 @@ class $$StockOpnameTableOrderingComposer
 }
 
 class $$StockOpnameTableAnnotationComposer
-    extends Composer<_$PosifyDatabase, $StockOpnameTable> {
+    extends Composer<_$LumioDatabase, $StockOpnameTable> {
   $$StockOpnameTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -33879,7 +34454,7 @@ class $$StockOpnameTableAnnotationComposer
 class $$StockOpnameTableTableManager
     extends
         RootTableManager<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $StockOpnameTable,
           StockOpnameData,
           $$StockOpnameTableFilterComposer,
@@ -33891,7 +34466,7 @@ class $$StockOpnameTableTableManager
           StockOpnameData,
           PrefetchHooks Function({bool outletId})
         > {
-  $$StockOpnameTableTableManager(_$PosifyDatabase db, $StockOpnameTable table)
+  $$StockOpnameTableTableManager(_$LumioDatabase db, $StockOpnameTable table)
     : super(
         TableManagerState(
           db: db,
@@ -34017,7 +34592,7 @@ class $$StockOpnameTableTableManager
 
 typedef $$StockOpnameTableProcessedTableManager =
     ProcessedTableManager<
-      _$PosifyDatabase,
+      _$LumioDatabase,
       $StockOpnameTable,
       StockOpnameData,
       $$StockOpnameTableFilterComposer,
@@ -34069,7 +34644,7 @@ typedef $$StockOpnameItemsTableUpdateCompanionBuilder =
 final class $$StockOpnameItemsTableReferences
     extends
         BaseReferences<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $StockOpnameItemsTable,
           StockOpnameItem
         > {
@@ -34079,7 +34654,7 @@ final class $$StockOpnameItemsTableReferences
     super.$_typedResult,
   );
 
-  static $OutletsTable _outletIdTable(_$PosifyDatabase db) =>
+  static $OutletsTable _outletIdTable(_$LumioDatabase db) =>
       db.outlets.createAlias(
         $_aliasNameGenerator(db.stockOpnameItems.outletId, db.outlets.id),
       );
@@ -34100,7 +34675,7 @@ final class $$StockOpnameItemsTableReferences
 }
 
 class $$StockOpnameItemsTableFilterComposer
-    extends Composer<_$PosifyDatabase, $StockOpnameItemsTable> {
+    extends Composer<_$LumioDatabase, $StockOpnameItemsTable> {
   $$StockOpnameItemsTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -34198,7 +34773,7 @@ class $$StockOpnameItemsTableFilterComposer
 }
 
 class $$StockOpnameItemsTableOrderingComposer
-    extends Composer<_$PosifyDatabase, $StockOpnameItemsTable> {
+    extends Composer<_$LumioDatabase, $StockOpnameItemsTable> {
   $$StockOpnameItemsTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -34296,7 +34871,7 @@ class $$StockOpnameItemsTableOrderingComposer
 }
 
 class $$StockOpnameItemsTableAnnotationComposer
-    extends Composer<_$PosifyDatabase, $StockOpnameItemsTable> {
+    extends Composer<_$LumioDatabase, $StockOpnameItemsTable> {
   $$StockOpnameItemsTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -34380,7 +34955,7 @@ class $$StockOpnameItemsTableAnnotationComposer
 class $$StockOpnameItemsTableTableManager
     extends
         RootTableManager<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $StockOpnameItemsTable,
           StockOpnameItem,
           $$StockOpnameItemsTableFilterComposer,
@@ -34393,7 +34968,7 @@ class $$StockOpnameItemsTableTableManager
           PrefetchHooks Function({bool outletId})
         > {
   $$StockOpnameItemsTableTableManager(
-    _$PosifyDatabase db,
+    _$LumioDatabase db,
     $StockOpnameItemsTable table,
   ) : super(
         TableManagerState(
@@ -34530,7 +35105,7 @@ class $$StockOpnameItemsTableTableManager
 
 typedef $$StockOpnameItemsTableProcessedTableManager =
     ProcessedTableManager<
-      _$PosifyDatabase,
+      _$LumioDatabase,
       $StockOpnameItemsTable,
       StockOpnameItem,
       $$StockOpnameItemsTableFilterComposer,
@@ -34575,14 +35150,14 @@ typedef $$PurchaseOrdersTableUpdateCompanionBuilder =
 
 final class $$PurchaseOrdersTableReferences
     extends
-        BaseReferences<_$PosifyDatabase, $PurchaseOrdersTable, PurchaseOrder> {
+        BaseReferences<_$LumioDatabase, $PurchaseOrdersTable, PurchaseOrder> {
   $$PurchaseOrdersTableReferences(
     super.$_db,
     super.$_table,
     super.$_typedResult,
   );
 
-  static $SuppliersTable _supplierIdTable(_$PosifyDatabase db) =>
+  static $SuppliersTable _supplierIdTable(_$LumioDatabase db) =>
       db.suppliers.createAlias(
         $_aliasNameGenerator(db.purchaseOrders.supplierId, db.suppliers.id),
       );
@@ -34601,7 +35176,7 @@ final class $$PurchaseOrdersTableReferences
     );
   }
 
-  static $OutletsTable _outletIdTable(_$PosifyDatabase db) =>
+  static $OutletsTable _outletIdTable(_$LumioDatabase db) =>
       db.outlets.createAlias(
         $_aliasNameGenerator(db.purchaseOrders.outletId, db.outlets.id),
       );
@@ -34621,7 +35196,7 @@ final class $$PurchaseOrdersTableReferences
   }
 
   static MultiTypedResultKey<$PurchaseOrderItemsTable, List<PurchaseOrderItem>>
-  _purchaseOrderItemsRefsTable(_$PosifyDatabase db) =>
+  _purchaseOrderItemsRefsTable(_$LumioDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.purchaseOrderItems,
         aliasName: $_aliasNameGenerator(
@@ -34649,7 +35224,7 @@ final class $$PurchaseOrdersTableReferences
 }
 
 class $$PurchaseOrdersTableFilterComposer
-    extends Composer<_$PosifyDatabase, $PurchaseOrdersTable> {
+    extends Composer<_$LumioDatabase, $PurchaseOrdersTable> {
   $$PurchaseOrdersTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -34775,7 +35350,7 @@ class $$PurchaseOrdersTableFilterComposer
 }
 
 class $$PurchaseOrdersTableOrderingComposer
-    extends Composer<_$PosifyDatabase, $PurchaseOrdersTable> {
+    extends Composer<_$LumioDatabase, $PurchaseOrdersTable> {
   $$PurchaseOrdersTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -34876,7 +35451,7 @@ class $$PurchaseOrdersTableOrderingComposer
 }
 
 class $$PurchaseOrdersTableAnnotationComposer
-    extends Composer<_$PosifyDatabase, $PurchaseOrdersTable> {
+    extends Composer<_$LumioDatabase, $PurchaseOrdersTable> {
   $$PurchaseOrdersTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -34989,7 +35564,7 @@ class $$PurchaseOrdersTableAnnotationComposer
 class $$PurchaseOrdersTableTableManager
     extends
         RootTableManager<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $PurchaseOrdersTable,
           PurchaseOrder,
           $$PurchaseOrdersTableFilterComposer,
@@ -35006,7 +35581,7 @@ class $$PurchaseOrdersTableTableManager
           })
         > {
   $$PurchaseOrdersTableTableManager(
-    _$PosifyDatabase db,
+    _$LumioDatabase db,
     $PurchaseOrdersTable table,
   ) : super(
         TableManagerState(
@@ -35175,7 +35750,7 @@ class $$PurchaseOrdersTableTableManager
 
 typedef $$PurchaseOrdersTableProcessedTableManager =
     ProcessedTableManager<
-      _$PosifyDatabase,
+      _$LumioDatabase,
       $PurchaseOrdersTable,
       PurchaseOrder,
       $$PurchaseOrdersTableFilterComposer,
@@ -35231,7 +35806,7 @@ typedef $$PurchaseOrderItemsTableUpdateCompanionBuilder =
 final class $$PurchaseOrderItemsTableReferences
     extends
         BaseReferences<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $PurchaseOrderItemsTable,
           PurchaseOrderItem
         > {
@@ -35241,7 +35816,7 @@ final class $$PurchaseOrderItemsTableReferences
     super.$_typedResult,
   );
 
-  static $PurchaseOrdersTable _purchaseOrderIdTable(_$PosifyDatabase db) =>
+  static $PurchaseOrdersTable _purchaseOrderIdTable(_$LumioDatabase db) =>
       db.purchaseOrders.createAlias(
         $_aliasNameGenerator(
           db.purchaseOrderItems.purchaseOrderId,
@@ -35263,7 +35838,7 @@ final class $$PurchaseOrderItemsTableReferences
     );
   }
 
-  static $ProductsTable _productIdTable(_$PosifyDatabase db) =>
+  static $ProductsTable _productIdTable(_$LumioDatabase db) =>
       db.products.createAlias(
         $_aliasNameGenerator(db.purchaseOrderItems.productId, db.products.id),
       );
@@ -35282,7 +35857,7 @@ final class $$PurchaseOrderItemsTableReferences
     );
   }
 
-  static $IngredientsTable _ingredientIdTable(_$PosifyDatabase db) =>
+  static $IngredientsTable _ingredientIdTable(_$LumioDatabase db) =>
       db.ingredients.createAlias(
         $_aliasNameGenerator(
           db.purchaseOrderItems.ingredientId,
@@ -35304,7 +35879,7 @@ final class $$PurchaseOrderItemsTableReferences
     );
   }
 
-  static $OutletsTable _outletIdTable(_$PosifyDatabase db) =>
+  static $OutletsTable _outletIdTable(_$LumioDatabase db) =>
       db.outlets.createAlias(
         $_aliasNameGenerator(db.purchaseOrderItems.outletId, db.outlets.id),
       );
@@ -35325,7 +35900,7 @@ final class $$PurchaseOrderItemsTableReferences
 }
 
 class $$PurchaseOrderItemsTableFilterComposer
-    extends Composer<_$PosifyDatabase, $PurchaseOrderItemsTable> {
+    extends Composer<_$LumioDatabase, $PurchaseOrderItemsTable> {
   $$PurchaseOrderItemsTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -35477,7 +36052,7 @@ class $$PurchaseOrderItemsTableFilterComposer
 }
 
 class $$PurchaseOrderItemsTableOrderingComposer
-    extends Composer<_$PosifyDatabase, $PurchaseOrderItemsTable> {
+    extends Composer<_$LumioDatabase, $PurchaseOrderItemsTable> {
   $$PurchaseOrderItemsTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -35629,7 +36204,7 @@ class $$PurchaseOrderItemsTableOrderingComposer
 }
 
 class $$PurchaseOrderItemsTableAnnotationComposer
-    extends Composer<_$PosifyDatabase, $PurchaseOrderItemsTable> {
+    extends Composer<_$LumioDatabase, $PurchaseOrderItemsTable> {
   $$PurchaseOrderItemsTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -35767,7 +36342,7 @@ class $$PurchaseOrderItemsTableAnnotationComposer
 class $$PurchaseOrderItemsTableTableManager
     extends
         RootTableManager<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $PurchaseOrderItemsTable,
           PurchaseOrderItem,
           $$PurchaseOrderItemsTableFilterComposer,
@@ -35785,7 +36360,7 @@ class $$PurchaseOrderItemsTableTableManager
           })
         > {
   $$PurchaseOrderItemsTableTableManager(
-    _$PosifyDatabase db,
+    _$LumioDatabase db,
     $PurchaseOrderItemsTable table,
   ) : super(
         TableManagerState(
@@ -35976,7 +36551,7 @@ class $$PurchaseOrderItemsTableTableManager
 
 typedef $$PurchaseOrderItemsTableProcessedTableManager =
     ProcessedTableManager<
-      _$PosifyDatabase,
+      _$LumioDatabase,
       $PurchaseOrderItemsTable,
       PurchaseOrderItem,
       $$PurchaseOrderItemsTableFilterComposer,
@@ -36025,7 +36600,7 @@ typedef $$ExpenseCategoriesTableUpdateCompanionBuilder =
 final class $$ExpenseCategoriesTableReferences
     extends
         BaseReferences<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $ExpenseCategoriesTable,
           ExpenseCategory
         > {
@@ -36035,7 +36610,7 @@ final class $$ExpenseCategoriesTableReferences
     super.$_typedResult,
   );
 
-  static $OutletsTable _outletIdTable(_$PosifyDatabase db) =>
+  static $OutletsTable _outletIdTable(_$LumioDatabase db) =>
       db.outlets.createAlias(
         $_aliasNameGenerator(db.expenseCategories.outletId, db.outlets.id),
       );
@@ -36055,7 +36630,7 @@ final class $$ExpenseCategoriesTableReferences
   }
 
   static MultiTypedResultKey<$ExpensesTable, List<Expense>> _expensesRefsTable(
-    _$PosifyDatabase db,
+    _$LumioDatabase db,
   ) => MultiTypedResultKey.fromTable(
     db.expenses,
     aliasName: $_aliasNameGenerator(
@@ -36078,7 +36653,7 @@ final class $$ExpenseCategoriesTableReferences
 }
 
 class $$ExpenseCategoriesTableFilterComposer
-    extends Composer<_$PosifyDatabase, $ExpenseCategoriesTable> {
+    extends Composer<_$LumioDatabase, $ExpenseCategoriesTable> {
   $$ExpenseCategoriesTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -36181,7 +36756,7 @@ class $$ExpenseCategoriesTableFilterComposer
 }
 
 class $$ExpenseCategoriesTableOrderingComposer
-    extends Composer<_$PosifyDatabase, $ExpenseCategoriesTable> {
+    extends Composer<_$LumioDatabase, $ExpenseCategoriesTable> {
   $$ExpenseCategoriesTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -36259,7 +36834,7 @@ class $$ExpenseCategoriesTableOrderingComposer
 }
 
 class $$ExpenseCategoriesTableAnnotationComposer
-    extends Composer<_$PosifyDatabase, $ExpenseCategoriesTable> {
+    extends Composer<_$LumioDatabase, $ExpenseCategoriesTable> {
   $$ExpenseCategoriesTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -36346,7 +36921,7 @@ class $$ExpenseCategoriesTableAnnotationComposer
 class $$ExpenseCategoriesTableTableManager
     extends
         RootTableManager<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $ExpenseCategoriesTable,
           ExpenseCategory,
           $$ExpenseCategoriesTableFilterComposer,
@@ -36359,7 +36934,7 @@ class $$ExpenseCategoriesTableTableManager
           PrefetchHooks Function({bool outletId, bool expensesRefs})
         > {
   $$ExpenseCategoriesTableTableManager(
-    _$PosifyDatabase db,
+    _$LumioDatabase db,
     $ExpenseCategoriesTable table,
   ) : super(
         TableManagerState(
@@ -36503,7 +37078,7 @@ class $$ExpenseCategoriesTableTableManager
 
 typedef $$ExpenseCategoriesTableProcessedTableManager =
     ProcessedTableManager<
-      _$PosifyDatabase,
+      _$LumioDatabase,
       $ExpenseCategoriesTable,
       ExpenseCategory,
       $$ExpenseCategoriesTableFilterComposer,
@@ -36549,10 +37124,10 @@ typedef $$ExpensesTableUpdateCompanionBuilder =
     });
 
 final class $$ExpensesTableReferences
-    extends BaseReferences<_$PosifyDatabase, $ExpensesTable, Expense> {
+    extends BaseReferences<_$LumioDatabase, $ExpensesTable, Expense> {
   $$ExpensesTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $ExpenseCategoriesTable _categoryIdTable(_$PosifyDatabase db) =>
+  static $ExpenseCategoriesTable _categoryIdTable(_$LumioDatabase db) =>
       db.expenseCategories.createAlias(
         $_aliasNameGenerator(db.expenses.categoryId, db.expenseCategories.id),
       );
@@ -36571,7 +37146,7 @@ final class $$ExpensesTableReferences
     );
   }
 
-  static $EmployeesTable _recordedByTable(_$PosifyDatabase db) =>
+  static $EmployeesTable _recordedByTable(_$LumioDatabase db) =>
       db.employees.createAlias(
         $_aliasNameGenerator(db.expenses.recordedBy, db.employees.id),
       );
@@ -36590,7 +37165,7 @@ final class $$ExpensesTableReferences
     );
   }
 
-  static $OutletsTable _outletIdTable(_$PosifyDatabase db) => db.outlets
+  static $OutletsTable _outletIdTable(_$LumioDatabase db) => db.outlets
       .createAlias($_aliasNameGenerator(db.expenses.outletId, db.outlets.id));
 
   $$OutletsTableProcessedTableManager? get outletId {
@@ -36609,7 +37184,7 @@ final class $$ExpensesTableReferences
 }
 
 class $$ExpensesTableFilterComposer
-    extends Composer<_$PosifyDatabase, $ExpensesTable> {
+    extends Composer<_$LumioDatabase, $ExpensesTable> {
   $$ExpensesTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -36733,7 +37308,7 @@ class $$ExpensesTableFilterComposer
 }
 
 class $$ExpensesTableOrderingComposer
-    extends Composer<_$PosifyDatabase, $ExpensesTable> {
+    extends Composer<_$LumioDatabase, $ExpensesTable> {
   $$ExpensesTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -36857,7 +37432,7 @@ class $$ExpensesTableOrderingComposer
 }
 
 class $$ExpensesTableAnnotationComposer
-    extends Composer<_$PosifyDatabase, $ExpensesTable> {
+    extends Composer<_$LumioDatabase, $ExpensesTable> {
   $$ExpensesTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -36966,7 +37541,7 @@ class $$ExpensesTableAnnotationComposer
 class $$ExpensesTableTableManager
     extends
         RootTableManager<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $ExpensesTable,
           Expense,
           $$ExpensesTableFilterComposer,
@@ -36982,7 +37557,7 @@ class $$ExpensesTableTableManager
             bool outletId,
           })
         > {
-  $$ExpensesTableTableManager(_$PosifyDatabase db, $ExpensesTable table)
+  $$ExpensesTableTableManager(_$LumioDatabase db, $ExpensesTable table)
     : super(
         TableManagerState(
           db: db,
@@ -37135,7 +37710,7 @@ class $$ExpensesTableTableManager
 
 typedef $$ExpensesTableProcessedTableManager =
     ProcessedTableManager<
-      _$PosifyDatabase,
+      _$LumioDatabase,
       $ExpensesTable,
       Expense,
       $$ExpensesTableFilterComposer,
@@ -37179,7 +37754,7 @@ typedef $$TransactionPaymentsTableUpdateCompanionBuilder =
 final class $$TransactionPaymentsTableReferences
     extends
         BaseReferences<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $TransactionPaymentsTable,
           TransactionPayment
         > {
@@ -37189,7 +37764,7 @@ final class $$TransactionPaymentsTableReferences
     super.$_typedResult,
   );
 
-  static $TransactionsTable _transactionIdTable(_$PosifyDatabase db) =>
+  static $TransactionsTable _transactionIdTable(_$LumioDatabase db) =>
       db.transactions.createAlias(
         $_aliasNameGenerator(
           db.transactionPayments.transactionId,
@@ -37211,7 +37786,7 @@ final class $$TransactionPaymentsTableReferences
     );
   }
 
-  static $OutletsTable _outletIdTable(_$PosifyDatabase db) =>
+  static $OutletsTable _outletIdTable(_$LumioDatabase db) =>
       db.outlets.createAlias(
         $_aliasNameGenerator(db.transactionPayments.outletId, db.outlets.id),
       );
@@ -37232,7 +37807,7 @@ final class $$TransactionPaymentsTableReferences
 }
 
 class $$TransactionPaymentsTableFilterComposer
-    extends Composer<_$PosifyDatabase, $TransactionPaymentsTable> {
+    extends Composer<_$LumioDatabase, $TransactionPaymentsTable> {
   $$TransactionPaymentsTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -37328,7 +37903,7 @@ class $$TransactionPaymentsTableFilterComposer
 }
 
 class $$TransactionPaymentsTableOrderingComposer
-    extends Composer<_$PosifyDatabase, $TransactionPaymentsTable> {
+    extends Composer<_$LumioDatabase, $TransactionPaymentsTable> {
   $$TransactionPaymentsTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -37424,7 +37999,7 @@ class $$TransactionPaymentsTableOrderingComposer
 }
 
 class $$TransactionPaymentsTableAnnotationComposer
-    extends Composer<_$PosifyDatabase, $TransactionPaymentsTable> {
+    extends Composer<_$LumioDatabase, $TransactionPaymentsTable> {
   $$TransactionPaymentsTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -37508,7 +38083,7 @@ class $$TransactionPaymentsTableAnnotationComposer
 class $$TransactionPaymentsTableTableManager
     extends
         RootTableManager<
-          _$PosifyDatabase,
+          _$LumioDatabase,
           $TransactionPaymentsTable,
           TransactionPayment,
           $$TransactionPaymentsTableFilterComposer,
@@ -37521,7 +38096,7 @@ class $$TransactionPaymentsTableTableManager
           PrefetchHooks Function({bool transactionId, bool outletId})
         > {
   $$TransactionPaymentsTableTableManager(
-    _$PosifyDatabase db,
+    _$LumioDatabase db,
     $TransactionPaymentsTable table,
   ) : super(
         TableManagerState(
@@ -37663,7 +38238,7 @@ class $$TransactionPaymentsTableTableManager
 
 typedef $$TransactionPaymentsTableProcessedTableManager =
     ProcessedTableManager<
-      _$PosifyDatabase,
+      _$LumioDatabase,
       $TransactionPaymentsTable,
       TransactionPayment,
       $$TransactionPaymentsTableFilterComposer,
@@ -37675,10 +38250,212 @@ typedef $$TransactionPaymentsTableProcessedTableManager =
       TransactionPayment,
       PrefetchHooks Function({bool transactionId, bool outletId})
     >;
+typedef $$SyncQueueTableCreateCompanionBuilder =
+    SyncQueueCompanion Function({
+      Value<String> id,
+      required String targetTable,
+      required String operation,
+      required String recordId,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+typedef $$SyncQueueTableUpdateCompanionBuilder =
+    SyncQueueCompanion Function({
+      Value<String> id,
+      Value<String> targetTable,
+      Value<String> operation,
+      Value<String> recordId,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
 
-class $PosifyDatabaseManager {
-  final _$PosifyDatabase _db;
-  $PosifyDatabaseManager(this._db);
+class $$SyncQueueTableFilterComposer
+    extends Composer<_$LumioDatabase, $SyncQueueTable> {
+  $$SyncQueueTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get targetTable => $composableBuilder(
+    column: $table.targetTable,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get operation => $composableBuilder(
+    column: $table.operation,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get recordId => $composableBuilder(
+    column: $table.recordId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SyncQueueTableOrderingComposer
+    extends Composer<_$LumioDatabase, $SyncQueueTable> {
+  $$SyncQueueTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get targetTable => $composableBuilder(
+    column: $table.targetTable,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get operation => $composableBuilder(
+    column: $table.operation,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get recordId => $composableBuilder(
+    column: $table.recordId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SyncQueueTableAnnotationComposer
+    extends Composer<_$LumioDatabase, $SyncQueueTable> {
+  $$SyncQueueTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get targetTable => $composableBuilder(
+    column: $table.targetTable,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get operation =>
+      $composableBuilder(column: $table.operation, builder: (column) => column);
+
+  GeneratedColumn<String> get recordId =>
+      $composableBuilder(column: $table.recordId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$SyncQueueTableTableManager
+    extends
+        RootTableManager<
+          _$LumioDatabase,
+          $SyncQueueTable,
+          SyncQueueData,
+          $$SyncQueueTableFilterComposer,
+          $$SyncQueueTableOrderingComposer,
+          $$SyncQueueTableAnnotationComposer,
+          $$SyncQueueTableCreateCompanionBuilder,
+          $$SyncQueueTableUpdateCompanionBuilder,
+          (
+            SyncQueueData,
+            BaseReferences<_$LumioDatabase, $SyncQueueTable, SyncQueueData>,
+          ),
+          SyncQueueData,
+          PrefetchHooks Function()
+        > {
+  $$SyncQueueTableTableManager(_$LumioDatabase db, $SyncQueueTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SyncQueueTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SyncQueueTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SyncQueueTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> targetTable = const Value.absent(),
+                Value<String> operation = const Value.absent(),
+                Value<String> recordId = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SyncQueueCompanion(
+                id: id,
+                targetTable: targetTable,
+                operation: operation,
+                recordId: recordId,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                required String targetTable,
+                required String operation,
+                required String recordId,
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SyncQueueCompanion.insert(
+                id: id,
+                targetTable: targetTable,
+                operation: operation,
+                recordId: recordId,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SyncQueueTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LumioDatabase,
+      $SyncQueueTable,
+      SyncQueueData,
+      $$SyncQueueTableFilterComposer,
+      $$SyncQueueTableOrderingComposer,
+      $$SyncQueueTableAnnotationComposer,
+      $$SyncQueueTableCreateCompanionBuilder,
+      $$SyncQueueTableUpdateCompanionBuilder,
+      (
+        SyncQueueData,
+        BaseReferences<_$LumioDatabase, $SyncQueueTable, SyncQueueData>,
+      ),
+      SyncQueueData,
+      PrefetchHooks Function()
+    >;
+
+class $LumioDatabaseManager {
+  final _$LumioDatabase _db;
+  $LumioDatabaseManager(this._db);
   $$LicensesTableTableManager get licenses =>
       $$LicensesTableTableManager(_db, _db.licenses);
   $$OutletsTableTableManager get outlets =>
@@ -37734,4 +38511,6 @@ class $PosifyDatabaseManager {
       $$ExpensesTableTableManager(_db, _db.expenses);
   $$TransactionPaymentsTableTableManager get transactionPayments =>
       $$TransactionPaymentsTableTableManager(_db, _db.transactionPayments);
+  $$SyncQueueTableTableManager get syncQueue =>
+      $$SyncQueueTableTableManager(_db, _db.syncQueue);
 }

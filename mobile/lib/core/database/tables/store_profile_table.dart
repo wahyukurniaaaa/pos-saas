@@ -6,6 +6,8 @@ class StoreProfile extends Table {
   TextColumn get name => text().withLength(min: 1, max: 50)();
   TextColumn get address => text().nullable()();
   TextColumn get phone => text().nullable()();
+  TextColumn get userId => text().nullable()();
+  TextColumn get businessType => text().nullable()();
   IntColumn get taxPercentage => integer().withDefault(const Constant(0))();
   TextColumn get taxType =>
       text().withDefault(const Constant('exclusive'))(); // inclusive, exclusive

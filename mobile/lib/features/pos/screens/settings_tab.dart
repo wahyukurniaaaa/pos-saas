@@ -2,14 +2,14 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:posify_app/core/theme/app_theme.dart';
-import 'package:posify_app/features/auth/providers/owner_provider.dart';
-import 'package:posify_app/features/pos/screens/settings/printer_settings_screen.dart';
-import 'package:posify_app/features/settings/screens/transaction_history_screen.dart';
-import 'package:posify_app/features/settings/screens/shift_history_screen.dart';
-import 'package:posify_app/features/settings/screens/database_settings_screen.dart';
-import 'package:posify_app/core/widgets/responsive_layout.dart';
-import 'package:posify_app/features/auth/widgets/change_pin_dialog.dart';
+import 'package:lumio/core/theme/app_theme.dart';
+import 'package:lumio/features/auth/providers/owner_provider.dart';
+import 'package:lumio/features/pos/screens/settings/printer_settings_screen.dart';
+import 'package:lumio/features/settings/screens/transaction_history_screen.dart';
+import 'package:lumio/features/settings/screens/shift_history_screen.dart';
+import 'package:lumio/features/settings/screens/database_settings_screen.dart';
+import 'package:lumio/core/widgets/responsive_layout.dart';
+import 'package:lumio/features/auth/widgets/change_pin_dialog.dart';
 
 class SettingsTab extends ConsumerWidget {
   const SettingsTab({super.key});
@@ -136,7 +136,44 @@ class SettingsTab extends ConsumerWidget {
                       isDestructive: true,
                       onTap: () {
                         ref.read(sessionProvider.notifier).logout();
-                        Navigator.pushReplacementNamed(context, '/employee-selection');
+                        Navigator.pushNamedAndRemoveUntil(context, '/employee-selection', (route) => false);
+                      },
+                    ),
+                    _SettingsItem(
+                      icon: Icons.power_settings_new_rounded,
+                      title: 'Logout Total / Ganti Akun',
+                      subtitle: 'Hapus data lokal & ganti akun toko',
+                      isDestructive: true,
+                      onTap: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Konfirmasi Logout Total'),
+                            content: const Text(
+                              'Seluruh data lokal akan dihapus. Anda perlu registrasi atau login ulang untuk masuk kembali. Lanjutkan?',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: const Text('Batal'),
+                              ),
+                              ElevatedButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppTheme.dangerColor,
+                                ),
+                                child: const Text('Ya, Logout Total'),
+                              ),
+                            ],
+                          ),
+                        );
+
+                        if (confirm == true) {
+                          await ref.read(sessionProvider.notifier).hardLogout();
+                          if (context.mounted) {
+                            Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+                          }
+                        }
                       },
                       isLast: true,
                     ),
@@ -146,7 +183,7 @@ class SettingsTab extends ConsumerWidget {
                 const SizedBox(height: 24),
                 Center(
                   child: Text(
-                    'Posify App v1.0.0',
+                    'Lumio App v1.0.0',
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,

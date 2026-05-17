@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:posify_app/core/providers/database_provider.dart';
-import 'package:posify_app/features/auth/providers/auth_providers.dart';
-import 'package:posify_app/features/auth/providers/owner_provider.dart';
-import 'package:posify_app/core/providers/license_tier_provider.dart';
+import 'package:lumio/core/providers/database_provider.dart';
+import 'package:lumio/features/auth/providers/auth_providers.dart';
+import 'package:lumio/features/auth/providers/owner_provider.dart';
+import 'package:lumio/core/providers/license_tier_provider.dart';
 
 /// Service to listen for real-time updates from Supabase.
 /// This complements SyncService by providing immediate updates when cloud data changes.
@@ -58,7 +58,7 @@ class RealtimeService {
       }
 
       // Subscribe to all syncable tables
-      _channel = supabase.channel('public:posify_sync');
+      _channel = supabase.channel('public:lumio_sync');
 
       for (final table in _syncableTables) {
         _channel?.onPostgresChanges(

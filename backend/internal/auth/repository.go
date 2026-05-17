@@ -30,3 +30,7 @@ func (r *repository) FindByEmail(email string) (*models.User, error) {
 	}
 	return &user, nil
 }
+
+func (r *repository) CreateStoreProfile(profile *models.StoreProfile) error {
+	return r.db.Create(profile).Error
+}

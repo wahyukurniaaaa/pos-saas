@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:posify_app/core/services/sync_service.dart';
-import 'package:posify_app/core/theme/app_theme.dart';
-import 'package:posify_app/features/auth/providers/auth_providers.dart';
+import 'package:lumio/core/services/sync_service.dart';
+import 'package:lumio/core/theme/app_theme.dart';
+import 'package:lumio/features/auth/providers/auth_providers.dart';
 
-import 'package:posify_app/core/providers/license_tier_provider.dart';
+import 'package:lumio/core/providers/license_tier_provider.dart';
 
 /// A compact widget that displays the current cloud sync status.
 /// Only visible for Pro users (authenticated via Supabase + Pro Tier).

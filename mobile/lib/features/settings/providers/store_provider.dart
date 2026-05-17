@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:posify_app/core/database/database.dart';
-import 'package:posify_app/core/providers/database_provider.dart';
+import 'package:lumio/core/database/database.dart';
+import 'package:lumio/core/providers/database_provider.dart';
 
 final storeProfileProvider = StreamProvider<StoreProfileData?>((ref) {
   final db = ref.watch(databaseProvider);

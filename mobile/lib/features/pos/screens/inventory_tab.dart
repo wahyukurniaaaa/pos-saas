@@ -4,12 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:drift/drift.dart' show Value;
-import 'package:posify_app/core/database/database.dart';
-import 'package:posify_app/core/providers/database_provider.dart';
-import 'package:posify_app/core/theme/app_theme.dart';
-import 'package:posify_app/features/auth/providers/owner_provider.dart';
-import 'package:posify_app/features/pos/providers/pos_providers.dart';
-import 'package:posify_app/features/pos/screens/barcode_scanner_modal.dart';
+import 'package:lumio/core/database/database.dart';
+import 'package:lumio/core/providers/database_provider.dart';
+import 'package:lumio/core/theme/app_theme.dart';
+import 'package:lumio/features/auth/providers/owner_provider.dart';
+import 'package:lumio/features/pos/providers/pos_providers.dart';
+import 'package:lumio/features/pos/screens/barcode_scanner_modal.dart';
 import 'package:image_picker/image_picker.dart';
 import 'inventory/stock_opname_screen.dart';
 import 'inventory/import_product_screen.dart';
@@ -1461,8 +1461,21 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
 
     final db = ref.read(databaseProvider);
     final catId = _selectedCategoryId;
+    final currentOutletId = ref.read(sessionProvider).value?.outletId;
+
     if (catId == null) {
       setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Silakan pilih kategori produk')),
+      );
+      return;
+    }
+
+    if (currentOutletId == null) {
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error: Outlet tidak ditemukan. Silakan login ulang.')),
+      );
       return;
     }
 
@@ -1485,8 +1498,6 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
     String productId;
 
     final minStockVal = int.tryParse(_minStockController.text) ?? 0;
-
-    final currentOutletId = ref.read(sessionProvider).value?.outletId;
 
     if (widget.product == null) {
       productId = await db.insertProduct(

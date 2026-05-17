@@ -3,10 +3,10 @@ import 'package:flutter/services.dart';
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:posify_app/core/theme/app_theme.dart';
-import 'package:posify_app/core/database/database.dart';
+import 'package:lumio/core/theme/app_theme.dart';
+import 'package:lumio/core/database/database.dart';
 import '../providers/owner_provider.dart';
-import 'package:posify_app/core/widgets/responsive_layout.dart';
+import 'package:lumio/core/widgets/responsive_layout.dart';
 
 class PinLoginScreen extends ConsumerStatefulWidget {
   final Employee employee;
@@ -120,7 +120,7 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen>
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'POSify',
+                  'Lumio',
                   style: GoogleFonts.poppins(
                     fontSize: 28,
                     fontWeight: FontWeight.w800,

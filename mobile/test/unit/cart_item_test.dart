@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:posify_app/core/database/database.dart';
-import 'package:posify_app/features/pos/providers/pos_providers.dart';
+import 'package:lumio/core/database/database.dart';
+import 'package:lumio/features/pos/providers/pos_providers.dart';
 
 void main() {
   group('CartItem', () {

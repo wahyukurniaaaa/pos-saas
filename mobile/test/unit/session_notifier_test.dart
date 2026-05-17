@@ -1,12 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:posify_app/core/database/database.dart';
-import 'package:posify_app/core/providers/database_provider.dart';
-import 'package:posify_app/features/auth/providers/owner_provider.dart';
+import 'package:lumio/core/database/database.dart';
+import 'package:lumio/core/providers/database_provider.dart';
+import 'package:lumio/features/auth/providers/owner_provider.dart';
 import 'package:flutter/services.dart';
 
-class MockDatabase extends Mock implements PosifyDatabase {}
+class MockDatabase extends Mock implements LumioDatabase {}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

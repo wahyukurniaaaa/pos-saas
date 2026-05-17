@@ -4,20 +4,20 @@ import 'package:google_fonts/google_fonts.dart';
 class AppTheme {
   AppTheme._();
 
-  // Brand Colors (Stitch Core Style Guide - Updated to Navy/Yellow)
-  static const Color primaryColor = Color(0xFF141F9C); // Navy
-  static const Color secondaryColor = Color(0xFFFADF61); // Yellow
-  static const Color tertiaryColor = Color(0xFF5C77F7); // Cornflower
-  static const Color infoColor = Color(0xFF75C8EF); // Sky
+  // Lumio Brand Colors — Navy + Bright Cyan
+  static const Color primaryColor = Color(0xFF0F2F62); // Navy
+  static const Color secondaryColor = Color(0xFF08ABE6); // Bright Cyan
+  static const Color tertiaryColor = Color(0xFF08ABE6); // Bright Cyan (accent alias)
+  static const Color infoColor = Color(0xFF5BC8E8); // Light Cyan (info states)
   static const Color successColor = Color(0xFF10B981);
   static const Color dangerColor = Color(0xFFEF4444);
   static const Color neutralSlate = Color(0xFF334155); // Slate 700
 
-  static const Color backgroundLight = Color(0xFFF8FAFC); // Slate 50
-  static const Color backgroundDark = Color(0xFF121320);
+  static const Color backgroundLight = Color(0xFFF5F7FA); // Mist Gray
+  static const Color backgroundDark = Color(0xFF1B2A44); // Deep Ink
 
   // Legacy compat mapping
-  static const Color primaryDark = Color(0xFF0F176E); // Darker Navy
+  static const Color primaryDark = Color(0xFF0A2347); // Darker Navy
   static const Color errorColor = dangerColor;
   static const Color scaffoldBg = backgroundLight;
   static const Color cardBg = Colors.white;
@@ -98,7 +98,7 @@ class AppTheme {
           fontWeight: FontWeight.w500,
         ),
         hintStyle: GoogleFonts.poppins(
-          color: textSecondary.withValues(alpha: 0.5),
+          color: textSecondary,
         ),
       ),
       cardTheme: CardThemeData(
@@ -136,7 +136,7 @@ class AppTheme {
       colorScheme: ColorScheme.fromSeed(
         seedColor: primaryColor,
         brightness: Brightness.dark,
-        primary: tertiaryColor, // Use Cornflower for better dark mode contrast
+        primary: secondaryColor, // Bright Cyan for dark mode contrast
         secondary: secondaryColor,
         onPrimary: Colors.white,
         surface: backgroundDark,
@@ -148,7 +148,7 @@ class AppTheme {
       ),
       appBarTheme: AppBarTheme(
         backgroundColor: backgroundDark,
-        foregroundColor: primaryColor,
+        foregroundColor: secondaryColor,
         elevation: 0,
         centerTitle: false,
         titleTextStyle: GoogleFonts.poppins(
@@ -191,7 +191,7 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: primaryColor, width: 2),
+          borderSide: const BorderSide(color: secondaryColor, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
@@ -203,7 +203,7 @@ class AppTheme {
           fontWeight: FontWeight.w500,
         ),
         hintStyle: GoogleFonts.poppins(
-          color: textSecondaryDark.withValues(alpha: 0.5),
+          color: textSecondaryDark,
         ),
       ),
       cardTheme: CardThemeData(

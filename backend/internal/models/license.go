@@ -12,9 +12,11 @@ type License struct {
 	MaxOutlets    int             `gorm:"default:1" json:"max_outlets"`
 	IsActive      bool            `gorm:"default:true" json:"is_active"`
 	CustomerEmail string          `gorm:"index" json:"customer_email"`
+	UserID        string          `gorm:"index;type:uuid" json:"user_id"`
 	OrderID       string          `gorm:"index;default:null" json:"order_id"`
 	Source        string          `gorm:"default:null" json:"source"`
 	Devices       []LicenseDevice `gorm:"foreignKey:LicenseID" json:"devices,omitempty"`
+	ExpiredAt     *time.Time      `json:"expired_at"`
 	CreatedAt     time.Time       `json:"-"`
 	UpdatedAt     time.Time       `json:"-"`
 }

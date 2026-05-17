@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:posify_app/core/widgets/product_image.dart';
+import 'package:lumio/core/widgets/product_image.dart';
 
 void main() {
   group('ProductImage.getCategoryIcon', () {

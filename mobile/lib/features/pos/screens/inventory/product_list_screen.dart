@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:posify_app/core/database/database.dart';
-import 'package:posify_app/core/providers/database_provider.dart';
-import 'package:posify_app/core/theme/app_theme.dart';
-import 'package:posify_app/features/auth/providers/owner_provider.dart';
-import 'package:posify_app/features/pos/providers/pos_providers.dart';
-import 'package:posify_app/features/pos/screens/barcode_scanner_modal.dart';
-import 'package:posify_app/core/widgets/responsive_layout.dart';
-import 'package:posify_app/features/pos/screens/inventory_tab.dart' show AddProductSheet;
-import 'package:posify_app/features/pos/widgets/pos_cards.dart';
+import 'package:lumio/core/database/database.dart';
+import 'package:lumio/core/providers/database_provider.dart';
+import 'package:lumio/core/theme/app_theme.dart';
+import 'package:lumio/features/auth/providers/owner_provider.dart';
+import 'package:lumio/features/pos/providers/pos_providers.dart';
+import 'package:lumio/features/pos/screens/barcode_scanner_modal.dart';
+import 'package:lumio/core/widgets/responsive_layout.dart';
+import 'package:lumio/features/pos/screens/inventory_tab.dart' show AddProductSheet;
+import 'package:lumio/features/pos/widgets/pos_cards.dart';
 import 'stock_card_screen.dart';
 
 // ===== Product List Screen =====

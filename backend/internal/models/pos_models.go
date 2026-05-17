@@ -30,3 +30,23 @@ type Employee struct {
 	UpdatedAt           time.Time  `json:"updated_at"`
 	DeletedAt           *time.Time `gorm:"index" json:"deleted_at"`
 }
+
+// StoreProfile represents the business profile for a store owner
+type StoreProfile struct {
+	ID                     string     `gorm:"primaryKey;type:uuid" json:"id"`
+	Name                   string     `gorm:"not null" json:"name"`
+	Phone                  *string    `json:"phone"`
+	Address                *string    `json:"address"`
+	BusinessType           *string    `json:"business_type"`
+	LogoURI                *string    `json:"logo_uri"`
+	TaxPercentage          int        `gorm:"default:0" json:"tax_percentage"`
+	TaxType                string     `gorm:"default:'exclusive'" json:"tax_type"`
+	ServiceChargePercentage int       `gorm:"default:0" json:"service_charge_percentage"`
+	LoyaltyPointConversion int        `gorm:"default:10000" json:"loyalty_point_conversion"`
+	LoyaltyPointValue      int        `gorm:"default:100" json:"loyalty_point_value"`
+	DeductStockOnHold      bool       `gorm:"default:false" json:"deduct_stock_on_hold"`
+	UserID                 string     `json:"user_id"`
+	CreatedAt              time.Time  `json:"created_at"`
+	UpdatedAt              time.Time  `json:"updated_at"`
+	DeletedAt              *time.Time `gorm:"index" json:"deleted_at"`
+}

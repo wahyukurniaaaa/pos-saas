@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
-import 'package:posify_app/core/theme/app_theme.dart';
-import 'package:posify_app/features/pos/providers/shift_provider.dart';
-import 'package:posify_app/core/utils/currency_input_formatter.dart';
+import 'package:lumio/core/theme/app_theme.dart';
+import 'package:lumio/features/pos/providers/shift_provider.dart';
+import 'package:lumio/core/utils/currency_input_formatter.dart';
 
 class ShiftOpeningModal extends ConsumerStatefulWidget {
   const ShiftOpeningModal({super.key});

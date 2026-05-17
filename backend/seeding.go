@@ -36,7 +36,7 @@ func main() {
 			TierLevel:     "Tier 1 - Lifetime",
 			MaxDevices:    1,
 			IsActive:      true,
-			CustomerEmail: "tester@posify",
+			CustomerEmail: "tester@lumio",
 			Source:        "seed",
 		})
 		log.Println("Seeded Dummy License: A8F9K2X1Y2")
