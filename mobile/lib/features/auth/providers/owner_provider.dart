@@ -80,6 +80,7 @@ class OwnerNotifier extends AsyncNotifier<Employee?> {
   Future<bool> setupOwner({
     required String name,
     required String storeName,
+    required String outletName,
     required String pin,
   }) async {
     final cleanPin = pin.trim();
@@ -90,7 +91,7 @@ class OwnerNotifier extends AsyncNotifier<Employee?> {
       // 0. Create Default Outlet (Bootstrapping Phase 0.0)
       final outletId = await db.insertOutlet(
         OutletsCompanion.insert(
-          name: storeName, // Use store name as initial outlet name
+          name: outletName.isNotEmpty ? outletName : 'Pusat', // Use outletName
           address: const Value(''),
           phone: const Value(''),
         ),

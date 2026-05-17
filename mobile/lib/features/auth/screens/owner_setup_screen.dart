@@ -17,6 +17,7 @@ class _OwnerSetupScreenState extends ConsumerState<OwnerSetupScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _storeNameController = TextEditingController();
+  final _outletNameController = TextEditingController();
   final _pinController = TextEditingController();
   final _confirmPinController = TextEditingController();
   bool _obscurePin = true;
@@ -27,6 +28,7 @@ class _OwnerSetupScreenState extends ConsumerState<OwnerSetupScreen> {
   void dispose() {
     _nameController.dispose();
     _storeNameController.dispose();
+    _outletNameController.dispose();
     _pinController.dispose();
     _confirmPinController.dispose();
     super.dispose();
@@ -112,17 +114,34 @@ class _OwnerSetupScreenState extends ConsumerState<OwnerSetupScreen> {
                           ),
                           const SizedBox(height: 20),
 
-                          _buildSectionLabel('🏪', 'Nama Toko'),
+                          _buildSectionLabel('🏪', 'Nama Toko (Usaha)'),
                           const SizedBox(height: 8),
                           TextFormField(
                             controller: _storeNameController,
                             textCapitalization: TextCapitalization.words,
                             decoration: const InputDecoration(
-                              hintText: 'Contoh: Toko Budi Jaya',
+                              hintText: 'Contoh: Kopi Senja',
                             ),
                             validator: (v) {
                               if (v == null || v.isEmpty) {
                                 return 'Nama toko wajib diisi';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 20),
+
+                          _buildSectionLabel('📍', 'Nama Outlet Pertama'),
+                          const SizedBox(height: 8),
+                          TextFormField(
+                            controller: _outletNameController,
+                            textCapitalization: TextCapitalization.words,
+                            decoration: const InputDecoration(
+                              hintText: 'Contoh: Pusat',
+                            ),
+                            validator: (v) {
+                              if (v == null || v.isEmpty) {
+                                return 'Nama outlet wajib diisi';
                               }
                               return null;
                             },
@@ -281,6 +300,7 @@ class _OwnerSetupScreenState extends ConsumerState<OwnerSetupScreen> {
         .setupOwner(
           name: _nameController.text.trim(),
           storeName: _storeNameController.text.trim(),
+          outletName: _outletNameController.text.trim(),
           pin: _pinController.text.trim(),
         );
 
