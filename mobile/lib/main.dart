@@ -156,9 +156,20 @@ class _AppBootstrapState extends ConsumerState<AppBootstrap> {
           return const OwnerSetupScreen();
         }
 
+        // Auto-heal: Toko sudah disetup via web, tapi data karyawan owner lokal belum ada.
+        if (storeProfile != null && owner == null) {
+          Future.microtask(() {
+            ref.read(ownerProvider.notifier).autoCreateOwnerFromCloud(storeProfile.name);
+          });
+          return const _SplashScreen(
+            errorMessage: 'Menyiapkan profil pemilik (PIN default: 123456)...',
+          );
+        }
+
         // Layer 4: Data sudah ada → Employee Selection (PIN Login).
         return const EmployeeSelectionScreen();
       },
+
     );
   }
 }
