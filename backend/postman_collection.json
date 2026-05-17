@@ -1,6 +1,6 @@
 {
     "info": {
-        "_postman_id": "posify-license-api",
+        "_postman_id": "lumio-license-api",
         "name": "Lumio License API",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
@@ -15,14 +15,8 @@
                         "header": [],
                         "url": {
                             "raw": "{{base_url}}/api/v1/ping",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "v1",
-                                "ping"
-                            ]
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "v1", "ping"]
                         }
                     },
                     "response": []
@@ -37,261 +31,126 @@
                     "request": {
                         "method": "POST",
                         "header": [
-                            {
-                                "key": "X-App-Client-Key",
-                                "value": "{{app_client_key}}",
-                                "type": "text"
-                            }
+                            { "key": "X-App-Client-Key", "value": "{{app_client_key}}", "type": "text" },
+                            { "key": "Content-Type", "value": "application/json", "type": "text" }
                         ],
                         "body": {
                             "mode": "raw",
                             "raw": "{\n    \"license_code\": \"VALID-LICENSE-CODE\",\n    \"device_fingerprint\": \"device-unique-id-123\",\n    \"device_model\": \"Samsung S24\",\n    \"os_version\": \"Android 14\"\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
+                            "options": { "raw": { "language": "json" } }
                         },
                         "url": {
                             "raw": "{{base_url}}/api/v1/license/activate",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "v1",
-                                "license",
-                                "activate"
-                            ]
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "v1", "license", "activate"]
                         }
                     },
-                                        "response": [
-                        {
-                            "name": "Activation Success",
-                            "originalRequest": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "X-App-Client-Key",
-                                        "value": "{{app_client_key}}",
-                                        "type": "text"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n    \"license_code\": \"POS-LITE-12345\",\n    \"device_fingerprint\": \"device-123\",\n    \"device_model\": \"Samsung S24\",\n    \"os_version\": \"Android 14\"\n}",
-                                    "options": {
-                                        "raw": {
-                                            "language": "json"
-                                        }
-                                    }
-                                },
-                                "url": {
-                                    "raw": "{{base_url}}/api/v1/license/activate",
-                                    "host": [
-                                        "{{base_url}}"
-                                    ],
-                                    "path": [
-                                        "api",
-                                        "v1",
-                                        "license",
-                                        "activate"
-                                    ]
-                                }
-                            },
-                            "status": "OK",
-                            "code": 200,
-                            "_postman_previewlanguage": "json",
-                            "header": [
-                                {
-                                    "key": "Content-Type",
-                                    "value": "application/json"
-                                }
-                            ],
-                            "cookie": [],
-                            "body": "{\n    \"status\": \"success\",\n    \"code\": 200,\n    \"message\": \"Lisensi berhasil diaktifkan untuk perangkat ini.\",\n    \"data\": {\n        \"license_code\": \"POS-LITE-12345\",\n        \"activation_date\": \"2026-04-14T12:00:00Z\",\n        \"tier_level\": \"lite\",\n        \"max_devices\": 1,\n        \"max_outlets\": 1\n    }\n}"
-                        }
-                    ]
+                    "response": []
                 },
                 {
-                    "name": "Verify License",
+                    "name": "Verify License (by code)",
                     "request": {
                         "method": "POST",
                         "header": [
-                            {
-                                "key": "X-App-Client-Key",
-                                "value": "{{app_client_key}}",
-                                "type": "text"
-                            }
+                            { "key": "X-App-Client-Key", "value": "{{app_client_key}}", "type": "text" },
+                            { "key": "Content-Type", "value": "application/json", "type": "text" }
                         ],
                         "body": {
                             "mode": "raw",
                             "raw": "{\n    \"license_code\": \"VALID-LICENSE-CODE\",\n    \"device_fingerprint\": \"device-unique-id-123\"\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
+                            "options": { "raw": { "language": "json" } }
                         },
                         "url": {
                             "raw": "{{base_url}}/api/v1/license/verify",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "v1",
-                                "license",
-                                "verify"
-                            ]
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "v1", "license", "verify"]
                         }
                     },
-                                        "response": [
-                        {
-                            "name": "Verify Success",
-                            "originalRequest": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "X-App-Client-Key",
-                                        "value": "{{app_client_key}}",
-                                        "type": "text"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n    \"license_code\": \"POS-LITE-12345\",\n    \"device_fingerprint\": \"device-123\"\n}",
-                                    "options": {
-                                        "raw": {
-                                            "language": "json"
-                                        }
-                                    }
-                                },
-                                "url": {
-                                    "raw": "{{base_url}}/api/v1/license/verify",
-                                    "host": [
-                                        "{{base_url}}"
-                                    ],
-                                    "path": [
-                                        "api",
-                                        "v1",
-                                        "license",
-                                        "verify"
-                                    ]
-                                }
-                            },
-                            "status": "OK",
-                            "code": 200,
-                            "_postman_previewlanguage": "json",
-                            "header": [
-                                {
-                                    "key": "Content-Type",
-                                    "value": "application/json"
-                                }
-                            ],
-                            "cookie": [],
-                            "body": "{\n    \"status\": \"success\",\n    \"code\": 200,\n    \"message\": \"Lisensi Aktif.\",\n    \"data\": {\n        \"is_active\": true\n    }\n}"
+                    "response": []
+                },
+                {
+                    "name": "Verify Account (by email/user_id)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            { "key": "X-App-Client-Key", "value": "{{app_client_key}}", "type": "text" },
+                            { "key": "Content-Type", "value": "application/json", "type": "text" }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"consumer@example.com\",\n    \"user_id\": \"uuid-user-id-here\",\n    \"device_fingerprint\": \"device-unique-id-123\",\n    \"device_model\": \"Samsung S24\",\n    \"os_version\": \"Android 14\"\n}",
+                            "options": { "raw": { "language": "json" } }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/license/verify-account",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "v1", "license", "verify-account"]
                         }
-                    ]
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Devices",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            { "key": "X-App-Client-Key", "value": "{{app_client_key}}", "type": "text" },
+                            { "key": "Content-Type", "value": "application/json", "type": "text" }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"license_code\": \"VALID-LICENSE-CODE\",\n    \"customer_email\": \"consumer@example.com\"\n}",
+                            "options": { "raw": { "language": "json" } }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/license/devices",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "v1", "license", "devices"]
+                        }
+                    },
+                    "response": []
                 },
                 {
                     "name": "Reset License — Full (Lepas Semua Perangkat)",
                     "request": {
                         "method": "POST",
                         "header": [
-                            {
-                                "key": "X-App-Client-Key",
-                                "value": "{{app_client_key}}",
-                                "type": "text"
-                            }
+                            { "key": "X-App-Client-Key", "value": "{{app_client_key}}", "type": "text" },
+                            { "key": "Content-Type", "value": "application/json", "type": "text" }
                         ],
                         "body": {
                             "mode": "raw",
                             "raw": "{\n    \"license_code\": \"VALID-LICENSE-CODE\",\n    \"customer_email\": \"consumer@example.com\"\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
+                            "options": { "raw": { "language": "json" } }
                         },
                         "url": {
                             "raw": "{{base_url}}/api/v1/license/reset",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "v1",
-                                "license",
-                                "reset"
-                            ]
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "v1", "license", "reset"]
                         }
                     },
-                    "response": [
-                        {
-                            "name": "Full Reset Success",
-                            "status": "OK",
-                            "code": 200,
-                            "_postman_previewlanguage": "json",
-                            "header": [{ "key": "Content-Type", "value": "application/json" }],
-                            "cookie": [],
-                            "body": "{\n    \"status\": \"success\",\n    \"code\": 200,\n    \"message\": \"Perangkat berhasil dilepas.\",\n    \"data\": null\n}"
-                        }
-                    ]
+                    "response": []
                 },
                 {
-                    "name": "Reset License — Selective (Lepas 1 Perangkat Tertentu)",
+                    "name": "Reset License — Selective (Lepas 1 Perangkat)",
                     "request": {
                         "method": "POST",
                         "header": [
-                            {
-                                "key": "X-App-Client-Key",
-                                "value": "{{app_client_key}}",
-                                "type": "text"
-                            }
+                            { "key": "X-App-Client-Key", "value": "{{app_client_key}}", "type": "text" },
+                            { "key": "Content-Type", "value": "application/json", "type": "text" }
                         ],
                         "body": {
                             "mode": "raw",
                             "raw": "{\n    \"license_code\": \"VALID-LICENSE-CODE\",\n    \"customer_email\": \"consumer@example.com\",\n    \"device_fingerprint\": \"abc123-fingerprint-hape-lama\"\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
+                            "options": { "raw": { "language": "json" } }
                         },
                         "url": {
                             "raw": "{{base_url}}/api/v1/license/reset",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "v1",
-                                "license",
-                                "reset"
-                            ]
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "v1", "license", "reset"]
                         }
                     },
-                    "response": [
-                        {
-                            "name": "Selective Reset Success",
-                            "status": "OK",
-                            "code": 200,
-                            "_postman_previewlanguage": "json",
-                            "header": [{ "key": "Content-Type", "value": "application/json" }],
-                            "cookie": [],
-                            "body": "{\n    \"status\": \"success\",\n    \"code\": 200,\n    \"message\": \"Perangkat berhasil dilepas.\",\n    \"data\": null\n}"
-                        },
-                        {
-                            "name": "Device Not Found (404)",
-                            "status": "Not Found",
-                            "code": 404,
-                            "_postman_previewlanguage": "json",
-                            "header": [{ "key": "Content-Type", "value": "application/json" }],
-                            "cookie": [],
-                            "body": "{\n    \"status\": \"error\",\n    \"code\": 404,\n    \"message\": \"Perangkat dengan fingerprint tersebut tidak ditemukan pada lisensi ini.\"\n}"
-                        }
-                    ]
+                    "response": []
                 }
             ]
         },
@@ -299,87 +158,88 @@
             "name": "Admin",
             "item": [
                 {
-                    "name": "Generate License",
+                    "name": "Generate License (New User)",
                     "request": {
                         "method": "POST",
                         "header": [
-                            {
-                                "key": "X-Admin-Secret-Key",
-                                "value": "{{admin_secret_key}}",
-                                "type": "text"
-                            }
+                            { "key": "X-Admin-Secret-Key", "value": "{{admin_secret_key}}", "type": "text" },
+                            { "key": "Content-Type", "value": "application/json", "type": "text" }
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"tier_level\": \"pro\",\n    \"customer_email\": \"consumer@example.com\",\n    \"order_id\": \"ORDER-123\",\n    \"source\": \"lumio-saas\"\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
+                            "raw": "{\n    \"tier_level\": \"lite\",\n    \"customer_email\": \"consumer@example.com\",\n    \"user_id\": \"uuid-user-id-here\",\n    \"duration_months\": 0,\n    \"source\": \"admin_web\"\n}",
+                            "options": { "raw": { "language": "json" } }
                         },
                         "url": {
                             "raw": "{{base_url}}/api/v1/admin/license/generate",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "v1",
-                                "admin",
-                                "license",
-                                "generate"
-                            ]
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "v1", "admin", "license", "generate"]
                         }
                     },
-                    "response": [
-                        {
-                            "name": "Generate Success",
-                            "originalRequest": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "X-Admin-Secret-Key",
-                                        "value": "{{admin_secret_key}}",
-                                        "type": "text"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n    \"tier_level\": \"pro\",\n    \"customer_email\": \"consumer@example.com\",\n    \"order_id\": \"ORDER-123\",\n    \"source\": \"lumio-saas\"\n}",
-                                    "options": {
-                                        "raw": {
-                                            "language": "json"
-                                        }
-                                    }
-                                },
-                                "url": {
-                                    "raw": "{{base_url}}/api/v1/admin/license/generate",
-                                    "host": [
-                                        "{{base_url}}"
-                                    ],
-                                    "path": [
-                                        "api",
-                                        "v1",
-                                        "admin",
-                                        "license",
-                                        "generate"
-                                    ]
-                                }
-                            },
-                            "status": "Created",
-                            "code": 201,
-                            "_postman_previewlanguage": "json",
-                            "header": [
-                                {
-                                    "key": "Content-Type",
-                                    "value": "application/json"
-                                }
-                            ],
-                            "cookie": [],
-                            "body": "{\n    \"status\": \"success\",\n    \"code\": 201,\n    \"message\": \"Lisensi berhasil dibuat.\",\n    \"data\": {\n        \"license_code\": \"X8Y2K9J1P5\",\n        \"tier_level\": \"pro\",\n        \"max_devices\": 10,\n        \"max_outlets\": 3,\n        \"customer_email\": \"consumer@example.com\"\n    }\n}"
+                    "response": []
+                },
+                {
+                    "name": "Generate License — Pro 1 Bulan",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            { "key": "X-Admin-Secret-Key", "value": "{{admin_secret_key}}", "type": "text" },
+                            { "key": "Content-Type", "value": "application/json", "type": "text" }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"tier_level\": \"pro\",\n    \"customer_email\": \"consumer@example.com\",\n    \"user_id\": \"uuid-user-id-here\",\n    \"duration_months\": 1,\n    \"source\": \"admin_web\"\n}",
+                            "options": { "raw": { "language": "json" } }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/admin/license/generate",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "v1", "admin", "license", "generate"]
                         }
-                    ]
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Generate License — Pro 6 Bulan",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            { "key": "X-Admin-Secret-Key", "value": "{{admin_secret_key}}", "type": "text" },
+                            { "key": "Content-Type", "value": "application/json", "type": "text" }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"tier_level\": \"pro\",\n    \"customer_email\": \"consumer@example.com\",\n    \"user_id\": \"uuid-user-id-here\",\n    \"duration_months\": 6,\n    \"source\": \"admin_web\"\n}",
+                            "options": { "raw": { "language": "json" } }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/admin/license/generate",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "v1", "admin", "license", "generate"]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Generate License — Trial 7 Hari",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            { "key": "X-Admin-Secret-Key", "value": "{{admin_secret_key}}", "type": "text" },
+                            { "key": "Content-Type", "value": "application/json", "type": "text" }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"tier_level\": \"trial\",\n    \"customer_email\": \"consumer@example.com\",\n    \"user_id\": \"uuid-user-id-here\",\n    \"duration_months\": 0,\n    \"source\": \"admin_web\"\n}",
+                            "options": { "raw": { "language": "json" } }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/admin/license/generate",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "v1", "admin", "license", "generate"]
+                        }
+                    },
+                    "response": []
                 }
             ]
         },
@@ -387,71 +247,43 @@
             "name": "Webhooks (Marketplace)",
             "item": [
                 {
-                    "name": "1. TikTok Webhook",
+                    "name": "TikTok Webhook",
                     "request": {
                         "method": "POST",
                         "header": [
-                            {
-                                "key": "X-Tiktok-Signature",
-                                "value": "dummy-signature-untuk-testing",
-                                "type": "text"
-                            }
+                            { "key": "X-Tiktok-Signature", "value": "dummy-signature", "type": "text" },
+                            { "key": "Content-Type", "value": "application/json", "type": "text" }
                         ],
                         "body": {
                             "mode": "raw",
                             "raw": "{\n  \"type\": 1,\n  \"tts_notification_id\": \"7327112393057371910\",\n  \"shop_id\": \"7494049642642441621\",\n  \"timestamp\": 1644412885,\n  \"data\": {\n    \"order_id\": \"TK-12345-TEST\",\n    \"order_status\": \"AWAITING_SHIPMENT\",\n    \"is_on_hold_order\": false,\n    \"update_time\": 1644412885\n  }\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
+                            "options": { "raw": { "language": "json" } }
                         },
                         "url": {
                             "raw": "{{base_url}}/api/v1/webhooks/tiktok",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "v1",
-                                "webhooks",
-                                "tiktok"
-                            ]
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "v1", "webhooks", "tiktok"]
                         }
                     },
                     "response": []
                 },
                 {
-                    "name": "2. Shopee Webhook",
+                    "name": "Shopee Webhook",
                     "request": {
                         "method": "POST",
                         "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "dummy-signature-untuk-testing",
-                                "type": "text"
-                            }
+                            { "key": "Authorization", "value": "dummy-signature", "type": "text" },
+                            { "key": "Content-Type", "value": "application/json", "type": "text" }
                         ],
                         "body": {
                             "mode": "raw",
                             "raw": "{\n  \"shop_id\": 987654321,\n  \"code\": 3,\n  \"timestamp\": 1644412885,\n  \"data\": {\n    \"ordersn\": \"SHP-12345-TEST\",\n    \"status\": \"READY_TO_SHIP\"\n  }\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
+                            "options": { "raw": { "language": "json" } }
                         },
                         "url": {
                             "raw": "{{base_url}}/api/v1/webhooks/shopee",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "v1",
-                                "webhooks",
-                                "shopee"
-                            ]
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "v1", "webhooks", "shopee"]
                         }
                     },
                     "response": []
@@ -459,40 +291,20 @@
             ]
         }
     ],
-    "event": [
-        {
-            "listen": "prerequest",
-            "script": {
-                "type": "text/javascript",
-                "exec": [
-                    ""
-                ]
-            }
-        },
-        {
-            "listen": "test",
-            "script": {
-                "type": "text/javascript",
-                "exec": [
-                    ""
-                ]
-            }
-        }
-    ],
     "variable": [
         {
             "key": "base_url",
-            "value": "http://localhost:3000",
+            "value": "http://localhost:8080",
             "type": "string"
         },
         {
             "key": "app_client_key",
-            "value": "LPFrrQcWTAh716Bmt9NYKXbg",
+            "value": "{{APP_CLIENT_KEY}}",
             "type": "string"
         },
         {
             "key": "admin_secret_key",
-            "value": "lspMqZSFl2XfkVEdacO4Z3Ny",
+            "value": "{{ADMIN_SECRET_KEY}}",
             "type": "string"
         }
     ]
