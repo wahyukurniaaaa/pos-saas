@@ -236,7 +236,7 @@ func (s *service) VerifyAccount(req VerifyAccountRequest) (*VerifyAccountRespons
 	return res, nil
 }
 
-// Generate creates a new random license code
+// Generate creates a new license or renews/upgrades an existing one for the same user_id.
 func (s *service) Generate(req GenerateRequest) (*models.License, error) {
 	// Validate Tier
 	maxDevices, ok := TierDeviceLimit[req.TierLevel]
@@ -244,25 +244,6 @@ func (s *service) Generate(req GenerateRequest) (*models.License, error) {
 		return nil, errors.New("TierLevel tidak valid. Harus 'lite', 'pro', atau 'trial'.")
 	}
 	maxOutlets := TierOutletLimit[req.TierLevel]
-
-	var code string
-	var err error
-	
-	// Retry loop to ensure uniqueness
-	for i := 0; i < 3; i++ {
-		code, err = generate10DigitCode()
-		if err != nil {
-			return nil, err
-		}
-		
-		existing, _ := s.repo.FindByCode(code)
-		if existing == nil {
-			break
-		}
-		if i == 2 {
-			return nil, errors.New("gagal membuat kode unik setelah beberapa percobaan")
-		}
-	}
 
 	source := req.Source
 	if source == "" {
@@ -276,6 +257,69 @@ func (s *service) Generate(req GenerateRequest) (*models.License, error) {
 	} else if req.TierLevel == TierPro && req.DurationMonths > 0 {
 		exp := time.Now().AddDate(0, req.DurationMonths, 0)
 		expiredAt = &exp
+	}
+
+	// Check if user already has a license — if so, renew/upgrade instead of creating new
+	existing, err := s.repo.FindByUserID(req.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	if existing != nil {
+		// Renewal/upgrade: update tier, expiry, limits on existing license
+		// If Pro renewal and already has expiry in the future, extend from that date
+		if req.TierLevel == TierPro && req.DurationMonths > 0 {
+			base := time.Now()
+			if existing.ExpiredAt != nil && existing.ExpiredAt.After(base) {
+				base = *existing.ExpiredAt
+			}
+			exp := base.AddDate(0, req.DurationMonths, 0)
+			expiredAt = &exp
+		}
+
+		existing.TierLevel = req.TierLevel
+		existing.MaxDevices = maxDevices
+		existing.MaxOutlets = maxOutlets
+		existing.ExpiredAt = expiredAt
+		existing.IsActive = true
+		existing.CustomerEmail = req.CustomerEmail
+		existing.Source = source
+
+		if err := s.repo.Update(existing); err != nil {
+			return nil, err
+		}
+
+		// Send renewal email async
+		if s.mailer != nil {
+			go func() {
+				expiredAtStr := ""
+				if existing.ExpiredAt != nil {
+					expiredAtStr = existing.ExpiredAt.Format("02 January 2006")
+				}
+				if err := s.mailer.SendLicenseEmail(req.CustomerEmail, existing.LicenseCode, req.TierLevel, maxDevices, expiredAtStr); err != nil {
+					fmt.Printf("Email error for %s: %v\n", req.CustomerEmail, err)
+				}
+			}()
+		}
+
+		return existing, nil
+	}
+
+	// New user — generate fresh license code
+	var code string
+	for i := 0; i < 3; i++ {
+		code, err = generate10DigitCode()
+		if err != nil {
+			return nil, err
+		}
+
+		existing, _ := s.repo.FindByCode(code)
+		if existing == nil {
+			break
+		}
+		if i == 2 {
+			return nil, errors.New("gagal membuat kode unik setelah beberapa percobaan")
+		}
 	}
 
 	license := &models.License{
