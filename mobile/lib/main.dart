@@ -20,6 +20,7 @@ import 'package:lumio/core/services/sync_service.dart';
 import 'package:lumio/core/services/realtime_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:lumio/services/update_checker.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -81,6 +82,14 @@ class AppBootstrap extends ConsumerStatefulWidget {
 }
 
 class _AppBootstrapState extends ConsumerState<AppBootstrap> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      UpdateChecker.check(context);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     // 1. Listen for future license changes to start sync
