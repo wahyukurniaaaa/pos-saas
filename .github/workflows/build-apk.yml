@@ -124,8 +124,8 @@ jobs:
           git clone "https://x-access-token:${APK_REPO_TOKEN}@github.com/wahyukurniaaaa/lumio-apk.git" /tmp/lumio-apk
           mkdir -p "/tmp/lumio-apk/releases/${VERSION_FOLDER}"
 
-          cp "mobile/build/app/outputs/flutter-apk/${APK_NAME}" \
-             "/tmp/lumio-apk/releases/${VERSION_FOLDER}/${APK_SIMPLE_NAME}"
+          # APK TIDAK disimpan di git repo — hanya di GitHub Releases (step berikutnya)
+          # Git repo hanya menyimpan metadata: latest.json, release-notes.md, RELEASES.md
 
           {
             echo "# Release Notes — Lumio v${APP_VERSION}"
@@ -139,7 +139,7 @@ jobs:
             echo "${RELEASE_NOTES}"
           } > "/tmp/lumio-apk/releases/${VERSION_FOLDER}/release-notes.md"
 
-          DOWNLOAD_URL="https://github.com/wahyukurniaaaa/lumio-apk/raw/main/releases/${VERSION_FOLDER}/${APK_SIMPLE_NAME}"
+          DOWNLOAD_URL="https://github.com/wahyukurniaaaa/lumio-apk/releases/latest/download/lumio.apk"
           jq -n \
             --arg latest_version "$APP_VERSION" \
             --arg download_url "$DOWNLOAD_URL" \
@@ -171,7 +171,7 @@ jobs:
             echo ""
             echo "## Latest: v${APP_VERSION}"
             echo ""
-            echo "Download APK terbaru: [lumio-v${APP_VERSION}.apk](./releases/${VERSION_FOLDER}/${APK_SIMPLE_NAME})"
+            echo "Download APK terbaru: [lumio.apk](https://github.com/wahyukurniaaaa/lumio-apk/releases/latest/download/lumio.apk)"
             echo ""
             echo "---"
             echo ""
@@ -179,7 +179,7 @@ jobs:
             echo ""
             echo "| Versi | Build | Commit | Tanggal | Download |"
             echo "|-------|-------|--------|---------|----------|"
-            echo "| [v${APP_VERSION}](./releases/${VERSION_FOLDER}/release-notes.md) | ${BUILD_NUMBER} | ${SHORT_SHA} | ${BUILD_DATE} | [APK](./releases/${VERSION_FOLDER}/${APK_SIMPLE_NAME}) |"
+            echo "| [v${APP_VERSION}](./releases/${VERSION_FOLDER}/release-notes.md) | ${BUILD_NUMBER} | ${SHORT_SHA} | ${BUILD_DATE} | [Download](https://github.com/wahyukurniaaaa/lumio-apk/releases/tag/v${APP_VERSION}) |"
             if [ -n "$HISTORY" ]; then
               echo "$HISTORY"
             fi
@@ -192,7 +192,6 @@ jobs:
           git add .
           git commit -m "release: Lumio v${APP_VERSION}+${BUILD_NUMBER} (${SHORT_SHA})" \
                      -m "" \
-                     -m "- APK: releases/${VERSION_FOLDER}/${APK_SIMPLE_NAME}" \
                      -m "- latest.json: diperbarui ke v${APP_VERSION}" \
                      -m "- Trigger: ${GH_EVENT}" \
                      -m "- Branch: ${GH_BRANCH}" \
