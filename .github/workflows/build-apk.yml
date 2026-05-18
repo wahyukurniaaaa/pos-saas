@@ -118,8 +118,7 @@ jobs:
           SHORT_SHA="${COMMIT_SHA:0:7}"
           BUILD_DATE=$(date +'%Y-%m-%d %H:%M UTC')
           VERSION_FOLDER="v${APP_VERSION}"
-          APK_SIMPLE_NAME="lumio-v${APP_VERSION}.apk"
-          RELEASE_NOTES_SAFE=$(echo "$RELEASE_NOTES" | tr '\n' ' ' | sed 's/  */ /g' | sed 's/^ //;s/ $//')
+          RELEASE_NOTES_SAFE=$(echo "$RELEASE_NOTES" | tr '\n' ' ' | sed 's/  */ /g' | sed 's/^ //;s/ $//') 
 
           git clone "https://x-access-token:${APK_REPO_TOKEN}@github.com/wahyukurniaaaa/lumio-apk.git" /tmp/lumio-apk
           mkdir -p "/tmp/lumio-apk/releases/${VERSION_FOLDER}"
@@ -207,8 +206,6 @@ jobs:
               exit 1
             fi
           done
-
-          echo "apk_path=/tmp/lumio-apk/releases/${VERSION_FOLDER}/${APK_SIMPLE_NAME}" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release on lumio-apk
         env:
