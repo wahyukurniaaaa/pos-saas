@@ -64,15 +64,15 @@ jobs:
           KEYSTORE_STORE_PASSWORD: ${{ secrets.KEYSTORE_STORE_PASSWORD }}
           KEYSTORE_KEY_PASSWORD: ${{ secrets.KEYSTORE_KEY_PASSWORD }}
           KEYSTORE_KEY_ALIAS: ${{ secrets.KEYSTORE_KEY_ALIAS }}
-        working-directory: mobile/android
+        working-directory: mobile/android/app
         run: |
           if [ -n "$KEYSTORE_BASE64" ]; then
             echo "Release keystore ditemukan, menggunakan release signing..."
-            echo "$KEYSTORE_BASE64" | base64 --decode > app/release.keystore
-            printf 'storePassword=%s\n' "$KEYSTORE_STORE_PASSWORD" > key.properties
-            printf 'keyPassword=%s\n' "$KEYSTORE_KEY_PASSWORD" >> key.properties
-            printf 'keyAlias=%s\n' "$KEYSTORE_KEY_ALIAS" >> key.properties
-            printf 'storeFile=%s\n' "app/release.keystore" >> key.properties
+            echo "$KEYSTORE_BASE64" | base64 --decode > release.keystore
+            printf 'storePassword=%s\n' "$KEYSTORE_STORE_PASSWORD" > ../key.properties
+            printf 'keyPassword=%s\n' "$KEYSTORE_KEY_PASSWORD" >> ../key.properties
+            printf 'keyAlias=%s\n' "$KEYSTORE_KEY_ALIAS" >> ../key.properties
+            printf 'storeFile=%s\n' "release.keystore" >> ../key.properties
           else
             echo "KEYSTORE_BASE64 tidak di-set, menggunakan debug signing..."
           fi
