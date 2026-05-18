@@ -3,3 +3,10 @@
 *.sqlite
 mobile/wrap_screens.py
 node_modules/
+
+# Android keystore & signing
+*.keystore
+*.jks
+key.properties
+mobile/android/KEYSTORE_INFO.md
+mobile/android/GITHUB_SECRETS_SETUP.md

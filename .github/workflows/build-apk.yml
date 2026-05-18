@@ -30,7 +30,7 @@ jobs:
           distribution: "temurin"
           java-version: "17"
 
-      # ── 3. Flutter ────────────────────────────────────────────────────────────
+      # ── 3. Flutter (last updated: 2026-05-18) ─────────────────────────────────
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -83,9 +83,10 @@ jobs:
         run: flutter pub get
 
       # ── 8. Drift codegen ──────────────────────────────────────────────────────
+      # Menggunakan `dart run` (menggantikan `flutter pub run` yang sudah deprecated)
       - name: Run Drift codegen
         working-directory: mobile
-        run: flutter pub run build_runner build --delete-conflicting-outputs
+        run: dart run build_runner build --delete-conflicting-outputs
 
       # ── 9. Build APK ──────────────────────────────────────────────────────────
       - name: Build release APK
@@ -97,7 +98,7 @@ jobs:
         id: version
         working-directory: mobile
         run: |
-          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | tr -d ' ')
+          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | tr -d ' \r')
           BUILD_NAME=$(echo "$VERSION" | cut -d'+' -f1)
           BUILD_NUMBER=$(echo "$VERSION" | cut -d'+' -f2)
           SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
@@ -128,6 +129,7 @@ jobs:
           APP_VERSION: ${{ steps.version.outputs.version }}
           BUILD_NUMBER: ${{ steps.version.outputs.build_number }}
           COMMIT_SHA: ${{ github.sha }}
+          # Sanitize release notes: strip newlines agar tidak merusak commit message
           RELEASE_NOTES: ${{ github.event.inputs.release_notes || 'Build otomatis dari CI' }}
           GH_EVENT: ${{ github.event_name }}
           GH_BRANCH: ${{ github.ref_name }}
@@ -136,6 +138,9 @@ jobs:
           BUILD_DATE=$(date +'%Y-%m-%d %H:%M UTC')
           VERSION_FOLDER="v${APP_VERSION}"
           APK_SIMPLE_NAME="lumio-v${APP_VERSION}.apk"
+
+          # Sanitize release notes: ganti newline dengan spasi agar aman di commit message
+          RELEASE_NOTES_SAFE=$(echo "$RELEASE_NOTES" | tr '\n' ' ' | sed 's/  */ /g' | sed 's/^ //;s/ $//')
 
           # Clone target repo
           git clone "https://x-access-token:${APK_REPO_TOKEN}@github.com/wahyukurniaaaa/lumio-apk.git" /tmp/lumio-apk
@@ -162,13 +167,14 @@ jobs:
 
           # Update latest.json — dibaca oleh app untuk cek update otomatis
           # Gunakan jq untuk JSON encoding yang aman (sudah pre-installed di ubuntu-latest)
+          # build_number di-cast ke integer via tonumber agar JSON valid
           DOWNLOAD_URL="https://github.com/wahyukurniaaaa/lumio-apk/raw/main/releases/${VERSION_FOLDER}/${APK_SIMPLE_NAME}"
           jq -n \
             --arg latest_version "$APP_VERSION" \
             --arg download_url "$DOWNLOAD_URL" \
             --arg release_notes "$RELEASE_NOTES" \
             --arg minimum_version "1.0.0" \
-            --argjson build_number "$BUILD_NUMBER" \
+            --arg build_number "$BUILD_NUMBER" \
             --arg released_at "$BUILD_DATE" \
             --arg commit "$SHORT_SHA" \
             '{
@@ -177,7 +183,7 @@ jobs:
               release_notes: $release_notes,
               force_update: false,
               minimum_version: $minimum_version,
-              build_number: $build_number,
+              build_number: ($build_number | tonumber),
               released_at: $released_at,
               commit: $commit
             }' > /tmp/lumio-apk/releases/latest.json
@@ -215,7 +221,7 @@ jobs:
           git config user.email "ci@lumio.app"
           git config user.name "Lumio CI"
 
-          # Commit dan push
+          # Commit dan push dengan retry untuk menghindari race condition
           git add .
           git commit -m "release: Lumio v${APP_VERSION}+${BUILD_NUMBER} (${SHORT_SHA})
 
@@ -223,6 +229,19 @@ jobs:
           - latest.json: diperbarui ke v${APP_VERSION}
           - Trigger: ${GH_EVENT}
           - Branch: ${GH_BRANCH}
-          - Notes: ${RELEASE_NOTES}"
+          - Notes: ${RELEASE_NOTES_SAFE}"
 
-          git push origin main
+          # Retry push hingga 3x untuk menangani race condition
+          for attempt in 1 2 3; do
+            if git push origin main; then
+              echo "Push berhasil pada percobaan ke-${attempt}"
+              break
+            fi
+            if [ "$attempt" -lt 3 ]; then
+              echo "Push gagal, mencoba rebase dan retry (percobaan ${attempt}/3)..."
+              git pull --rebase origin main
+            else
+              echo "Push gagal setelah 3 percobaan"
+              exit 1
+            fi
+          done
