@@ -12,7 +12,7 @@ import 'package:url_launcher/url_launcher.dart';
 /// ```json
 /// {
 ///   "latest_version": "1.2.0",
-///   "download_url": "https://github.com/wahyukurniaaaa/lumio-apk/raw/main/releases/v1.2.0/lumio-v1.2.0.apk",
+///   "download_url": "https://github.com/wahyukurniaaaa/lumio-apk/releases/latest/download/lumio.apk",
 ///   "release_notes": "- Tambah fitur diskon\n- Fix bug struk printer",
 ///   "force_update": false,
 ///   "minimum_version": "1.0.0"
