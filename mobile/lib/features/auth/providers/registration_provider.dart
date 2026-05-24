@@ -41,10 +41,14 @@ class RegistrationState {
   // ── Step 2 data ───────────────────────────────────────────────────────────
   final List<SubscriptionPackage> packages;
   final String selectedPackageSlug;
+  final String selectedPaymentMethod; // 'qris' | 'va'
+  final String selectedBankCode;      // 'bni' | 'bri' | 'bca' | 'permata' | 'maybank'
 
   // ── Step 3 data (from Checkout_API) ──────────────────────────────────────
   final String? invoiceNumber;
   final String? paymentUrl;
+  final String? paymentNumber;  // QR string or VA number
+  final String? paymentMethod;  // 'qris' | 'va'
   final DateTime? expiredAt;
 
   const RegistrationState({
@@ -60,8 +64,12 @@ class RegistrationState {
     this.accessToken,
     this.packages = const [],
     this.selectedPackageSlug = 'pro',
+    this.selectedPaymentMethod = 'qris',
+    this.selectedBankCode = 'bni',
     this.invoiceNumber,
     this.paymentUrl,
+    this.paymentNumber,
+    this.paymentMethod,
     this.expiredAt,
   });
 
@@ -78,8 +86,12 @@ class RegistrationState {
     Object? accessToken = _sentinel,
     List<SubscriptionPackage>? packages,
     String? selectedPackageSlug,
+    String? selectedPaymentMethod,
+    String? selectedBankCode,
     Object? invoiceNumber = _sentinel,
     Object? paymentUrl = _sentinel,
+    Object? paymentNumber = _sentinel,
+    Object? paymentMethod = _sentinel,
     Object? expiredAt = _sentinel,
   }) {
     return RegistrationState(
@@ -99,11 +111,19 @@ class RegistrationState {
           : accessToken as String?,
       packages: packages ?? this.packages,
       selectedPackageSlug: selectedPackageSlug ?? this.selectedPackageSlug,
+      selectedPaymentMethod: selectedPaymentMethod ?? this.selectedPaymentMethod,
+      selectedBankCode: selectedBankCode ?? this.selectedBankCode,
       invoiceNumber: invoiceNumber == _sentinel
           ? this.invoiceNumber
           : invoiceNumber as String?,
       paymentUrl:
           paymentUrl == _sentinel ? this.paymentUrl : paymentUrl as String?,
+      paymentNumber: paymentNumber == _sentinel
+          ? this.paymentNumber
+          : paymentNumber as String?,
+      paymentMethod: paymentMethod == _sentinel
+          ? this.paymentMethod
+          : paymentMethod as String?,
       expiredAt:
           expiredAt == _sentinel ? this.expiredAt : expiredAt as DateTime?,
     );
@@ -316,21 +336,29 @@ class RegistrationNotifier extends AsyncNotifier<RegistrationState> {
   // ── Step 2: Select Package ────────────────────────────────────────────────
 
   /// Updates the selected package slug in state.
-  ///
-  /// Requirements: 2.4
   void selectPackage(String slug) {
     _update((s) => s.copyWith(selectedPackageSlug: slug));
+  }
+
+  /// Updates the selected payment method ('qris' or 'va').
+  void selectPaymentMethod(String method) {
+    _update((s) => s.copyWith(selectedPaymentMethod: method));
+  }
+
+  /// Updates the selected bank code for VA payment.
+  void selectBankCode(String bankCode) {
+    _update((s) => s.copyWith(selectedBankCode: bankCode));
   }
 
   // ── Step 2: Initiate Checkout ─────────────────────────────────────────────
 
   /// Calls the Checkout_API with Bearer token auth and advances to Step 3.
-  ///
-  /// Requirements: 2.6, 2.7, 2.8
   Future<void> initiateCheckout(String packageSlug) async {
     final current = state.value ?? const RegistrationState();
     final userId = current.userId;
     final accessToken = current.accessToken;
+    final method = current.selectedPaymentMethod;
+    final bankCode = current.selectedBankCode;
 
     if (userId == null) {
       _setError('Sesi tidak valid. Silakan ulangi dari awal.');
@@ -347,8 +375,7 @@ class RegistrationNotifier extends AsyncNotifier<RegistrationState> {
           receiveTimeout: const Duration(seconds: 30),
           headers: {
             'Content-Type': 'application/json',
-            if (accessToken != null)
-              'Authorization': 'Bearer $accessToken',
+            if (accessToken != null) 'Authorization': 'Bearer $accessToken',
           },
         ),
       );
@@ -358,20 +385,22 @@ class RegistrationNotifier extends AsyncNotifier<RegistrationState> {
         data: {
           'userId': userId,
           'packageSlug': packageSlug,
+          'method': method,
+          if (method == 'va') 'bankCode': bankCode,
         },
       );
 
       final data = response.data as Map<String, dynamic>;
       final invoiceNumber = data['invoiceNumber'] as String?;
       final paymentUrl = data['paymentUrl'] as String?;
+      final paymentNumber = data['paymentNumber'] as String?;
+      final paymentMethod = data['paymentMethod'] as String? ?? method;
       final expiredAtRaw = data['expiredAt'];
       final expiredAt = expiredAtRaw != null
           ? DateTime.tryParse(expiredAtRaw.toString())
           : null;
 
-      // All three fields must be present before advancing to Step 3
-      // (Requirement 2.7 / Property 7)
-      if (invoiceNumber == null || paymentUrl == null || expiredAt == null) {
+      if (invoiceNumber == null || expiredAt == null) {
         _setError('Respons server tidak lengkap. Coba lagi.');
         return;
       }
@@ -382,6 +411,8 @@ class RegistrationNotifier extends AsyncNotifier<RegistrationState> {
           errorMessage: null,
           invoiceNumber: invoiceNumber,
           paymentUrl: paymentUrl,
+          paymentNumber: paymentNumber,
+          paymentMethod: paymentMethod,
           expiredAt: expiredAt,
           currentStep: 2,
         ),

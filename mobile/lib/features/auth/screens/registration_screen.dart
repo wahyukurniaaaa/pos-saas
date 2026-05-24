@@ -72,12 +72,6 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen>
   /// Whether the Realtime subscription failed within 10 seconds.
   bool _realtimeSubscribeFailed = false;
 
-  /// Whether to show the WhatsApp admin suggestion (after 5 minutes).
-  bool _showWhatsAppSuggestion = false;
-
-  /// Timer that fires after 5 minutes to show WhatsApp suggestion.
-  Timer? _whatsAppSuggestionTimer;
-
   /// Whether we are waiting for licenseProvider to reload after activation.
   bool _isWaitingForLicense = false;
 
@@ -132,7 +126,6 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen>
     _animController.dispose();
     // Cancel timers and Realtime subscription to prevent memory leaks
     _countdownTimer?.cancel();
-    _whatsAppSuggestionTimer?.cancel();
     ref.read(registrationProvider.notifier).cancelRealtimeSubscription();
     super.dispose();
   }
@@ -358,9 +351,6 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen>
 
   // ── Step 3 Initialization & Helpers ──────────────────────────────────────
 
-  /// Admin WhatsApp number for support contact.
-  static const String _adminWhatsAppNumber = '6281234567890';
-
   /// Initializes Step 3: starts countdown timer and Realtime subscription.
   void _initStep3(RegistrationState regState) {
     final expiredAt = regState.expiredAt;
@@ -393,14 +383,6 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen>
     if (userId != null) {
       _startRealtimeWithTimeout(userId);
     }
-
-    // Start 5-minute WhatsApp suggestion timer
-    _whatsAppSuggestionTimer?.cancel();
-    _whatsAppSuggestionTimer = Timer(const Duration(minutes: 5), () {
-      if (mounted) {
-        setState(() => _showWhatsAppSuggestion = true);
-      }
-    });
   }
 
   /// Starts the countdown timer that ticks every second.
@@ -515,8 +497,6 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen>
   void _cancelStep3Resources() {
     _countdownTimer?.cancel();
     _countdownTimer = null;
-    _whatsAppSuggestionTimer?.cancel();
-    _whatsAppSuggestionTimer = null;
     _step3Initialized = false;
     ref.read(registrationProvider.notifier).cancelRealtimeSubscription();
   }
@@ -554,18 +534,6 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen>
     }
   }
 
-  /// Opens WhatsApp with a pre-filled message containing invoice and email.
-  Future<void> _openWhatsApp(String invoiceNumber, String email) async {
-    final message = Uri.encodeComponent(
-      'Halo admin, saya membutuhkan bantuan untuk invoice $invoiceNumber dengan email $email',
-    );
-    final url = 'https://wa.me/$_adminWhatsAppNumber?text=$message';
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
-  }
-
   /// Handles "Buat Tagihan Baru" — renews checkout and restarts timer.
   Future<void> _handleRenewCheckout() async {
     if (mounted) {
@@ -577,7 +545,6 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen>
 
     // Cancel existing timers
     _countdownTimer?.cancel();
-    _whatsAppSuggestionTimer?.cancel();
 
     await ref.read(registrationProvider.notifier).renewCheckout();
 
@@ -597,7 +564,6 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen>
     if (regState != null) {
       setState(() {
         _step3Initialized = false;
-        _showWhatsAppSuggestion = false;
         _realtimeSubscribeFailed = false;
         _realtimeDisconnected = false;
       });
@@ -677,7 +643,6 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen>
   Widget _buildStep3Content(RegistrationState regState, bool isLoading) {
     final invoiceNumber = regState.invoiceNumber ?? '-';
     final paymentUrl = regState.paymentUrl;
-    final email = regState.email;
 
     // Find selected package name
     final selectedPkg = regState.packages.isNotEmpty
@@ -867,12 +832,6 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen>
             ),
           ),
 
-          // ── WhatsApp suggestion (after 5 minutes) ─────────────────────────
-          if (_showWhatsAppSuggestion) ...[
-            const SizedBox(height: 16),
-            _buildWhatsAppSuggestionCard(invoiceNumber, email),
-          ],
-
           const SizedBox(height: 24),
         ],
       ),
@@ -885,6 +844,9 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen>
     String? paymentUrl,
     bool isLoading,
   ) {
+    final paymentNumber = regState.paymentNumber;
+    final paymentMethod = regState.paymentMethod ?? 'qris';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -897,7 +859,6 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen>
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 8),
-        // Countdown display
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           decoration: BoxDecoration(
@@ -918,37 +879,117 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen>
         ),
         const SizedBox(height: 20),
 
-        // "Buka Halaman Pembayaran" button
-        SizedBox(
-          width: double.infinity,
-          height: 52,
-          child: ElevatedButton.icon(
-            onPressed: (isLoading || paymentUrl == null)
-                ? null
-                : () => _openPaymentUrl(paymentUrl),
-            icon: const Icon(Icons.open_in_browser_rounded, size: 20),
-            label: Text(
-              'Buka Halaman Pembayaran',
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.secondaryColor,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-              elevation: 0,
+        // ── QRIS: show QR code inline ──────────────────────────────────────
+        if ((paymentMethod == 'qris') && paymentNumber != null) ...[
+          Text(
+            'Scan QR Code',
+            style: GoogleFonts.poppins(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.textSecondary,
+              letterSpacing: 1,
             ),
           ),
-        ),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+            ),
+            child: Image.network(
+              // Render QR via Google Charts API (no extra package needed)
+              'https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=${Uri.encodeComponent(paymentNumber)}&choe=UTF-8',
+              width: 180,
+              height: 180,
+              errorBuilder: (_, __, ___) => SizedBox(
+                width: 180,
+                height: 180,
+                child: Center(
+                  child: Text(
+                    paymentNumber,
+                    style: GoogleFonts.poppins(fontSize: 10),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Scan dengan e-wallet atau m-banking Anda',
+            style: GoogleFonts.poppins(
+              fontSize: 11,
+              color: AppTheme.textSecondary,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ]
 
-        const SizedBox(height: 12),
+        // ── VA: show VA number ─────────────────────────────────────────────
+        else if (paymentMethod == 'va' && paymentNumber != null) ...[
+          Text(
+            'Nomor Virtual Account',
+            style: GoogleFonts.poppins(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.textSecondary,
+              letterSpacing: 1,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryColor.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.2)),
+            ),
+            child: SelectableText(
+              paymentNumber,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 3,
+                color: AppTheme.primaryColor,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Transfer ke nomor VA di atas sebelum waktu habis',
+            style: GoogleFonts.poppins(
+              fontSize: 11,
+              color: AppTheme.textSecondary,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ]
 
-        // WhatsApp admin button (always visible in Step 3)
-        _buildWhatsAppButton(regState.invoiceNumber ?? '-', regState.email),
+        // ── Fallback: external URL ─────────────────────────────────────────
+        else if (paymentUrl != null) ...[
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: ElevatedButton.icon(
+              onPressed: isLoading ? null : () => _openPaymentUrl(paymentUrl),
+              icon: const Icon(Icons.open_in_browser_rounded, size: 20),
+              label: Text(
+                'Buka Halaman Pembayaran',
+                style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w700),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.secondaryColor,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                elevation: 0,
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -1023,11 +1064,6 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen>
             ),
           ),
         ),
-
-        const SizedBox(height: 12),
-
-        // WhatsApp admin button
-        _buildWhatsAppButton(regState.invoiceNumber ?? '-', regState.email),
       ],
     );
   }
@@ -1050,103 +1086,6 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen>
         ),
         const SizedBox(height: 8),
       ],
-    );
-  }
-
-  /// Builds a WhatsApp contact button.
-  Widget _buildWhatsAppButton(String invoiceNumber, String email) {
-    return SizedBox(
-      width: double.infinity,
-      height: 48,
-      child: OutlinedButton.icon(
-        onPressed: () => _openWhatsApp(invoiceNumber, email),
-        icon: const Icon(Icons.chat_rounded, size: 18),
-        label: Text(
-          'Hubungi Admin via WhatsApp',
-          style: GoogleFonts.poppins(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: const Color(0xFF25D366), // WhatsApp green
-          side: const BorderSide(color: Color(0xFF25D366)),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// Builds the WhatsApp suggestion card shown after 5 minutes.
-  Widget _buildWhatsAppSuggestionCard(String invoiceNumber, String email) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF25D366).withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFF25D366).withValues(alpha: 0.3),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.support_agent_rounded,
-                color: Color(0xFF25D366),
-                size: 20,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Butuh bantuan?',
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF25D366),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Jika pembayaran sudah dilakukan namun belum terkonfirmasi, hubungi admin kami via WhatsApp.',
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              color: AppTheme.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () => _openWhatsApp(invoiceNumber, email),
-              icon: const Icon(Icons.chat_rounded, size: 16),
-              label: Text(
-                'Hubungi Admin via WhatsApp',
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF25D366),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(vertical: 10),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -1309,6 +1248,111 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen>
                 if (regState.errorMessage != null) ...[
                   const SizedBox(height: 8),
                   _buildStep2ErrorBanner(regState.errorMessage!),
+                ],
+
+                const SizedBox(height: 16),
+
+                // ── Payment method selector ────────────────────────────────
+                Text(
+                  'Metode Pembayaran',
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).textTheme.titleMedium?.color?.withValues(alpha: 0.8),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    for (final method in ['qris', 'va'])
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.only(right: method == 'qris' ? 6 : 0),
+                          child: GestureDetector(
+                            onTap: isLoading
+                                ? null
+                                : () => ref.read(registrationProvider.notifier).selectPaymentMethod(method),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              decoration: BoxDecoration(
+                                color: regState.selectedPaymentMethod == method
+                                    ? AppTheme.primaryColor.withValues(alpha: 0.1)
+                                    : Colors.transparent,
+                                border: Border.all(
+                                  color: regState.selectedPaymentMethod == method
+                                      ? AppTheme.primaryColor
+                                      : Colors.grey.withValues(alpha: 0.3),
+                                  width: regState.selectedPaymentMethod == method ? 1.5 : 1,
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                method == 'qris' ? 'QRIS' : 'Virtual Account',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: regState.selectedPaymentMethod == method
+                                      ? AppTheme.primaryColor
+                                      : AppTheme.textSecondary,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+
+                // ── Bank selector (VA only) ────────────────────────────────
+                if (regState.selectedPaymentMethod == 'va') ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    'Pilih Bank',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: ['bni', 'bri', 'bca', 'permata', 'maybank'].map((bank) {
+                      final isSelected = regState.selectedBankCode == bank;
+                      return GestureDetector(
+                        onTap: isLoading
+                            ? null
+                            : () => ref.read(registrationProvider.notifier).selectBankCode(bank),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? AppTheme.primaryColor.withValues(alpha: 0.1)
+                                : Colors.transparent,
+                            border: Border.all(
+                              color: isSelected
+                                  ? AppTheme.primaryColor
+                                  : Colors.grey.withValues(alpha: 0.3),
+                              width: isSelected ? 1.5 : 1,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            bank.toUpperCase(),
+                            style: GoogleFonts.poppins(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: isSelected ? AppTheme.primaryColor : AppTheme.textSecondary,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
                 ],
 
                 const SizedBox(height: 20),
