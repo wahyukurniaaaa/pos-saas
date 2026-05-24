@@ -13,6 +13,17 @@ class AppConstants {
     return url.endsWith('/') ? url : '$url/';
   }
 
+  /// Base URL for the LumioPos Web API (Next.js).
+  /// Used for Checkout_API and Status_API calls from mobile.
+  static String get webBaseUrl {
+    final url = dotenv.get(
+      'WEB_BASE_URL',
+      fallback: 'http://10.0.2.2:3000',
+    );
+    // Strip trailing slash for use with explicit paths
+    return url.endsWith('/') ? url.substring(0, url.length - 1) : url;
+  }
+
   static String get appClientKey => dotenv.get('APP_CLIENT_KEY', fallback: '');
 
   // Supabase

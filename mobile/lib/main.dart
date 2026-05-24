@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/theme/app_theme.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'features/auth/screens/unified_registration_screen.dart';
+import 'features/auth/screens/registration_screen.dart';
 import 'package:lumio/features/auth/screens/unlicensed_screen.dart';
 import 'package:lumio/features/auth/screens/owner_setup_screen.dart';
 import 'package:lumio/features/auth/screens/pin_login_screen.dart';
@@ -50,7 +50,7 @@ class LumioApp extends StatelessWidget {
       home: const AppBootstrap(),
       routes: {
         '/login': (context) => const LoginScreen(),
-        '/register': (context) => const UnifiedRegistrationScreen(),
+        '/register': (context) => const RegistrationScreen(),
         '/unlicensed': (context) => const UnlicensedScreen(),
         '/owner-setup': (context) => const OwnerSetupScreen(),
         '/pin-login': (context) {
@@ -95,10 +95,12 @@ class _AppBootstrapState extends ConsumerState<AppBootstrap> {
     // 1. Listen for future license changes to start sync
     ref.listen(licenseProvider, (previous, next) {
       final license = next.value;
-      if (license != null && license.tierLevel?.toLowerCase() == 'pro') {
+      final tier = license?.tierLevel?.toLowerCase();
+      if (license != null && tier == 'pro') {
         ref.read(syncServiceProvider).start();
         ref.read(realtimeServiceProvider).start();
       } else if (!next.isLoading) {
+        // For 'trial', 'lite', null, or any non-pro tier: stop sync services
         ref.read(syncServiceProvider).stop();
         ref.read(realtimeServiceProvider).stop();
       }
@@ -136,7 +138,17 @@ class _AppBootstrapState extends ConsumerState<AppBootstrap> {
           return const UnlicensedScreen();
         }
 
-        final isPro = license.tierLevel?.toLowerCase() == 'pro';
+        final tier = license.tierLevel?.toLowerCase();
+        final isPro = tier == 'pro';
+        final isTrial = tier == 'trial';
+
+        // Trial expired: navigate to UnlicensedScreen with trial-expired indicator
+        if (isTrial &&
+            license.expiredAt != null &&
+            license.expiredAt!.isBefore(DateTime.now())) {
+          return const UnlicensedScreen(isTrialExpired: true);
+        }
+
         final isInitialSyncDone = ref.watch(initialSyncProvider);
 
         // Still loading? Show splash.

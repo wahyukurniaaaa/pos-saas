@@ -146,6 +146,39 @@ class LicenseNotifier extends AsyncNotifier<License?> {
     }
   }
 
+  /// Creates a local trial license for the given [userId].
+  ///
+  /// Returns `(true, null)` on success.
+  /// Returns `(false, 'Trial sudah pernah digunakan.')` if a trial already exists.
+  /// Returns `(false, 'Gagal mengaktifkan trial. Coba lagi.')` on SQLite error.
+  Future<(bool, String?)> createTrialLicense(String userId) async {
+    final db = ref.read(databaseProvider);
+
+    // Check if a trial license already exists
+    final existing = await db.getLocalLicense();
+    if (existing != null && existing.licenseCode.startsWith('TRIAL-')) {
+      return (false, 'Trial sudah pernah digunakan.');
+    }
+
+    try {
+      await db.into(db.licenses).insert(
+        LicensesCompanion.insert(
+          licenseCode: 'TRIAL-$userId',
+          status: const Value('active'),
+          tierLevel: const Value('trial'),
+          maxDevices: const Value(1),
+          maxOutlets: const Value(1),
+          activationDate: Value(DateTime.now()),
+          expiredAt: Value(DateTime.now().add(const Duration(days: 7))),
+          deviceFingerprint: const Value(null),
+        ),
+      );
+      return (true, null);
+    } catch (e) {
+      return (false, 'Gagal mengaktifkan trial. Coba lagi.');
+    }
+  }
+
   Future<(bool, String?)> verifyAccount(String email) async {
     final db = ref.read(databaseProvider);
 

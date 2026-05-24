@@ -7,7 +7,11 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class UnlicensedScreen extends ConsumerWidget {
-  const UnlicensedScreen({super.key});
+  /// When [isTrialExpired] is true, the screen shows a trial-specific
+  /// expired message instead of the generic unlicensed message.
+  final bool isTrialExpired;
+
+  const UnlicensedScreen({super.key, this.isTrialExpired = false});
 
   Future<void> _contactAdmin() async {
     const phoneNumber = '+6281234567890'; // Replace with actual number
@@ -24,6 +28,12 @@ class UnlicensedScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final title = isTrialExpired ? 'Trial Telah Berakhir' : 'Akun Belum Aktif';
+    final message = isTrialExpired
+        ? 'Masa trial 7 hari Anda telah berakhir. Silakan berlangganan untuk melanjutkan menggunakan Lumio POS.'
+        : 'Akun Anda belum berlangganan atau masa aktif telah habis. Silakan hubungi Admin melalui WhatsApp untuk mengaktifkan lisensi Anda.';
+    final icon = isTrialExpired ? Icons.timer_off_outlined : Icons.lock_person_outlined;
+
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -38,14 +48,14 @@ class UnlicensedScreen extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.lock_person_outlined,
+            Icon(
+              icon,
               size: 80,
               color: Colors.white,
             ),
             const SizedBox(height: 24),
             Text(
-              'Akun Belum Aktif',
+              title,
               style: GoogleFonts.poppins(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -54,7 +64,7 @@ class UnlicensedScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Akun Anda belum berlangganan atau masa aktif telah habis. Silakan hubungi Admin melalui WhatsApp untuk mengaktifkan lisensi Anda.',
+              message,
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontSize: 14,
@@ -62,6 +72,24 @@ class UnlicensedScreen extends ConsumerWidget {
                 height: 1.5,
               ),
             ),
+            if (isTrialExpired) ...[
+              const SizedBox(height: 32),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.of(context).pushReplacementNamed('/register');
+                },
+                icon: const Icon(Icons.upgrade),
+                label: const Text('Pilih Paket Berlangganan'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: AppTheme.primaryColor,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ],
             const SizedBox(height: 32),
             ElevatedButton.icon(
               onPressed: _contactAdmin,

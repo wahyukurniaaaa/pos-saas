@@ -232,6 +232,55 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
     return SingleChildScrollView(
       child: Column(
         children: [
+          // Navigate to the full multi-step RegistrationScreen
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryColor.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.3)),
+            ),
+            child: Column(
+              children: [
+                const Icon(Icons.store_outlined, size: 32, color: AppTheme.primaryColor),
+                const SizedBox(height: 8),
+                const Text(
+                  'Daftar sebagai pemilik toko baru?',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Gunakan alur pendaftaran lengkap untuk mengisi data toko dan memilih paket berlangganan.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                const SizedBox(height: 12),
+                ElevatedButton.icon(
+                  onPressed: () => Navigator.of(context).pushReplacementNamed('/register'),
+                  icon: const Icon(Icons.arrow_forward),
+                  label: const Text('Daftar Toko Baru'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryColor,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(double.infinity, 46),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          const Row(
+            children: [
+              Expanded(child: Divider()),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12),
+                child: Text('atau daftar akun saja', style: TextStyle(color: Colors.grey, fontSize: 11)),
+              ),
+              Expanded(child: Divider()),
+            ],
+          ),
+          const SizedBox(height: 16),
           TextField(
             controller: _registerEmailController,
             decoration: const InputDecoration(

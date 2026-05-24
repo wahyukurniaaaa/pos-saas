@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:lumio/core/database/database.dart';
 import 'package:lumio/core/providers/database_provider.dart';
 import 'package:lumio/features/auth/providers/auth_providers.dart';
@@ -51,7 +51,7 @@ class SyncService {
 
   StreamSubscription<void>? _syncQueueSub;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
-  RealtimeChannel? _realtimeChannel;
+  Timer? _syncDebounceTimer;
   bool _isSyncing = false;
 
   /// Starts the event-driven background sync.
@@ -61,9 +61,12 @@ class SyncService {
 
     final db = _ref.read(databaseProvider);
 
-    // Listen for local changes
+    // Listen for local changes (debounced 500ms to coalesce rapid events, e.g. during checkout)
     _syncQueueSub = db.syncQueueNotifier.stream.listen((_) {
-      _processSyncQueue();
+      _syncDebounceTimer?.cancel();
+      _syncDebounceTimer = Timer(const Duration(milliseconds: 500), () {
+        _processSyncQueue();
+      });
     });
 
     // Listen for network recovery
@@ -75,68 +78,24 @@ class SyncService {
       }
     });
 
-    // Listen for cloud changes (Realtime)
-    _startRealtimePull();
-
     // Perform an immediate sync on start
     performSync();
-    debugPrint('SyncService: Started (Event-Driven & Realtime)');
+    debugPrint('SyncService: Started (Event-Driven)');
   }
 
   /// Stops the background sync and listeners.
   void stop() {
+    _syncDebounceTimer?.cancel();
+    _syncDebounceTimer = null;
+
     _syncQueueSub?.cancel();
     _syncQueueSub = null;
 
     _connectivitySub?.cancel();
     _connectivitySub = null;
 
-    _stopRealtimePull();
-
     _ref.read(syncStatusProvider.notifier).setStatus(SyncStatus.idle);
     debugPrint('SyncService: Stopped');
-  }
-
-  void _startRealtimePull() {
-    final supabase = Supabase.instance.client;
-    final db = _ref.read(databaseProvider);
-
-    _realtimeChannel = supabase
-        .channel('public:*')
-        .onPostgresChanges(
-          event: PostgresChangeEvent.all,
-          schema: 'public',
-          callback: (payload) async {
-            final currentEmployee = _ref.read(sessionProvider).value;
-            final outletId = currentEmployee?.outletId;
-
-            if (payload.eventType == PostgresChangeEvent.delete) {
-              if (payload.oldRecord.isNotEmpty) {
-                final id = payload.oldRecord['id']?.toString();
-                if (id != null) {
-                  await db.deleteCloudRow(payload.table, id);
-                }
-              }
-            } else {
-              if (payload.newRecord.isNotEmpty) {
-                // Apply outlet filter for incoming realtime data if applicable
-                if (outletId != null && payload.table != 'outlets') {
-                  if (payload.newRecord.containsKey('outlet_id') &&
-                      payload.newRecord['outlet_id'] != outletId) {
-                    return;
-                  }
-                }
-                await db.importCloudRows(payload.table, [payload.newRecord]);
-              }
-            }
-          },
-        )
-        .subscribe();
-  }
-
-  void _stopRealtimePull() {
-    _realtimeChannel?.unsubscribe();
-    _realtimeChannel = null;
   }
 
   /// Push all dirty local records to Supabase.
