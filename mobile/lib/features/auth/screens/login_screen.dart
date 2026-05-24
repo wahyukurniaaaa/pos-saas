@@ -53,7 +53,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
     if (!mounted) return;
     setState(() => _isLoading = false);
 
-    if (!success && error != null) {
+    if (success) {
+      // Pop back to AppBootstrap — it will detect the new session and route accordingly
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+    } else if (error != null) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
     }
   }
@@ -91,7 +96,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
     if (!mounted) return;
     setState(() => _isLoading = false);
 
-    if (!success && error != null) {
+    if (success) {
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+    } else if (error != null) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
     }
   }
