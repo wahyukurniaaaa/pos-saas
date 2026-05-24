@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -37,9 +40,11 @@ class PosTab extends ConsumerStatefulWidget {
 class _PosTabState extends ConsumerState<PosTab> {
   final _searchController = TextEditingController();
   String? _selectedCategoryId;
+  Timer? _debounceTimer;
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _searchController.dispose();
     super.dispose();
   }
@@ -274,10 +279,13 @@ class _PosTabState extends ConsumerState<PosTab> {
               TextField(
                 controller: _searchController,
                 onChanged: (v) {
-                  // Removed setState(() {}) to avoid full screen rebuild
-                  ref
-                      .read(productProvider.notifier)
-                      .setSearch(v.isEmpty ? null : v);
+                  // Debounce 300ms to avoid calling setSearch on every keystroke
+                  _debounceTimer?.cancel();
+                  _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+                    ref
+                        .read(productProvider.notifier)
+                        .setSearch(v.isEmpty ? null : v);
+                  });
                 },
                 style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
                 decoration: InputDecoration(
@@ -302,6 +310,7 @@ class _PosTabState extends ConsumerState<PosTab> {
                                 color: Colors.white,
                               ),
                               onPressed: () {
+                                _debounceTimer?.cancel();
                                 _searchController.clear();
                                 ref
                                     .read(productProvider.notifier)
@@ -431,7 +440,7 @@ class _PosTabState extends ConsumerState<PosTab> {
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: isDesktop ? 4 : 2,
-            childAspectRatio: 0.75,
+            mainAxisExtent: 200,
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
           ),
@@ -463,6 +472,8 @@ class _PosTabState extends ConsumerState<PosTab> {
   // method _buildProductCard has been extracted to PosProductCard widget
 
   void _showImagePreview(BuildContext context, Product product) {
+    final categories = ref.read(categoryProvider).value ?? [];
+    final categoryName = categories.firstWhereOrNull((c) => c.id == product.categoryId)?.name;
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
@@ -504,7 +515,7 @@ class _PosTabState extends ConsumerState<PosTab> {
                       child: ProductImage(
                         imageUri: product.imageUri,
                         productName: product.name,
-                        categoryId: product.categoryId,
+                        categoryName: categoryName,
                         fit: BoxFit.contain,
                         borderRadius: 24,
                       ),
@@ -833,6 +844,8 @@ class CartPanel extends ConsumerWidget {
   }
 
   Widget _buildCartItem(BuildContext context, WidgetRef ref, CartItem item) {
+    final categories = ref.read(categoryProvider).value ?? [];
+    final categoryName = categories.firstWhereOrNull((c) => c.id == item.product.categoryId)?.name;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
@@ -870,7 +883,7 @@ class CartPanel extends ConsumerWidget {
               child: ProductImage(
                 imageUri: item.product.imageUri,
                 productName: item.product.name,
-                categoryId: item.product.categoryId,
+                categoryName: categoryName,
                 width: 64,
                 height: 64,
                 borderRadius: 14,
@@ -1511,6 +1524,8 @@ class _VariantPickerSheetState extends ConsumerState<_VariantPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final categories = ref.read(categoryProvider).value ?? [];
+    final categoryName = categories.firstWhereOrNull((c) => c.id == widget.product.categoryId)?.name;
     return ResponsiveCenter(
       maxWidth: 600,
       child: Column(
@@ -1533,7 +1548,7 @@ class _VariantPickerSheetState extends ConsumerState<_VariantPickerSheet> {
                 child: ProductImage(
                   imageUri: widget.product.imageUri,
                   productName: widget.product.name,
-                  categoryId: widget.product.categoryId,
+                  categoryName: categoryName,
                   width: double.infinity,
                   height: 240,
                   borderRadius: 0, // Will be clipped by container if needed

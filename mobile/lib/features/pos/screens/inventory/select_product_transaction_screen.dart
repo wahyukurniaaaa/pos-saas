@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:collection/collection.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:lumio/core/database/database.dart';
@@ -47,6 +48,7 @@ class _SelectProductTransactionScreenState extends ConsumerState<SelectProductTr
   @override
   Widget build(BuildContext context) {
     final productsWithVariantsAsync = ref.watch(productWithVariantsProvider);
+    final categories = ref.watch(categoryProvider).value ?? [];
     final isStockIn = widget.type == TransactionType.in_;
     final accentColor = isStockIn ? AppTheme.successColor : AppTheme.dangerColor;
 
@@ -83,10 +85,13 @@ class _SelectProductTransactionScreenState extends ConsumerState<SelectProductTr
                   delegate: SliverChildBuilderDelegate(
                     (context, i) {
                       final pwv = filtered[i];
+                      final categoryName = categories
+                          .firstWhereOrNull((c) => c.id == pwv.product.categoryId)
+                          ?.name;
                       if (pwv.product.hasVariants && pwv.variants.isNotEmpty) {
-                        return _buildVariantProduct(pwv.product, pwv.variants, isStockIn, accentColor);
+                        return _buildVariantProduct(pwv.product, pwv.variants, isStockIn, accentColor, categoryName);
                       } else {
-                        return _buildSingleProduct(pwv.product, isStockIn, accentColor);
+                        return _buildSingleProduct(pwv.product, isStockIn, accentColor, categoryName);
                       }
                     },
                     childCount: filtered.length,
@@ -212,7 +217,7 @@ class _SelectProductTransactionScreenState extends ConsumerState<SelectProductTr
     );
   }
 
-  Widget _buildSingleProduct(Product p, bool isStockIn, Color accentColor) {
+  Widget _buildSingleProduct(Product p, bool isStockIn, Color accentColor, String? categoryName) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -238,7 +243,7 @@ class _SelectProductTransactionScreenState extends ConsumerState<SelectProductTr
                 ProductImage(
                   imageUri: p.imageUri, 
                   productName: p.name, 
-                  categoryId: p.categoryId,
+                  categoryName: categoryName,
                   borderRadius: 12,
                   width: 54,
                   height: 54,
@@ -298,7 +303,7 @@ class _SelectProductTransactionScreenState extends ConsumerState<SelectProductTr
     );
   }
 
-  Widget _buildVariantProduct(Product p, List<ProductVariant> variants, bool isStockIn, Color accentColor) {
+  Widget _buildVariantProduct(Product p, List<ProductVariant> variants, bool isStockIn, Color accentColor, String? categoryName) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -321,7 +326,7 @@ class _SelectProductTransactionScreenState extends ConsumerState<SelectProductTr
           leading: ProductImage(
             imageUri: p.imageUri, 
             productName: p.name, 
-            categoryId: p.categoryId,
+            categoryName: categoryName,
             borderRadius: 12,
             width: 54,
             height: 54,

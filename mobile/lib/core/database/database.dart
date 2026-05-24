@@ -813,6 +813,30 @@ class LumioDatabase extends _$LumioDatabase {
     return count;
   }
 
+  // ===== Batch-Fetch Helpers =====
+
+  Future<List<Product>> getProductsByIds(List<String> ids) {
+    if (ids.isEmpty) return Future.value([]);
+    return (select(products)
+          ..where((p) => p.id.isIn(ids) & p.deletedAt.isNull()))
+        .get();
+  }
+
+  Future<List<ProductVariant>> getVariantsByIds(List<String> ids) {
+    if (ids.isEmpty) return Future.value([]);
+    return (select(productVariants)
+          ..where((v) => v.id.isIn(ids) & v.deletedAt.isNull()))
+        .get();
+  }
+
+  Future<List<Discount>> getDiscountsByIds(List<String> ids) {
+    if (ids.isEmpty) return Future.value([]);
+    return (select(discounts)..where((d) => d.id.isIn(ids))).get();
+  }
+
+  Future<Customer?> getCustomerById(String id) =>
+      (select(customers)..where((c) => c.id.equals(id))).getSingleOrNull();
+
   /// Returns all customers who have at least 1 transaction, with aggregated stats.
   /// Sorted by points descending by default.
   Future<List<CustomerLoyaltyStat>> getLoyaltyLeaderboard(

@@ -1,13 +1,12 @@
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/app_theme.dart';
-import '../../features/pos/providers/pos_providers.dart';
 
-class ProductImage extends ConsumerWidget {
+class ProductImage extends StatelessWidget {
   final String? imageUri;
   final String? productName;
-  final String? categoryId;
+  final String? categoryName;
   final double? width;
   final double? height;
   final double borderRadius;
@@ -18,7 +17,7 @@ class ProductImage extends ConsumerWidget {
     super.key,
     this.imageUri,
     this.productName,
-    this.categoryId,
+    this.categoryName,
     this.width,
     this.height,
     this.borderRadius = 8,
@@ -27,21 +26,13 @@ class ProductImage extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     // 1. Get keywords from product name first (highest precision)
     String? matchedName = productName?.toLowerCase();
 
     // 2. If no match from name, fallback to category name
     if (matchedName == null || _isGeneric(matchedName)) {
-      final categoriesAsync = ref.watch(categoryProvider);
-      if (categoryId != null && categoriesAsync.value != null) {
-        try {
-          final category = categoriesAsync.value!.firstWhere(
-            (c) => c.id == categoryId,
-          );
-          matchedName = category.name.toLowerCase();
-        } catch (_) {}
-      }
+      matchedName = categoryName?.toLowerCase();
     }
 
     return Container(
@@ -56,7 +47,7 @@ class ProductImage extends ConsumerWidget {
               borderRadius: BorderRadius.circular(borderRadius),
               child: Image(
                 image: imageUri!.startsWith('http')
-                    ? NetworkImage(imageUri!) as ImageProvider
+                    ? CachedNetworkImageProvider(imageUri!) as ImageProvider
                     : FileImage(File(imageUri!)),
                 fit: fit,
                 width: width,
@@ -87,7 +78,7 @@ class ProductImage extends ConsumerWidget {
   }
 
   bool _isGeneric(String name) {
-    // If name is too short or doesn't match any of our sector keywords, 
+    // If name is too short or doesn't match any of our sector keywords,
     // we consider it generic and try category fallback
     return getCategoryIcon(name) == Icons.inventory_2_rounded;
   }

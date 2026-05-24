@@ -1,13 +1,16 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lumio/core/database/database.dart';
 import 'package:lumio/core/theme/app_theme.dart';
 import 'package:lumio/core/widgets/product_image.dart';
+import 'package:lumio/features/pos/providers/pos_providers.dart';
 
 final _currency = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
 
-class PosProductCard extends StatelessWidget {
+class PosProductCard extends ConsumerWidget {
   final ProductWithVariants pwv;
   final bool isCashier;
   final VoidCallback onTap;
@@ -21,11 +24,30 @@ class PosProductCard extends StatelessWidget {
     this.onLongPress,
   });
 
+  static final _badgeStyle = GoogleFonts.poppins(
+    fontSize: 8,
+    fontWeight: FontWeight.w700,
+    color: Colors.white,
+  );
+  static final _nameStyle = GoogleFonts.poppins(
+    fontWeight: FontWeight.w700,
+    fontSize: 13,
+    color: AppTheme.textPrimary,
+  );
+  static final _priceStyle = GoogleFonts.poppins(
+    fontWeight: FontWeight.w700,
+    fontSize: 13,
+    color: AppTheme.primaryColor,
+  );
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final p = pwv.product;
     final stock = pwv.totalStock;
     final isLowStock = p.lowStockThreshold > 0 && stock <= p.lowStockThreshold;
+
+    final categories = ref.watch(categoryProvider).value ?? [];
+    final categoryName = categories.firstWhereOrNull((c) => c.id == p.categoryId)?.name;
 
     return GestureDetector(
       onTap: onTap,
@@ -47,7 +69,7 @@ class PosProductCard extends StatelessWidget {
                     child: ProductImage(
                       imageUri: p.imageUri,
                       productName: p.name,
-                      categoryId: p.categoryId,
+                      categoryName: categoryName,
                       borderRadius: 16,
                     ),
                   ),
@@ -57,7 +79,7 @@ class PosProductCard extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(color: Colors.orange.shade600, borderRadius: BorderRadius.circular(6)),
-                        child: Text('Stok Rendah', style: GoogleFonts.poppins(fontSize: 8, fontWeight: FontWeight.w700, color: Colors.white)),
+                        child: Text('Stok Rendah', style: _badgeStyle),
                       ),
                     ),
                   if (p.hasVariants)
@@ -66,7 +88,7 @@ class PosProductCard extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(color: AppTheme.tertiaryColor, borderRadius: BorderRadius.circular(6)),
-                        child: Text('Varian', style: GoogleFonts.poppins(fontSize: 8, fontWeight: FontWeight.w700, color: Colors.white)),
+                        child: Text('Varian', style: _badgeStyle),
                       ),
                     ),
                 ],
@@ -78,10 +100,10 @@ class PosProductCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 13, color: AppTheme.textPrimary)),
+                      style: _nameStyle),
                   const SizedBox(height: 2),
                   Text(_currency.format(p.price),
-                      style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 13, color: AppTheme.primaryColor)),
+                      style: _priceStyle),
                   const SizedBox(height: 4),
                   Row(
                     children: [
@@ -102,7 +124,7 @@ class PosProductCard extends StatelessWidget {
   }
 }
 
-class ProductListItemCard extends StatelessWidget {
+class ProductListItemCard extends ConsumerWidget {
   final ProductWithVariants pwv;
   final bool isCashier;
   final VoidCallback onEdit;
@@ -118,11 +140,40 @@ class ProductListItemCard extends StatelessWidget {
     this.onTap,
   });
 
+  static final _nameStyle = GoogleFonts.poppins(
+    fontWeight: FontWeight.w700,
+    fontSize: 14,
+    color: AppTheme.textPrimary,
+    height: 1.2,
+  );
+  static final _skuStyle = GoogleFonts.poppins(
+    fontSize: 11,
+    color: AppTheme.textSecondary,
+  );
+  static final _variantBadgeStyle = GoogleFonts.poppins(
+    fontSize: 9,
+    fontWeight: FontWeight.w700,
+    color: Colors.white,
+  );
+  static final _priceStyle = GoogleFonts.poppins(
+    fontWeight: FontWeight.w700,
+    fontSize: 14,
+    color: AppTheme.primaryColor,
+  );
+  static final _stockCardStyle = GoogleFonts.poppins(
+    fontSize: 11,
+    fontWeight: FontWeight.w700,
+    color: AppTheme.primaryColor,
+  );
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final p = pwv.product;
     final stock = pwv.totalStock;
     final isLowStock = p.lowStockThreshold > 0 && stock <= p.lowStockThreshold;
+
+    final categories = ref.watch(categoryProvider).value ?? [];
+    final categoryName = categories.firstWhereOrNull((c) => c.id == p.categoryId)?.name;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -145,7 +196,7 @@ class ProductListItemCard extends StatelessWidget {
               child: ProductImage(
                 imageUri: p.imageUri,
                 productName: p.name,
-                categoryId: p.categoryId,
+                categoryName: categoryName,
                 borderRadius: 16,
                 iconSize: 28,
               ),
@@ -158,14 +209,14 @@ class ProductListItemCard extends StatelessWidget {
               children: [
                 Text(p.name,
                   maxLines: 2, overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 14, color: AppTheme.textPrimary, height: 1.2)),
+                  style: _nameStyle),
                 const SizedBox(height: 5),
                 Wrap(
                   crossAxisAlignment: WrapCrossAlignment.center,
                   spacing: 6,
                   runSpacing: 4,
                   children: [
-                    Text(p.sku.isEmpty ? 'Tanpa SKU' : p.sku, style: GoogleFonts.poppins(fontSize: 11, color: AppTheme.textSecondary)),
+                    Text(p.sku.isEmpty ? 'Tanpa SKU' : p.sku, style: _skuStyle),
                     Container(width: 3, height: 3, decoration: const BoxDecoration(color: Colors.grey, shape: BoxShape.circle)),
                     Text('Stok: $stock',
                       style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w700,
@@ -185,7 +236,7 @@ class ProductListItemCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(color: AppTheme.tertiaryColor, borderRadius: BorderRadius.circular(4)),
-                    child: Text('Punya Varian', style: GoogleFonts.poppins(fontSize: 9, fontWeight: FontWeight.w700, color: Colors.white)),
+                    child: Text('Punya Varian', style: _variantBadgeStyle),
                   ),
                 ],
               ],
@@ -196,7 +247,7 @@ class ProductListItemCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(_currency.format(p.price),
-                style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 14, color: AppTheme.primaryColor)),
+                style: _priceStyle),
               const SizedBox(height: 8),
               if (onTap != null)
                 GestureDetector(
@@ -208,7 +259,7 @@ class ProductListItemCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: AppTheme.primaryColor.withOpacity(0.2)),
                     ),
-                    child: Text('📋 Kartu Stok', style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.primaryColor)),
+                    child: Text('📋 Kartu Stok', style: _stockCardStyle),
                   ),
                 ),
               if (!isCashier) ...[

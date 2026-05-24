@@ -12,21 +12,25 @@ final discountProvider =
 /// Provider that returns valid *transaction-scope* discounts for a given cart total.
 final validTransactionDiscountsProvider =
     FutureProvider.family<List<Discount>, double>((ref, cartTotal) {
-  final session = ref.watch(sessionProvider).value;
-  if (session == null || session.outletId == null) return [];
-  return ref
-      .read(databaseProvider)
-      .getValidDiscounts(cartTotal: cartTotal, scope: 'transaction', outletId: session.outletId!);
+  final outletId = ref.watch(
+    sessionProvider.select((s) => s.value?.outletId),
+  );
+  if (outletId == null) return Future.value([]);
+  return ref.read(databaseProvider).getValidDiscounts(
+    cartTotal: cartTotal, scope: 'transaction', outletId: outletId,
+  );
 });
 
 /// Provider that returns valid *item-scope* discounts.
 final validItemDiscountsProvider =
     FutureProvider.family<List<Discount>, double>((ref, cartTotal) {
-  final session = ref.watch(sessionProvider).value;
-  if (session == null || session.outletId == null) return [];
-  return ref
-      .read(databaseProvider)
-      .getValidDiscounts(cartTotal: cartTotal, scope: 'item', outletId: session.outletId!);
+  final outletId = ref.watch(
+    sessionProvider.select((s) => s.value?.outletId),
+  );
+  if (outletId == null) return Future.value([]);
+  return ref.read(databaseProvider).getValidDiscounts(
+    cartTotal: cartTotal, scope: 'item', outletId: outletId,
+  );
 });
 
 // ─── Currently selected bill-level discount ──────────────────────────────────
@@ -81,13 +85,17 @@ class DiscountNotifier extends AsyncNotifier<List<Discount>> {
   @override
   Future<List<Discount>> build() {
     final db = ref.read(databaseProvider);
-    final session = ref.watch(sessionProvider).value;
-    if (session == null || session.outletId == null) return Future.value([]);
-    
-    db.watchAllDiscounts(session.outletId!).listen((data) {
+    final outletId = ref.watch(
+      sessionProvider.select((s) => s.value?.outletId),
+    );
+    if (outletId == null) return Future.value([]);
+
+    final subscription = db.watchAllDiscounts(outletId).listen((data) {
       if (ref.mounted) state = AsyncValue.data(data);
     });
-    return ref.read(databaseProvider).getAllDiscounts(session.outletId!);
+    ref.onDispose(() => subscription.cancel());
+
+    return db.getAllDiscounts(outletId);
   }
 
   Future<void> save(DiscountsCompanion entry) async {

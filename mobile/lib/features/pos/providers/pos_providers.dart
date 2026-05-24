@@ -100,6 +100,7 @@ final productProvider = AsyncNotifierProvider<ProductNotifier, List<Product>>(
 class ProductWithVariantsNotifier extends AsyncNotifier<List<ProductWithVariants>> {
   String? _searchQuery;
   String? _categoryId;
+  List<ProductWithVariants> _allData = [];
 
   @override
   Future<List<ProductWithVariants>> build() async {
@@ -107,10 +108,11 @@ class ProductWithVariantsNotifier extends AsyncNotifier<List<ProductWithVariants
     final session = ref.watch(sessionProvider).value;
     if (session == null || session.outletId == null) return [];
     final outletId = session.outletId!;
-    
+
     // Start watching the stream for updates
     final subscription = db.watchAllProductsWithVariants(outletId).listen((data) {
       if (ref.mounted) {
+        _allData = data;
         state = AsyncValue.data(_filter(data));
       }
     });
@@ -119,33 +121,35 @@ class ProductWithVariantsNotifier extends AsyncNotifier<List<ProductWithVariants
 
     // Pull initial data directly for the build phase
     final initialData = await db.getAllProductsWithVariants(outletId);
+    _allData = initialData;
     return _filter(initialData);
   }
 
   List<ProductWithVariants> _filter(List<ProductWithVariants> data) {
     final query = _searchQuery?.toLowerCase() ?? '';
-    
+
     return data.where((pwv) {
-      final matchesCategory = _categoryId == null || pwv.product.categoryId == _categoryId;
-      
+      final matchesCategory =
+          _categoryId == null || pwv.product.categoryId == _categoryId;
+
       if (query.isEmpty) return matchesCategory;
-      
-      final matchesSearch = 
+
+      final matchesSearch =
           pwv.product.name.toLowerCase().contains(query) ||
           pwv.product.sku.toLowerCase().contains(query);
-          
+
       return matchesCategory && matchesSearch;
     }).toList();
   }
 
   void setSearch(String? query) {
     _searchQuery = query;
-    ref.invalidateSelf();
+    state = AsyncValue.data(_filter(_allData));
   }
 
   void setCategory(String? id) {
     _categoryId = id;
-    ref.invalidateSelf();
+    state = AsyncValue.data(_filter(_allData));
   }
 }
 
@@ -403,7 +407,6 @@ class CartNotifier extends Notifier<List<CartItem>> {
         outletId: outletId,
       );
 
-      ref.invalidate(productProvider);
       clearCart();
       return id;
     } catch (e) {
@@ -480,29 +483,40 @@ class CartNotifier extends Notifier<List<CartItem>> {
       final db = ref.read(databaseProvider);
       final session = ref.read(sessionProvider).value;
       if (session == null || session.outletId == null) return;
-      final outletId = session.outletId!;
-      
-      // Clear current cart before resuming
+
       clearCart();
-      
-      final List<CartItem> resumedItems = [];
-      
+
+      // ── BATCH FETCH (3 queries total, regardless of N items) ──────────────
+      final productIds = items.map((i) => i.productId).toSet().toList();
+      final variantIds = items
+          .where((i) => i.variantId != null)
+          .map((i) => i.variantId!)
+          .toSet()
+          .toList();
+      final discountIds = items
+          .where((i) => i.discountId != null)
+          .map((i) => i.discountId!)
+          .toSet()
+          .toList();
+
+      final productList = await db.getProductsByIds(productIds);
+      final variantList = await db.getVariantsByIds(variantIds);
+      final discountList = await db.getDiscountsByIds(discountIds);
+
+      // ── BUILD LOOKUP MAPS (O(1) resolution) ───────────────────────────────
+      final productMap = {for (final p in productList) p.id: p};
+      final variantMap = {for (final v in variantList) v.id: v};
+      final discountMap = {for (final d in discountList) d.id: d};
+
+      // ── ITERATE ITEMS (no DB calls inside loop) ───────────────────────────
+      final resumedItems = <CartItem>[];
       for (final item in items) {
-        final product = await db.getProduct(item.productId);
-        if (product == null) continue;
-        
-        ProductVariant? variant;
-        if (item.variantId != null) {
-          variant = await db.getVariant(item.variantId!);
-        }
-        
-        // Handle discount if any
-        Discount? discount;
-        if (item.discountId != null) {
-          final allDiscounts = await db.getAllDiscounts(outletId);
-          discount = allDiscounts.where((d) => d.id == item.discountId).firstOrNull;
-        }
-        
+        final product = productMap[item.productId];
+        if (product == null) continue; // Req 3.8: skip missing products
+
+        final variant = item.variantId != null ? variantMap[item.variantId] : null;
+        final discount = item.discountId != null ? discountMap[item.discountId] : null;
+
         resumedItems.add(CartItem(
           product: product,
           variant: variant,
@@ -510,35 +524,28 @@ class CartNotifier extends Notifier<List<CartItem>> {
           appliedDiscount: discount,
         ));
       }
-      
+
       state = resumedItems;
-      
-      // Set notes to provider
       ref.read(cartNotesProvider.notifier).state = transaction.notes;
 
-      // === NEW: RESTORE CUSTOMER INFO ===
+      // ── CUSTOMER LOOKUP (single-record, Req 9) ────────────────────────────
       if (transaction.customerId != null) {
-        final customers = await db.getAllCustomers(outletId);
-        final selected = customers.where((c) => c.id == transaction.customerId).firstOrNull;
-        if (selected != null) {
-          ref.read(selectedCustomerProvider.notifier).state = selected;
+        final customer = await db.getCustomerById(transaction.customerId!);
+        if (customer != null) {
+          ref.read(selectedCustomerProvider.notifier).state = customer;
         }
       }
-      
       if (transaction.customerName != null) {
         ref.read(manualCustomerNameProvider.notifier).state = transaction.customerName;
       }
-      
       if (transaction.customerPhone != null) {
         ref.read(manualCustomerPhoneProvider.notifier).state = transaction.customerPhone;
       }
-      // ===================================
-      
+
       // Mark as resumed instead of deleting to prevent loss if crash before re-saved
       // This also removes it from the pending list (since it only watches status='pending')
       await (db.update(db.transactions)..where((t) => t.id.equals(transaction.id)))
           .write(const TransactionsCompanion(paymentStatus: drift.Value('resumed')));
-          
     } catch (e) {
       debugPrint('Resume bill error: $e');
     }
