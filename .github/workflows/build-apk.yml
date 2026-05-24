@@ -43,6 +43,7 @@ jobs:
           printf 'SUPABASE_URL=%s\n' '${{ secrets.MOBILE_SUPABASE_URL }}' >> .env
           printf 'SUPABASE_ANON_KEY=%s\n' '${{ secrets.MOBILE_SUPABASE_ANON_KEY }}' >> .env
           printf 'GOOGLE_WEB_CLIENT_ID=%s\n' '${{ secrets.MOBILE_GOOGLE_WEB_CLIENT_ID }}' >> .env
+          printf 'WEB_BASE_URL=%s\n' '${{ secrets.MOBILE_WEB_BASE_URL }}' >> .env
 
       - name: Restore google-services.json
         working-directory: mobile/android/app
