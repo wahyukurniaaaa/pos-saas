@@ -1,11 +1,6 @@
 name: Build & Release APK Lumio
 
 on:
-  push:
-    branches: ["main", "master"]
-    paths:
-      - "mobile/**"
-      - ".github/workflows/build-apk.yml"
   workflow_dispatch:
     inputs:
       release_notes:
