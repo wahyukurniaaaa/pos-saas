@@ -19,6 +19,19 @@ import 'package:lumio/core/providers/dio_provider.dart';
 import 'package:lumio/core/providers/license_tier_provider.dart';
 import 'package:lumio/core/providers/supabase_provider.dart';
 
+class DeviceLimitException implements Exception {
+  final String message;
+  DeviceLimitException(this.message);
+  
+  @override
+  String toString() => message;
+}
+
+final localLicenseProvider = FutureProvider<License?>((ref) async {
+  final db = ref.watch(databaseProvider);
+  return db.getLocalLicense();
+});
+
 // ==========================================
 // LICENSE NOTIFIER (Tetap via Go Backend)
 // ==========================================
@@ -180,52 +193,25 @@ class LicenseNotifier extends AsyncNotifier<License?> {
   }
 
   Future<(bool, String?)> verifyAccount(String email) async {
-    final db = ref.read(databaseProvider);
-
     try {
-      final authUser = Supabase.instance.client.auth.currentUser;
-      if (authUser == null) return (false, 'User belum login.');
-
-      final response = await Supabase.instance.client
-          .from('licenses')
-          .select()
-          .eq('user_id', authUser.id)
-          .eq('is_active', true)
-          .maybeSingle();
-
+      final license = await _verifyAccountSilently(email);
       if (!ref.mounted) return (false, null);
 
-      if (response != null) {
-        await _storage.write(key: _serverTimeKey, value: DateTime.now().toIso8601String());
-        await (db.delete(db.licenses)).go();
-
-        final deviceId = await _getDeviceId();
-        await db.into(db.licenses).insert(
-          LicensesCompanion.insert(
-            licenseCode: response['license_code'] as String? ?? 'ACCOUNT-BOUND',
-            deviceFingerprint: Value(deviceId),
-            activationDate: Value(DateTime.now()),
-            status: const Value('active'),
-            tierLevel: Value(response['tier_level'] as String?),
-            maxDevices: Value(response['max_devices'] as int? ?? 1),
-            maxOutlets: Value(response['max_outlets'] as int? ?? 1),
-            expiredAt: response['expired_at'] != null ? Value(DateTime.parse(response['expired_at'] as String)) : const Value(null),
-          ),
-        );
-
-        final newLicense = await db.getLocalLicense();
-        if (ref.mounted) {
-          state = AsyncValue.data(newLicense);
-        }
+      if (license != null) {
+        state = AsyncValue.data(license);
         return (true, null);
       }
-
-      if (ref.mounted) state = const AsyncValue.data(null);
       return (false, 'Akun belum berlangganan atau masa aktif telah habis.');
+    } on DeviceLimitException catch (e) {
+      if (ref.mounted) {
+        state = AsyncValue.error(e, StackTrace.current);
+      }
+      return (false, e.message);
     } catch (e) {
-      if (!ref.mounted) return (false, null);
-      state = const AsyncValue.data(null);
-      return (false, 'Gagal menghubungi server: ${e.toString()}');
+      if (ref.mounted) {
+        state = const AsyncValue.data(null);
+      }
+      return (false, 'Gagal memverifikasi lisensi: ${e.toString()}');
     }
   }
 
@@ -238,35 +224,149 @@ class LicenseNotifier extends AsyncNotifier<License?> {
       final authUser = Supabase.instance.client.auth.currentUser;
       if (authUser == null) return null;
 
+      // 1. Query Supabase licenses
       final response = await Supabase.instance.client
           .from('licenses')
           .select()
           .eq('user_id', authUser.id)
-          .eq('is_active', true)
+          .order('created_at', ascending: false)
+          .limit(1)
           .maybeSingle();
 
-      if (response != null) {
+      final deviceId = await _getDeviceId();
+
+      // 2. Jika tidak ada lisensi sama sekali di Supabase -> AUTO-TRIAL
+      if (response == null) {
+        final expiredAt = DateTime.now().add(const Duration(days: 7));
+        final licenseCode = 'TRIAL-${authUser.id}';
+
+        // A. Insert ke Supabase (pencatatan anti-abuse server-side)
+        await Supabase.instance.client.from('licenses').insert({
+          'license_code': licenseCode,
+          'tier_level': 'trial',
+          'max_devices': 1,
+          'max_outlets': 1,
+          'is_active': true,
+          'activation_date': DateTime.now().toIso8601String(),
+          'expired_at': expiredAt.toIso8601String(),
+          'user_id': authUser.id,
+          'customer_email': email,
+        });
+
+        // B. Insert ke SQLite lokal
+        await db.into(db.licenses).insert(
+          LicensesCompanion.insert(
+            licenseCode: licenseCode,
+            deviceFingerprint: Value(deviceId),
+            activationDate: Value(DateTime.now()),
+            status: const Value('active'),
+            tierLevel: const Value('trial'),
+            maxDevices: const Value(1),
+            maxOutlets: const Value(1),
+            expiredAt: Value(expiredAt),
+          ),
+        );
+
         await _storage.write(key: _serverTimeKey, value: DateTime.now().toIso8601String());
+        return await db.getLocalLicense();
+      }
+
+      // 3. Jika ada lisensi
+      final tier = (response['tier_level'] as String?)?.toLowerCase();
+      final expiredAtStr = response['expired_at'] as String?;
+      final expiredAt = expiredAtStr != null ? DateTime.parse(expiredAtStr) : null;
+      final isActive = response['is_active'] as bool? ?? false;
+
+      // A. Jika Trial Expired atau Lisensi Tidak Aktif
+      if (!isActive || (tier == 'trial' && expiredAt != null && expiredAt.isBefore(DateTime.now()))) {
         await (db.delete(db.licenses)).go();
-        
-        final deviceId = await _getDeviceId();
         await db.into(db.licenses).insert(
           LicensesCompanion.insert(
             licenseCode: response['license_code'] as String? ?? 'ACCOUNT-BOUND',
             deviceFingerprint: Value(deviceId),
             activationDate: Value(DateTime.now()),
-            status: const Value('active'),
-            tierLevel: Value(response['tier_level'] as String?),
+            status: const Value('expired'),
+            tierLevel: Value(tier),
             maxDevices: Value(response['max_devices'] as int? ?? 1),
             maxOutlets: Value(response['max_outlets'] as int? ?? 1),
-            expiredAt: response['expired_at'] != null ? Value(DateTime.parse(response['expired_at'] as String)) : const Value(null),
+            expiredAt: Value(expiredAt),
           ),
         );
-
         return await db.getLocalLicense();
       }
-      return null;
-    } catch (_) {
+
+      // B. Jika Lisensi Berbayar Aktif (pro atau lite) -> Check Device Limit di Go Server
+      if (tier == 'pro' || tier == 'lite') {
+        final dio = ref.read(dioProvider);
+        final deviceModel = await _getDeviceModel();
+        final osVersion = Platform.isAndroid ? 'Android' : 'iOS';
+
+        try {
+          final verifyResponse = await dio.post(
+            'license/verify-account',
+            data: {
+              'user_id': authUser.id,
+              'email': email,
+              'device_fingerprint': deviceId,
+              'device_model': deviceModel,
+              'os_version': osVersion,
+            },
+          );
+
+          final verifyData = verifyResponse.data;
+          final isVerifySuccess = (verifyData is Map && verifyData['status'] == 'success') ||
+                                  (verifyData is Map && verifyData['success'] == true) ||
+                                  verifyResponse.statusCode == 200;
+
+          if (isVerifySuccess && verifyData is Map && verifyData['data'] != null) {
+            final resData = verifyData['data'];
+            await (db.delete(db.licenses)).go();
+            await db.into(db.licenses).insert(
+              LicensesCompanion.insert(
+                licenseCode: resData['license_code'] as String? ?? 'ACCOUNT-BOUND',
+                deviceFingerprint: Value(deviceId),
+                activationDate: Value(DateTime.now()),
+                status: const Value('active'),
+                tierLevel: Value(resData['tier_level'] as String?),
+                maxDevices: Value(resData['max_devices'] as int? ?? 1),
+                maxOutlets: Value(resData['max_outlets'] as int? ?? 1),
+                expiredAt: resData['expired_at'] != null ? Value(DateTime.parse(resData['expired_at'] as String)) : const Value(null),
+              ),
+            );
+            await _storage.write(key: _serverTimeKey, value: DateTime.now().toIso8601String());
+            return await db.getLocalLicense();
+          }
+        } on DioException catch (e) {
+          final statusCode = e.response?.statusCode;
+          final responseData = e.response?.data;
+          final hasLimitMessage = responseData is Map && responseData['message'] != null &&
+                                  responseData['message'].toString().contains('Batas maksimum perangkat');
+          if (statusCode == 403 || hasLimitMessage) {
+            throw DeviceLimitException('Batas maksimum perangkat terlampaui. Silakan lepas perangkat lama Anda.');
+          }
+          rethrow;
+        }
+      }
+
+      // Default fallback (misalnya trial masih aktif)
+      await (db.delete(db.licenses)).go();
+      await db.into(db.licenses).insert(
+        LicensesCompanion.insert(
+          licenseCode: response['license_code'] as String? ?? 'ACCOUNT-BOUND',
+          deviceFingerprint: Value(deviceId),
+          activationDate: Value(DateTime.now()),
+          status: const Value('active'),
+          tierLevel: Value(tier),
+          maxDevices: Value(response['max_devices'] as int? ?? 1),
+          maxOutlets: Value(response['max_outlets'] as int? ?? 1),
+          expiredAt: Value(expiredAt),
+        ),
+      );
+      await _storage.write(key: _serverTimeKey, value: DateTime.now().toIso8601String());
+      return await db.getLocalLicense();
+
+    } catch (e) {
+      if (e is DeviceLimitException) rethrow;
       return null;
     }
   }

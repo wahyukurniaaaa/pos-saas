@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/theme/app_theme.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'features/auth/screens/registration_screen.dart';
+import 'package:lumio/features/auth/screens/device_management_screen.dart';
 import 'package:lumio/features/auth/screens/unlicensed_screen.dart';
 import 'package:lumio/features/auth/screens/owner_setup_screen.dart';
 import 'package:lumio/features/auth/screens/pin_login_screen.dart';
@@ -96,11 +97,15 @@ class _AppBootstrapState extends ConsumerState<AppBootstrap> {
     ref.listen(licenseProvider, (previous, next) {
       final license = next.value;
       final tier = license?.tierLevel?.toLowerCase();
-      if (license != null && tier == 'pro') {
+      if (license != null && (tier == 'pro' || tier == 'lite')) {
         ref.read(syncServiceProvider).start();
-        ref.read(realtimeServiceProvider).start();
+        if (tier == 'pro') {
+          ref.read(realtimeServiceProvider).start();
+        } else {
+          ref.read(realtimeServiceProvider).stop();
+        }
       } else if (!next.isLoading) {
-        // For 'trial', 'lite', null, or any non-pro tier: stop sync services
+        // Stop sync services
         ref.read(syncServiceProvider).stop();
         ref.read(realtimeServiceProvider).stop();
       }
@@ -108,18 +113,25 @@ class _AppBootstrapState extends ConsumerState<AppBootstrap> {
 
     // 2. Initial trigger for cold boot (if license is already loaded)
     final initialLicense = ref.read(licenseProvider).value;
-    if (initialLicense != null && initialLicense.tierLevel?.toLowerCase() == 'pro') {
-      // Use microtask or post-frame to avoid calling start() during build
-      Future.microtask(() {
-        ref.read(syncServiceProvider).start();
-        ref.read(realtimeServiceProvider).start();
-      });
+    if (initialLicense != null) {
+      final tier = initialLicense.tierLevel?.toLowerCase();
+      if (tier == 'pro' || tier == 'lite') {
+        // Use microtask or post-frame to avoid calling start() during build
+        Future.microtask(() {
+          ref.read(syncServiceProvider).start();
+          if (tier == 'pro') {
+            ref.read(realtimeServiceProvider).start();
+          }
+        });
+      }
     }
 
     final session = ref.watch(supabaseSessionProvider);
     final licenseAsync = ref.watch(licenseProvider);
     final ownerAsync = ref.watch(ownerProvider);
     final storeProfileAsync = ref.watch(storeProfileProvider);
+
+    final localLicenseAsync = ref.watch(localLicenseProvider);
 
     // Layer 1: Account Session (Supabase)
     if (session == null) {
@@ -129,12 +141,21 @@ class _AppBootstrapState extends ConsumerState<AppBootstrap> {
     // Layer 2: License (Device/Subscription)
     return licenseAsync.when(
       loading: () => const _SplashScreen(),
-      error: (error, stackTrace) => _SplashScreen(
-        errorMessage: 'Gagal memverifikasi lisensi. Periksa koneksi internet.',
-        onRetry: () => ref.invalidate(licenseProvider),
-      ),
+      error: (error, stackTrace) {
+        if (error is DeviceLimitException) {
+          return DeviceManagementScreen();
+        }
+        return _SplashScreen(
+          errorMessage: 'Gagal memverifikasi lisensi. Periksa koneksi internet.',
+          onRetry: () => ref.invalidate(licenseProvider),
+        );
+      },
       data: (license) {
         if (license == null) {
+          final localLicense = localLicenseAsync.value;
+          if (localLicense != null) {
+            return const UnlicensedScreen(isOfflineVerificationRequired: true);
+          }
           return const UnlicensedScreen();
         }
 
@@ -167,7 +188,8 @@ class _AppBootstrapState extends ConsumerState<AppBootstrap> {
         final storeProfile = storeProfileAsync.value;
 
         // Tunggu sync selesai jika belum ada data sama sekali (fresh install).
-        if (isPro && owner == null && storeProfile == null && !isInitialSyncDone) {
+        final needsInitialSync = (isPro || tier == 'lite') && owner == null && storeProfile == null;
+        if (needsInitialSync && !isInitialSyncDone) {
           return const _SplashScreen(
               errorMessage: 'Menyinkronkan data profil dari cloud...');
         }
@@ -179,12 +201,7 @@ class _AppBootstrapState extends ConsumerState<AppBootstrap> {
 
         // Auto-heal: Toko sudah disetup via web, tapi data karyawan owner lokal belum ada.
         if (storeProfile != null && owner == null) {
-          Future.microtask(() {
-            ref.read(ownerProvider.notifier).autoCreateOwnerFromCloud(storeProfile.name);
-          });
-          return const _SplashScreen(
-            errorMessage: 'Menyiapkan profil pemilik (PIN default: 123456)...',
-          );
+          return const OwnerSetupScreen();
         }
 
         // Layer 4: Data sudah ada → Employee Selection (PIN Login).

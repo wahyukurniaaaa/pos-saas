@@ -54,6 +54,12 @@ class SyncService {
   Timer? _syncDebounceTimer;
   bool _isSyncing = false;
 
+  static const _liteAuthTables = [
+    'outlets',
+    'store_profile',
+    'employees',
+  ];
+
   /// Starts the event-driven background sync.
   void start() {
     _syncQueueSub?.cancel();
@@ -99,27 +105,28 @@ class SyncService {
   }
 
   /// Push all dirty local records to Supabase.
-  /// Guard: Only runs if the user is authenticated (Pro user).
+  /// Guard: Runs if the user is authenticated and tier is Pro or Lite.
   Future<void> performSync() async {
     if (_isSyncing) return;
 
-    // Auth Guard: Pro users only
+    // Auth Guard: Pro/Lite users only
     final user = _ref.read(authProvider).value;
     if (user == null) {
-      debugPrint('SyncService: Skipping — user not authenticated (non-Pro)');
+      debugPrint('SyncService: Skipping — user not authenticated');
       if (!_ref.read(initialSyncProvider)) {
         _ref.read(initialSyncProvider.notifier).markCompleted();
       }
       return;
     }
 
-    // Tier Guard: Pro users only
-    // Use read instead of future if possible, or handle async carefully
+    // Tier Guard: Pro or Lite users only
     final license = _ref.read(licenseProvider).value;
-    final isPro = license?.tierLevel?.toLowerCase() == 'pro';
+    final tier = license?.tierLevel?.toLowerCase();
+    final isPro = tier == 'pro';
+    final isLite = tier == 'lite';
 
-    if (!isPro) {
-      debugPrint('SyncService: Skipping — Lite tier user...');
+    if (!isPro && !isLite) {
+      debugPrint('SyncService: Skipping — tier is not Pro or Lite (tier: $tier)');
       if (!_ref.read(initialSyncProvider)) {
         _ref.read(initialSyncProvider.notifier).markCompleted();
       }
@@ -128,11 +135,15 @@ class SyncService {
 
     _isSyncing = true;
     _ref.read(syncStatusProvider.notifier).setStatus(SyncStatus.syncing);
-    debugPrint('SyncService: Sync started for ${user.email}');
+    debugPrint('SyncService: Sync started for ${user.email} (tier: $tier)');
 
     try {
-      await _pullChanges();
-      await _processSyncQueue();
+      if (isPro) {
+        await _pullChanges();
+        await _processSyncQueue();
+      } else if (isLite) {
+        await _performLiteSync();
+      }
       if (!_ref.read(initialSyncProvider)) {
         _ref.invalidate(ownerProvider);
         _ref.read(initialSyncProvider.notifier).markCompleted();
@@ -148,6 +159,34 @@ class SyncService {
     } finally {
       _isSyncing = false;
     }
+  }
+
+  Future<void> _performLiteSync() async {
+    final db = _ref.read(databaseProvider);
+    final supabase = Supabase.instance.client;
+    const storage = FlutterSecureStorage();
+
+    final lastSyncStr = await storage.read(key: 'last_pull_sync_lite');
+    final lastSync = lastSyncStr != null ? DateTime.parse(lastSyncStr) : null;
+
+    debugPrint('SyncService: Lite Auth-Only Sync started');
+
+    // Pull sequentially to respect foreign key constraints
+    for (final table in _liteAuthTables) {
+      await _pullTableWithPagination(
+        table,
+        null, // Pull globally for employee pin screens & multi-outlet selector
+        lastSync,
+        db,
+        supabase,
+      );
+    }
+
+    await storage.write(
+      key: 'last_pull_sync_lite',
+      value: DateTime.now().toUtc().toIso8601String(),
+    );
+    debugPrint('SyncService: Lite Auth-Only Sync completed');
   }
 
   Future<void> _processSyncQueue() async {

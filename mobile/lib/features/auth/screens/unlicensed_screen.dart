@@ -10,8 +10,13 @@ class UnlicensedScreen extends ConsumerWidget {
   /// When [isTrialExpired] is true, the screen shows a trial-specific
   /// expired message instead of the generic unlicensed message.
   final bool isTrialExpired;
+  final bool isOfflineVerificationRequired;
 
-  const UnlicensedScreen({super.key, this.isTrialExpired = false});
+  const UnlicensedScreen({
+    super.key,
+    this.isTrialExpired = false,
+    this.isOfflineVerificationRequired = false,
+  });
 
   Future<void> _contactAdmin() async {
     const phoneNumber = '+6281234567890'; // Replace with actual number
@@ -28,11 +33,19 @@ class UnlicensedScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final title = isTrialExpired ? 'Trial Telah Berakhir' : 'Akun Belum Aktif';
-    final message = isTrialExpired
-        ? 'Masa trial 7 hari Anda telah berakhir. Silakan berlangganan untuk melanjutkan menggunakan Lumio POS.'
-        : 'Akun Anda belum berlangganan atau masa aktif telah habis. Silakan hubungi Admin melalui WhatsApp untuk mengaktifkan lisensi Anda.';
-    final icon = isTrialExpired ? Icons.timer_off_outlined : Icons.lock_person_outlined;
+    final title = isOfflineVerificationRequired
+        ? 'Verifikasi Lisensi Diperlukan'
+        : (isTrialExpired ? 'Trial Telah Berakhir' : 'Akun Belum Aktif');
+
+    final message = isOfflineVerificationRequired
+        ? 'Aplikasi telah offline lebih dari 7 hari. Harap hubungkan perangkat ke internet lalu tekan \'Cek Status Lisensi\' untuk memverifikasi lisensi Anda.'
+        : (isTrialExpired
+            ? 'Masa trial 7 hari Anda telah berakhir. Silakan berlangganan untuk melanjutkan menggunakan Lumio POS.'
+            : 'Akun Anda belum berlangganan atau masa aktif telah habis. Silakan hubungi Admin melalui WhatsApp untuk mengaktifkan lisensi Anda.');
+
+    final icon = isOfflineVerificationRequired
+        ? Icons.wifi_off_outlined
+        : (isTrialExpired ? Icons.timer_off_outlined : Icons.lock_person_outlined);
 
     return Scaffold(
       body: Container(
@@ -72,7 +85,7 @@ class UnlicensedScreen extends ConsumerWidget {
                 height: 1.5,
               ),
             ),
-            if (isTrialExpired) ...[
+            if (isTrialExpired && !isOfflineVerificationRequired) ...[
               const SizedBox(height: 32),
               ElevatedButton.icon(
                 onPressed: () {
@@ -90,13 +103,34 @@ class UnlicensedScreen extends ConsumerWidget {
                 ),
               ),
             ],
-            const SizedBox(height: 32),
+            if (!isOfflineVerificationRequired) ...[
+              const SizedBox(height: 32),
+              ElevatedButton.icon(
+                onPressed: _contactAdmin,
+                icon: const Icon(Icons.chat_bubble_outline),
+                label: const Text('Hubungi Admin (WhatsApp)'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF25D366), // WhatsApp Green
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ],
+            const SizedBox(height: 24),
             ElevatedButton.icon(
-              onPressed: _contactAdmin,
-              icon: const Icon(Icons.chat_bubble_outline),
-              label: const Text('Hubungi Admin (WhatsApp)'),
+              onPressed: () {
+                final user = Supabase.instance.client.auth.currentUser;
+                if (user?.email != null) {
+                  ref.read(licenseProvider.notifier).verifyAccount(user!.email!);
+                }
+              },
+              icon: const Icon(Icons.refresh),
+              label: const Text('Cek Status Lisensi'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF25D366), // WhatsApp Green
+                backgroundColor: Colors.white.withValues(alpha: 0.2),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                 shape: RoundedRectangleBorder(
@@ -104,7 +138,7 @@ class UnlicensedScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             TextButton.icon(
               onPressed: () {
                 ref.read(authProvider.notifier).signOut();
@@ -112,20 +146,6 @@ class UnlicensedScreen extends ConsumerWidget {
               icon: const Icon(Icons.logout, color: Colors.white),
               label: const Text(
                 'Keluar',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextButton.icon(
-              onPressed: () {
-                final user = Supabase.instance.client.auth.currentUser;
-                if (user?.email != null) {
-                  ref.read(licenseProvider.notifier).verifyAccount(user!.email!);
-                }
-              },
-              icon: const Icon(Icons.refresh, color: Colors.white),
-              label: const Text(
-                'Cek Status Lisensi',
                 style: TextStyle(color: Colors.white),
               ),
             ),

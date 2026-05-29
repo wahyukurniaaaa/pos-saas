@@ -76,6 +76,66 @@ class OwnerNotifier extends AsyncNotifier<Employee?> {
     }
   }
 
+  Future<bool> setupOwnerOnly({
+    required String name,
+    required String pin,
+  }) async {
+    final cleanPin = pin.trim();
+    state = const AsyncValue.loading();
+    final db = ref.read(databaseProvider);
+
+    try {
+      // 1. Get the existing outlet ID from local DB
+      String? targetOutletId;
+      final localOutlets = await db.customSelect('SELECT id FROM outlets LIMIT 1').get();
+      if (localOutlets.isNotEmpty) {
+        targetOutletId = localOutlets.first.read<String>('id');
+      } else {
+        // Fallback: Create default outlet if none exists
+        targetOutletId = await db.insertOutlet(
+          OutletsCompanion.insert(
+            name: 'Pusat',
+            address: const Value(''),
+            phone: const Value(''),
+          ),
+        );
+      }
+
+      // 2. Insert owner employee, linked to the existing outlet
+      await db.insertEmployee(
+        EmployeesCompanion.insert(
+          name: name,
+          pin: cleanPin,
+          role: 'owner',
+          outletId: Value(targetOutletId),
+        ),
+      );
+
+      // 3. Seed Default Categories for the outlet
+      await db.insertCategory(CategoriesCompanion.insert(
+        name: 'Makanan',
+        outletId: Value(targetOutletId),
+      ));
+      await db.insertCategory(CategoriesCompanion.insert(
+        name: 'Minuman',
+        outletId: Value(targetOutletId),
+      ));
+      await db.insertCategory(CategoriesCompanion.insert(
+        name: 'Camilan',
+        outletId: Value(targetOutletId),
+      ));
+
+      if (!ref.mounted) return false;
+
+      // Force refresh owner notifier state
+      ref.invalidateSelf();
+      return true;
+    } catch (e, st) {
+      if (!ref.mounted) return false;
+      state = AsyncValue.error(e.toString(), st);
+      return false;
+    }
+  }
 
   Future<bool> setupOwner({
     required String name,

@@ -107,13 +107,15 @@ class _DeviceManagementScreenState
 
     if (success && mounted) {
       if (isCurrentDevice) {
-        // Automatically logout and go to activation screen
-        ref.read(sessionProvider.notifier).logout();
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          '/license-activation',
-          (route) => false,
-        );
+        // Automatically logout and go to login screen
+        await ref.read(authProvider.notifier).signOut();
+        if (mounted) {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/login',
+            (route) => false,
+          );
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -145,6 +147,22 @@ class _DeviceManagementScreenState
       appBar: AppBar(
         title: const Text('Manajemen Perangkat'),
         automaticallyImplyLeading: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Keluar',
+            onPressed: () async {
+              await ref.read(authProvider.notifier).signOut();
+              if (mounted) {
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/login',
+                  (route) => false,
+                );
+              }
+            },
+          ),
+        ],
       ),
       body: licenseAsync.when(
         loading: () => const Center(
