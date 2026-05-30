@@ -80,14 +80,14 @@ class LicenseNotifier extends AsyncNotifier<License?> {
     // This breaks the circular dependency chain:
     // appTierProvider → licenseProvider → authProvider → licenseProvider (CYCLE)
     final db = ref.watch(databaseProvider);
+    // Watch supabaseUserProvider reactively so that when auth state changes (login/logout),
+    // licenseProvider is automatically marked as dirty/reloading, preventing UI flash of UnlicensedScreen.
+    final authUser = ref.watch(supabaseUserProvider);
 
     var license = await db.getLocalLicense();
 
     if (license == null) {
       // If no local license, check if the current Supabase user has one in cloud metadata.
-      // Read current user directly from Supabase SDK (no provider dependency).
-      final authUser = Supabase.instance.client.auth.currentUser;
-      
       if (authUser != null && authUser.email != null) {
         final syncedLicense = await _verifyAccountSilently(authUser.email!);
         if (syncedLicense != null) {
