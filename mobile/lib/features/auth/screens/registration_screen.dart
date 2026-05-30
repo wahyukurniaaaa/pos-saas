@@ -1,10 +1,14 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:dio/dio.dart';
+import 'package:screenshot/screenshot.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'package:lumio/core/constants/app_constants.dart';
 import 'package:lumio/core/providers/database_provider.dart';
@@ -38,6 +42,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen>
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _screenshotController = ScreenshotController();
 
   // ── Step 1 local state ────────────────────────────────────────────────────
   String? _selectedBusinessType;
@@ -846,6 +851,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen>
   ) {
     final paymentNumber = regState.paymentNumber;
     final paymentMethod = regState.paymentMethod ?? 'qris';
+    final invoiceNumber = regState.invoiceNumber;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -891,26 +897,29 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen>
             ),
           ),
           const SizedBox(height: 10),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
-            ),
-            child: Image.network(
-              // Render QR via Google Charts API (no extra package needed)
-              'https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=${Uri.encodeComponent(paymentNumber)}&choe=UTF-8',
-              width: 180,
-              height: 180,
-              errorBuilder: (_, __, ___) => SizedBox(
+          Screenshot(
+            controller: _screenshotController,
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+              ),
+              child: Image.network(
+                // Render QR via Google Charts API (no extra package needed)
+                'https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=${Uri.encodeComponent(paymentNumber)}&choe=UTF-8',
                 width: 180,
                 height: 180,
-                child: Center(
-                  child: Text(
-                    paymentNumber,
-                    style: GoogleFonts.poppins(fontSize: 10),
-                    textAlign: TextAlign.center,
+                errorBuilder: (_, __, ___) => SizedBox(
+                  width: 180,
+                  height: 180,
+                  child: Center(
+                    child: Text(
+                      paymentNumber,
+                      style: GoogleFonts.poppins(fontSize: 10),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ),
               ),
@@ -924,6 +933,61 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen>
               color: AppTheme.textSecondary,
             ),
             textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: OutlinedButton.icon(
+              onPressed: isLoading
+                  ? null
+                  : () async {
+                      try {
+                        final imageBytes = await _screenshotController.capture(
+                          delay: const Duration(milliseconds: 100),
+                        );
+                        if (imageBytes != null) {
+                          final tempDir = await getTemporaryDirectory();
+                          final file = await File(
+                            '${tempDir.path}/QRIS-${invoiceNumber ?? "LUMIO"}.png',
+                          ).writeAsBytes(imageBytes);
+
+                          await Share.shareXFiles(
+                            [XFile(file.path)],
+                            text: 'QRIS Pembayaran Lumio POS - Invoice $invoiceNumber',
+                          );
+                        }
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Gagal mengunduh/membagikan QR Code: $e',
+                              style: GoogleFonts.poppins(fontSize: 13),
+                            ),
+                            backgroundColor: AppTheme.errorColor,
+                          ),
+                        );
+                      }
+                    },
+              icon: const Icon(Icons.download_rounded, size: 18),
+              label: Text(
+                'Unduh / Bagikan QR Code',
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppTheme.primaryColor,
+                side: const BorderSide(
+                  color: AppTheme.primaryColor,
+                  width: 1.5,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
           ),
         ]
 
@@ -1253,107 +1317,45 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen>
                 const SizedBox(height: 16),
 
                 // ── Payment method selector ────────────────────────────────
-                Text(
-                  'Metode Pembayaran',
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).textTheme.titleMedium?.color?.withValues(alpha: 0.8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppTheme.primaryColor.withValues(alpha: 0.15),
+                      width: 1,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    for (final method in ['qris', 'va'])
-                      Expanded(
-                        child: Padding(
-                          padding: EdgeInsets.only(right: method == 'qris' ? 6 : 0),
-                          child: GestureDetector(
-                            onTap: isLoading
-                                ? null
-                                : () => ref.read(registrationProvider.notifier).selectPaymentMethod(method),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                              decoration: BoxDecoration(
-                                color: regState.selectedPaymentMethod == method
-                                    ? AppTheme.primaryColor.withValues(alpha: 0.1)
-                                    : Colors.transparent,
-                                border: Border.all(
-                                  color: regState.selectedPaymentMethod == method
-                                      ? AppTheme.primaryColor
-                                      : Colors.grey.withValues(alpha: 0.3),
-                                  width: regState.selectedPaymentMethod == method ? 1.5 : 1,
-                                ),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                method == 'qris' ? 'QRIS' : 'Virtual Account',
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: regState.selectedPaymentMethod == method
-                                      ? AppTheme.primaryColor
-                                      : AppTheme.textSecondary,
-                                ),
-                              ),
-                            ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Metode Pembayaran',
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.textSecondary,
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryColor,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          'QRIS',
+                          style: GoogleFonts.poppins(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
                           ),
                         ),
                       ),
-                  ],
+                    ],
+                  ),
                 ),
-
-                // ── Bank selector (VA only) ────────────────────────────────
-                if (regState.selectedPaymentMethod == 'va') ...[
-                  const SizedBox(height: 12),
-                  Text(
-                    'Pilih Bank',
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: ['bni', 'bri', 'bca', 'permata', 'maybank'].map((bank) {
-                      final isSelected = regState.selectedBankCode == bank;
-                      return GestureDetector(
-                        onTap: isLoading
-                            ? null
-                            : () => ref.read(registrationProvider.notifier).selectBankCode(bank),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? AppTheme.primaryColor.withValues(alpha: 0.1)
-                                : Colors.transparent,
-                            border: Border.all(
-                              color: isSelected
-                                  ? AppTheme.primaryColor
-                                  : Colors.grey.withValues(alpha: 0.3),
-                              width: isSelected ? 1.5 : 1,
-                            ),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            bank.toUpperCase(),
-                            style: GoogleFonts.poppins(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: isSelected ? AppTheme.primaryColor : AppTheme.textSecondary,
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ],
 
                 const SizedBox(height: 20),
 
