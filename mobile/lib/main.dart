@@ -127,6 +127,7 @@ class _AppBootstrapState extends ConsumerState<AppBootstrap> {
     }
 
     final session = ref.watch(supabaseSessionProvider);
+    final authUser = ref.watch(supabaseUserProvider);
     final licenseAsync = ref.watch(licenseProvider);
     final ownerAsync = ref.watch(ownerProvider);
     final storeProfileAsync = ref.watch(storeProfileProvider);
@@ -151,7 +152,17 @@ class _AppBootstrapState extends ConsumerState<AppBootstrap> {
         );
       },
       data: (license) {
+        // Guard: If licenseAsync is still refreshing (e.g. just invalidated on login),
+        // show splash to prevent a momentary flash of UnlicensedScreen.
+        if (licenseAsync.isRefreshing) return const _SplashScreen();
+
         if (license == null) {
+          // Guard: If user has an active Supabase session but licenseProvider just
+          // resolved to null, it may still be mid-verification (network in-flight).
+          // Only show UnlicensedScreen if user is truly logged-in with no license found.
+          if (authUser != null && localLicenseAsync.isLoading) {
+            return const _SplashScreen();
+          }
           final localLicense = localLicenseAsync.value;
           if (localLicense != null) {
             return const UnlicensedScreen(isOfflineVerificationRequired: true);

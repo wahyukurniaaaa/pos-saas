@@ -370,7 +370,7 @@ class LicenseNotifier extends AsyncNotifier<License?> {
   }
 }
 
-final licenseProvider = AsyncNotifierProvider<LicenseNotifier, License?>(
+final licenseProvider = AsyncNotifierProvider.autoDispose<LicenseNotifier, License?>(
   LicenseNotifier.new,
 );
 
