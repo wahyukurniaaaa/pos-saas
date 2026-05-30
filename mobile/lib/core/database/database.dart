@@ -444,10 +444,10 @@ class LumioDatabase extends _$LumioDatabase {
 
   Future<Employee?> getOwner() => (select(
     employees,
-  )..where((e) => e.role.equals('owner'))).getSingleOrNull();
+  )..where((e) => e.role.equals('owner'))..limit(1)).getSingleOrNull();
 
   Stream<Employee?> watchOwner() => (select(employees)
-        ..where((e) => e.role.equals('owner')))
+        ..where((e) => e.role.equals('owner'))..limit(1))
       .watchSingleOrNull();
 
   Future<String> insertEmployee(EmployeesCompanion entry) async {

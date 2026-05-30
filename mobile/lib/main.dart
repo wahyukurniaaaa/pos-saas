@@ -178,9 +178,18 @@ class _AppBootstrapState extends ConsumerState<AppBootstrap> {
         }
 
         if (ownerAsync.hasError) {
+          debugPrint('Bootstrap: Owner error: ${ownerAsync.error}');
           return _SplashScreen(
-            errorMessage: 'Gagal memuat profil toko.',
+            errorMessage: 'Gagal memuat profil toko. Error: ${ownerAsync.error}',
             onRetry: () => ref.invalidate(ownerProvider),
+          );
+        }
+
+        if (storeProfileAsync.hasError) {
+          debugPrint('Bootstrap: Store profile error: ${storeProfileAsync.error}');
+          return _SplashScreen(
+            errorMessage: 'Gagal memuat profil toko. Error: ${storeProfileAsync.error}',
+            onRetry: () => ref.invalidate(storeProfileProvider),
           );
         }
 
