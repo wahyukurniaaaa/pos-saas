@@ -991,49 +991,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen>
           ),
         ]
 
-        // ── VA: show VA number ─────────────────────────────────────────────
-        else if (paymentMethod == 'va' && paymentNumber != null) ...[
-          Text(
-            'Nomor Virtual Account',
-            style: GoogleFonts.poppins(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: AppTheme.textSecondary,
-              letterSpacing: 1,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-            decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.2)),
-            ),
-            child: SelectableText(
-              paymentNumber,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 3,
-                color: AppTheme.primaryColor,
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Transfer ke nomor VA di atas sebelum waktu habis',
-            style: GoogleFonts.poppins(
-              fontSize: 11,
-              color: AppTheme.textSecondary,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ]
-
-        // ── Fallback: external URL ─────────────────────────────────────────
+        // ── Fallback: external URL (should not occur for QRIS) ────────────
         else if (paymentUrl != null) ...[
           SizedBox(
             width: double.infinity,
