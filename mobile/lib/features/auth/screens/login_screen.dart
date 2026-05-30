@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lumio/core/theme/app_theme.dart';
 import 'package:lumio/features/auth/providers/auth_providers.dart';
 
@@ -14,8 +15,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
   late TabController _tabController;
   final _loginEmailController = TextEditingController();
   final _loginPasswordController = TextEditingController();
-  final _registerEmailController = TextEditingController();
-  final _registerPasswordController = TextEditingController();
   
   bool _isLoading = false;
   bool _obscurePassword = true;
@@ -31,8 +30,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
     _tabController.dispose();
     _loginEmailController.dispose();
     _loginPasswordController.dispose();
-    _registerEmailController.dispose();
-    _registerPasswordController.dispose();
     super.dispose();
   }
 
@@ -63,31 +60,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
     }
   }
 
-  Future<void> _handleRegister() async {
-    if (_registerEmailController.text.isEmpty || _registerPasswordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Email dan password harus diisi')),
-      );
-      return;
-    }
 
-    setState(() => _isLoading = true);
-    final (success, error) = await ref.read(authProvider.notifier).signUp(
-      email: _registerEmailController.text.trim(),
-      password: _registerPasswordController.text.trim(),
-    );
-
-    if (!mounted) return;
-    setState(() => _isLoading = false);
-
-    if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Registrasi berhasil! Silakan cek email untuk verifikasi.')),
-      );
-    } else if (error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
-    }
-  }
 
   Future<void> _handleGoogleSignIn() async {
     setState(() => _isLoading = true);
@@ -238,88 +211,94 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
   }
 
   Widget _buildRegisterForm() {
-    return SingleChildScrollView(
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Navigate to the full multi-step RegistrationScreen
+          // Elegant Circular Store Icon Header
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.3)),
+              color: AppTheme.primaryColor.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
             ),
-            child: Column(
-              children: [
-                const Icon(Icons.store_outlined, size: 32, color: AppTheme.primaryColor),
-                const SizedBox(height: 8),
-                const Text(
-                  'Daftar sebagai pemilik toko baru?',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  'Gunakan alur pendaftaran lengkap untuk mengisi data toko dan memilih paket berlangganan.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-                const SizedBox(height: 12),
-                ElevatedButton.icon(
-                  onPressed: () => Navigator.of(context).pushReplacementNamed('/register'),
-                  icon: const Icon(Icons.arrow_forward),
-                  label: const Text('Daftar Toko Baru'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryColor,
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size(double.infinity, 46),
-                  ),
-                ),
-              ],
+            child: const Icon(
+              Icons.storefront_rounded,
+              size: 32,
+              color: AppTheme.primaryColor,
             ),
           ),
-          const SizedBox(height: 16),
-          const Row(
-            children: [
-              Expanded(child: Divider()),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12),
-                child: Text('atau daftar akun saja', style: TextStyle(color: Colors.grey, fontSize: 11)),
-              ),
-              Expanded(child: Divider()),
-            ],
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _registerEmailController,
-            decoration: const InputDecoration(
-              labelText: 'Email',
-              prefixIcon: Icon(Icons.email_outlined),
-              border: OutlineInputBorder(),
+          const SizedBox(height: 12),
+          Text(
+            'Mulai Kelola Toko Anda',
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.primaryColor,
             ),
-            keyboardType: TextInputType.emailAddress,
+            textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _registerPasswordController,
-            decoration: const InputDecoration(
-              labelText: 'Password',
-              prefixIcon: Icon(Icons.lock_outline),
-              border: OutlineInputBorder(),
+          const SizedBox(height: 4),
+          Text(
+            'Daftarkan toko baru Anda dalam hitungan menit dan nikmati fitur POS lengkap terintegrasi.',
+            style: GoogleFonts.poppins(
+              fontSize: 11,
+              color: Colors.grey[600],
+              height: 1.4,
             ),
-            obscureText: true,
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: _isLoading ? null : _handleRegister,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryColor,
-              foregroundColor: Colors.white,
-              minimumSize: const Size(double.infinity, 50),
+          
+          // Modern, Clean, High-Contrast Premium Button
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton(
+              onPressed: () => Navigator.of(context).pushReplacementNamed('/register'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryColor,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'DAFTAR TOKO BARU',
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Icon(Icons.arrow_forward_rounded, size: 16),
+                ],
+              ),
             ),
-            child: _isLoading
-                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                : const Text('DAFTAR AKUN'),
+          ),
+          const SizedBox(height: 12),
+          
+          // Subtext badge/trust indicator
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.verified_user_outlined, size: 12, color: Colors.green),
+              const SizedBox(width: 4),
+              Text(
+                'Termasuk Uji Coba Gratis 7 Hari',
+                style: GoogleFonts.poppins(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.green[700],
+                ),
+              ),
+            ],
           ),
         ],
       ),
