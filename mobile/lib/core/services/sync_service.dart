@@ -388,7 +388,7 @@ final syncStatusProvider = NotifierProvider<SyncStatusNotifier, SyncStatus>(
   SyncStatusNotifier.new,
 );
 
-class InitialSyncNotifier extends Notifier<bool> {
+class InitialSyncNotifier extends AutoDisposeNotifier<bool> {
   @override
   bool build() => false;
 
@@ -398,6 +398,6 @@ class InitialSyncNotifier extends Notifier<bool> {
 }
 
 /// Provider to track if the initial sync has completed on boot.
-final initialSyncProvider = NotifierProvider<InitialSyncNotifier, bool>(
+final initialSyncProvider = NotifierProvider.autoDispose<InitialSyncNotifier, bool>(
   InitialSyncNotifier.new,
 );

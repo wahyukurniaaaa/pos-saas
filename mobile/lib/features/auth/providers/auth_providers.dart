@@ -27,7 +27,7 @@ class DeviceLimitException implements Exception {
   String toString() => message;
 }
 
-final localLicenseProvider = FutureProvider<License?>((ref) async {
+final localLicenseProvider = FutureProvider.autoDispose<License?>((ref) async {
   final db = ref.watch(databaseProvider);
   return db.getLocalLicense();
 });
