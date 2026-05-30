@@ -388,7 +388,7 @@ final syncStatusProvider = NotifierProvider<SyncStatusNotifier, SyncStatus>(
   SyncStatusNotifier.new,
 );
 
-class InitialSyncNotifier extends AutoDisposeNotifier<bool> {
+class InitialSyncNotifier extends Notifier<bool> {
   @override
   bool build() => false;
 
