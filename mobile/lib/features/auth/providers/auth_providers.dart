@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import 'dart:io';
 
@@ -16,7 +15,6 @@ import 'package:lumio/core/constants/app_constants.dart';
 import 'package:lumio/core/database/database.dart';
 import 'package:lumio/core/providers/database_provider.dart';
 import 'package:lumio/core/providers/dio_provider.dart';
-import 'package:lumio/core/providers/license_tier_provider.dart';
 import 'package:lumio/core/providers/supabase_provider.dart';
 
 class DeviceLimitException implements Exception {

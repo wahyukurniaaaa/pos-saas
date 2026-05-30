@@ -20,33 +20,6 @@ enum SyncStatus { idle, syncing, error }
 class SyncService {
   final Ref _ref;
 
-  /// Supabase tables to sync, ordered by dependency (parents before children).
-  static const _syncableTables = [
-    'outlets',
-    'categories',
-    'suppliers',
-    'customers',
-    'employees',
-    'products',
-    'product_variants',
-    'ingredients',
-    'discounts',
-    'shifts',
-    'transactions',
-    'transaction_items',
-    'transaction_payments',
-    'expenses',
-    'purchase_orders',
-    'stock_opname',
-    'stock_opname_items',
-    'stock_transactions',
-    'store_profile',
-    'unit_conversions',
-    'printer_settings',
-    'product_recipes',
-    'ingredient_stock_history',
-  ];
-
   SyncService(this._ref);
 
   StreamSubscription<void>? _syncQueueSub;
