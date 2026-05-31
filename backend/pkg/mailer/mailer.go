@@ -10,6 +10,7 @@ import (
 type Mailer struct {
 	client *resend.Client
 	from   string
+	portal string
 }
 
 func NewMailer() *Mailer {
@@ -18,10 +19,15 @@ func NewMailer() *Mailer {
 	if from == "" {
 		from = "Lumio POS <onboarding@resend.dev>" // Default Resend test email
 	}
+	portal := os.Getenv("PORTAL_URL")
+	if portal == "" {
+		portal = "http://localhost:3000" // Default fallback for local dev
+	}
 
 	return &Mailer{
 		client: resend.NewClient(apiKey),
 		from:   from,
+		portal: portal,
 	}
 }
 
@@ -34,6 +40,8 @@ func (m *Mailer) SendLicenseEmail(to, licenseCode, tier string, maxDevices int, 
 	if expiredAt == "" {
 		expiredAt = "Selamanya (Lifetime)"
 	}
+
+	logoURL := fmt.Sprintf("%s/logo-wordmark-primary.png", m.portal)
 
 	htmlContent := fmt.Sprintf(`
 		<!DOCTYPE html>
@@ -51,10 +59,9 @@ func (m *Mailer) SendLicenseEmail(to, licenseCode, tier string, maxDevices int, 
 							<!-- Header -->
 							<tr>
 								<td style="padding: 48px 48px 32px 48px; text-align: center;">
-									<div style="font-size: 28px; font-weight: 900; color: #0F2F62; letter-spacing: -0.02em; margin-bottom: 8px;">
-										LUMIO<span style="color: #08ABE6;">POS</span>
+									<div style="margin-bottom: 24px; text-align: center;">
+										<img src="%s" alt="Lumio POS" style="height: 32px; max-width: 100%%; object-fit: contain; margin: 0 auto; display: block;" />
 									</div>
-									<div style="height: 2px; width: 40px; background-color: #08ABE6; margin: 0 auto 24px auto;"></div>
 									<h1 style="font-size: 24px; font-weight: 800; line-height: 1.3; margin: 0; color: #0F2F62;">
 										Akun Anda Kini <br/>Sudah Premium!
 									</h1>
@@ -118,7 +125,7 @@ func (m *Mailer) SendLicenseEmail(to, licenseCode, tier string, maxDevices int, 
 			</table>
 		</body>
 		</html>
-	`, tier, to, maxDevices, expiredAt, licenseCode)
+	`, logoURL, tier, to, maxDevices, expiredAt, licenseCode)
 
 	params := &resend.SendEmailRequest{
 		From:    m.from,
