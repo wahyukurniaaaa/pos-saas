@@ -21,8 +21,7 @@ func NewMailer() *Mailer {
 	}
 	portal := os.Getenv("PORTAL_URL")
 	if portal == "" {
-		// Use raw GitHub user content URL as fallback for local dev so images load in real email clients
-		portal = "https://raw.githubusercontent.com/wahyukurniaaaa/lumiopos-web/main/public"
+		portal = "https://lumio.wahyukurnia.com"
 	}
 
 	return &Mailer{
