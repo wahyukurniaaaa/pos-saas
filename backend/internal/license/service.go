@@ -122,7 +122,7 @@ func (s *service) Verify(req VerifyRequest) (bool, error) {
 		return false, ErrLicenseBanned
 	}
 
-	if lic.ExpiredAt != nil && time.Now().After(*lic.ExpiredAt) {
+	if lic.ExpiredAt != nil && time.Now().After(lic.ExpiredAt.Add(48*time.Hour)) {
 		return false, errors.New("Lisensi Anda telah kedaluwarsa.")
 	}
 
@@ -172,7 +172,7 @@ func (s *service) VerifyAccount(req VerifyAccountRequest) (*VerifyAccountRespons
 	}
 
 	now := time.Now()
-	if lic.ExpiredAt != nil && now.After(*lic.ExpiredAt) {
+	if lic.ExpiredAt != nil && now.After(lic.ExpiredAt.Add(48*time.Hour)) {
 		return nil, errors.New("Lisensi Anda telah kedaluwarsa. Hubungi Admin untuk perpanjangan.")
 	}
 

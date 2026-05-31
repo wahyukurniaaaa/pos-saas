@@ -24,6 +24,22 @@ func (m *MockRepository) FindByCode(code string) (*models.License, error) {
 	return args.Get(0).(*models.License), args.Error(1)
 }
 
+func (m *MockRepository) FindByUserID(userID string) (*models.License, error) {
+	args := m.Called(userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*models.License), args.Error(1)
+}
+
+func (m *MockRepository) FindByEmail(email string) (*models.License, error) {
+	args := m.Called(email)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*models.License), args.Error(1)
+}
+
 func (m *MockRepository) Update(lic *models.License) error {
 	args := m.Called(lic)
 	return args.Error(0)
@@ -237,6 +253,7 @@ func TestGenerate_SuccessLite(t *testing.T) {
 	}
 
 	// generate10DigitCode calls FindByCode
+	mockRepo.On("FindByUserID", "").Return((*models.License)(nil), nil)
 	mockRepo.On("FindByCode", mock.AnythingOfType("string")).Return((*models.License)(nil), nil)
 	mockRepo.On("Create", mock.AnythingOfType("*models.License")).Return(nil)
 
@@ -258,6 +275,7 @@ func TestGenerate_SuccessPro(t *testing.T) {
 		CustomerEmail: "test@example.com",
 	}
 
+	mockRepo.On("FindByUserID", "").Return((*models.License)(nil), nil)
 	mockRepo.On("FindByCode", mock.AnythingOfType("string")).Return((*models.License)(nil), nil)
 	mockRepo.On("Create", mock.AnythingOfType("*models.License")).Return(nil)
 

@@ -22,7 +22,7 @@ func TestSendLiveEmail(t *testing.T) {
 	}
 
 	m := mailer.NewMailer()
-	err := m.SendLicenseEmail("wahyukurniaaaa@gmail.com", "POS-L1-TEST-EMAIL", "Premium - Testing", 5)
+	err := m.SendLicenseEmail("wahyukurniaaaa@gmail.com", "POS-L1-TEST-EMAIL", "Premium - Testing", 5, "")
 	if err != nil {
 		t.Fatalf("Gagal mengirim email test: %v", err)
 	}

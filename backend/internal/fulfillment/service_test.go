@@ -40,6 +40,9 @@ func (m *MockLicenseService) Activate(req license.ActivateRequest) (*models.Lice
 func (m *MockLicenseService) Verify(req license.VerifyRequest) (bool, error) {
 	return false, nil
 }
+func (m *MockLicenseService) VerifyAccount(req license.VerifyAccountRequest) (*license.VerifyAccountResponseData, error) {
+	return nil, nil
+}
 func (m *MockLicenseService) Deregister(req license.DeregisterRequest) error {
 	return nil
 }

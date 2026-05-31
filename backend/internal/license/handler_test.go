@@ -33,6 +33,14 @@ func (m *MockService) Verify(req license.VerifyRequest) (bool, error) {
 	return args.Bool(0), args.Error(1)
 }
 
+func (m *MockService) VerifyAccount(req license.VerifyAccountRequest) (*license.VerifyAccountResponseData, error) {
+	args := m.Called(req)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*license.VerifyAccountResponseData), args.Error(1)
+}
+
 func (m *MockService) Generate(req license.GenerateRequest) (*models.License, error) {
 	args := m.Called(req)
 	if args.Get(0) == nil {
