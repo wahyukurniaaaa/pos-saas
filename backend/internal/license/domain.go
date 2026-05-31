@@ -62,12 +62,14 @@ type VerifyAccountResponseData struct {
 }
 
 type GenerateRequest struct {
-	TierLevel      string `json:"tier_level" validate:"required"`
-	CustomerEmail  string `json:"customer_email" validate:"required,email"`
-	UserID         string `json:"user_id" validate:"required"`
-	DurationMonths int    `json:"duration_months"` // 0 means lifetime (for lite) or 7 days (for trial)
-	OrderID        string `json:"order_id"`
-	Source         string `json:"source"`
+	TierLevel      string  `json:"tier_level" validate:"required"`
+	CustomerEmail  string  `json:"customer_email" validate:"required,email"`
+	UserID         string  `json:"user_id" validate:"required"`
+	DurationMonths int     `json:"duration_months"` // 0 means lifetime (for lite) or 7 days (for trial)
+	OrderID        string  `json:"order_id"`
+	Source         string  `json:"source"`
+	Amount         float64 `json:"amount"`
+	PaymentMethod  string  `json:"payment_method"`
 }
 
 type GenerateResponseData struct {

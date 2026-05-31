@@ -31,7 +31,7 @@ func NewMailer() *Mailer {
 	}
 }
 
-func (m *Mailer) SendLicenseEmail(to, licenseCode, tier string, maxDevices int, expiredAt string) error {
+func (m *Mailer) SendLicenseEmail(to, licenseCode, tier string, maxDevices int, expiredAt string, amount float64, paymentMethod string) error {
 	// Colors from Lumio Brand:
 	// Navy (Primary): #0F2F62
 	// Cyan (Accent): #08ABE6
@@ -39,6 +39,29 @@ func (m *Mailer) SendLicenseEmail(to, licenseCode, tier string, maxDevices int, 
 
 	if expiredAt == "" {
 		expiredAt = "Selamanya (Lifetime)"
+	}
+
+	// Build payment invoice block (only shown when amount is provided)
+	invoiceBlock := ""
+	if amount > 0 {
+		pmLabel := paymentMethod
+		if pmLabel == "" {
+			pmLabel = "-"
+		}
+		invoiceBlock = fmt.Sprintf(`
+			<div style="margin-top: 24px; background: linear-gradient(135deg, #ECFDF5 0%%, #D1FAE5 100%%); border: 1px solid #6EE7B7; border-radius: 16px; padding: 24px;">
+				<div style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: #059669; font-weight: 700; margin-bottom: 16px;">Ringkasan Pembayaran</div>
+				<table width="100%%" border="0" cellspacing="0" cellpadding="0">
+					<tr>
+						<td style="padding-bottom: 10px; font-size: 14px; color: #374151;">Total Pembayaran</td>
+						<td align="right" style="padding-bottom: 10px; font-size: 18px; color: #065F46; font-weight: 800;">Rp %s</td>
+					</tr>
+					<tr>
+						<td style="padding-top: 10px; border-top: 1px solid #A7F3D0; font-size: 14px; color: #374151;">Metode Pembayaran</td>
+						<td align="right" style="padding-top: 10px; border-top: 1px solid #A7F3D0; font-size: 14px; color: #065F46; font-weight: 700;">%s</td>
+					</tr>
+				</table>
+			</div>`, formatRupiah(int64(amount)), pmLabel)
 	}
 
 	logoURL := fmt.Sprintf("%s/logo-wordmark-primary.png", m.portal)
@@ -81,8 +104,11 @@ func (m *Mailer) SendLicenseEmail(to, licenseCode, tier string, maxDevices int, 
 										<p style="font-size: 13px; color: #CBD5E1; margin: 8px 0 0 0;">Cukup login ke aplikasi Lumio POS untuk mulai.</p>
 									</div>
 
+									<!-- Invoice / Payment Summary -->
+									%s
+
 									<!-- Specs Table -->
-									<div style="margin-top: 32px; background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 16px; padding: 24px;">
+									<div style="margin-top: 24px; background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 16px; padding: 24px;">
 										<table width="100%%" border="0" cellspacing="0" cellpadding="0">
 											<tr>
 												<td style="padding-bottom: 12px; font-size: 14px; color: #64748B;">Email Terdaftar</td>
@@ -125,7 +151,7 @@ func (m *Mailer) SendLicenseEmail(to, licenseCode, tier string, maxDevices int, 
 			</table>
 		</body>
 		</html>
-	`, logoURL, tier, to, maxDevices, expiredAt, licenseCode)
+	`, logoURL, tier, invoiceBlock, to, maxDevices, expiredAt, licenseCode)
 
 	params := &resend.SendEmailRequest{
 		From:    m.from,
@@ -140,4 +166,19 @@ func (m *Mailer) SendLicenseEmail(to, licenseCode, tier string, maxDevices int, 
 	}
 
 	return nil
+}
+
+// formatRupiah formats an integer as Indonesian Rupiah with thousand separators.
+// e.g. 1500000 → "1.500.000"
+func formatRupiah(amount int64) string {
+	s := fmt.Sprintf("%d", amount)
+	result := make([]byte, 0, len(s)+len(s)/3)
+	offset := len(s) % 3
+	for i, c := range s {
+		if i > 0 && (i-offset)%3 == 0 {
+			result = append(result, '.')
+		}
+		result = append(result, byte(c))
+	}
+	return string(result)
 }

@@ -296,7 +296,7 @@ func (s *service) Generate(req GenerateRequest) (*models.License, error) {
 				if existing.ExpiredAt != nil {
 					expiredAtStr = existing.ExpiredAt.Format("02 January 2006")
 				}
-				if err := s.mailer.SendLicenseEmail(req.CustomerEmail, existing.LicenseCode, req.TierLevel, maxDevices, expiredAtStr); err != nil {
+				if err := s.mailer.SendLicenseEmail(req.CustomerEmail, existing.LicenseCode, req.TierLevel, maxDevices, expiredAtStr, req.Amount, req.PaymentMethod); err != nil {
 					fmt.Printf("Email error for %s: %v\n", req.CustomerEmail, err)
 				}
 			}()
@@ -346,7 +346,7 @@ func (s *service) Generate(req GenerateRequest) (*models.License, error) {
 			if license.ExpiredAt != nil {
 				expiredAtStr = license.ExpiredAt.Format("02 January 2006")
 			}
-			if err := s.mailer.SendLicenseEmail(req.CustomerEmail, code, req.TierLevel, maxDevices, expiredAtStr); err != nil {
+			if err := s.mailer.SendLicenseEmail(req.CustomerEmail, code, req.TierLevel, maxDevices, expiredAtStr, req.Amount, req.PaymentMethod); err != nil {
 				fmt.Printf("Email error for %s: %v\n", req.CustomerEmail, err)
 			}
 		}()
